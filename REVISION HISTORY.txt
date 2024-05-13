@@ -1,0 +1,1227 @@
+langur revision history
+https://langurlang.org
+
+2024-05-12 - 0.15.2
+- moved index operation to runframe function
+- fixed bug (created in 0.15.1) on index out of range error (that is, failed indexing on a langur string, list, or hash treating non-alternate index as alternate index)
+
+2024-05-09 - 0.15.1
+- added index by negative integer to index from the "right" (on strings and lists)
+- added in, of, not in, and not of infix operators (related, but not to be confused with for in or for of loops)
+- allow writing expansion max as [0..] instead of [0..-1]
+- removed index range by range (superfluous)
+- changed indexing operations to use an interface
+- simplified calling object.Index() and index alternate in compiler and VM (always short-circuiting); dropped opcode.OpIndexAlternate (assimilated into opcode.OpIndex)
+- edited haskey() to use IIndexable interface
+- fixed some bugs in regard to counting and using runes in strings instead of bytes
+
+2024-05-05 - 0.15.0
+- changed {{interpolation}} syntax; use ni modifier for non-interpolated string or regex; dropped old syntax
+- added {:} syntax for empty hash literals
+- changed internal names for conversion functions to match type names exactly
+- disallowed using {} as string quote markers, such as qs{} or re{}
+- disallowed token strings from being used as block markers
+
+2024-05-02 - 0.14.4
+- changed parsing functions with parenthesized parameters to require curly braces (long form)
+- added simple (or short form) for function parameters, such as fn .x, .y: ...
+- fixed REPL print compiled constants to use REPL string method
+- changed datetime formatting variable (string) interpolation; dropped old syntax
+- dropped old custom function interpolation modifier syntax (deprecated in 0.14.3)
+- dropped using h token for hashes (deprecated in 0.14.3)
+
+2024-04-30 - 0.14.3
+- dropped testing list entries for sameness; now checks for equality
+- changed assignment in if tests to be declarations (no val keyword required)
+- changed parsing scope block
+- added context for parsing (initially to differentiate between hash literals with h token and nil right expressions used in switch tests)
+- changed parsing hashes to not require h token; deprecated use of h token
+- allow 0 arguments to hash(); used to create empty hash, not empty {} tokens
+- changed custom function interpolation modifier to use fn token first; deprecated old syntax
+
+2024-04-18 - 0.14.2
+- dropped implied parameter functions
+- dropped using not as combination operator not=
+- dropped single letter tokens d, f, q, Q, w, W, x (deprecated in 0.14.1)
+  instead use dr, fn, qs, QS, fw, FW, *
+- changed truthiness of functions (compiled and built-in) to reflect purity status
+- added common package for dependency-free sharing of strings
+
+2024-04-12 - 0.14.1
+- deprecated single letter tokens d, f, q, Q, w, W, x
+  instead use dr, fn, qs, QS, fw, FW, *
+- updated auto-stringification for join() and for regex to only use on certain types (not on lists, hashes, etc.)
+- brought back tests for langur-specific decimal functions (were dropped when the numbers package was dropped)
+- changed lexing tokens so that all keywords are in the token keyword list (except type names and built-in functions)
+- changed sleep() function to return a Boolean (false if value less than 1)
+
+2024-03-26 - 0.14.0
+- added forward operator; forwards a value to a regex or function
+  dropped matching against regex in swtich without explicit use of forward operator
+- added interpolation modifier for grapheme limit
+- dropped is and to functions; use type names and is and is not operators instead
+- dropped old syntax for explicit exception variable on catch; now uses square brackets to enclose, such as catch[.e]
+
+2024-03-20 - 0.13.10
+- fixed parsing issue with type used for unbounded call within unbounded call list
+- removed token.TYPE (lex as token.WORD)
+- changed syntax for explicit error variable name to use square brackets, such as catch[.e], and deprecated old syntax
+
+2024-03-20 - 0.13.9
+- added type name tokens, such as string, number, list, regex, etc.
+- added is and is not operators (used with type names and select strings)
+  deprecated is functions, such as isString(), isNumber(), etc.; use is string, is number, etc.
+- type conversion using type names instead of to functions
+  deprecated to functions, such as toString(), toNumber(), etc.; use string(...), number(...), etc.
+- removed compiler flag -Wlookalike
+- allow line returns in free word lists
+- clean up in vm/process/call.go
+- added missing *DurationNode to functions in ast/search.go (potential bug fix)
+
+2024-03-13 - 0.13.8
+- fixed bug creating a false error for interpolated string sections immediately followed by ? mark
+- renamed concatenate operator as append operator
+- added command line option -Wsurrogate to warn on use of surrogate codes as escape codes in source code (default true)
+- updated lexing blockquote strings and free word lists to allow use within lists (may have trailing comma and newline)
+- updated lexing blockquote to disallow use of ending marker followed other things on same line (confusion)
+- added lead modifier for quoted string and regex literals, which trims leading spaces on each line (useful for indenting blockquote strings)
+- updated parsing duration strings to allow lowercase letters (except for the "T"), for better readability
+
+2024-03-10 - 0.13.7
+- disallow surrogate code points when decoding source code (UTF-8, not CESU-8)
+  (surrogates should be fixed or disallowed; easier to disallow and also is in line with UTF-8 specification, which does not allow for encoding surrogates)
+- fixed div and ndiv operators to generate error for non-comparable values (as other operators do) instead of Boolean false
+- added str.BuildString() and object.NewStringFromParts(), and replaced calls to StringFromCp(), StringFromCpSlice(), and StringFromByteSlice()
+- fixed native.ToRune() to use proper range of 0 to unicode.MaxRune
+- more use of rune type for code points (instead of using int type)
+- builds duration and date-time objects at compile-time when possible (optimization)
+- added compiler check that interpolated regex value type matches regex literal type
+- updated append number ~ null to generate string for consistency (as does null ~ number)
+- added the following append operations for consistency (append between number, number range, and string, generating a string)
+  range ~ range
+  range ~ number
+  number ~ range
+  string ~ range
+
+2024-03-04 - 0.13.6
+- added alternate infix operator option to switch expression, such as switch[and]
+- dropped given expression; use switch[and] or case[and]
+- dropped arr() function; use list multiplication (available since 0.8.3)
+- truncated truncate() function as trunc()
+- moved hash and number reversal directly to objects
+- fixed bug that would prevent the null code point from being specified by escape code
+- fixed bug that falsely reported a bug in the parser for failing to advance the token when there were already parsing errors
+
+2024-01-28 - 0.13.5
+- added tau constant (double pi)
+- updated reverse() function to reverse a string (by grapheme clusters)
+- added function s2gc() to convert a string to a list of grapheme clusters
+- renamed the "array" type as "list"
+- renamed isArray() function as isList()
+- removed unused "file text mode"
+
+2024-01-23 - 0.13.4
+- added operation datetime minus datetime, yielding the difference as a duration (in years, months, etc.)
+- fixed bug in checking arguments to map()
+- changed cd() function to return the present working directory; may now be passed no arguments to only retrieve this information
+- fixed bug in possibly not propagating error from all potential panics in binary ops
+- added ISame interface
+- added IDefileable interface
+- dropped X() function
+  instead of X(ARRAYS), use mapX(f(... .x) .x, ARRAYS)
+- updated allowable spacing code points in source code (shortened list)
+
+2024-01-18 - 0.13.3
+- removed restriction on returning impure values (unnecessary since impurity is transitive)
+- allowed zero-length strings for 0 duration literals
+- switched binary operations (those having 2 operators) to use interfaces to create cleaner, more maintainable code
+- renamed opcode.OpExponent as opcode.OpPower
+- renamed interface method Object.LangurString() as Object.String()
+- added IComposableString interface; added ComposedString() method to string, regex, datetime, and duration objects; called by arrays, hashes, and ranges
+- using IGreaterThan interface to determine valid range objects
+- fixed bug in decimal root operator error propagation (now more consistent with decimal package)
+
+2024-01-04 - 0.13.2
+- possible efficiency improvement to building hashes by allocating hash pairs using make() with capacity
+- probably fixed native.ToInt() function, but have not tested on 32-bit system
+- fixed bug in number.ToInt functions
+- removed round Boolean from number.ToInt functions (remove confusion)
+- updated str.ToInt() and str.ToRune() to use native package for conversion (testing rather than assuming with type cast)
+
+2023-12-31 - 0.13.1
+- changed default conversion of duration to string to include P, so it is an ISO 8601 duration string
+- added integer optimization for numbers, which checks for overflow and converts to the decimal type if necessary
+- added native package to do safe math on Go native integers
+- moved decimal functions from number package to decimal package
+- put number functions into object package and eliminated number package, removing a layer of indirection
+- simplified some hash object functions; added Hashable interface
+- added GtComparable interface for GreaterThan() functionality
+- added TypeString() to Object interface and removed TypeDescription() function and Go map
+- changed Object method String() to ReplString() for clarity
+
+2023-12-27 - 0.13.0
+- added explicit distinction between pure and impure functions and restrictions on the use of impure values
+  Impure function declarations now require the impure keyword.
+- fixed bug causing extra appended zeroes on division
+- added Duration Objects and isDuration() and toDuration() functions
+- modified entering duration not to use dt// (date-time) token; use new d// token instead
+- duration strings now allow spaces between numbers and after the "T", and the "P" is optional (not strictly ISO)
+- date-time conversion from string can now convert from ISO short form (but long form still required for literals)
+- added -c command line option to test parsing and compiling a script without executing it
+- removed unused "case insensitive" mode from VM modes and all the places it propagated to
+- added Equal() and GreaterThan() to Object interface
+- simplified object.GreaterOrEqual()
+- removed non-list functionality from gcd(), lcm()
+- removed name() function
+- shortened internal function lexer.readAndInterpretWordToken()
+
+2023-12-13 - 0.12.7
+- added prop() function: returns hash of properties of a file or directory if it exists (and can be accessed) at the moment of execution; otherwise returns null
+- changed return value of write(), writeln(), writeErr(), writelnErr(), to be true if a string was written or null if zero-length string
+- removed execTh() (deprecated syntax in 0.12.6); use execTH()
+
+2023-04-07 - 0.12.6
+- updated date/time literals and duration literals to accept fractional seconds, with 1 to 9 digits after a decimal point
+- fixed default date/time conversion to string to include nanoseconds when present
+- added VM mode nowIncludesNano to determine if "now" should include nanoseconds (default false); previously would always include nanoseconds
+- removed deprecated syntax (from 0.12.5) for case alternate operator
+- changed execTh() to execTH() for consistency; deprecated using execTh()
+- updated execT() and execTH() to format error string newlines according to system
+- updated execT() to add the exit status code if returning an exception
+- added cd() command to change the working directory within a script; has no effect on parent processes; can't be done with execT() or execTH() since they create new processes
+
+2023-03-10 - 0.12.5
+- new syntax for alternate operator between case conditions, such as case[and]; deprecated old syntax
+  new syntax also allows for other types of infix operators between case conditions
+- updated lcase(), ucase() and tcase() to accept (and return) a code point integer, not just a string
+- conflated code for series() and pseries() functions
+- fixed bug in number/math.go toInt() function
+
+2023-02-17 - 0.12.4
+- updated truthiness checking of ...
+  number: zero value as non-truthy
+  string: zero-length string as non-truthy
+  regex: zero-length pattern as non-truthy
+  range: descending as non-truthy
+- updated building a range to throw an exception if not valid pair of values for a range
+- updated toNumber() to accept a numeric range and return a prospective count for an integer range (if were to be converted to an array of elements)
+- changed conversion of range to string not to include parentheses
+- some clean up of object package; added IsTruthy() directly to Object interface
+- dropped superfluous toBool() and toBoolOrNull() functions
+- dropped using to token in place of .. ; use .. only
+
+2023-02-05 - 0.12.3
+- updated toHash() to accept ranges in place of arrays
+- added exit status codes to system package
+- revised exit status codes in main() to be more specific, using system package
+- updated exit() to accept an optional second argument, which it writes to standard error, appending a newline, only if the exit code is non-zero
+- updated exit() to accept a Boolean in place of the code argument, true indicating success (code 0) and false indicating failure and returning a generic non-zero code specific to the system (Linux or Windows)
+- updated exit() to restrict status code within a range specific to the system
+- shortened internal bi_map() and mapMultiple() functions
+
+2023-01-25 - 0.12.2
+- allow variable expansion on decoupling assignment
+- (also in 0.5.16) changed ZLS token to zls
+- (also in 0.5.16) edit langur/cpoint/ to match dropping of escape codes \P and \L (in 0.12.0)
+- (also in 0.5.16) dropped where() function (deprecated in 0.11.2); use filter()
+
+2023-01-09 - 0.12.1
+- fix/clarify token parsing for calling built-ins without parentheses
+- updated toHash() function to pass through a hash
+- fix warning on number literals starting with 0 to only check integers
+- fix warning on integer literals starting with 0 with successive zeros
+
+2022-12-25 - 0.12.0
+- changed operator precedence (prefix minus lower than exponent) and stopped lexing minus into number literal so a minus sign is processed in a mathematician's way relative to an exponent
+- fix straight-up numeric negation as it is parsed; no need to evaluate it later
+- account for prefix operator token on first argument in calling built-in without parentheses
+- (also in 0.5.16) dropped escape codes \N, \P, and \L
+- added simple catch (using a colon instead of curly braces); doesn't allow catch else with simple catch
+- renamed if statement as simple if to reflect what it really is
+- generate error in parsing switch/given if last condition in a case is a nil right (partial) expression and there is no space between the operator and the colon (for clarity and for future proofing in case of operators using a colon)
+
+2022-10-06 - 0.11.5
+- fixed checking number literals starting with 0 not to give false warnings when using basex notation
+- set warn on number literals starting with 0 to default to true to avoid confusion with base 8 number literals (as used in other programming languages)
+- added options to disable warnings using lowercase w, such as -w0123 to disable checking for number literals starting with 0
+- slight clean up to object copying
+
+2022-10-02 - 0.11.4
+- curly braces required on catch (for syntax clarity)
+- fixed bug created in 0.11.0 with concatenation with combination operator optimization (this optimization disabled for now)
+
+2022-09-27 - 0.11.3
+- improved design and efficiency of calling built-in functions and doing callbacks on compiled code
+  moved built-ins to the process package (vm/process)
+  eliminates use of goroutine and call channels
+  pointer to the current frame on the process struct
+  eliminates copying of reference object slice on calling built-in functions, as this seems to have been no longer necessary
+
+2022-09-25 - 0.11.2
+- separated process struct and functions from vm package into vm/process
+- (also in 0.5.15) changed where() to filter(); deprecated use of where()
+- (also in 0.5.15) dropped superfluous built-in function bestTag()
+
+2022-09-07 - 0.11.1
+- allows passing a rounding selection to the round() function (from the _round hash) as a third parameter
+- fixed default rounding name from "half up" to "half away from 0" to match what it actually does
+
+2022-09-02 - 0.11.0
+- added rounding mode setting
+- changed default rounding to half up (was half even)
+- added switch expression (same as given expression, except that it defaults to case or, that is, testing that any condition is true)
+- array concatenation optimizations (especially with combination operator)
+- combination operator concatenation optimization for hashes and strings
+- use defer for frame release (ensure frames are released on panic)
+- fixed object.CopyAndReverseRefSlice() to not copy object references twice
+- dropped likely superfluous functions best(), bestkey(), good(), and wherekeys()
+- (also dropped wherekeys() in 0.5.15)
+
+2022-08-02 - 0.10.5
+- to reduce startup time, only builds system early/late bindings if used
+- limit string size returned for invalid command line flag
+
+2020-06-03 - 0.10.4
+- updated date-time literals to allow other ways to specify a current date-time in a specific time zone, such as dt(US/Arizona)
+
+2020-04-26 - 0.10.3
+- removed automatic conversion of strings to arrays in group(), groupby(), and groupbyH(); use s2cp() if you need
+
+2020-04-26 - 0.10.2
+- now using Go modules
+- fixed/clarified error messages for execT() and execTh()
+- concatenate null to number acts as no-op (consistent with other operations)
+- standardize true/false grouping result of group() function, putting true results first
+  This is similar to the standardization of results done in 0.9.3, but not related to passing a single argument to group().
+- fixed test for third argument type in replace() function
+- updated group() function to accept a string, converting it to an array of code points
+- added groupby() function, which includes the values used to determine grouping, building an array of arrays of arrays
+- added groupbyH() function, which includes the values used to determine grouping as hash keys
+
+2020-04-19 - 0.10.1
+- added toDateTime() function
+- fixed RFC3339 timestamp to use Z for UTC time
+- added ISO 8601 durations to date-time literals, which are converted to integers representing nanoseconds
+- added date-time addition/subtraction (nanoseconds), which is easily combined with use of durations
+- used Round(0) on some DateTime creation routines to ensure they are stripped of "monotonic clock" settings, which could cause errors
+- added option to use variable for date-time interpolation format string
+- updated concatenate range to string/string to range to take range as code points
+- updated concatenate range to null to generate string
+- updated concatenate null to convert number (code point) to string
+- removed 8 byte operand from opcode package
+
+2020-04-16 - 0.10.0
+This revision makes breaking changes to parsing multi-variable declarations and assignments.
+- multi-variable declaration/assignment no longer uses parentheses
+- multi-variable assignment limited to statement context or to the test expressions of if expressions
+  (single assignment still possible in expression context)
+- for loop init/increment sections parsed as multi-variable assignments, not as lists of assignments
+- given test expression cannot contain declarations
+- removed break with explicit value not using assignment operator (deprecated in 0.9.6)
+- removed explictly negated regex modifiers (deprecated in 0.9.4)
+- fixed lexing blockquotes on quoted word arrays to not require ending marker to start at beginning of line, as it is for strings
+
+2020-04-08 - 0.9.6
+- parse break with value using assignment operator
+  deprecated break with value not using assignment operator
+- concatenating to null now returns right-hand operand if it is a string, array, hash, or null, making for loop assignment even easier
+- updated parsing multi-variable declaration names to not require parentheses
+- updated parsing multi-variable assignment in statement context to not require parentheses on left side of the assignment
+- allowed block quotes for quoted word arrays
+- split parser into several files
+- replaced ParseTokens() function with ParseExpressionTokens()
+- improved reporting of interpolation number on string parsing errors
+- little parser improvements, removing unnecessary functions
+
+2020-04-05 - 0.9.5
+- removed now unnecessary check against ast.NodeContainsFirstScopeLevelDeclaration() in parseNonScopedGroupedExpression() method that creates a bug in parsing in 0.9
+- removed now unnecessary check for scope in function call
+
+2020-04-05 - 0.9.4
+- fixed to auto-negate all regex modifiers to make regex safe for interpolation into a regex literal
+  deprecated using explicitly negated modifiers, as no longer necessary
+- made time portion of date-time literal optional (defaults to midnight)
+- fixed error in regex for day portion used to verify date-time literal
+- fixed bug when indexing a non-indexable value and using an index alternate
+- return index alternate when indexing on null
+
+2020-04-02 - 0.9.3
+- added date-time interpolation modifier
+- added literal to get current date-time in a specified time zone (may be either offset or may be Z for UTC)
+- fully incorporated the regexp package (see REGEXP_README.md)
+- added free-spacing mode to re2
+- added esc modifier for re2 literals to escape all interpolations (instead of adding a modifier to each interpolation)
+- allowed an ending block quote marker to be spaced from the beginning of the line with tabs and spaces
+- standardized the result of group() when called with 1 argument (by truthiness) to always put true array first, then false array second, even if one or both is empty
+
+2020-03-26 - 0.9.2
+- revised toNumber() function to return Unix nanoseconds from a date-time, rather than seconds
+- revised console output functions to output date-time value without dt// tokens
+- updated keys() function to return array [1, 2] for a range
+
+2020-03-26 - 0.9.1
+- simplified lexing shorthand indexing by string
+- fixed parsing nil left partially implied functions such as f{-7} (looks like a negative number)
+- removed now unnecessary check for illegal use of semicolon in lists
+- removed now unnecessary check for parser levels and made small changes to accompany that
+- other lexer/parser clean up
+
+2020-03-25 - 0.9.0
+- limited declaration expression context to statement or to if/given expression tests
+  ... which means that fewer things can create variable scope and this potentially reduces confusion
+- fixed / clarified parsing statement lists vs. expression lists
+- added date-time objects/literals
+  literal syntax using a subset of ISO 8601, extended format only
+- added isDateTime() function
+- updated toHash() to convert a date-time to a hash and toString() to generate a timestamp or other date/time string, and toNumber() to generate a number representing Unix seconds (not nanoseconds) since January 1, 1970 UTC
+- added shorthand indexing by string using single quote mark on a variable; is limited to token code points
+  ex.: .abc'123 == .abc["123"]
+- added combination prefix operators not= and not?=
+- updated group(), all(), and any() functions to accept a single argument (test by truthiness)
+- added compiler check for expression on deciding whether to short-circuit an index alternate (statements, if allowed, must short-circuit there); This is not to say that statements are allowed in the alternate section (determined by the parser).
+- renamed ast.InlineDeclarationNode as ast.LineDeclarationNode to reflect it's more limited context
+- added *ast.LineDeclarationNode and *ast.AssignmentNode to the search for implied parameters
+- changed type string for COMPILED_CODE to COMPILED and BUILTIN_FUNCTION to BUILTIN
+- added check for HasScope in ast.SimplifyNode()
+
+2020-03-19 - 0.8.11
+- added parameter expansion (last parameter only) with ... operator
+  allows min/max expansion constraints
+- removed compiler check on argument/parameter count
+  was already limited, and now even more so; might be brought back later
+- updated where(), wherekeys(), and count() functions to accept a single argument, checking each value in the array or hash for truthiness
+- added nil left partially implied functions
+  example: f{x 3}
+- updated parsing spacing requirements on function literals
+  that is, using f{...} is reserved for special types of function definitions
+- updated reverse() function to reverse order of digits in a number
+- renamed token.NO_OP as token.NONE and ast.NoOpNode as ast.NoneNode
+- consolidated constants object.NO_DATA and object.NO_OP to object.NONE, but still pointing to object.NULL at this time
+
+2020-03-15 - 0.8.10
+- added built-in trigonometry functions sine(), cos(), tan(), atan()
+- added built-in function s2n()
+
+2020-03-12 - 0.8.9
+- added code point interpolation modifier
+- updated cp2s() to allow for embedding arrays, ranges, etc.
+  conceivably could have arrays of arrays representing grapheme clusters
+- added some missing node tests to ast/search.go
+- renamed ast.DeclarationNode as ast.InlineDeclarationNode
+- other minor fixes
+
+2020-03-05 - 0.8.8
+- added test for balance of LTR/RTL directional control code points for string literals and comments; does not check escape sequences in string literals
+- added missing directional code points to the list of those allowed in comments
+U+061C (ARABIC LETTER MARK), U+202B (RIGHT-TO-LEFT EMBEDDING), U+202E (RIGHT-TO-LEFT OVERRIDE), U+2066 (LEFT-TO-RIGHT ISOLATE), U+2067 (RIGHT-TO-LEFT ISOLATE), U+2068 (FIRST-STRONG ISOLATE), U+2069 (POP DIRECTIONAL ISOLATE), U+200F (RIGHT-TO-LEFT MARK)
+
+2020-03-01 - 0.8.7
+- added argument expansion (last argument only) with ... operator
+- added postfix operator parsing
+- changed root calculation iteration max to be relative to divMaxScale mode to make more flexible
+- removed parseUnboundedList() and updated parseExpressionList() to handle its task
+- separated prefixPrecedences map from infixPrecedences map
+- default to not print stack trace from main for an unhandled panic; note that the REPL, not being used from the command line so far, still asks if you want to print a stack trace
+- unified string/error generation from a panic, placing it in the object package
+
+2020-02-23 - 0.8.6
+- added built-in gcd() and lcm() functions
+- renamed OpIntDivide as OpTruncateDivide
+
+2020-02-13 - 0.8.5
+- added floor division operator //
+- allow an ASCII space on each side of an interpolation modifier for readability
+- allow an if statement to carry an expression, not just a flow-breaking statement
+- edited token rules to allow immediate opening parenthesis after tokens not, throw, return, break
+- checks for invalid use of parentheses on else if of catch block (resembling shortened form if expression)
+
+2020-02-12 - 0.8.4
+- changed default of base and hex interpolation modifiers to pad with spaces; precede number with 0 to pad with zeroes
+- updated fixed point interpolation modifier to allow padding with zeroes
+- fixed padding counts for interpolation modifiers to include the sign, if one present
+
+2020-02-10 - 0.8.3
+- added array multiplication
+- added built-in X() and mapX() functions
+- added built-in minmax() function, returning a range
+- made ranges indexable for reading or setting; can still use first() or last() functions to read them; len() returns 2 when given a range
+- updated map() to allow no-op functions with multiple arrays (passes through as array of values from each)
+- added fixed point interpolation modifier
+- updated hex and base interpolation modifiers to round fractionals instead throwing an exception
+- split ParameterCount field of CompiledCode objects into ParamMin and ParamMax
+
+2020-02-09 - 0.8.2
+- renamed nodiv operator as ndiv
+
+2020-02-09 - 0.8.1
+- added scientific notation interpolation modifier
+- updated hex and base interpolation modifiers to allow requirement of sign (use + on positive numbers)
+- added divisible by operator div and not divisible by operator nodiv (and the null-propagating operators div? and nodiv?)
+- allow for or while to start an unbounded argument list
+- removed noop keyword token, as it is not needed
+
+2020-02-05 - 0.8.0
+- changed decimal floating point implementation to arbitrary precision, using a slightly modified version of github.com/shopspring/decimal
+- as the new decimal library has no NaN or Infinity values, removed them from langur
+- removed built-in functions isInfinity(), isNaN(), isSpecial(), ns(), isNumType(), toNumType()
+- replaced isPosNumType() with isPos()
+- added VM mode setting ability (from source code); initially only settable at the program scope
+- added VM mode settings divMaxScale (default 33), consoleText (default true), and newFilePerm (default 8x664)
+- uses the while keyword for a 1 part (test only) loop instead of the for keyword, and default _while loop value variable
+- generally catch panics in parser or compiler and convert to errors
+- merged token types/descriptions into one set of constants
+
+2020-01-29 - 0.7.2
+- added use of *for of* over hash keys
+- added use of *for in* over hash values
+- changes to for in/of loop conversion for potential use with multiple loop variables
+- removed use of backslash to indicate to escape characters in interpolated value (deprecated since 0.6.8); use esc interpolation modifier instead
+
+2020-01-28 - 0.7.1
+- added if statements (if test followed by colon, followed by one statement on same line)
+- updated map() function to accept array of functions or no-ops
+- updated fold() and foldfrom() functions to accept array of functions
+- updated replace() function to accept array of strings, functions, or no-ops
+  with regex, cannot accept multiple strings for replacements (so far)
+- updated compiling arrays to accept no-op; currently equates to null, but that could change
+- added alternate noop token
+- added VM mode ConsoleTextMode defaulting to true
+- added helpful note with failure to resolve .err variable
+- updated compiler to generate an error rather than throw an exception for a node not accounted for in a given context
+
+2020-01-27 - 0.7.0
+- removed use of carriage return/line feed combination for new lines in source code (deprecated since 0.6.8); use ASCII line feed only
+- changed implicit exception variable from .err to _err
+- evaluate complex test expressions for given expressions once instead of on every case
+- made possible to set for loop value directly with _for variable
+- made possible to set for loop initial value/variable name
+- allow else if on catch with a small change to the parser
+- require opening curly brace after explicit exception variable name on catch
+- removed deprecated interpolation modifier methods
+- checks comments for non-token vertical space
+- fixed lockup bug in lexer when given carriage return without line feed
+
+2020-01-22 - 0.6.16
+- concatenating null now acts as a no-op (evaluates to left operand), instead of throwing an exception
+  Note that this is different than adding a null with the more() function.
+- changed lexing of interpolation modifier subsections enclosed in () [] or {}, allowing the same code points as the string, and escape codes if the string interprets escape codes
+- removed isNonScope parameter from NewSymbolTable() function; struct field set by compiler.pushNonScope() method directly instead
+
+2020-01-21 - 0.6.15
+- fixed compiler bug introduced in 0.6.8 (failure to deal with undefined variables in function call)
+- added number concatenation operation (builds string from 2 code points)
+- updated built-in zip() function to accept ranges in place of arrays
+- updated built-in series() function to return start value when the start value equals the stop value, regardless of whether the increment is positive or negative (but not for a zero increment)
+- removed setting vm.lastValue from vm.look() (on vm.pop() only)
+- split Process struct into VM and Process structs
+- renamed "vm" variables as "pr" to represent processes instead of the entire VM
+
+2020-01-20 - 0.6.14
+Note that 0.6 branched off after 0.5.9 and 0.5 is no longer maintained.
+This same fix will appear in 0.5.10, but not 0.6.0 to 0.6.13.
+- fixed bug in setting/retrieving non-local variables within try section of try/catch
+
+2020-01-19 - 0.6.13
+- fixed hex and custom base interpolation modifiers for negative numbers
+- updated built-in map(), fold(), foldfrom(), and cp2s() functions to accept ranges in place of arrays (don't have to call series() first)
+- updated built-in split() function to split by integer
+- updated built-in group() function to accept a negative integer to group "from the right"
+- modified/fixed built-in round() and truncate() functions ...
+  changed definition of max less than 0 to mean not to pad with extra trailing zeros rather than meaning to remove trailing zeroes; fixed so that they actually meet this definition
+- added round and truncate interpolation modifiers, with option to pad or not pad extra zeroes
+- changed custom base interpolation modifier to use basex notation for consistency with the rest of the language; deprecated old method
+- fixed cpoint.Display() to pad with zeros, not spaces, and moved to str.DisplayCp()
+- added 8 byte operand to opcode package, initially limited to positive range of signed int64
+
+2020-01-16 - 0.6.12
+- changed lexing of interpolations to read tokens directly, making it more flexible
+- changed alignment interpolation modifier alternate code point to be enclosed in parentheses instead of following comma following number; deprecated old use
+- added limit string length interpolation modifier
+- added test for vertical space characters in interpolation modifiers
+- added test for illegal characters in interpolated section
+
+2020-01-14 - 0.6.11
+- updated built-in split() and join() functions to accept a single argument (defaulting delimiter to ZLS)
+- updated built-in replace() function to accept two arguments, with replacement defaulting to ZLS
+- allowed/confined to scope declarations in index expressions
+- fixed bug in parsing assignments containing scoped variable of same name as variable assigned to
+- updated parsing combination operations to remove index alternate from restructured left expression
+- for comments, re-enabled allowing PUA code points
+  also an invisible "spaces" list: U+180E (MONGOLIAN VOWEL SEPARATOR), U+200B (ZERO WIDTH SPACE), U+200C (ZERO WIDTH NON-JOINER), U+200D (ZERO WIDTH JOINER), U+200E (LEFT-TO-RIGHT MARK), U+202A (LEFT-TO-RIGHT EMBEDDING), U+202C (POP DIRECTIONAL FORMATTING), U+202D (LEFT-TO-RIGHT OVERRIDE), U+2060 (WORD JOINER)
+  The idea around the "allowed" characters is to keep source code from having hidden text or codes and to allay confusion and deception. There may be more code points that need to be allowed.
+
+2020-01-13 - 0.6.10
+- fixed bug (failure to compile) in creating operator implied functions when directly assigned to a variable with the same name as an internal parameter name
+- added 3 interpolation modifiers: custom formatting function, custom base, type
+- confined to scope any declarations within interpolations, arrays, and hashes
+- disallowed declarations within index expressions and non-scoped expressions grouped by parentheses
+
+2020-01-12 - 0.6.9
+Simplify, simplify, ....
+- replaced the pua modifier for string/regex literals with an any modifier
+- removed the pua modifier from quoted word arrays
+
+2020-01-12 - 0.6.8
+- deprecated use of Windows line endings in source code (always use Linux line endings)
+- deprecated using opening slash as indicator to escape meta-characters in interpolated value (see below)
+- added interpolation modifiers
+  esc: escapes regex meta-characters or plain string
+  Xnum or xnum: convert to uppercase/lowercase hexadecimal string, with optional minimum digits
+  align,cp: alignment, with default padding by ASCII space, or specify another code point by single character or by hexadecimal code
+- added string/regex/quoted word array modifier pua, optionally allowing PUA code points
+- putting function to call onto stack after arguments instead of before, making it easier to process interpolation modifiers
+- eliminated opcode OpEscString (now using OpFormat)
+- added re2 modifier negation (using ASCII hyphen-minus as prefix on mode modifier)
+  may be useful if a regex could be interpolated into another
+
+2020-01-09 - 0.6.7
+- fixed bug in lexing interpolation sections containing double quote, single quote, or forward slash
+
+2020-01-09 - 0.6.6
+- updated lexer to catch panics (such as invalid UTF-8 encoding) and return errors
+- added infix operator implied functions
+  note: no spacing allowed between tokens of operator implied functions
+  fold f .x + .y, .arr
+    ... may be shortened to ...
+  fold f{+}, .arr
+- disallowed PUA code points for strings, comments, and quoted word array literals
+  to make options later to allow these and other code points
+- updated token.IsInfixOp() to include CONCATENATE and RANGE
+- updated allowed tokens for combination operators to include RANGE
+- moved parser.inTokenTypeSlice() to token.InTypeSlice()
+- moved some token rules from the parser to the token package, where they belong
+- renamed parser.parseCallExpression() as parser.parseParenthesizedCallExpression()
+
+2020-01-08 - 0.6.5
+- updated replace() to accept a function to generate the replacement string section from
+- changed implementation of re2 modes to use (?modes:pattern) instead of (?modes)pattern
+- simplified modes.CompileModesFromArgs() (not related to re2 modes mentioned above)
+- updated lexing interpolated string sections for specific scoping of nested marks {} [] () etc.
+- updated lexing interpolated string sections to claim colon for interpolation options for future development
+- removed MACOS constant from system package (add later if necessary)
+
+2020-01-06 - 0.6.4 (*mostly* an update for Windows, which was previously untested)
+- fixed execT() and execTh() to work with Windows
+- fixed errors in the langur/str package, such as the LimitRight() method
+- updated command line options for Windows to /e, /W0123, /Wlookalike, and /?
+- fixed langur/str.SysNewLine for Windows
+  It appears fmt.Sprintln() does not return a new line based on the system in use.
+- kind of a fix (limited) in the opcode package testing operand widths to accomodate 32-bit systems
+- added langur/system package
+
+2020-01-05 - 0.6.3
+- added a missing error check to mapMultiple(), called by built-in map() (see if invalid types passed)
+- added built-in submatchH() function, returning a hash of the whole match and submatches
+- added built-in submatchesH() function, returning an array of hashes of whole matches and submatches
+- added built-in function zip()
+- added built-in functions s2b() and b2s() to convert directly between langur strings and UTF-8 arrays
+- changed parsing of parameter list to make more flexible and specific
+- changed compiling parameter list to match changes in parser
+- renamed vm.VM struct as vm.Process and globalFrame as startFrame, ByteCode.GlobalCode as ByteCode.StartCode
+- added command line option -e to execute string instead of script file
+- added command line option -W0123 to warn on number literals starting with 0 (might be confused for base 8 literals)
+- added command line option -Wlookalike to warn on lookalike variables used
+- added command line option --help
+
+2020-01-01 - 0.6.2
+- fixed indexing string with Unicode, such as for s2cp() function (was checking byte length instead of code point length in object.indexString() method)
+- fixed bad type assertion in parser.fixNameInFunctionAssignment()
+- fixed bad type assertion in ast.NodeContainsVariableName()
+
+2019-12-30 - 0.6.1
+- disabled block quotes on w and W tokens
+- updated compiler and parser to allow mutable parameters by using a var token preceding mutable parameters
+- removed test for duplicate parameters from parser (will be caught by compiler symbol table declarations)
+- added test for escaping null character (as quote mark) within block quote (not allowed)
+
+2019-12-29 - 0.6.0
+- added blockquotes using a modifier on q, Q, w, W, re, or RE tokens, such as q:block END ... END (similar to a "HEREDOC")
+  The ending marker must be on a line by itself, with no spacing around it.
+- removed use of * or ! for string literal quote marks (deprecated in 0.5.9)
+- added lexing for string/regex modifiers
+- added modifiers for re2 regex: i, s, m, U
+  see https://github.com/google/re2/wiki/Syntax
+- moved test for illegal use of backslash as quote mark with escapes or interpolations to Lexer.readStringLiteral() and Lexer.readQuotedWordArrayLiteral()
+- added token.Closer() to determine matching closer for an opening token (to parse things with multiple possible openers/closers)
+- updated parsing hash literals to allow square brackets, so you can use h{} or h[]
+- renamed vm.Run() as vm.RunProcess(), vm.New() as vm.NewProcess(), vm.NewWithGlobalStore() as vm.NewProcessWithGlobalStore()
+- added ability to pass in modes to vm.NewProcess() and vm.NewProcessWithGlobalStore(), and to compiler.New() and compiler.NewWithState() (nil for new default mode sets)
+- updated compiler.sameConstant() to use object.Equal() with "same" parameter set to true to do most comparisons, since it already does them
+  This function already compares hashes and array, so if the compiler should build them in the future, it will do these comparisons, as well.
+- disallowed anything but a variable to be used as a lone token in an interpolation
+- updated rotate() function to rotate a number within a range
+
+2019-12-27 - 0.5.9 (same source files as 0.5.8)
+- deprecated use of * or ! for string literal quote marks (as q** or q!!)
+
+2019-12-22 - 0.5.8
+- added to quote mark pairs allowed: q!! q**
+- changed code point literals to only accept bare code points that are allowed in string literals (otherwise must use escape code)
+- added suggested escape codes to code point not allowed errors
+- changed internal implementation of langur hash objects; made them collision safe by using a slice internally
+- fixed hash key comparison for removal of specific entries (used by less() function)
+- changed internal implementation of ast.HashNode.Pairs to a slice, since the parser is not the place to check for duplicates
+- in ast.NodeContainsFirstScopeLevelDeclaration(), ast.findVariableNames(), and ast.NodeContainsVariableName(), fixed cases for ArrayNode and HashNode to use recursion rather than assume the immediate node is the thing to check
+- added vm mode GoPanicToLangurException (default true)
+- moved compile options from the args package to the modes package and updated the compiler and symbol_table packages accordingly
+
+2019-12-19 - 0.5.7
+- changed w// literal to allow escape codes and added W// literal, not allowing escape codes
+- fixed checking for langur compiler arguments not to confuse script name/compiler args (though compiler args still unused)
+- updated execT() to not accept second argument for returning a hash (deprecated in 0.5.5); use execTh() to return a hash
+- removed ability to use Boolean for hash key (deprecated in 0.5.5); use strings or numbers only
+
+2019-12-18 - 0.5.6
+- removed quoted array a// literals; possibly to add later with parser implementation instead of the lexer
+
+2019-12-17 - 0.5.5
+- added quoted word array w// and quoted array a// literals, which are semantically convenient for building arrays
+- deprecated use of Boolean key on hashes (to be removed)
+- added execTh() to specifically return a hash instead of using execT()
+- deprecated use of execT() with a Boolean argument to return a hash; use execTh() instead
+- fixed printing negative basex numbers in REPL (put sign in front of base)
+- updated args package to check for compiler arguments, though none are used yet
+
+2019-12-15 - 0.5.4
+- updated best() and bestkey() to allow optional alternate value to return when given an empty array, hash, or string (instead of an exception)
+- added opcode.MakeWithErrorTest(), to test for things that are not a bug but a limitation, such as too many local variables; most compiler code still uses Make()
+- added parser level slice, including Program, List, Block, and Function
+- check parser level to disallow within list level an explicit semicolon at end of line or implicit expression terminator, which fixes some parsing issues
+- disallowed implicit block within list
+- removed restriction on using block within list
+- revised parser.parseUnboundedList() to use parser.appendListNode(), checking for statements within list
+
+2019-12-09 - 0.5.3
+- added built-in functions: best(), bestkey(), and wherekeys()
+- updated sort() to possibly accept a function that accepts "unlimited" arguments by choosing to pass it 2 arguments
+- disallowed user reading of internal system variable names beginning and ending with underscore
+- removed check for nil in vm.callBuiltIn(); built-ins shouldn't return nil
+- fixed less() to remove code points instead of bytes when used with strings
+- updated less() with option to remove specific indices from arrays or strings, like it already does with hashes
+
+2019-12-05 - 0.5.2
+- added count() built-in function; works like where(), but returns a number
+- added rotate() built-in function to rotate an array
+
+2019-11-25 - 0.5.1
+- changed parsing catch, removing from prefix parse functions list to prevent potential problems
+  A catch in langur is neither an expression nor a statement. It is part of a try/catch, with try implied.
+- fixed failure to account for catch else section when fixing opcode jumps
+- fixed failure to account for jump relay for break with value
+- added Value field to jumpRelay struct
+- set Value field on jumpRelay struct for unconditional relay (OpJumpRelay)
+
+2019-11-24 - 0.5.0
+- added optional else block to try/catch when using block syntax (else block runs only if there is no exception)
+- added break with value to for loops
+- for alternate conditions on given expression, fixed discrepancy between stated default operator and actual default (should be "and" in all cases)
+- updated given expressions to allow multiple conditions with 1 test expression (all conditions tested against same expression)
+  To make this work like a switch in other languages, use "case or" since the default logical operator between tests is "and".
+- made parameters immutable again
+- added mid() and mean() built-in functions
+
+2019-11-18 - 0.4.34
+- made parameters mutable
+- renamed COMPILED_FUNCTION_OBJ as COMPILED_CODE_OBJ to match actual broader use
+- removed caseInsensitive option from resove() and resolveSymbol() methods for symbol tables
+  was not being used and was not consistent with define methods
+- renamed symbol table methods define() as defineUserVariable() and defineSystem() as defineSystemVariable()
+- modified vm.callBuiltIn() and vm.executeFunctionCall() to return a value rather than pushing it to the stack
+- modified compiler.fixJumps() to be more useful and eliminated fixFailedTestJumps()
+
+2019-11-07 - 0.4.33
+- fixed closures clobbering each other's free slice when multiple definitions with multiple assignments on a single CompiledCode object
+- removed "leq" token (deprecated in 0.4.31 for "nxor" token)
+- changed method of stringification for interpolated string value when using OpEscString to not require an OpString first
+
+2019-10-27 - 0.4.32
+- updated more() to work with hashes; throws if duplicate hash keys present (use concatenation instead if you want to overwrite values where there are duplicate keys)
+- fixed parser to disallow explicit blocks within lists (better to get parsing error than a VM error)
+- updated parser to disallow statements within lists (such as break/next/return)
+- updated REPL to replace Unicode 2029 and 2028 characters to allow pasting input with line returns from text editors which generate Unicode line returns when copying text
+- fixed internal str.PadLeft and str.PadRight to check code point length, not byte length
+
+2019-10-13 - 0.4.31
+- added logical operators "nand" and "nor"
+  These operators short-circuit like "and" and "or".
+- added "nxor" token for logical equivalence and deprecated use of "leq" token for "nxor" token
+- updated min() and max() functions to work with any array or hash element values comparable with greater than operator (not just numbers in arrays and hashes)
+- added check for duplicate keys in building hashes
+- modified join() to use strings.Builder
+
+2019-10-06 - 0.4.30
+- in arr() function, check that integer is not less than 0 (potential bug)
+- fixed bug in hash.WritePair re. preformatting a number string for uniformity
+- modified random() function to use crypto/rand instead of math/rand
+  removed seed() function as it no longer has a purpose
+- updated random() function to also accept an array, hash, or string and return 1 element (code point for string)
+- updated reverse() function to reverse hash keys/values
+
+2019-09-29 - 0.4.29
+- instead of sending a receive result channel to a built-in function call, receive the receive result channel from it
+- in vm.newFrame(), set fr.locals = nil when code.LocalBindingsCount == 0
+- in vm.releaseFrame(), set fr.base = nil
+- changed OpScope to OpExecute to match the action to the name
+- simplified executeIndexOperation() by adding useAlternate Boolean to return values of object index functions
+- added out of range error to *Number case of indexString()
+  While this should have been included, it had not caused problems, as the invalid index was caught through other means.
+- moved adding true or false to node slices setResultsNodes and setNonResultsNodes from compiler functions to ast.MakeDecouplingAssignment()
+
+2019-09-23 - 0.4.28
+- check for negative increment on pseries() to ensure it doesn't lock up
+- removed vm.globals; using "locals" slice on global frame
+- added check for function name in catching panic in VM instruction loop for conversion to langur exception
+- in vm.releaseFrame(), set locals slice objects to object.NO_DATA instead of nil
+- changed modes.Modes to modes.VmModes
+
+2019-09-20 - 0.4.27
+- removed object.JumpRelay and replaced with vm.jumpRelay
+- eliminated pushNonReturn value and changed return values on vm.runFrame() and accompanying methods to use a jump relay directly
+- moved adding late-binding values from newFrame() to runFrame() after determining the stack pointer position (necessitated by the change to using a general stack in the previous release)
+- changed from vm.doLateBindings() to vm.gatherLateBindings() to pass to runFrame() for the global frame
+- changed precedenceCALL and precedenceINDEX to precedenceAFTER
+
+2019-09-20 - 0.4.26
+- brought back the general object stack, instead of using object stacks on each frame
+  locals still carried by frames and likely to stay there
+- removed resetModes from frame struct since it is not yet implemented
+- removed "Free" field from tokens, as it died some time back
+- clarification of token rules
+  - removed token.IsAlphaNumeric()
+  - added token.MayPrecedeOpeningBracketWithoutSpacing()
+
+2019-09-18 - 0.4.25
+- updated internal built-in _values(), which is used for for in loops, to use int64 internally and not accept floating point
+- removed the now unused compiler.writeBytes() and compiler.changeOperand()
+
+2019-09-17 - 0.4.24
+- removed compiler.builtInsSymbolTable as built-ins don't need a symbol table
+  This sped up the compiler, since it doesn't have to initialize a symbol table with built-ins first.
+- changed REPL list command to not list internal built-ins (those starting with underscore)
+- simplified ast conversion of for in/of loops
+  They also no longer accept decimal numbers or ranges (integers only), as decimal numbers are unclear for this purpose.
+- added internal built-ins _values() and _limit() to use for for in/of loops
+- changed for of loop conversion to use a limit rather than build an unnecessary array
+  This should make for of loops more efficient.
+- initial setup for langur modes
+  not fully implemented yet, as there is not yet a way to change them from source code
+- added *ThrowNode and *ReturnNode to the list in ast.EndsWithDefiniteJump() to not add extra jump opcodes in the compiler
+- with these additions, had to update compiler.fixTestFailedJumps() to accomodate possibility of no jump
+- disallowed return statements outside of functions
+- fixed inconsistencies and omissions in the ast search functions findVariableNames(), NodeContainsFirstScopeLevelDeclaration(), and NodeContainsVariableName()
+- added noValueIns variable to compiler (compiled once and reused)
+- in compiler.compileFunctionNode(), improved and simplified determination of whether to add opcode.OpReturnValue to end of body of function
+- removed Instructions.LastOpCode() since it is no longer in use
+- removed now dead vm.callCompiledFunctionExternally(); using vm.runCompiledCode()
+- removed deprecated argMax() and argMin(); use max() and min() instead
+- return to using GlobalBindingsCount on ByteCode struct
+
+2019-09-12 - 0.4.23
+- check for invalid UTF-8 encoding in cpoint.Decode()
+- added Unicode Private Use Areas to allowed characters for comments and string literals
+- updated min() and max() functions to accept array, hash, range, string, or function (originally just arrays)
+  for string, returns lowest or highest code point number
+  for function, returns lowest or highest parameter count (-1 for no maximum)
+- deprecated argMin() and argMax(); use min() and max() instead
+- removed rounding of decimals used for string multiplication
+
+2019-09-11 - 0.4.22
+- brought back the 1 part for loop
+- updated keys() function to accept arrays and strings to return a series of indices (always 1-based indices)
+- changed escaping langur strings to also use the \x form
+- restricted allowed characters in string literals to tab (0x09), line feed (0x0A), carriage return (0x0D), or as determined from unicode.IsGraphic()
+- fixed some regex stringification
+- added compiler.wrapInstructions() to wrap without creating an OpScope opcode (just returns index)
+- in numbers package, fixed number copy test
+- in numbers package, changed from using dec.Quad type directly to using an alias
+  type decType = dec.Quad
+- in numbers package, fixed constant int32Max
+- removed deprecated cpToString(), stringToCp(), and keyExists(); use cp2s(), s2cp(), and haskey() instead
+
+2019-09-10 - 0.4.21
+- changed code points to include when escaping langur strings, using the Go determination from unicode.IsPrint()
+- restricted allowed characters in comments to tab (0x09), line feed (0x0A), carriage return (0x0D), or as determined from unicode.IsGraphic()
+- improved reporting of line/position when an error occurs parsing a string literal
+- changed VM options on REPL to raw/langur escaped/Go escaped
+- changed string multiplication to treat negative numbers as 0 and round floating point numbers to integers
+- expanded ast.NodeContainsVariableName() to check within functions (sometimes)
+- check for in/of loop over expression for loop control variable (not allowed)
+- removed moreReflection constant from object package
+  CompiledCode.String() for the REPL gives pointer addresses.
+  CompiledCode.LangurString() does not.
+- since object.CompiledCode now has a field for IsFunction...
+  removed redundant isFunction field from frame struct
+  ... and stopped passing extra Boolean in runCompiledCode() and newFrame()
+- removed isScope field from frame struct
+  testing fr.code.LocalBindingsCount > 0 instead of fr.isScope
+  ... and stopped passing extra Boolean in runCompiledCode() and newFrame()
+- removed withDot parameter from frame.getFnName()
+- removed unneeded frame.Instructions() method
+- in vm.releaseFrame(), set fr.lastValue = nil
+  in case it allows more memory to be freed by the Go garbage collector
+  in case it's relevant to security
+- added speed testing ability to VM tests
+- added String() to Object interface and all objects for better printing in the REPL and clear separation from values returned to a user in non-REPL situations, which use the LangurString() method
+- fixed str.LimitRight(), str.SubStr(), and str.Array() to use 1-based position for start parameter
+
+2019-09-08 - 0.4.20
+Much of this update deals with internal and external string handling.
+- changed string indexing to return code point or array of code points, instead of a string
+- added s2s() - string to string (index string and return a string)
+- deprecated stringToCp() for s2cp() and cpToString() for cp2s()
+- deprecated keyExists() for haskey()
+  haskey() works with hashes, arrays, and strings; also works with all index types (integer, range, or array of such)
+- updated str package with Escape() vs. EscapeGo() functions to escape as langur or Go strings, repectively
+  TODO: determine more code points/ranges to escape to long form for langur strings
+- changed object.NewRegexByOpCode() and object.EscStringByOpCode() to defer to other functions for uniformity
+- changed object.EscString() to use str.Escape() to escape langur codes
+  This changes plain string escapes in string interpolations.
+- changed regex.RegexType and added String() method
+  type RegexType = string
+    ... to ...
+  type RegexType int
+- reduced steps necessary to convert number to series at runtime in for in/of loop when known to be a number at compile-time
+- changed ByteCode to use a CompiledCode object to pass instructions and global bindings count from compiler to VM
+- changed object.Inspect() interface method to object.LangurString() for clarity
+- added String() method to CompiledCode objects to improve printing in the REPL
+  This is not for use in returning a string to the user outside of printing in the REPL. Use the object.LangurString() method for that.
+- removed dead compiler.compileDeclarations() method
+- removed unused str.IsSubStringAtPos() and str.CpLen() functions
+- renamed str.CpStrLimitR() as str.LimitRight(),  str.CpSubStr() as str.SubStr(), str.CpArray() as str.Array()
+
+2019-09-04 - 0.4.19
+- changed parsing of for loops again to change implicit for of loops to non-variable for of loops
+  for .i { ... }
+  ... becomes ...
+  for of .i { ... }
+
+2019-09-04 - 0.4.18
+- changed parsing for loops to make implicit for of loops more flexible (use general expressions)
+- added min() and max() functions
+- removed lTrim() and rTrim(), which were deprecated in 0.4.15; use ltrim() and rtrim() instead
+
+2019-09-03 - 0.4.17
+- added option to execT() function to return a hash instead of just a result or exception
+- added for in/of loop over number/number variable (implicit range)
+  Ex.: .x = 7; for .i in .x { ... }
+- added more implicit for of loop types: now may use range (as of 0.4.15), number (implicit range), or variable (of a range, number, string, or array)
+  Examples...
+  for 1..7 { ... }
+  for 7 { ... }
+  for .i { ... }
+- modified series() and pseries() to accept number as implicit range
+- fixed check for sameness between signaling NaN and quiet NaN (not the same)
+
+2019-09-02 - 0.4.16
+- made combination operators work with indexed assignments by moving most of the work from the lexer to the parser
+- added arr() function to generate an array of set size with each element set to a specific value
+- added pseries() function, which is like series(), but returns a positive series or an empty array
+- changed implicit/explicit for of over range to not loop over negative range (a for in loop still will)
+- tweaked seed() function to return Boolean rather than the seed number
+- set automatic random seed at startup
+- removed redundant code from core exponent function
+
+2019-09-01 - 0.4.15
+- set 0 ^ 0 == 1 instead of 0 (see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero)
+- eliminated "1 part" for loop (test only); use 3 part with empty init and increment sections instead
+- added for loop over range (without explicit variable)
+- added random() and seed() functions
+- deprecated lTrim() and rTrim() for ltrim() and rtrim()
+
+2019-08-30 - 0.4.14
+- modified lcase(), tcase(), and ucase() to not accept code points (strings only)
+- removed push() and pop() (deprecated since 0.4.11); use more() and less() instead
+- removed case-insensitivity of built-in function names
+
+2019-08-28 - 0.4.13
+- auto-stringification of array values by join() function
+- add function name as source when throwing without a source otherwise set
+- tweaked any() and all() functions to return null when given an empty array or hash (instead of false)
+  This is still a "not truthy" result. Used in an if expression, the result of null is the same as false.
+- removed use of // for remainder (deprecated since 0.4.8); use "rem" token instead
+- fixed parser lock-up on incorrect use of infix parentheses or square brackets, and on unknown regex type or bad string interpolations
+- fixed accounting of line number and code point position when sub-lexing (for error reporting)
+
+2019-08-27 - 0.4.12
+- rewrite compilation of if/else (and given) expressions
+  This also required minor changes to the parser and AST, and another opcode (OpJumpRelayIfNotTruthy).
+  This was to ...
+  - change scoping methods on if/else expressions (and given expressions) to make them more logical/useful
+    Now, these are scoped per section. Previously, they were scoped as a whole and then each action block if it contained declarations would be scoped as well.
+  - make it possible to fallthrough from any part of a given expression block (not just the end of a block)
+- improvement to printing bytecode constants in the REPL so you get a better picture of what's happening
+- added check for empty given expression (not allowed)
+- fixed some ridiculousness in for loop compilation
+- removed some extra (redundant) jump opcodes that would never be reached
+
+2019-08-21 - 0.4.11
+- added decoupling assignments (assign array to multiple values)
+  returns Boolean indicating whether the values were set or not
+  Example: if (.name1, .name2) = matches(RE/\w+/, .strOfNames) {}
+- deprecated use of push() and pop(), as these names are confusing
+  These create new values, instead of modifying the original.
+  Use the new names more() and less() instead.
+- checks for base less than 2 in basex literals (no 0x123)
+
+2019-08-21 - 0.4.10
+- added multiple assignment of variables
+  (.x, .y) = (.y, .x)
+- ensure we only copy the slice of references when we generate a new array or hash for setting an object index value
+- added ability to assign to indexed string value
+  may set by code point number or by a string (taking the first code point only)
+
+2019-08-18 - 0.4.9
+- added ability to assign to indexed values of arrays and hashes
+- fixed broken accounting of line numbers (for error reporting) when multi-line string literals are used
+- improvements to catching parsing and compilation errors
+- variable parsing improvements
+- added Copy() method to each Object type
+
+2019-08-15 - 0.4.8
+- added "rem" token for use as remainder operator instead of double slash (//)
+  deprecated use of // as remainder operator (to be removed later)
+  (less confusion likely)
+- clarification of some token rules
+- removed permute() function (Is it useful?)
+
+2019-08-14 - 0.4.7
+- fixed string/code point concatenation
+- clean a frame object's stacks when a frame is released, rather than when it is reused
+- changed number package to use pointers to Num{} struct
+
+2019-08-14 - 0.4.6
+- fixed use of scope embedded break/next statements
+- changed accounting for break/next statements in the compiler
+  A compile error is better than an avoidable VM exception.
+- sped up about 30% by managing a stack of frames and a tiny bit of management of the object stack on the frame itself (fewer memory allocations)
+  (takes about 2/3 of the time as 0.4.5 to do the same tasks)
+- added combination operators for infix logical operators (and=, or=, xor=, and?=, or?=, etc.)
+- changed try/catch to use 2 operands rather than pushing frames onto a stack for no reason
+
+2019-08-12 - 0.4.5
+- fixed fallthrough to default
+- fixed treating "fallthrough" as an expression (is a statement)
+- fixed WarnOnNumberLiteralsStartingWithZero (was warning on 0.0 and such)
+- disabled WarnOnNumberLiteralsStartingWithZero
+
+2019-08-11 - 0.4.4
+- added break and next to for loops
+- added combination operators +=, /=, etc. (for math operators and the concatenate operator)
+- added optional warnings to compiler (errors since there is no warning system)
+  - added warning (optonal; disabled) on lookalike variables because of lowercase L and number 1
+    In some fonts, you can't tell the difference, or you have to strain at it.
+  - added warning (optonal; enabled) on number literals starting with 0
+    (might be confused for a base 8 literal, as used in other languages)
+    A base 8 literal in langur would start with 8x.
+- fixed ast printing assignment token representations as system assignments when they aren't
+- added check for variable used within it's own declaration (invalid)
+
+2019-08-08 - 0.4.3
+- on for in/of loops, added ability to use range directly (converted to an array series internally)
+- on for in/of loops, added pre-check for array, string, or range
+  only runs check at run-time if it cannot determine at compile-time
+- updated parsing 3 part for loops to allow multiple increment values
+- fixed all() function to return false when given an empty array or hash
+- Previously, the sort() function required a 2 parameter function, returning true or false.
+  Using the less than operator to compare, ...
+  - updated to be able to sort with a function that accepts a single parameter, such as the len function
+  - updated to be able to sort without a function
+- fixed treating "throw" as an expression (is a statement)
+
+2019-08-07 - 0.4.2
+- added 5 types of for loops (but no break or continue yet)
+  Loops have scope.
+  A "for of" loop gives *index* values and a "for in" loop gives the *indexed* values.
+  - unlimited: for {}
+  - 1 part   : for test {}
+  - 3 part   : for init; test; increment {}
+  - for in   : for .x in .y {}
+  - for of   : for .x of .y {}
+- declarations (and assignments) in given test expressions now extracted and moved in front with the given placed into a scope block
+  This means that the declaration and assignment happens once, rather than on each test.
+- throw within catch block no longer requires you to specify what to throw (implicitly throws the error that was caught)
+- added modulus operator "mod"; returns different result than remainder for negative dividends
+- added all() function: returns Boolean indicating whether a validation function or regex returns true for all elements of an array or hash
+
+2019-08-02 - 0.4.1
+- check for declarations before wrapping expressions with scope (an efficiency improvement)
+- added scope to each action block of if/given expressions
+  This is different than scope for an entire if/given expression (which applies to condition tests).
+- added scope to function calls
+- allow .i-1 so you don't have to write .i - 1
+- allow val or var token to start an unbounded argument list
+- disallow numbers preceding opening parenthesis without spacing (allay potential confusion)
+- added any() function: returns Boolean indicating whether a validation function or regex returns true for any elements of an array or hash
+- changed REPL to print even if there are errors (sometimes)
+- moved node conversion from parser to ast where it belongs
+
+2019-07-31 - 0.4.0
+- added means for more variable scoping (not just functions)
+  added scoping to generic {} blocks (but not all {} braces indicate scoping)
+  added scoping for if/given expressions
+  added scoping to catch blocks (but not try)
+  (A positive side effect of adding scoping to catch blocks is that you can reuse the same error variable name within nested try/catch.)
+- fixed VM bug with function return values
+- added/enabled catching Go panics and converting them to langur exceptions
+  This still does not work with out-of-memory (OOM) errors. As a concise explanation, someone wrote "All OOM conditions terminate a Go program."
+- added permute() function to generate an array of arrays of all possible orders from a given array (currently with a 10 object maximum)
+- disallowed use of array after a word token with no spacing (as it looks like indexing)
+- removed skipping a BOM to discourage its use, since a BOM causes trouble with shells (fail to read a shebang line)
+
+2019-07-18 - 0.3.6 alpha
+- added group() function to group array elements into separate arrays
+- updated checking for sameness so that 1.0 is different than 1 (but they are still equal)
+  This affects composite comparisons.
+
+2019-06-20 - 0.3.5 alpha
+- added indexing by arrays for arrays, strings, and hashes
+- recognize integer x string (not just string x integer) for string multiplication
+
+2019-06-05 - 0.3.4 alpha
+- changed comparison of arrays, hashes, and ranges so that composite things containing NaN may compare as equal
+- changed interpolation to require $ at beginning of string or regex
+- fixed escaping of non-string values in interpolations
+- made it possible to use built-in functions case-insensitive
+  Variables and keywords are still case-sensitive.
+- updated functions to work with plain strings (not just regex): matching(), index(), indices()
+- added string x integer (multiply string) operation
+- added functions: lTrim(), rTrim()
+- modified pop() function to accept hash and a key or array of keys to remove
+  does not throw on keys not present (including invalid keys)
+- disallowed explicit fallthrough in shortened form given expression
+- disallowed spacing between opening interpolation marker and escaping indicator
+
+2019-05-26 - 0.3.3 alpha
+- added shortened form if expression
+  if test1 { 1 } else if test2 { 2 } else { 3 }
+  ... becomes ...
+  if(test1: 1; test2: 2; 3)
+- added shortened form given expression
+  given .x { case 100: 1; case 200: 2; case 300: 3; default: 4}
+  ... becomes ...
+  given(.x; 100: 1; 200: 2; 300: 3; 4)
+  This is more limited than the full version, but certainly shorter.
+- changes to toBool() and toBoolOrNull() to account for all langur object types
+- added string normalization functions: nfc(), nfd(), nfkc(), nfkd()
+- added self-reference token "self" making it possible to use recursion in anonymous functions
+  Using this token also makes it possible to combine recursion and implied parameters.
+- disallowed use of an opening parenthesis without spacing after certain tokens (tokens so far not defined with any functional syntax)
+- disallowed spacing between a token and an opening parenthesis used in a call expression
+- disallowed spacing between a token and an opening bracket used in an index expression
+
+2019-05-23 - 0.3.2 alpha
+This release mostly fixes "little" nagging issues.
+- for implied parameters, added test for function name in call node
+  With this addition, we can no longer use implied parameters with recursion, but it's probably better, as it is more consistent.
+- changed so that 0 is truthy (number type truthy, including Infinity, but not NaN)
+  "Truthiness" is used in a conditional test, such as in an if or given expression, or as part of a "logical" operation.
+  In C, you need 0 to be not truthy, because integers are used in C for Booleans.
+  Note that this differs from the effect of the toBool() and toBoolOrNull() functions.
+- ranges always truthy
+- changed effect of toBool() and toBoolOrNull() to account for variations in strings and regexes
+  With strings, they check if the string is "TRUE", etc. in a case insensitive manner. If this fails, they attempt conversion of the string to a number for testing.
+  With regex, they ask if the pattern length is 0 (false) or more than 0 (true).
+- changed hash keys to always use the simplified form, so a key of 1.0 is the same as 1 (but 1.1 is still different than 1)
+- disallowed number hash keys requiring e-notation (until/unless this can be clarified)
+- updated functions to defer to the object package to build new hashes: map(), where()
+- added function toHash(), which takes 1 or 2 arrays to build a new hash
+- shortened verbose function names: execTrusted() to execT(), isPositiveNumberType() to isPosNumType(), isNumberType() to isNumType(), toNumberType() to toNumType()
+
+2019-05-16 - 0.3.1 alpha
+- added regexp_replaceN.go for missing re2 feature in the standard library (use replace with maximum count)
+- removed unused code for PCRE literals (development started with 0.3.0)
+  The PCRE C library lacks the features we need for langur at this time.
+- added a regex literal optimization (compile regex literal at langur compile-time if it contains no interpolations, rather than making the VM compile it)
+- expanded check for implied parameters within function call node to not just check variable nodes ignoring other types of nodes
+- fixed check for implied parameters to look inside interpolations
+- added regex functions: isRegex(), subindex(), subindices()
+- updated reEsc() to accept anything and convert it to a string if necessary
+
+2019-05-12 - 0.3.0 alpha
+- added re2 regex literals (compile to regex objects)
+- regex literals in given expression cases/variables
+- removed re. functions (removing pseudo-library effect)
+- added re2 regex functions: reCompile(), reEsc(), isRe()
+- added regex functions: matching(), match(), matches(), submatch(), submatches(), index(), indices()
+- updated functions to also work with regex: replace(), split(), read(), good(), where()
+  Using replace() with re2 regex so far only works to replace all (no maximum).
+  Using replace() with plain strings allows use of a maximum count.
+- added escaping mechanism for both string and regex literal interpolations
+  Escaping on a regex literal interpolation escapes the regex metacharacters.
+  Escaping on a plain string interpolation doubles all backslashes.
+- restored built-in functions argMax() and argMin() (removed in 0.2.10)
+- renamed built-in lang.Best() as bestTag() (removing pseudo-library effect)
+- initial preparation to add PCRE literals (but not available yet)
+- disabled printing address for compiled functions when made string (less implicit reflection)
+
+2019-05-07 - 0.2.10 alpha
+- made it possible to call built-in functions without parentheses when passed at least 1 argument
+  If you don't specify an argument or use parentheses, it is not a function call.
+  You cannot call user-defined functions without parentheses.
+- added built-in functions: floor() and ceiling()
+- fixed ast.StringNode String() method (for the REPL) to print each section clearly for interpolated strings
+- added "list" command to REPL to list built-in functions with descriptions
+- removed built-in functions: description(), argMax(), argMin()
+- updated built-in function keyExists() to defer to the object package (more future-proof)
+
+2019-05-05 - 0.2.9 alpha
+- fixed short-circuiting for alternate index value to account for interpolated strings
+- allow newlines in some interpolations (never in dot-semicolon form and only if allowed in string interpolated)
+- disallowed vertical space characters in code point literals (may still specify them with escape codes)
+- added lexer code point literal tests
+- fixed printing of ast.StringNode with interpolation for REPL
+- added interpolated string sections to search for implied parameters
+
+2019-05-03 - 0.2.8 alpha
+- updated Lexer.readInterpolated() to accomodate nesting marks for (), {}, or []
+  (but still does not allow embedded marks with the dot-semicolon or with the less-greater forms of interpolation)
+- changed description of // operator from "Modulus" to "Remainder" (token name, opcode, etc.)
+  Apparently, modulo and remainder operations return different results for negative numbers.
+- leaving out empty string literals when building interpolation in compiler (a small optimization)
+- skip BOM if present
+  But, the script might not get called with a BOM (if it keeps the shell from recognizing a Shebang line and calling the langur interpreter).
+
+2019-05-01 - 0.2.7 alpha
+- added string interpolation
+- disallowed carriage return without linefeed in langur source code
+
+2019-04-30 - 0.2.6 alpha
+- added short-circuiting evaluation of complicated index alternates (value to return for invalid index instead of exception)
+- added descriptions for re2 functions
+
+2019-04-25 - 0.2.5 alpha
+- fixed NaN to compare as given in underlying library (NaN == NaN returns false)
+- updated push() to work with strings; may add strings or code points (integers)
+
+2019-04-24 - 0.2.4 alpha
+- disabled adding so-far unused line/position/file to VM error hashes
+- added functions: replace(), execTrusted(), readfile(), writefile(), appendfile()
+
+2019-04-21 - 0.2.3 alpha
+- updated symbolic table errors in compiler to include line number and position
+
+2019-04-10 - 0.2.2 alpha
+- added test for parameter name matching function name (not allowed, as it creates a conflict between parameters and recursion)
+- added line number/position to compiler error creation
+
+2019-04-05 - 0.2.1 alpha
+- fixed conditional declaration not to cause Go panic when variable not declared but is used after that point (takes default null)
+
+2019-04-03 - 0.2.0 alpha
+- overhaul of variable declaration methods
+  now using val (immutable) or var (mutable) to declare and may reset var values with simple assignment operation
+
+2019-04-01 - 0.1.3 alpha
+- made given expressions even more flexible by allowing comparison operator per given expression such as given .x > , <= .y { ... } ... including allowing left/right flexibility
+- sleep() function pauses for milliseconds, not nanoseconds; could add a sleepns() function if necessary
+
+2019-03-27 - 0.1.2 alpha
+- added ability to parse incomplete case test such as "case 10 >: ..." (could already process "case > 10: ...")
+
+2019-03-25 - 0.1.1 alpha
+- fixed short-circuiting operation on and? and or?
+  (no short-circuit on db and? and or? if left not null)
+
+2019-03-25 - 0.1.0 alpha
+- initial release to the web
+
