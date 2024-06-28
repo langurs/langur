@@ -1,0 +1,32 @@
+modifications to regexp/syntax/parse.go from 1.14.1 to add free-spacing mode
+
+4a5,6
+> // davis: modified for free-spacing mode
+>
+65a68
+> 	FreeSpacing                     // space, tab, and new line ignored; also allows line comments
+728a732,751
+>
+> 			if p.flags&FreeSpacing != 0 {
+> 				switch c {
+> 				case 0x20, '\t', '\n':
+> 					// skip this code point
+> 					continue
+>
+> 				case '#':
+> 					// line comments in free-spacing mode
+> 					// skip until new line
+> 					for c != '\n' && t != "" {
+> 						if c, t, err = nextRune(t); err != nil {
+> 							return nil, err
+> 						}
+> 					}
+> 					// get past new line
+> 					continue
+> 				}
+> 			}
+>
+1018a1042,1044
+> 			sawFlag = true
+> 		case 'x':
+> 			flags |= FreeSpacing

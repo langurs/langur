@@ -1,0 +1,78 @@
+// langur/modes/compile_modes.go
+
+package modes
+
+import (
+	"fmt"
+	"langur/str"
+)
+
+type CompileModes struct {
+	WarnOnIntegerLiteralsStartingWithZero bool
+	ExecuteScriptStringInsteadOfFile      bool
+	TestCompile                           bool
+	WarnOnSurrogateCodes                  bool
+	Help                                  bool
+}
+
+const Default_WarnOnIntegerLiteralsStartingWithZero = true
+const Default_WarnOnSurrogateCodes = true
+
+// Integer literals starting with 0 might be confused for base 8 numbers.
+// Base 8 literals in langur start with 8x, such as 8x123, not 0123.
+
+func NewCompileModes() *CompileModes {
+	return &CompileModes{
+		WarnOnIntegerLiteralsStartingWithZero: Default_WarnOnIntegerLiteralsStartingWithZero,
+		WarnOnSurrogateCodes:                  Default_WarnOnSurrogateCodes,
+	}
+}
+
+func (m *CompileModes) Copy() *CompileModes {
+	return &CompileModes{
+		WarnOnIntegerLiteralsStartingWithZero: m.WarnOnIntegerLiteralsStartingWithZero,
+		WarnOnSurrogateCodes:                  m.WarnOnSurrogateCodes,
+	}
+}
+
+// NOTE: Also update the argument descriptions (at langur/args.go).
+func CompileModesFromArgs(args []string, useSlash bool) (m *CompileModes, err error) {
+	m = NewCompileModes()
+
+	for i, flag := range args {
+		switch flag {
+		case "-W0123", "/W0123":
+			m.WarnOnIntegerLiteralsStartingWithZero = true
+
+		case "-w0123", "/w0123":
+			m.WarnOnIntegerLiteralsStartingWithZero = false
+
+		case "-Wsurrogate", "/Wsurrogate":
+			m.WarnOnSurrogateCodes = true
+
+		case "-wsurrogate", "/wsurrogate":
+			m.WarnOnSurrogateCodes = false
+
+		case "-e", "/e":
+			// execute command line script rather than file
+			// must be last
+			if i != len(args)-1 {
+				err = fmt.Errorf("Execute flag must be last")
+			}
+			m.ExecuteScriptStringInsteadOfFile = true
+
+		case "-c", "/c":
+			m.TestCompile = true
+
+		case "--help", "/?":
+			m.Help = true
+
+		default:
+			err = fmt.Errorf(
+				"Unexpected command line flag: %s",
+				str.ReformatInput(flag))
+			return
+		}
+	}
+	return
+}

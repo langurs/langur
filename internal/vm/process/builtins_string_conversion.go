@@ -1,0 +1,221 @@
+// langur/vm/process/builtins_string_conversion.go
+
+package process
+
+import (
+	"langur/cpoint"
+	"langur/object"
+	"langur/str"
+	"unicode/utf8"
+)
+
+// cp2s, s2cp, s2s, s2gc
+// s2b, b2s
+// s2n
+
+func bi_s2b(pr *Process, args ...object.Object) object.Object {
+	// langur string to UTF-8 bytes
+	const fnName = "s2b"
+
+	s, ok := args[0].(*object.String)
+	if !ok {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+	}
+	bytes := s.ByteSlc()
+	arr := &object.List{Elements: make([]object.Object, len(bytes))}
+	for i, b := range bytes {
+		arr.Elements[i] = object.NumberFromInt(int(b))
+	}
+	return arr
+}
+
+func bi_b2s(pr *Process, args ...object.Object) object.Object {
+	// UTF-8 bytes to langur string
+	const fnName = "b2s"
+
+	switch arg := args[0].(type) {
+	case *object.Number:
+		b, err := arg.ToByte()
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		}
+		return utf8bytesToString(fnName, []byte{b})
+
+	case *object.List:
+		bSlc := make([]byte, len(arg.Elements))
+		for i, v := range arg.Elements {
+			var b byte
+			var err error
+
+			switch v := v.(type) {
+			case *object.Number:
+				b, err = v.ToByte()
+				if err != nil {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				}
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+			}
+			bSlc[i] = b
+		}
+		return utf8bytesToString(fnName, bSlc)
+	}
+	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+}
+
+func utf8bytesToString(fnName string, bSlc []byte) object.Object {
+	if utf8.Valid(bSlc) {
+		s, err := object.NewStringFromParts(bSlc)
+		if err == nil {
+			return s
+		}
+		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		// return object.StringFromByteSlice(bSlc)
+	}
+	return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid UTF-8 byte sequence")
+}
+
+func bi_cp2s(pr *Process, args ...object.Object) object.Object {
+	// code point(s) to string
+	const fnName = "cp2s"
+
+	rSlc, err := object.CodePointsToFlatRuneSlice(args[0])
+	if err != nil {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+	}
+	s, err := object.NewStringFromParts(rSlc)
+	if err == nil {
+		return s
+	}
+	return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+}
+
+func bi_s2cp(pr *Process, args ...object.Object) object.Object {
+	// string to code point(s): indexes string and returns code point or list of code points
+	const fnName = "s2cp"
+
+	s, ok := args[0].(*object.String)
+	if !ok {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+	}
+	var result object.Object
+	var err error
+	// s2cp(string, index, alternate)
+	if len(args) > 2 {
+		result, err = s.Index(args[1], false)
+		if err != nil {
+			return args[2]
+		}
+	} else if len(args) > 1 {
+		result, err = s.Index(args[1], false)
+	} else {
+		result, err = s.Index(nil, false)
+	}
+	if err != nil {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+	}
+	return result
+}
+
+func bi_s2gc(pr *Process, args ...object.Object) object.Object {
+	// string to grapheme clusters
+	const fnName = "s2gc"
+
+	s, ok := args[0].(*object.String)
+	if !ok {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+	}
+
+	var clusters []object.Object
+
+	graphemes := str.Graphemes(s.String())
+	for _, gr := range graphemes {
+		if len(gr) == 1 {
+			// 1 code point
+			clusters = append(clusters, object.NumberFromInt(int(gr[0])))
+		} else {
+			// a cluster; make a list
+			clusters = append(clusters, &object.List{Elements: runeSlcToObjects(gr)})
+		}
+	}
+
+	return &object.List{Elements: clusters}
+}
+
+func runeSlcToObjects(rSlc []rune) []object.Object {
+	list := make([]object.Object, len(rSlc))
+	for i, r := range rSlc {
+		list[i] = object.NumberFromInt(int(r))
+	}
+	return list
+}
+
+func bi_s2s(pr *Process, args ...object.Object) object.Object {
+	// string to string: indexes string and returns string
+	const fnName = "s2s"
+
+	s, ok := args[0].(*object.String)
+	if !ok {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+	}
+	var result object.Object
+	var err error
+	// s2s(string, index, alternate)
+	if len(args) > 2 {
+		result, err = s.Index(args[1], true)
+		if err != nil {
+			return args[2]
+		}
+	} else if len(args) > 1 {
+		result, err = s.Index(args[1], true)
+	} else {
+		result, err = s.Index(nil, true)
+	}
+	if err != nil {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+	}
+	return result
+}
+
+func bi_s2n(pr *Process, args ...object.Object) object.Object {
+	// langur string or code point to numbers (interpreted from base 36)
+	const fnName = "s2n"
+
+	var rSlc []rune
+	var one bool
+
+	switch arg := args[0].(type) {
+	case *object.String:
+		rSlc = arg.RuneSlc()
+
+	case *object.Number:
+		cp, err := arg.ToRune()
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid code point")
+		}
+		rSlc = []rune{cp}
+		one = true
+
+	default:
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for first argument")
+	}
+
+	if one {
+		n, err := cpoint.Base36ToNumber(rSlc[0])
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		}
+		return object.NumberFromInt(n)
+	}
+
+	elements := make([]object.Object, len(rSlc))
+	for i, cp := range rSlc {
+		n, err := cpoint.Base36ToNumber(cp)
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		}
+		elements[i] = object.NumberFromInt(n)
+	}
+
+	return &object.List{Elements: elements}
+}

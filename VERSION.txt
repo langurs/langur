@@ -1,0 +1,7 @@
+langur version
+==============
+
+See the file internal/bytecode/bytecode.go for the revision number.
+
+Within langur code, use the _rev variable to see the revision number.
+

@@ -1,0 +1,29 @@
+# langur .gitignore
+# using whitelist instead of blacklist
+# need not be concerned with many files to exclude, such as .DS_Store ...
+
+# start by ignoring everything
+*
+
+# include the following ...
+!/.gitignore
+
+!*.go
+!go.sum
+!go.mod
+
+# code samples
+!*.langur
+
+!README.md
+!LICENSE.txt
+!REVISION_HISTORY.txt
+!VERSION.txt
+
+# ...even if they are in subdirectories
+!*/
+
+# include everything in the following packages
+!/internal/regexp/**
+!/internal/decimal/**
+

@@ -1,0 +1,27 @@
+modifications to regexp/regexp.go from 1.14.1 to add free-spacing mode
+
+71d70
+< 	"regexp/syntax"
+76a76,78
+>
+> 	// "regexp/syntax"
+> 	"langur/regexp/syntax"
+694c696,698
+< 	for _, b := range []byte(`\.+*?()|[]{}^$`) {
+---
+> 	// also escaping ASCII space, #, newline, and horizontal tab for free-spacing mode
+> 	// (won't hurt if not free-spacing)
+> 	for _, b := range []byte("\\.+*?()|[]{}^$\n\t #") {
+721a726,735
+> 			switch s[i] {
+> 			default:
+> 				b[j] = s[i]
+> 			case '\n':
+> 				b[j] = 'n'
+> 			case '\t':
+> 				b[j] = 't'
+> 			}
+> 		} else {
+> 			b[j] = s[i]
+723d736
+< 		b[j] = s[i]
