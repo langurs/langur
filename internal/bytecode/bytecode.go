@@ -8,7 +8,7 @@ import (
 
 // in a separate package to untangle dependencies
 
-const LangurRev = "0.16.3"
+const LangurRev = "0.16.4"
 
 // to pass from compiler to VM
 type ByteCode struct {

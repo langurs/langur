@@ -1,0 +1,32 @@
+68a69,71
+> 	// NOTE(davis): added for free-spacing mode, and also allowing line comments (only in free-spacing mode)
+> 	FreeSpacing // space, tab, and carriage return, and new line ignored; and allow line comments
+> 
+931a935,955
+> 
+> 			// NOTE(davis): added for free spacing mode
+> 			if p.flags&FreeSpacing != 0 {
+> 				switch c {
+> 				case 0x20, '\t', '\r', '\n':
+> 					// skip this code point
+> 					continue
+> 
+> 				case '#':
+> 					// line comment in free-spacing mode
+> 					// skip until new line
+> 					for c != '\r' && c != '\n' && t != "" {
+> 						if c, t, err = nextRune(t); err != nil {
+> 							return nil, err
+> 						}
+> 					}
+> 					// get past new line
+> 					continue
+> 				}
+> 			}
+> 
+1224a1249,1253
+> 			sawFlag = true
+> 
+> 		case 'x':
+> 			// NOTE(davis): added for free-spacing mode
+> 			flags |= FreeSpacing

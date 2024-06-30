@@ -1,4 +1,4 @@
-// /langur/regex/regex.go
+// langur/regex/regex.go
 
 package regex
 

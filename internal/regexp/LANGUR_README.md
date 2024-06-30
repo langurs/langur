@@ -1,25 +1,25 @@
 Why a regexp package here?
 ==========================
-As of langur 0.9.3, you don't have to copy files from the go/regexp package. 0.9.3 makes more changes and it is easier to just have the whole thing from the start.
+This was copied from the Go 1.22.4 standard library regexp package. The purpose is to add functionality for langur.
 
-This was copied from the Go 1.14.1 standard library regexp package. The purpose is to add functionality for langur.
+It would be nice if replace with maximum count and free-spacing mode could be added to the standard library regexp package. The changes are very simple and shouldn't create any inefficiencies.
 
-1. replace with maximum count methods (not just ReplaceAll)
-   The file regexp_replaceN.go was copied and modified from a portion the regexp/regexp.go file.
-   It's a minor change that makes this work.
-2. free-spacing mode with comments
-   regexp/syntax/parse.go - see diff_parse.txt
-   regexp/regexp.go - see diff_regexp.txt
-   added free-spacing meta-characters to all_test.go
-   left out extensive POSIX test files
-   left out a couple of other tests b/c of lack of access to internal/testenv
-   changed package internal import statements from "regexp/..." to "langur/regexp/..." so they would work together, instead of looking for the system regexp package
+The changes made here (in langur/regexp) are as follows.
+1. replace with maximum count method (not just ReplaceAll)
+   new file regexp_replaceN.go with methods copied and modified from regexp/regexp.go
 
-It would be nice if these changes could be incorporated into the standard library, as appropriate.
+2. free-spacing mode with line comments; only a few small changes to the following files
+   regexp/syntax/parse.go
+   regexp/regexp.go
 
-All the disclaimers for Go apply, as well as all the disclaimers for langur (see LICENSE file).
+3. dropped all test files and also make_perl_groups.pl
+   I'm sure they've been tested many times, and some of the tests don't want to run from where the files are (lack of access to internal/testenv).
 
-The following license information was copied from golang.org.
+4. changed imports from "regexp/syntax" to "langur/regexp/syntax" to look for the modified syntax package instead of the system package
+
+All the disclaimers for Go apply, as well as all the disclaimers for langur (see LICENSE file). This is provided with ABSOLUTELY NO WARRANTY OF ANY KIND.
+
+The following license information was copied from go.dev.
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 

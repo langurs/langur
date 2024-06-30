@@ -17,6 +17,7 @@ package regexp
 import (
 	"sync"
 
+	// NOTE: edit for langur to reference local package
 	// "regexp/syntax"
 	"langur/regexp/syntax"
 )
@@ -93,9 +94,7 @@ func (b *bitState) reset(prog *syntax.Prog, end int, ncap int) {
 		b.visited = make([]uint32, visitedSize, maxBacktrackVector/visitedBits)
 	} else {
 		b.visited = b.visited[:visitedSize]
-		for i := range b.visited {
-			b.visited[i] = 0
-		}
+		clear(b.visited) // set to 0
 	}
 
 	if cap(b.cap) < ncap {
@@ -165,7 +164,7 @@ func (re *Regexp) tryBacktrack(b *bitState, i input, pc uint32, pos int) bool {
 		}
 	Skip:
 
-		inst := re.prog.Inst[pc]
+		inst := &re.prog.Inst[pc]
 
 		switch inst.Op {
 		default:

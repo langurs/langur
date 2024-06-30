@@ -55,8 +55,27 @@ func (dt *DateTime) TypeString() string {
 
 func (dt *DateTime) IsTruthy() bool {
 	// proleptic Gregorian as false
-	// NOTE: The time zone could affect results around the cutoff date.
-	return dt.Time.Equal(firstGregorianDateTime) || dt.Time.After(firstGregorianDateTime)
+
+	// any date prior to 1582-10-15 as proleptic Gregorian
+	// time zone neutral (not dependent on time in UTC)
+	year, month, day := dt.Time.Date()
+	if year < 1582 {
+		return false
+
+	} else if year == 1582 {
+		m := int(month)
+		if m < 10 {
+			return false
+
+		} else if m == 10 {
+			if day < 15 {
+				return false
+			}
+		}
+	}
+
+	// not proleptic
+	return true
 }
 
 func (dt *DateTime) ComposedString() string {

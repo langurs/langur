@@ -8,17 +8,17 @@
 # include the following ...
 !/.gitignore
 
+# go files
 !*.go
 !go.sum
 !go.mod
 
-# code samples
+# langur code samples
 !*.langur
 
-!README.md
-!LICENSE.txt
-!REVISION_HISTORY.txt
-!VERSION.txt
+# markdown and text files
+!*.md
+!*.txt
 
 # ...even if they are in subdirectories
 !*/

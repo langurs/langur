@@ -779,14 +779,34 @@ func TestTruthiness(t *testing.T) {
 		{"not not 1 .. 3", true, object.BOOLEAN_OBJ},
 		{"not not 3 .. 3", true, object.BOOLEAN_OBJ},
 
-		// proleptic Gregorian (UTC) as false
-		// time zone may affect the result around the cutoff date
+		// proleptic Gregorian as false
 		{"not not dt/1581-10-15/", false, object.BOOLEAN_OBJ},
-		{"not not dt/1582-10-14 00:00:00Z/", false, object.BOOLEAN_OBJ},
+
+		// ... test with UTC
 		{"not not dt/1582-10-14 23:59:59Z/", false, object.BOOLEAN_OBJ},
 		{"not not dt/1582-10-14 23:59:59.999999999Z/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-10-14 00:00:00Z/", false, object.BOOLEAN_OBJ},
 		{"not not dt/1582-10-15 00:00:00Z/", true, object.BOOLEAN_OBJ},
 		{"not not dt/1582-10-16 00:00:00Z/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-14 00:00:00Z/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-15 00:00:00Z/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-16 00:00:00Z/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-14 00:00:00Z/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-15 00:00:00Z/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-16 00:00:00Z/", true, object.BOOLEAN_OBJ},
+
+		// ... regardless of time zone used
+		{"not not dt/1582-10-14 23:59:59/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-10-14 23:59:59.999999999/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-10-14 00:00:00/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-10-15 00:00:00/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-10-16 00:00:00/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-14 00:00:00/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-15 00:00:00/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-09-16 00:00:00/", false, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-14 00:00:00/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-15 00:00:00/", true, object.BOOLEAN_OBJ},
+		{"not not dt/1582-11-16 00:00:00/", true, object.BOOLEAN_OBJ},
 
 		{"not not dr/0D/", false, object.BOOLEAN_OBJ},
 		{"not not dr/1D/", true, object.BOOLEAN_OBJ},
@@ -6446,14 +6466,10 @@ func TestRe2(t *testing.T) {
 		{"re/abc/ is regex", true, object.BOOLEAN_OBJ},
 		{"qs/abc/ is regex", false, object.BOOLEAN_OBJ},
 
-		{`reEsc(QS"\(abc)+")`, `\\\(abc\)\+`, object.STRING_OBJ},
-		// including free-spacing meta-characters...
-		{`reEsc("\\(\x0Aabc #)\x09+")`, `\\\(\nabc\ \#\)\t\+`, object.STRING_OBJ},
-
 		{`matching(re/a.*c/, " abc ")`, true, object.BOOLEAN_OBJ},
 		{`matching(re/a.*d/, " abc ")`, false, object.BOOLEAN_OBJ},
 
-		// regex functions accepting non-strings (automatically converted)
+		// regex functions accepting non-strings (auto-stringification)
 		{`matching(RE/\d+\.\d+/, 123.0)`, true, object.BOOLEAN_OBJ},
 		{`matching(RE/\d+\.\d+/, 123)`, false, object.BOOLEAN_OBJ},
 		{`matching RE/\d+\.\d+/, 123.0`, true, object.BOOLEAN_OBJ}, // look ma, no parentheses
@@ -6573,6 +6589,32 @@ func TestRe2(t *testing.T) {
 
 		{`subindices(re/(a.).+?(z)z/, "sdfbbzzmnazmnopzz")`, [][][]int64{{{10, 11}, {16, 16}}}, object.LIST_OBJ},
 		{`subindices(re/(a.).+?(z)z/, "sdfbbzzmnazmnop")`, [][][]int64{}, object.LIST_OBJ},
+
+		{`reEsc(QS"\(abc)+")`, `\\\(abc\)\+`, object.STRING_OBJ},
+		// including free-spacing meta-characters...
+		{`reEsc("\\(\x0D\x0Aabc #)\x09+")`, `\\\(\r\nabc\ \#\)\t\+`, object.STRING_OBJ},
+
+		// characters added for free-spacing mode escaped and handled well?
+		{`matching(reCompile("(?x:" ~ reEsc("\n") ~ ")"), "\n")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("\n") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\n")), "\n")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\n")), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("\r") ~ ")"), "\r")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("\r") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\r")), "\r")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\r")), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("\t") ~ ")"), "\t")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("\t") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\t")), "\t")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("\t")), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc(" ") ~ ")"), " ")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc(" ") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc(" ")), " ")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc(" ")), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("#") ~ ")"), "#")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile("(?x:" ~ reEsc("#") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("#")), "#")`, true, object.BOOLEAN_OBJ},
+		{`matching(reCompile(reEsc("#")), "")`, false, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

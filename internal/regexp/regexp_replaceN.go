@@ -1,44 +1,33 @@
-// These are Replace with maximum count functions that are missing from the standard regexp library.
+// NOTE: added for langur: replace with max count
+
+// These do replace with maximum count, which is missing from the standard regexp library.
 // This is WITHOUT WARRANTY of any kind.
 
-// copied and modified from the regexp/regexp.go file from go 1.14.1
+// copied and modified from the regexp/regexp.go file from go 1.22.4
 // It's a small change, passing a maximum and checking it.
 
 package regexp
 
 import (
-	"bytes"
 	"strings"
 	"unicode/utf8"
 )
 
-// NOTE(davis): I'm only using and have tested a ReplaceString() method so far.
+// ReplaceString(): just a slight modification of the ReplaceAllString() receiver function
 func (re *Regexp) ReplaceString(src, repl string, max int) string {
 	n := 2
 	if strings.Contains(repl, "$") {
 		n = 2 * (re.numSubexp + 1)
 	}
-	b := re.replace(nil, src, n, func(dst []byte, match []int) []byte {
-		return re.expand(dst, repl, nil, src, match)
-	}, max)
+	b := re.replace(nil, src, n,
+		func(dst []byte, match []int) []byte {
+			return re.expand(dst, repl, nil, src, match)
+		},
+		max)
 	return string(b)
 }
 
-// untested
-func (re *Regexp) ReplaceLiteralString(src, repl string, max int) string {
-	return string(re.replace(nil, src, 2, func(dst []byte, match []int) []byte {
-		return append(dst, repl...)
-	}, max))
-}
-
-// untested
-func (re *Regexp) ReplaceStringFunc(src string, repl func(string) string, max int) string {
-	b := re.replace(nil, src, 2, func(dst []byte, match []int) []byte {
-		return append(dst, repl(src[match[0]:match[1]])...)
-	}, max)
-	return string(b)
-}
-
+// replace(): just a slight modification of the replaceAll() receiver function
 func (re *Regexp) replace(
 	bsrc []byte, src string, nmatch int, repl func(dst []byte, m []int) []byte, max int) []byte {
 
@@ -116,34 +105,4 @@ func (re *Regexp) replace(
 	}
 
 	return buf
-}
-
-// untested
-func (re *Regexp) Replace(src, repl []byte, max int) []byte {
-	n := 2
-	if bytes.IndexByte(repl, '$') >= 0 {
-		n = 2 * (re.numSubexp + 1)
-	}
-	srepl := ""
-	b := re.replace(src, "", n, func(dst []byte, match []int) []byte {
-		if len(srepl) != len(repl) {
-			srepl = string(repl)
-		}
-		return re.expand(dst, srepl, src, "", match)
-	}, max)
-	return b
-}
-
-// untested
-func (re *Regexp) ReplaceLiteral(src, repl []byte, max int) []byte {
-	return re.replace(src, "", 2, func(dst []byte, match []int) []byte {
-		return append(dst, repl...)
-	}, max)
-}
-
-// untested
-func (re *Regexp) ReplaceFunc(src []byte, repl func([]byte) []byte, max int) []byte {
-	return re.replace(src, "", 2, func(dst []byte, match []int) []byte {
-		return append(dst, repl(src[match[0]:match[1]])...)
-	}, max)
 }

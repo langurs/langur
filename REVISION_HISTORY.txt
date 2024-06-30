@@ -1,6 +1,11 @@
 langur revision history
 https://langurlang.org
 
+2024-06-30 - 0.16.4
+- updated regexp package (re2) from go 1.22.4
+- added carriage return (\r) to re2 free-spacing mode characters to skip
+- updated testing datetime truthiness to test for proleptic Gregorian in a time zone neutral manner (not dependent on time in UTC)
+
 2024-06-28 - 0.16.3
 - updated package dependencies/go.mod/go.sum
 - updated copy of decimal package from shopspring/decimal to v1.4
