@@ -1,11 +1,16 @@
 # langur .gitignore
-# using whitelist instead of blacklist
-# need not be concerned with many files to exclude, such as .DS_Store ...
+# mostly using whitelist instead of blacklist
+# need not be concerned with many files to exclude, such as .DS_Store, Desktop.ini, etc.
 
-# start by ignoring everything
-*
+# start by blacklisting all files with an extension
+# effectively whitelisting all files with no extension
+*.*
 
-# include the following ...
+# blacklist these
+internal/langur
+internal/repl/repl
+
+# whitelist the following
 !/.gitignore
 
 # go files
@@ -22,8 +27,3 @@
 
 # ...even if they are in subdirectories
 !*/
-
-# include everything in the following packages
-!/internal/regexp/**
-!/internal/decimal/**
-
