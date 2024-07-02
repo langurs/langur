@@ -3,12 +3,37 @@
 package bytecode
 
 import (
+	"fmt"
+	"io/ioutil"
 	"langur/object"
 )
 
-// in a separate package to untangle dependencies
+// ByteCode struct in a separate package to untangle dependencies
+// built by compiler; used by VM
 
-const LangurRev = "0.16.4"
+// now reading from another file, rather than hard-coding version number here
+var LangurRev string
+
+// looking for langur/VERSION.txt
+const versionfile = "../../VERSION.txt"
+
+func init() {
+	b, err := ioutil.ReadFile(versionfile)
+	if err != nil {
+		panic(fmt.Errorf("%s: Failed to read version file %s (%s)",
+			"bytecode.go", versionfile, err.Error()))
+	}
+	// getting extra newlines; read until newline
+	for i := range b {
+		if b[i] == '\r' || b[i] == '\n' {
+			LangurRev = string(b[:i])
+			break
+		}
+	}
+	if LangurRev == "" {
+		LangurRev = string(b)
+	}
+}
 
 // to pass from compiler to VM
 type ByteCode struct {

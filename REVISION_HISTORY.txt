@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.16.5
+- reads version number from file VERSION.txt
+
+
 2024-06-30 - 0.16.4
 - updated regexp package (re2) from go 1.22.4
 - added carriage return (\r) to re2 free-spacing mode characters to skip
@@ -1275,5 +1279,4 @@ This release mostly fixes "little" nagging issues.
   (no short-circuit on db and? and or? if left not null)
 
 2019-03-25 - 0.1.0 alpha
-- initial release to the web
-
+- initial release to the web
