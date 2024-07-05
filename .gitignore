@@ -1,12 +1,12 @@
 # langur .gitignore
 # mostly using whitelist instead of blacklist
-# need not be concerned with many files to exclude, such as .DS_Store, Desktop.ini, etc.
+# need not be concerned with many files to exclude, such as .DS_Store, Desktop.ini, ._*, etc.
 
 # start by blacklisting all files with an extension
 # effectively whitelisting all files with no extension
 *.*
 
-# blacklist these
+# blacklist these (compiled code)
 internal/langur
 internal/repl/repl
 
