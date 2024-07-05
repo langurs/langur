@@ -183,6 +183,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		minimum := things[1]
 		original := things[0]
 
+		// TODO
+		trimFractionalZeroes := false
+
 		min, ok := object.NumberToInt(minimum)
 		if !ok {
 			err = fmt.Errorf("Unable to convert integer for hex minimum for interpolation")
@@ -194,7 +197,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, uppercase, requireSign, true, min, 0, 16, padWith)
+		result, err = object.ToBaseString(original, uppercase, requireSign, true, trimFractionalZeroes, min, 0, 16, padWith)
 
 	case format.FORMAT_BASE:
 		things := pr.popMultiple(6)
@@ -204,6 +207,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		minimum := things[2]
 		base := things[1]
 		original := things[0]
+
+		// TODO
+		trimFractionalZeroes := false
 
 		b, ok := object.NumberToInt(base)
 		if !ok {
@@ -221,11 +227,11 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, uppercase, requireSign, true, min, 0, b, padWith)
+		result, err = object.ToBaseString(original, uppercase, requireSign, true, trimFractionalZeroes, min, 0, b, padWith)
 
 	case format.FORMAT_FIXED:
 		things := pr.popMultiple(5)
-		padWithZeroes := things[4].(*object.Boolean).Value
+		padIntWithZeroes := things[4].(*object.Boolean).Value
 		frac := things[3]
 		integer := things[2]
 		requireSign := things[1].(*object.Boolean).Value
@@ -241,19 +247,23 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			err = fmt.Errorf("Unable to convert fractional rounding for fixed point interpolation")
 			return
 		}
+		// TODO
+		trimFractionalZeroes := false
 
-		padWith := ' '
-		if padWithZeroes {
-			padWith = '0'
+		padIntWith := ' '
+		if padIntWithZeroes {
+			padIntWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, false, requireSign, true, intMin, fracRound, 10, padWith)
+		result, err = object.ToBaseString(original, false, requireSign, true, trimFractionalZeroes, intMin, fracRound, 10, padIntWith)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
-		things := pr.popMultiple(6)
-		scaleExp := things[5]
-		requireExpSign := things[4].(*object.Boolean).Value
-		uppercase := things[3].(*object.Boolean).Value
+		things := pr.popMultiple(7)
+
+		scaleExp := things[6]
+		requireExpSign := things[5].(*object.Boolean).Value
+		uppercase := things[4].(*object.Boolean).Value
+		scaleTrimTrailingZeroes := things[3].(*object.Boolean).Value
 		scale := things[2]
 		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
@@ -262,12 +272,17 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		sc := 0
 		if scale == object.FALSE {
 			rescale = false
+
 		} else {
 			var ok bool
 			sc, ok = object.NumberToInt(scale)
 			if !ok {
 				err = fmt.Errorf("Unable to convert integer for scientific notation scale for interpolation")
 				return
+			}
+			if scaleTrimTrailingZeroes {
+				// present internal method; might change
+				sc = -sc
 			}
 		}
 		scExp, ok := object.NumberToInt(scaleExp)

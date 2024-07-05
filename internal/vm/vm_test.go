@@ -3428,11 +3428,11 @@ func TestInterpolationModifierForScientificNotation(t *testing.T) {
 		{`val x = 0.000000123456879; "{{x:e+}}"`, "1.23456879e-7", object.STRING_OBJ},
 
 		// scientific notation with a scale (rounding)
-		{`val x = 1.23456879e+7000; "{{x:-10e}}"`, "1.23456879e7000", object.STRING_OBJ},
-		{`val x = 1.23456879e-7000; "{{x:-10e}}"`, "1.23456879e-7000", object.STRING_OBJ},
+		{`val x = 1.23456879e+7000; "{{x:10ze}}"`, "1.23456879e7000", object.STRING_OBJ},
+		{`val x = 1.23456879e-7000; "{{x:10ze}}"`, "1.23456879e-7000", object.STRING_OBJ},
 
-		{`val x = 1.23456879e+7000; "{{x:-10e+}}"`, "1.23456879e+7000", object.STRING_OBJ},
-		{`val x = 1.23456879e-7000; "{{x:-10e+}}"`, "1.23456879e-7000", object.STRING_OBJ},
+		{`val x = 1.23456879e+7000; "{{x:10ze+}}"`, "1.23456879e+7000", object.STRING_OBJ},
+		{`val x = 1.23456879e-7000; "{{x:10ze+}}"`, "1.23456879e-7000", object.STRING_OBJ},
 
 		{`val x = 123456879; "{{x: 0e }}"`, "1e8", object.STRING_OBJ},
 		{`val x = 173456879; "{{x:0e}}"`, "2e8", object.STRING_OBJ},
@@ -3456,46 +3456,46 @@ func TestInterpolationModifierForScientificNotation(t *testing.T) {
 
 		{`val x = 1234; "{{x:3e}}"`, "1.234e3", object.STRING_OBJ},
 		{`val x = 10000; "{{x:3e}}"`, "1.000e4", object.STRING_OBJ},
-		{`val x = 1234; "{{x:-3e}}"`, "1.234e3", object.STRING_OBJ},
-		{`val x = 10000; "{{x:-3e}}"`, "1e4", object.STRING_OBJ},
+		{`val x = 1234; "{{x:3ze}}"`, "1.234e3", object.STRING_OBJ},
+		{`val x = 10000; "{{x:3ze}}"`, "1e4", object.STRING_OBJ},
 
 		{`val x = 1234; "{{x:3e+}}"`, "1.234e+3", object.STRING_OBJ},
 		{`val x = 10000; "{{x:3e+}}"`, "1.000e+4", object.STRING_OBJ},
-		{`val x = 1234; "{{x:-3e+}}"`, "1.234e+3", object.STRING_OBJ},
-		{`val x = 10000; "{{x:-3e+}}"`, "1e+4", object.STRING_OBJ},
+		{`val x = 1234; "{{x:3ze+}}"`, "1.234e+3", object.STRING_OBJ},
+		{`val x = 10000; "{{x:3ze+}}"`, "1e+4", object.STRING_OBJ},
 
 		{`val x = -1234; "{{x:3e}}"`, "-1.234e3", object.STRING_OBJ},
 		{`val x = -10000; "{{x:3e}}"`, "-1.000e4", object.STRING_OBJ},
-		{`val x = -1234; "{{x:-3e}}"`, "-1.234e3", object.STRING_OBJ},
-		{`val x = -10000; "{{x:-3e}}"`, "-1e4", object.STRING_OBJ},
+		{`val x = -1234; "{{x:3ze}}"`, "-1.234e3", object.STRING_OBJ},
+		{`val x = -10000; "{{x:3ze}}"`, "-1e4", object.STRING_OBJ},
 
 		{`val x = -1234; "{{x:3e+}}"`, "-1.234e+3", object.STRING_OBJ},
 		{`val x = -10000; "{{x:3e+}}"`, "-1.000e+4", object.STRING_OBJ},
-		{`val x = -1234; "{{x:-3e+}}"`, "-1.234e+3", object.STRING_OBJ},
-		{`val x = -10000; "{{x:-3e+}}"`, "-1e+4", object.STRING_OBJ},
+		{`val x = -1234; "{{x:3ze+}}"`, "-1.234e+3", object.STRING_OBJ},
+		{`val x = -10000; "{{x:3ze+}}"`, "-1e+4", object.STRING_OBJ},
 
 		{`val x = 0.1; "{{x:4e}}"`, "1.0000e-1", object.STRING_OBJ},
 		{`val x = 0.0000001; "{{x:4e}}"`, "1.0000e-7", object.STRING_OBJ},
-		{`val x = 0.0000001; "{{x:-4e}}"`, "1e-7", object.STRING_OBJ},
+		{`val x = 0.0000001; "{{x:4ze}}"`, "1e-7", object.STRING_OBJ},
 		{`val x = 0.00000017; "{{x:4e}}"`, "1.7000e-7", object.STRING_OBJ},
-		{`val x = 0.00000017; "{{x:-4e}}"`, "1.7e-7", object.STRING_OBJ},
+		{`val x = 0.00000017; "{{x:4ze}}"`, "1.7e-7", object.STRING_OBJ},
 
 		{`val x = 0.1; "{{x:4e+}}"`, "1.0000e-1", object.STRING_OBJ},
 		{`val x = 0.0000001; "{{x:4e+}}"`, "1.0000e-7", object.STRING_OBJ},
-		{`val x = 0.0000001; "{{x:-4e+}}"`, "1e-7", object.STRING_OBJ},
+		{`val x = 0.0000001; "{{x:4ze+}}"`, "1e-7", object.STRING_OBJ},
 		{`val x = 0.00000017; "{{x:4e+}}"`, "1.7000e-7", object.STRING_OBJ},
-		{`val x = 0.00000017; "{{x:-4e+}}"`, "1.7e-7", object.STRING_OBJ},
+		{`val x = 0.00000017; "{{x:4ze+}}"`, "1.7e-7", object.STRING_OBJ},
 
 		// ... including scaling of the exponent
 		{`val x = 1234; "{{x:3e2}}"`, "1.234e03", object.STRING_OBJ},
 		{`val x = 10000; "{{x:3e2}}"`, "1.000e04", object.STRING_OBJ},
-		{`val x = 1234; "{{x:-3e4}}"`, "1.234e0003", object.STRING_OBJ},
-		{`val x = 10000; "{{x:-3e4}}"`, "1e0004", object.STRING_OBJ},
+		{`val x = 1234; "{{x:3ze4}}"`, "1.234e0003", object.STRING_OBJ},
+		{`val x = 10000; "{{x:3ze4}}"`, "1e0004", object.STRING_OBJ},
 
 		{`val x = 1234; "{{x: 3e+2}}"`, "1.234e+03", object.STRING_OBJ},
 		{`val x = 10000; "{{x:3e+2}}"`, "1.000e+04", object.STRING_OBJ},
-		{`val x = 1234; "{{x:-3e+4}}"`, "1.234e+0003", object.STRING_OBJ},
-		{`val x = 10000; "{{x:-3e+4}}"`, "1e+0004", object.STRING_OBJ},
+		{`val x = 1234; "{{x:3ze+4}}"`, "1.234e+0003", object.STRING_OBJ},
+		{`val x = 10000; "{{x:3ze+4}}"`, "1e+0004", object.STRING_OBJ},
 
 		// scientific notation requiring a sign on first number
 		{`val x = 1234; "{{x:+3e}}"`, "+1.234e3", object.STRING_OBJ},
@@ -3511,23 +3511,23 @@ func TestInterpolationModifierForScientificNotation(t *testing.T) {
 		// ... with required sign and scaling of exponent
 		{`val x = 1234; "{{x:+3e2}}"`, "+1.234e03", object.STRING_OBJ},
 		{`val x = 10000; "{{x:+3e2}}"`, "+1.000e04", object.STRING_OBJ},
-		{`val x = 1234; "{{x:+-3e4}}"`, "+1.234e0003", object.STRING_OBJ},
-		{`val x = 10000; "{{x:+-3e4}}"`, "+1e0004", object.STRING_OBJ},
+		{`val x = 1234; "{{x:+3ze4}}"`, "+1.234e0003", object.STRING_OBJ},
+		{`val x = 10000; "{{x:+3ze4}}"`, "+1e0004", object.STRING_OBJ},
 
 		{`val x = 1234; "{{x:+3e+2}}"`, "+1.234e+03", object.STRING_OBJ},
 		{`val x = 10000; "{{x:+3e+2}}"`, "+1.000e+04", object.STRING_OBJ},
-		{`val x = 1234; "{{x:+-3e+4}}"`, "+1.234e+0003", object.STRING_OBJ},
-		{`val x = 10000; "{{x:+-3e+4}}"`, "+1e+0004", object.STRING_OBJ},
+		{`val x = 1234; "{{x:+3ze+4}}"`, "+1.234e+0003", object.STRING_OBJ},
+		{`val x = 10000; "{{x:+3ze+4}}"`, "+1e+0004", object.STRING_OBJ},
 
 		{`val x = -1234; "{{x:+3e2}}"`, "-1.234e03", object.STRING_OBJ},
 		{`val x = -10000; "{{x:+3e2}}"`, "-1.000e04", object.STRING_OBJ},
-		{`val x = -1234; "{{x:+-3e4}}"`, "-1.234e0003", object.STRING_OBJ},
-		{`val x = -10000; "{{x:+-3e4}}"`, "-1e0004", object.STRING_OBJ},
+		{`val x = -1234; "{{x:+3ze4}}"`, "-1.234e0003", object.STRING_OBJ},
+		{`val x = -10000; "{{x:+3ze4}}"`, "-1e0004", object.STRING_OBJ},
 
 		{`val x = -1234; "{{x:+3e+2}}"`, "-1.234e+03", object.STRING_OBJ},
 		{`val x = -10000; "{{x:+3e+2}}"`, "-1.000e+04", object.STRING_OBJ},
-		{`val x = -1234; "{{x:+-3e+4}}"`, "-1.234e+0003", object.STRING_OBJ},
-		{`val x = -10000; "{{x:+-3e+4}}"`, "-1e+0004", object.STRING_OBJ},
+		{`val x = -1234; "{{x:+3ze+4}}"`, "-1.234e+0003", object.STRING_OBJ},
+		{`val x = -10000; "{{x:+3ze+4}}"`, "-1e+0004", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

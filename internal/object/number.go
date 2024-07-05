@@ -373,9 +373,9 @@ func CodePointsToFlatRuneSlice(cp Object) ([]rune, error) {
 
 func ToBaseString(
 	original Object,
-	uppercase, requireSign, signCountsForPadding bool,
+	uppercase, requireSign, signCountsForPadding, trimFractionalZeroes bool,
 	integerMin, fracRound, base int,
-	padWith rune) (
+	padIntWith rune) (
 	*String, error) {
 
 	var parts []string
@@ -404,8 +404,11 @@ func ToBaseString(
 			isNeg = true
 		}
 		if len(parts[0]) < integerMin {
-			intPadding = strings.Repeat(string(padWith), integerMin-len(parts[0]))
+			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0]))
 		}
+
+		// TODO: trimFractionalZeroes
+
 		s = parts[0] + "." + parts[1]
 
 	} else {
@@ -419,7 +422,7 @@ func ToBaseString(
 			isNeg = true
 		}
 		if len(s) < integerMin {
-			intPadding = strings.Repeat(string(padWith), integerMin-len(s))
+			intPadding = strings.Repeat(string(padIntWith), integerMin-len(s))
 		}
 
 		if uppercase {
@@ -438,7 +441,7 @@ func ToBaseString(
 		intPadding = intPadding[1:]
 	}
 
-	if padWith == ' ' {
+	if padIntWith == ' ' {
 		s = intPadding + sign + s
 	} else {
 		s = sign + intPadding + s

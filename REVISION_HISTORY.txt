@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.16.5
 - reads version number from file VERSION.txt
+- changed interpolation modifier for scientific notation to use z after scale to indicate to trim trailing zeroes on scale, rather than using a negative scale
 
 
 2024-06-30 - 0.16.4
@@ -1279,4 +1280,5 @@ This release mostly fixes "little" nagging issues.
   (no short-circuit on db and? and or? if left not null)
 
 2019-03-25 - 0.1.0 alpha
-- initial release to the web
+- initial release to the web
+
