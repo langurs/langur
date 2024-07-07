@@ -410,14 +410,8 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 
 	max := 0
 	if len(args) > 1 {
-		var err error
-		switch e := args[1].(type) {
-		case *object.Number:
-			max, err = e.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument")
-			}
-		default:
+		max, ok = object.NumberToInt(args[1])
+		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument")
 		}
 	}
@@ -438,11 +432,11 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
 		}
-		num, err = n.RoundBy(max, trimTrailingZeroes, mode)
+		num, err = n.RoundByMode(max, trimTrailingZeroes, mode)
 
 	} else {
 		// round by current mode
-		num, err = n.Round(max, trimTrailingZeroes)
+		num, err = n.RoundByMode(max, trimTrailingZeroes, modes.RoundingMode)
 	}
 
 	if err != nil {

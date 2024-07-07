@@ -81,14 +81,7 @@ func (n *Number) Ceiling() *Number {
 	return numberFromDecimal(n.ToDecimal().Ceil())
 }
 
-func (n *Number) Round(max int, trimTrailingZeroes bool) (*Number, error) {
-	if max > math.MaxInt32 || max < math.MinInt32 {
-		return Zero, fmt.Errorf("Number of digits to round to is too high")
-	}
-	return numberFromDecimal(n.ToDecimal().RoundWithZeroes(int32(max), trimTrailingZeroes)), nil
-}
-
-func (n *Number) RoundBy(max int, trimTrailingZeroes bool, mode int) (*Number, error) {
+func (n *Number) RoundByMode(max int, trimTrailingZeroes bool, mode int) (*Number, error) {
 	if max > math.MaxInt32 || max < math.MinInt32 {
 		return Zero, fmt.Errorf("Number of digits to round to is too high")
 	}
@@ -96,7 +89,7 @@ func (n *Number) RoundBy(max int, trimTrailingZeroes bool, mode int) (*Number, e
 	if !ok {
 		return Zero, fmt.Errorf("Invalid Rounding Mode (use " + modes.RoundHashName + " hash)")
 	}
-	return numberFromDecimal(n.ToDecimal().RoundByWithZeroes(int32(max), trimTrailingZeroes, mode)), nil
+	return numberFromDecimal(n.ToDecimal().RoundByMode(int32(max), trimTrailingZeroes, mode)), nil
 }
 
 func (n *Number) Truncate(max int, trimTrailingZeroes bool) (*Number, error) {

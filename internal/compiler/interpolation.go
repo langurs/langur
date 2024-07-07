@@ -26,8 +26,8 @@ var modifierRegexForDateTime = regexp.MustCompile(
 	`^` + common.DateTimeTokenLiteral + `\((?P<format>.+)\)$|^` +
 		common.DateTimeTokenLiteral + ` (?P<var>` + common.IdentifierRegexString + `)$`)
 
-var modifierRegexForTruncate = regexp.MustCompile(`^t(?:(?P<max>[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
-var modifierRegexForRounding = regexp.MustCompile(`^r(?:(?P<max>[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
+var modifierRegexForTruncate = regexp.MustCompile(`^t(?:(?P<max>-?[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
+var modifierRegexForRounding = regexp.MustCompile(`^r(?:(?P<max>-?[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
 
 var modifierRegexForAlign = regexp.MustCompile(
 	`^(?P<align>-?[1-9][0-9]*)(?:\((?:(?P<withcp>.)|(?P<withcpnum>[0-9a-fA-F]{2,8}))\))?$`)

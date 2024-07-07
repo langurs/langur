@@ -7,6 +7,7 @@ import (
 	"langur/common"
 	"langur/cpoint"
 	dec "langur/decimal"
+	"langur/modes"
 	"langur/native"
 	"langur/str"
 	"math"
@@ -385,7 +386,7 @@ func ToBaseString(
 	switch numObj := original.(type) {
 	case *Number:
 		// NOTE: base 10 rounding; would not be suficient if fractionals possible on other bases
-		n, err := numObj.Round(fracRound, trimFractionalZeroes)
+		n, err := numObj.RoundByMode(fracRound, trimFractionalZeroes, modes.RoundingMode)
 		if err != nil {
 			return nil, err
 		}

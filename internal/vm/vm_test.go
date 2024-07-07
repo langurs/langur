@@ -3182,6 +3182,13 @@ func TestInterpolationModifierForRound(t *testing.T) {
 		{`val x = -42.3333; "{{x:r}}"`, "-42", object.STRING_OBJ},
 		{`val x = -42.3333; "{{x:r:X}}"`, "-2A", object.STRING_OBJ},
 
+		// round on integer
+		{`val x = 42.3333; "{{x:r-1}}"`, "40", object.STRING_OBJ},
+		{`val x = 42.3333; "{{x:r-1:X}}"`, "28", object.STRING_OBJ},
+		{`val x = 42.3333; "{{x:r-2}}"`, "0", object.STRING_OBJ},
+		{`val x = 45.3333; "{{x:r-1}}"`, "50", object.STRING_OBJ},
+		{`val x = 45.3333; "{{x:r-1:X}}"`, "32", object.STRING_OBJ},
+
 		// half away from zero
 		{`mode rounding = _round'halfawayfrom0
 		  val x = 1.5; "{{x:r}}"`, "2", object.STRING_OBJ},
@@ -3258,6 +3265,11 @@ func TestInterpolationModifierForTrunc(t *testing.T) {
 		{`val x = 42.7777; "{{x:t}}"`, "42", object.STRING_OBJ},
 		{`val x = 42.3333; "{{x:t}}"`, "42", object.STRING_OBJ},
 		{`val x = 42.3333; "{{x:t:X}}"`, "2A", object.STRING_OBJ},
+
+		// truncate on integer
+		{`val x = 42.3333; "{{x:t-1}}"`, "40", object.STRING_OBJ},
+		{`val x = 42.3333; "{{x:t-1:X}}"`, "28", object.STRING_OBJ},
+		{`val x = 42.3333; "{{x:t-2}}"`, "0", object.STRING_OBJ},
 
 		// truncate with padding zeroes
 		{`val x = 1.23; "{{x: t4 }}"`, "1.2300", object.STRING_OBJ},
@@ -3405,6 +3417,8 @@ func TestInterpolationModifierForFixedPoint(t *testing.T) {
 		// trim trailing zeroes
 		{`val x = 3.14159; "{{x:10x0.2-}}"`, "3.14", object.STRING_OBJ},
 		{`val x = 3.10; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.100; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.1001; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
 		{`val x = 3.1; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
 		{`val x = 3.11; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
 		{`val x = 3.111; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
@@ -3535,6 +3549,11 @@ func TestInterpolationModifierForScientificNotation(t *testing.T) {
 		{`val x = -10000; "{{x:+3e+2}}"`, "-1.000e+04", object.STRING_OBJ},
 		{`val x = -1234; "{{x:+3-e+4}}"`, "-1.234e+0003", object.STRING_OBJ},
 		{`val x = -10000; "{{x:+3-e+4}}"`, "-1e+0004", object.STRING_OBJ},
+
+		{`val x = -1000; "{{x:2-e+4}}"`, "-1e+0003", object.STRING_OBJ},
+		{`val x = -100; "{{x:2-e+4}}"`, "-1e+0002", object.STRING_OBJ},
+		{`val x = -10; "{{x:2-e+4}}"`, "-1e+0001", object.STRING_OBJ},
+		{`val x = -1; "{{x:2-e+4}}"`, "-1e+0000", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

@@ -7,6 +7,7 @@
 package decimal
 
 import (
+	"langur/modes"
 	"strings"
 )
 
@@ -35,31 +36,50 @@ func (d Decimal) DivFloor(d2 Decimal) Decimal {
 	return d.Div(d2).Floor()
 }
 
-func (d Decimal) TruncateWithZeroes(scale int32, trimTrailingZeroes bool) Decimal {
-	if trimTrailingZeroes && scale > int32(decimalScale(d)) {
-		return d
-	}
-	return d.TruncateAndPad(int32(scale))
-}
+func (d Decimal) TruncateWithZeroes(places int32, trimTrailingZeroes bool) Decimal {
+	// The decimal package treats zeroes differently for truncation than for rounding, ...
+	// ... whether trailing zeroes or using a negative for places to work on the integer.
 
-func (d Decimal) TruncateAndPad(scale int32) Decimal {
 	d.ensureInitialized()
-	if scale >= 0 && -scale > d.exp {
-		d = d.rescale(-scale)
+	if places >= 0 && -places > d.exp {
+		d = d.rescale(-places)
 	}
 
-	// FIXME(davis): ? do this in a rescale ?
-	ds := strings.Split(d.StringWithTrailingZeros(), ".")
+	parts := strings.Split(d.StringWithTrailingZeros(), ".")
 
-	if len(ds) == 2 && len(ds[1]) < int(scale) {
-		ds[0] += "." + ds[1] + strings.Repeat("0", int(scale)-len(ds[1]))
-		d, _ = NewFromString(ds[0])
+	if places == 0 {
+		d, _ = NewFromString(parts[0])
+		return d
 
-	} else if len(ds) == 1 && scale > 0 {
-		ds[0] += "." + strings.Repeat("0", int(scale))
-		d, _ = NewFromString(ds[0])
+	} else if places < 0 {
+		sc := int(-places)
+		// truncate on integer portion
+		L := len(parts[0])
+		if L <= sc {
+			return Zero
+		}
+
+		d, _ = NewFromString(parts[0][:L-sc] + strings.Repeat("0", sc))
+		return d
+
+	} else {
+		// scale > 0
+		switch len(parts) {
+		case 2:
+			if len(parts[1]) < int(places) {
+				parts[0] += "." + parts[1] + strings.Repeat("0", int(places)-len(parts[1]))
+				d, _ = NewFromString(parts[0])
+			}
+
+		case 1:
+			parts[0] += "." + strings.Repeat("0", int(places))
+			d, _ = NewFromString(parts[0])
+		}
 	}
 
+	if trimTrailingZeroes {
+		return d.Simplify()
+	}
 	return d
 }
 
@@ -109,16 +129,21 @@ func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 	return d
 }
 
-func (d Decimal) RoundWithZeroes(max int32, trimTrailingZeroes bool) Decimal {
-	if trimTrailingZeroes && max > int32(decimalScale(d)) {
-		return d
+// RoundByMode()
+// here both for trailing zeroes and for using a mode setting
+func (d Decimal) RoundByMode(places int32, trimTrailingZeroes bool, mode int) Decimal {
+	var d2 Decimal
+	switch mode {
+	case modes.Round_halfAwayFromZero:
+		d2 = d.Round(places)
+	case modes.Round_halfEven:
+		d2 = d.RoundBank(places)
+	default:
+		decThrow("Invalid Rounding Mode")
+		return Zero
 	}
-	return d.RoundByMode(max)
-}
-
-func (d Decimal) RoundByWithZeroes(max int32, trimTrailingZeroes bool, mode int) Decimal {
-	if trimTrailingZeroes && max > int32(decimalScale(d)) {
-		return d
+	if trimTrailingZeroes {
+		return d2.Simplify()
 	}
-	return d.RoundBy(max, mode)
+	return d2
 }

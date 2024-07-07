@@ -165,7 +165,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.Round(m, trimTrailingZeroes)
+		result, err = orig.RoundByMode(m, trimTrailingZeroes, modes.RoundingMode)
 
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)

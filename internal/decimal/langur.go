@@ -82,32 +82,7 @@ func (d Decimal) TrueMod(d2 Decimal) Decimal {
 	return quo
 }
 
-func (d Decimal) RoundByMode(max int32) Decimal {
-	switch modes.RoundingMode {
-	case modes.Round_halfAwayFromZero:
-		return d.Round(max)
-	case modes.Round_halfEven:
-		return d.RoundBank(max)
-	default:
-		decThrow("Invalid Rounding Mode")
-		return Zero
-	}
-}
-
-func (d Decimal) RoundBy(max int32, mode int) Decimal {
-	switch mode {
-	case modes.Round_halfAwayFromZero:
-		return d.Round(max)
-	case modes.Round_halfEven:
-		return d.RoundBank(max)
-	default:
-		decThrow("Invalid Rounding Mode")
-		return Zero
-	}
-}
-
 // The rescale Boolean determines if the part left of e should be rounded.
-// A negative rescale will not add trailing zeroes.
 func (d Decimal) ScientificNotation(
 	capitalize, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes bool,
 	scale, scaleExp int) string {
@@ -157,8 +132,15 @@ func (d Decimal) ScientificNotation(
 	if rescale && len(p2) != scale {
 		d2 := RequireFromString(str.RemoveTrailing(p1p2, '0'))
 		// NOTE: if scale negative, RoundWithZeroes() removes trailing zeroes when rounding
-		d2 = d2.RoundWithZeroes(int32(scale), scaleTrimTrailingZeroes)
+		d2 = d2.RoundByMode(int32(scale), scaleTrimTrailingZeroes, modes.RoundingMode)
 		p1p2 = d2.string(false)
+
+	} else if scaleTrimTrailingZeroes {
+		p1p2 = str.RemoveTrailing(p1p2, '0')
+		if p1p2[len(p1p2)-1] == '.' {
+			// hanging dot
+			p1p2 = p1p2[:len(p1p2)-1]
+		}
 	}
 
 	e := "e"
