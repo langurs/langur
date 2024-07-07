@@ -187,7 +187,6 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		minimum := things[1]
 		original := things[0]
 
-		// TODO
 		trimFractionalZeroes := false
 
 		min, ok := object.NumberToInt(minimum)
@@ -212,7 +211,6 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		base := things[1]
 		original := things[0]
 
-		// TODO
 		trimFractionalZeroes := false
 
 		b, ok := object.NumberToInt(base)
@@ -251,6 +249,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			err = fmt.Errorf("Unable to convert fractional rounding for fixed point interpolation")
 			return
 		}
+
 		// TODO
 		trimFractionalZeroes := false
 

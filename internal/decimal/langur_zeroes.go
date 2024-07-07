@@ -116,13 +116,8 @@ func (d Decimal) RoundWithZeroes(max int32, trimTrailingZeroes bool) Decimal {
 	return d.RoundByMode(max)
 }
 
-func (d Decimal) RoundByWithZeroes(max int32, mode int) Decimal {
-	padZeroes := true
-	if max < 0 {
-		padZeroes = false
-		max = -max
-	}
-	if !padZeroes && max > int32(decimalScale(d)) {
+func (d Decimal) RoundByWithZeroes(max int32, trimTrailingZeroes bool, mode int) Decimal {
+	if trimTrailingZeroes && max > int32(decimalScale(d)) {
 		return d
 	}
 	return d.RoundBy(max, mode)
