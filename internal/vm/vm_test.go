@@ -3268,12 +3268,12 @@ func TestInterpolationModifierForTrunc(t *testing.T) {
 		{`val x = 123456879; "{{x:t1}}"`, "123456879.0", object.STRING_OBJ},
 
 		// truncate without padding zeroes
-		{`val x = 1.23; "{{x:t-4}}"`, "1.23", object.STRING_OBJ},
-		{`val x = 1.234; "{{x:t-4}}"`, "1.234", object.STRING_OBJ},
-		{`val x = 1.2345; "{{x:t-4}}"`, "1.2345", object.STRING_OBJ},
-		{`val x = 1.23456879; "{{x:t-1}}"`, "1.2", object.STRING_OBJ},
-		{`val x = 1.23456879; "{{x:t-4}}"`, "1.2345", object.STRING_OBJ},
-		{`val x = 123456879; "{{x:t-1}}"`, "123456879", object.STRING_OBJ},
+		{`val x = 1.23; "{{x:t4-}}"`, "1.23", object.STRING_OBJ},
+		{`val x = 1.234; "{{x:t4-}}"`, "1.234", object.STRING_OBJ},
+		{`val x = 1.2345; "{{x:t4-}}"`, "1.2345", object.STRING_OBJ},
+		{`val x = 1.23456879; "{{x:t1-}}"`, "1.2", object.STRING_OBJ},
+		{`val x = 1.23456879; "{{x:t4-}}"`, "1.2345", object.STRING_OBJ},
+		{`val x = 123456879; "{{x:t1-}}"`, "123456879", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6039,13 +6039,13 @@ func TestMathFunctions(t *testing.T) {
 		// truncate without padding zeroes
 		{`trunc(123)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123, -2)`, 123, object.NUMBER_OBJ},
+		{`trunc(123, 2, true)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.123456789, -4)`, "123.1234", object.NUMBER_OBJ},
-		{`trunc(123.123456789, -8)`, "123.12345678", object.NUMBER_OBJ},
-		{`trunc(123.123456789, -9)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, -10)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, -12)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 4, true)`, "123.1234", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 8, true)`, "123.12345678", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 9, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 10, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 12, true)`, "123.123456789", object.NUMBER_OBJ},
 
 		// truncate with padding zeros
 		{`trunc(123, 0)`, 123, object.NUMBER_OBJ},

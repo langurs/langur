@@ -35,14 +35,8 @@ func (d Decimal) DivFloor(d2 Decimal) Decimal {
 	return d.Div(d2).Floor()
 }
 
-// if scale positive, includes trailing zeroes in truncated number
-func (d Decimal) TruncateWithZeroes(scale int32) Decimal {
-	padZeroes := true
-	if scale < 0 {
-		padZeroes = false
-		scale = -scale
-	}
-	if !padZeroes && scale > int32(decimalScale(d)) {
+func (d Decimal) TruncateWithZeroes(scale int32, trimTrailingZeroes bool) Decimal {
+	if trimTrailingZeroes && scale > int32(decimalScale(d)) {
 		return d
 	}
 	return d.TruncateAndPad(int32(scale))
@@ -115,7 +109,6 @@ func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 	return d
 }
 
-// if max positive, includes trailing zeroes in rounded number
 func (d Decimal) RoundWithZeroes(max int32, trimTrailingZeroes bool) Decimal {
 	if trimTrailingZeroes && max > int32(decimalScale(d)) {
 		return d

@@ -99,11 +99,11 @@ func (n *Number) RoundBy(max, mode int) (*Number, error) {
 	return numberFromDecimal(n.ToDecimal().RoundByWithZeroes(int32(max), mode)), nil
 }
 
-func (n *Number) Truncate(max int) (*Number, error) {
+func (n *Number) Truncate(max int, trimTrailingZeroes bool) (*Number, error) {
 	if max > math.MaxInt32 || max < math.MinInt32 {
 		return Zero, fmt.Errorf("Number of digits to truncate to is too high")
 	}
-	return numberFromDecimal(n.ToDecimal().TruncateWithZeroes(int32(max))), nil
+	return numberFromDecimal(n.ToDecimal().TruncateWithZeroes(int32(max), trimTrailingZeroes)), nil
 }
 
 func Gcd(a, b *Number) (*Number, error) {

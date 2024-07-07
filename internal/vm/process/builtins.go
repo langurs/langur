@@ -592,8 +592,8 @@ func init() {
 
 		&object.BuiltIn{
 			Name: "trunc", Fn: bi_trunc,
-			Description: "trunc(number, max); truncate number to specified digits after decimal point; max < 0 means not to pad with extra trailing zeros",
-			ParamMin:    1, ParamMax: 2,
+			Description: "trunc(number, max, trim); truncate number to specified digits after decimal point; max < 0 means not to pad with extra trailing zeros",
+			ParamMin:    1, ParamMax: 3,
 			Library: LIBRARY_MATH},
 
 		&object.BuiltIn{

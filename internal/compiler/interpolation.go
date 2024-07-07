@@ -26,7 +26,7 @@ var modifierRegexForDateTime = regexp.MustCompile(
 	`^` + common.DateTimeTokenLiteral + `\((?P<format>.+)\)$|^` +
 		common.DateTimeTokenLiteral + ` (?P<var>` + common.IdentifierRegexString + `)$`)
 
-var modifierRegexForTruncate = regexp.MustCompile(`^t(?P<max>-?[0-9]+)?$`)
+var modifierRegexForTruncate = regexp.MustCompile(`^t(?:(?P<max>[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
 var modifierRegexForRounding = regexp.MustCompile(`^r(?:(?P<max>[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
 
 var modifierRegexForAlign = regexp.MustCompile(
@@ -251,6 +251,13 @@ func (c *Compiler) compileModifierInsForTruncate(node ast.Node, m []string) (
 	}
 
 	ins = append(ins, c.constantIns(max)...)
+
+	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	}
+
 	ins = append(ins, opcode.Make(opcode.OpFormat, format.FORMAT_TRUNCATE)...)
 
 	return

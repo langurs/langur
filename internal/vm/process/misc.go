@@ -128,7 +128,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		result = object.NewString(str.LimitGraphemes(original.String(), limits, internal))
 
 	case format.FORMAT_TRUNCATE:
-		things := pr.popMultiple(2)
+		things := pr.popMultiple(3)
+
+		trimTrailingZeroes := things[2].(*object.Boolean).Value
 		max := things[1]
 		original := things[0]
 
@@ -143,7 +145,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.Truncate(m)
+		result, err = orig.Truncate(m, trimTrailingZeroes)
 
 	case format.FORMAT_ROUND:
 		things := pr.popMultiple(3)

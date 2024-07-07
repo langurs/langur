@@ -468,7 +468,16 @@ func bi_trunc(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
-	num, err := n.Truncate(max)
+	trimTrailingZeroes := false
+	if len(args) > 2 {
+		trim, ok := args[2].(*object.Boolean)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to trim trailing zeroes)")
+		}
+		trimTrailingZeroes = trim.Value
+	}
+
+	num, err := n.Truncate(max, trimTrailingZeroes)
 
 	if err != nil {
 		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
