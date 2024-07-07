@@ -232,7 +232,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		result, err = object.ToBaseString(original, uppercase, requireSign, true, trimFractionalZeroes, min, 0, b, padWith)
 
 	case format.FORMAT_FIXED:
-		things := pr.popMultiple(5)
+		things := pr.popMultiple(6)
+		trimFractionalZeroes := things[5].(*object.Boolean).Value
 		padIntWithZeroes := things[4].(*object.Boolean).Value
 		frac := things[3]
 		integer := things[2]
@@ -249,9 +250,6 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			err = fmt.Errorf("Unable to convert fractional rounding for fixed point interpolation")
 			return
 		}
-
-		// TODO
-		trimFractionalZeroes := false
 
 		padIntWith := ' '
 		if padIntWithZeroes {

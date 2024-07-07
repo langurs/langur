@@ -45,7 +45,7 @@ var modifierRegexForHex = regexp.MustCompile(`^(?P<sign>[+])?(?P<uc>[xX])(?P<min
 var modifierRegexForBase = regexp.MustCompile(
 	`^(?P<sign>[+])?(?P<base>[1-9][0-9]*)(?P<uc>[xX])(?:(?P<min>[0-9]+))?$`)
 var modifierRegexForFixed = regexp.MustCompile(
-	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)$`)
+	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)(?P<trimTrailingZeroes>-)?$`)
 
 var modifierRegexForScientificNotation = regexp.MustCompile(
 	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<scaleTrimTrailingZeroes>-)?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
@@ -404,7 +404,7 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	// fixed point
 	var integer, frac *object.Number
 
-	padWithZeroes := false
+	padIntWithZeroes := false
 
 	mm := subMatchByName("int", m, names)
 	integer, err = object.NumberFromString(mm)
@@ -413,7 +413,7 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 		return
 	}
 	if mm[0] == '0' {
-		padWithZeroes = true
+		padIntWithZeroes = true
 	}
 	mm = subMatchByName("frac", m, names)
 	frac, err = object.NumberFromString(mm)
@@ -430,7 +430,13 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	ins = append(ins, c.constantIns(integer)...)
 	ins = append(ins, c.constantIns(frac)...)
 
-	if padWithZeroes {
+	if padIntWithZeroes {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	}
+
+	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)

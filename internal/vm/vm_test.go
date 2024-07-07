@@ -3401,6 +3401,13 @@ func TestInterpolationModifierForFixedPoint(t *testing.T) {
 
 		{`val x = 3.14159; "{{x:10x0.2}}"`, "3.14", object.STRING_OBJ},
 		{`val x = 3.14159; "{{x:10x03.0}}"`, "003", object.STRING_OBJ},
+
+		// trim trailing zeroes
+		{`val x = 3.14159; "{{x:10x0.2-}}"`, "3.14", object.STRING_OBJ},
+		{`val x = 3.10; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.1; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.11; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
+		{`val x = 3.111; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
