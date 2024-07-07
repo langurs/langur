@@ -146,7 +146,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		result, err = orig.Truncate(m)
 
 	case format.FORMAT_ROUND:
-		things := pr.popMultiple(2)
+		things := pr.popMultiple(3)
+
+		trimTrailingZeroes := things[2].(*object.Boolean).Value
 		max := things[1]
 		original := things[0]
 
@@ -161,7 +163,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.Round(m)
+		result, err = orig.Round(m, trimTrailingZeroes)
 
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)
@@ -280,11 +282,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 				err = fmt.Errorf("Unable to convert integer for scientific notation scale for interpolation")
 				return
 			}
-			if scaleTrimTrailingZeroes {
-				// present internal method; might change
-				sc = -sc
-			}
 		}
+
 		scExp, ok := object.NumberToInt(scaleExp)
 		if !ok {
 			err = fmt.Errorf("Unable to convert integer for scientific notation exponent scale for interpolation")
@@ -298,7 +297,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		}
 
 		result = object.NewString(
-			orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, sc, scExp))
+			orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes, sc, scExp))
 
 	case format.FORMAT_CODE_POINT:
 		rSlc, err := object.CodePointsToFlatRuneSlice(pr.pop())

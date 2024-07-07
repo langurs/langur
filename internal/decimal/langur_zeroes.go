@@ -116,13 +116,8 @@ func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 }
 
 // if max positive, includes trailing zeroes in rounded number
-func (d Decimal) RoundWithZeroes(max int32) Decimal {
-	padZeroes := true
-	if max < 0 {
-		padZeroes = false
-		max = -max
-	}
-	if !padZeroes && max > int32(decimalScale(d)) {
+func (d Decimal) RoundWithZeroes(max int32, trimTrailingZeroes bool) Decimal {
+	if trimTrailingZeroes && max > int32(decimalScale(d)) {
 		return d
 	}
 	return d.RoundByMode(max)

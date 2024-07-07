@@ -422,18 +422,27 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
+	trimTrailingZeroes := false
+	if len(args) > 2 {
+		trim, ok := args[2].(*object.Boolean)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to trim trailing zeroes)")
+		}
+		trimTrailingZeroes = trim.Value
+	}
+
 	var num *object.Number
 	var err error
-	if len(args) > 2 {
-		mode, ok := object.NumberToInt(args[2])
+	if len(args) > 3 {
+		mode, ok := object.NumberToInt(args[3])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument (from "+modes.RoundHashName+" hash")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
 		}
 		num, err = n.RoundBy(max, mode)
 
 	} else {
 		// round by current mode
-		num, err = n.Round(max)
+		num, err = n.Round(max, trimTrailingZeroes)
 	}
 
 	if err != nil {

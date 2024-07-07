@@ -281,7 +281,7 @@ func TestScientificNotation(t *testing.T) {
 
 	for _, tt := range tests {
 		d1 := RequireFromString(tt.d1)
-		result := d1.ScientificNotation(false, false, true, false, 0, 2)
+		result := d1.ScientificNotation(false, false, true, false, false, 0, 2)
 
 		if result != tt.result {
 			t.Errorf("Scientific Notation Value Failed: expected=%s, received=%s", tt.result, result)

@@ -81,11 +81,11 @@ func (n *Number) Ceiling() *Number {
 	return numberFromDecimal(n.ToDecimal().Ceil())
 }
 
-func (n *Number) Round(max int) (*Number, error) {
+func (n *Number) Round(max int, trimTrailingZeroes bool) (*Number, error) {
 	if max > math.MaxInt32 || max < math.MinInt32 {
 		return Zero, fmt.Errorf("Number of digits to round to is too high")
 	}
-	return numberFromDecimal(n.ToDecimal().RoundWithZeroes(int32(max))), nil
+	return numberFromDecimal(n.ToDecimal().RoundWithZeroes(int32(max), trimTrailingZeroes)), nil
 }
 
 func (n *Number) RoundBy(max, mode int) (*Number, error) {

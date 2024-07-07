@@ -274,11 +274,11 @@ func NumberFromStringBase(s string, base int) (*Number, error) {
 }
 
 func (n *Number) ScientificNotation(
-	capitalize, requireSign, requireExpSign, rescale bool, scale, scaleExp int) string {
+	capitalize, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes bool, scale, scaleExp int) string {
 
 	// convert to decimal to use already developed method
 	return n.UseDecimal().decimal.ScientificNotation(
-		capitalize, requireSign, requireExpSign, rescale, scale, scaleExp)
+		capitalize, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes, scale, scaleExp)
 }
 
 func ToNumber(obj Object, base int) (*Number, bool) {
@@ -384,8 +384,8 @@ func ToBaseString(
 
 	switch numObj := original.(type) {
 	case *Number:
-		// NOTE: base 10 rounding; would not be sufficient if fractionals possible on other bases
-		n, err := numObj.Round(fracRound)
+		// NOTE: base 10 rounding; would not be suficient if fractionals possible on other bases
+		n, err := numObj.Round(fracRound, trimFractionalZeroes)
 		if err != nil {
 			return nil, err
 		}
@@ -406,9 +406,6 @@ func ToBaseString(
 		if len(parts[0]) < integerMin {
 			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0]))
 		}
-
-		// TODO: trimFractionalZeroes
-
 		s = parts[0] + "." + parts[1]
 
 	} else {

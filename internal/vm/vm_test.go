@@ -3236,12 +3236,12 @@ func TestInterpolationModifierForRound(t *testing.T) {
 		{`val x = 123456879; "{{x:r1}}"`, "123456879.0", object.STRING_OBJ},
 
 		// round without padding zeroes
-		{`val x = 1.23; "{{x:r-4}}"`, "1.23", object.STRING_OBJ},
-		{`val x = 1.234; "{{x:r-4}}"`, "1.234", object.STRING_OBJ},
-		{`val x = 1.2345; "{{x:r-4}}"`, "1.2345", object.STRING_OBJ},
-		{`val x = 1.23456879; "{{x:r-1}}"`, "1.2", object.STRING_OBJ},
-		{`val x = 1.23456879; "{{x:r-4}}"`, "1.2346", object.STRING_OBJ},
-		{`val x = 123456879; "{{x:r-1}}"`, "123456879", object.STRING_OBJ},
+		{`val x = 1.23; "{{x:r4-}}"`, "1.23", object.STRING_OBJ},
+		{`val x = 1.234; "{{x:r4-}}"`, "1.234", object.STRING_OBJ},
+		{`val x = 1.2345; "{{x:r4-}}"`, "1.2345", object.STRING_OBJ},
+		{`val x = 1.23456879; "{{x:r1-}}"`, "1.2", object.STRING_OBJ},
+		{`val x = 1.23456879; "{{x:r4-}}"`, "1.2346", object.STRING_OBJ},
+		{`val x = 123456879; "{{x:r1-}}"`, "123456879", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6063,12 +6063,12 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.4)`, 123, object.NUMBER_OBJ},
 		{`round(123.7)`, 124, object.NUMBER_OBJ},
 		{`round(123.0)`, 123, object.NUMBER_OBJ},
-		{`round(123, -2)`, 123, object.NUMBER_OBJ},
+		{`round(123, 2, true)`, 123, object.NUMBER_OBJ},
 		{`round(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`round(123.123456789, -4)`, "123.1235", object.NUMBER_OBJ},
-		{`round(123.123456789, -9)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, -10)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, -12)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 4, true)`, "123.1235", object.NUMBER_OBJ},
+		{`round(123.123456789, 9, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 10, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 12, true)`, "123.123456789", object.NUMBER_OBJ},
 
 		// round with padding zeroes
 		{`round(123, 0)`, 123, object.NUMBER_OBJ},
@@ -6083,14 +6083,14 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.123456789, 12)`, "123.123456789000", object.NUMBER_OBJ},
 
 		// test passing rounding mode to round() function
-		{`round(123.5, 0, _round'halfeven)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, 0, _round'halfeven)`, 122, object.NUMBER_OBJ},
-		{`round(123.5, 0, _round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, 0, _round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
+		{`round(123.5, 0, false, _round'halfeven)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, 0, false, _round'halfeven)`, 122, object.NUMBER_OBJ},
+		{`round(123.5, 0, false, _round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, 0, false, _round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
 
-		{`val x = round(2.5, 0, _round'halfeven)
-		  val y = round(2.5, 0, _round'halfawayfrom0)
-		  val z = round(4.45, 1, _round'halfeven)
+		{`val x = round(2.5, 0, false, _round'halfeven)
+		  val y = round(2.5, 0, false, _round'halfawayfrom0)
+		  val z = round(4.45, 1, false, _round'halfeven)
 		  x + y + z`, "9.4", object.NUMBER_OBJ},
 
 		// alternating rounding modes
