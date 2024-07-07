@@ -6084,6 +6084,16 @@ func TestMathFunctions(t *testing.T) {
 		{`trunc(123.123456789, 10)`, "123.1234567890", object.NUMBER_OBJ},
 		{`trunc(123.123456789, 12)`, "123.123456789000", object.NUMBER_OBJ},
 
+		// truncate on integer
+		{`trunc(123, -1)`, 120, object.NUMBER_OBJ},
+		{`trunc(123.4, -1)`, 120, object.NUMBER_OBJ},
+		{`trunc(123, -2)`, 100, object.NUMBER_OBJ},
+		{`trunc(123.4, -2)`, 100, object.NUMBER_OBJ},
+		{`trunc(123, -3)`, 0, object.NUMBER_OBJ},
+		{`trunc(123.4, -3)`, 0, object.NUMBER_OBJ},
+		{`trunc(153, -2)`, 100, object.NUMBER_OBJ},
+		{`trunc(153.4, -2)`, 100, object.NUMBER_OBJ},
+
 		// round without padding zeroes
 		{`round(123)`, 123, object.NUMBER_OBJ},
 		{`round(123.4)`, 123, object.NUMBER_OBJ},
@@ -6107,6 +6117,16 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.123456789, 9)`, "123.123456789", object.NUMBER_OBJ},
 		{`round(123.123456789, 10)`, "123.1234567890", object.NUMBER_OBJ},
 		{`round(123.123456789, 12)`, "123.123456789000", object.NUMBER_OBJ},
+
+		// round on integer
+		{`round(123, -1)`, 120, object.NUMBER_OBJ},
+		{`round(123.4, -1)`, 120, object.NUMBER_OBJ},
+		{`round(123, -2)`, 100, object.NUMBER_OBJ},
+		{`round(123.4, -2)`, 100, object.NUMBER_OBJ},
+		{`round(123, -3)`, 0, object.NUMBER_OBJ},
+		{`round(123.4, -3)`, 0, object.NUMBER_OBJ},
+		{`round(153, -2)`, 200, object.NUMBER_OBJ},
+		{`round(153.4, -2)`, 200, object.NUMBER_OBJ},
 
 		// test passing rounding mode to round() function
 		{`round(123.5, 0, false, _round'halfeven)`, 124, object.NUMBER_OBJ},
