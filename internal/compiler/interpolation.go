@@ -48,7 +48,7 @@ var modifierRegexForFixed = regexp.MustCompile(
 	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)$`)
 
 var modifierRegexForScientificNotation = regexp.MustCompile(
-	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<scaleTrimTrailingZeroes>z)?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
+	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<scaleTrimTrailingZeroes>-)?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
 
 func subMatchByName(name string, subs, names []string) string {
 	// used internally and assuming slices match
@@ -469,7 +469,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 	ins = append(ins, c.constantIns(scale)...)
 
 	// include trailing zeroes on scale?
-	if subMatchByName("scaleTrimTrailingZeroes", m, names) == "z" {
+	if subMatchByName("scaleTrimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
