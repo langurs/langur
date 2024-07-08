@@ -14,6 +14,7 @@ import (
 const (
 	RoundingMode_HalfAwayFromZero = modes.Round_halfAwayFromZero
 	RoundingMode_HalfEven         = modes.Round_halfEven
+	RoundingMode_Default          = RoundingMode_HalfAwayFromZero
 )
 
 func (d Decimal) StringWithTrailingZeros() string {
@@ -110,8 +111,13 @@ func (d Decimal) RoundByMode(places int32, addTrailingZeroes, trimTrailingZeroes
 	if !addTrailingZeroes && decimalScale(d2) > decimalScale(d) {
 		// The decimal functions used above may add trailing zeroes.
 		// Here we trim just the added zeroes and no more.
-		parts := strings.Split(d2.string(true), ".")
-		d2, _ = NewFromString(parts[0] + "." + parts[1][:decimalScale(d)])
+		parts := strings.Split(d2.string(false), ".")
+		originalScale := decimalScale(d)
+		if originalScale == 0 {
+			d2, _ = NewFromString(parts[0])
+		} else {
+			d2, _ = NewFromString(parts[0] + "." + parts[1][:originalScale])
+		}
 	}
 	if trimTrailingZeroes {
 		return d2.Simplify()
@@ -138,7 +144,7 @@ func decimalScale(d Decimal) int {
 func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 	// max scale handled by DivisionPrecision
 	// check min scale and remove extra zeroes at same time
-	ds := d.string(true) // true to remove extra zeroes that the decimal library adds
+	ds := d.string(true)
 
 	// 0.13 bug fix
 	if withDivMax && minScale > DivisionPrecision {
