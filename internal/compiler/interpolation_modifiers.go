@@ -1,4 +1,4 @@
-// langur/compiler/interpolation.go
+// langur/compiler/interpolation_modifiers.go
 
 package compiler
 
@@ -15,7 +15,7 @@ import (
 	"langur/str"
 )
 
-// NOTE: Coordinate these things with opFormat (in the VM).
+// NOTE: Coordinate these things with the use of opFormat (in the VM).
 
 var modifierRegexForFn = regexp.MustCompile(`^` + common.FunctionTokenLiteral +
 	` (?P<fn>` + common.IdentifierRegexString + `)$`)
