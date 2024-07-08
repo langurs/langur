@@ -81,7 +81,7 @@ func (n *Number) Ceiling() *Number {
 	return numberFromDecimal(n.ToDecimal().Ceil())
 }
 
-func (n *Number) RoundByMode(max int, trimTrailingZeroes bool, mode int) (*Number, error) {
+func (n *Number) RoundByMode(max int, addTrailingZeroes, trimTrailingZeroes bool, mode int) (*Number, error) {
 	if max > math.MaxInt32 || max < math.MinInt32 {
 		return Zero, fmt.Errorf("Number of digits to round to is too high")
 	}
@@ -89,14 +89,14 @@ func (n *Number) RoundByMode(max int, trimTrailingZeroes bool, mode int) (*Numbe
 	if !ok {
 		return Zero, fmt.Errorf("Invalid Rounding Mode (use " + modes.RoundHashName + " hash)")
 	}
-	return numberFromDecimal(n.ToDecimal().RoundByMode(int32(max), trimTrailingZeroes, mode)), nil
+	return numberFromDecimal(n.ToDecimal().RoundByMode(int32(max), addTrailingZeroes, trimTrailingZeroes, mode)), nil
 }
 
-func (n *Number) Truncate(max int, trimTrailingZeroes bool) (*Number, error) {
+func (n *Number) Truncate(max int, addTrailingZeroes, trimTrailingZeroes bool) (*Number, error) {
 	if max > math.MaxInt32 || max < math.MinInt32 {
 		return Zero, fmt.Errorf("Number of digits to truncate to is too high")
 	}
-	return numberFromDecimal(n.ToDecimal().TruncateWithZeroes(int32(max), trimTrailingZeroes)), nil
+	return numberFromDecimal(n.ToDecimal().TruncateWithZeroes(int32(max), addTrailingZeroes, trimTrailingZeroes)), nil
 }
 
 func Gcd(a, b *Number) (*Number, error) {

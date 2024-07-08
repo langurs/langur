@@ -204,41 +204,42 @@ func TestTruncateWithZeroes(t *testing.T) {
 	tests := []struct {
 		d1     string
 		max    int32
+		add    bool
 		trim   bool
 		result string
 	}{
-		{"1", 0, true, "1"},
-		{"1", 1, true, "1"},
-		{"1.0", 1, true, "1"},
-		{"1.0", 2, true, "1"},
-		{"1.00", 1, true, "1"},
-		{"1.00", 2, true, "1"},
+		{"1", 0, true, true, "1"},
+		{"1", 1, true, true, "1"},
+		{"1.0", 1, true, true, "1"},
+		{"1.0", 2, true, true, "1"},
+		{"1.00", 1, true, true, "1"},
+		{"1.00", 2, true, true, "1"},
 
-		{"3.10", 2, true, "3.1"},
-		{"3.100", 2, true, "3.1"},
-		{"3.1001", 2, true, "3.1"},
+		{"3.10", 2, true, true, "3.1"},
+		{"3.100", 2, true, true, "3.1"},
+		{"3.1001", 2, true, true, "3.1"},
 
-		{"1", 0, false, "1"},
-		{"1", 1, false, "1.0"},
-		{"1.0", 1, false, "1.0"},
-		{"1.0", 2, false, "1.00"},
-		{"1.00", 1, false, "1.0"},
-		{"1.00", 2, false, "1.00"},
+		{"1", 0, true, false, "1"},
+		{"1", 1, true, false, "1.0"},
+		{"1.0", 1, true, false, "1.0"},
+		{"1.0", 2, true, false, "1.00"},
+		{"1.00", 1, true, false, "1.0"},
+		{"1.00", 2, true, false, "1.00"},
 
-		{"3.10", 2, false, "3.10"},
-		{"3.100", 2, false, "3.10"},
-		{"3.1001", 2, false, "3.10"},
+		{"3.10", 2, true, false, "3.10"},
+		{"3.100", 2, true, false, "3.10"},
+		{"3.1001", 2, true, false, "3.10"},
 
-		{"3.10", -1, false, "0"},
-		{"311", -1, false, "310"},
-		{"311", -2, false, "300"},
-		{"311", -3, false, "0"},
-		{"311", -4, false, "0"},
+		{"3.10", -1, true, false, "0"},
+		{"311", -1, true, false, "310"},
+		{"311", -2, true, false, "300"},
+		{"311", -3, true, false, "0"},
+		{"311", -4, true, false, "0"},
 	}
 
 	for _, tt := range tests {
 		d1 := RequireFromString(tt.d1)
-		result := d1.TruncateWithZeroes(tt.max, tt.trim).StringWithTrailingZeros()
+		result := d1.TruncateWithZeroes(tt.max, tt.add, tt.trim).StringWithTrailingZeros()
 
 		if result != tt.result {
 			t.Errorf("TruncateWithZeroes Value Failed: expected=%s, received=%s", tt.result, result)

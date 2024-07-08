@@ -374,7 +374,8 @@ func CodePointsToFlatRuneSlice(cp Object) ([]rune, error) {
 
 func ToBaseString(
 	original Object,
-	uppercase, requireSign, signCountsForPadding, trimFractionalZeroes bool,
+	uppercase, requireSign, signCountsForPadding,
+	addFractionalZeroes, trimFractionalZeroes bool,
 	integerMin, fracRound, base int,
 	padIntWith rune) (
 	*String, error) {
@@ -386,7 +387,7 @@ func ToBaseString(
 	switch numObj := original.(type) {
 	case *Number:
 		// NOTE: base 10 rounding; would not be suficient if fractionals possible on other bases
-		n, err := numObj.RoundByMode(fracRound, trimFractionalZeroes, modes.RoundingMode)
+		n, err := numObj.RoundByMode(fracRound, addFractionalZeroes, trimFractionalZeroes, modes.RoundingMode)
 		if err != nil {
 			return nil, err
 		}

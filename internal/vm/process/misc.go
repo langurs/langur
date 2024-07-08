@@ -145,7 +145,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.Truncate(m, trimTrailingZeroes)
+		// TODO:
+		addTrailingZeroes := true
+
+		result, err = orig.Truncate(m, addTrailingZeroes, trimTrailingZeroes)
 
 	case format.FORMAT_ROUND:
 		things := pr.popMultiple(3)
@@ -165,7 +168,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.RoundByMode(m, trimTrailingZeroes, modes.RoundingMode)
+		// TODO:
+		addTrailingZeroes := true
+
+		result, err = orig.RoundByMode(m, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode)
 
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)
@@ -187,6 +193,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		minimum := things[1]
 		original := things[0]
 
+		addFractionalZeroes := true
 		trimFractionalZeroes := false
 
 		min, ok := object.NumberToInt(minimum)
@@ -200,7 +207,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, uppercase, requireSign, true, trimFractionalZeroes, min, 0, 16, padWith)
+		result, err = object.ToBaseString(
+			original, uppercase, requireSign, true,
+			addFractionalZeroes, trimFractionalZeroes, min, 0, 16, padWith)
 
 	case format.FORMAT_BASE:
 		things := pr.popMultiple(6)
@@ -211,6 +220,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		base := things[1]
 		original := things[0]
 
+		addFractionalZeroes := true
 		trimFractionalZeroes := false
 
 		b, ok := object.NumberToInt(base)
@@ -229,7 +239,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, uppercase, requireSign, true, trimFractionalZeroes, min, 0, b, padWith)
+		result, err = object.ToBaseString(
+			original, uppercase, requireSign, true,
+			addFractionalZeroes, trimFractionalZeroes, min, 0, b, padWith)
 
 	case format.FORMAT_FIXED:
 		things := pr.popMultiple(6)
@@ -239,6 +251,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		integer := things[2]
 		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
+
+		addFractionalZeroes := true
 
 		intMin, ok := object.NumberToInt(integer)
 		if !ok {
@@ -256,7 +270,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padIntWith = '0'
 		}
 
-		result, err = object.ToBaseString(original, false, requireSign, true, trimFractionalZeroes, intMin, fracRound, 10, padIntWith)
+		result, err = object.ToBaseString(
+			original, false, requireSign, true,
+			addFractionalZeroes, trimFractionalZeroes, intMin, fracRound, 10, padIntWith)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
 		things := pr.popMultiple(7)

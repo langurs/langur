@@ -416,6 +416,9 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
+	// TODO:
+	addTrailingZeroes := true
+
 	trimTrailingZeroes := false
 	if len(args) > 2 {
 		trim, ok := args[2].(*object.Boolean)
@@ -432,11 +435,11 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
 		}
-		num, err = n.RoundByMode(max, trimTrailingZeroes, mode)
+		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, mode)
 
 	} else {
 		// round by current mode
-		num, err = n.RoundByMode(max, trimTrailingZeroes, modes.RoundingMode)
+		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode)
 	}
 
 	if err != nil {
@@ -462,6 +465,9 @@ func bi_trunc(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
+	// TODO:
+	addTrailingZeroes := true
+
 	trimTrailingZeroes := false
 	if len(args) > 2 {
 		trim, ok := args[2].(*object.Boolean)
@@ -471,7 +477,7 @@ func bi_trunc(pr *Process, args ...object.Object) object.Object {
 		trimTrailingZeroes = trim.Value
 	}
 
-	num, err := n.Truncate(max, trimTrailingZeroes)
+	num, err := n.Truncate(max, addTrailingZeroes, trimTrailingZeroes)
 
 	if err != nil {
 		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
