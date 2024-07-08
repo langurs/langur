@@ -275,11 +275,13 @@ func NumberFromStringBase(s string, base int) (*Number, error) {
 }
 
 func (n *Number) ScientificNotation(
-	capitalize, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes bool, scale, scaleExp int) string {
+	capitalize, requireSign, requireExpSign,
+	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
+	scale, scaleExp int) string {
 
 	// convert to decimal to use already developed method
 	return n.UseDecimal().decimal.ScientificNotation(
-		capitalize, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes, scale, scaleExp)
+		capitalize, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, scale, scaleExp)
 }
 
 func ToNumber(obj Object, base int) (*Number, bool) {

@@ -11,26 +11,20 @@ import (
 	"strings"
 )
 
-const (
-	RoundingMode_HalfAwayFromZero = modes.Round_halfAwayFromZero
-	RoundingMode_HalfEven         = modes.Round_halfEven
-	RoundingMode_Default          = RoundingMode_HalfAwayFromZero
-)
-
 func (d Decimal) StringWithTrailingZeros() string {
 	return d.string(false)
 }
 
 func (d Decimal) Simplify() Decimal {
 	// remove trailing zeroes
-	d2, _ := NewFromString(d.string(true))
-	return d2
+	d, _ = NewFromString(d.string(true))
+	return d
 }
 
 func (d Decimal) Same(d2 Decimal) bool {
 	// Same different than Equal
 	// 1 == 1.0 but they are not the same.
-	// same meaning the representation is the same
+	// same meaning the precision is also the same
 	return d.string(false) == d2.string(false)
 }
 
@@ -43,7 +37,7 @@ func (d Decimal) DivFloor(d2 Decimal) Decimal {
 }
 
 // custom decimal truncate function to...
-// 1. add trailing zeroes
+// 1. add trailing zeroes (if more precision than original decimal)
 // 2. trim trailing zeroes
 // 3. use a negative for places, to truncate on the integer
 func (d Decimal) TruncateWithZeroes(
@@ -54,7 +48,7 @@ func (d Decimal) TruncateWithZeroes(
 		d = d.rescale(-places)
 	}
 
-	parts := strings.Split(d.StringWithTrailingZeros(), ".")
+	parts := d.StringParts()
 
 	if places == 0 {
 		// integer only
@@ -73,56 +67,67 @@ func (d Decimal) TruncateWithZeroes(
 
 	} else {
 		// places > 0
-		p2 := ""
-		if len(parts) == 2 {
-			p2 = parts[1]
-		}
-		if addTrailingZeroes && len(p2) < int(places) {
-			p2 += strings.Repeat("0", int(places)-len(p2))
+		if addTrailingZeroes && len(parts[1]) < int(places) {
+			parts[1] += strings.Repeat("0", int(places)-len(parts[1]))
 		}
 		if trimTrailingZeroes {
-			p2 = strings.TrimRight(p2, "0")
+			parts[1] = strings.TrimRight(parts[1], "0")
 		}
-
-		if p2 == "" {
-			d, _ = NewFromString(parts[0])
-		} else {
-			d, _ = NewFromString(parts[0] + "." + p2)
-		}
-		return d
+		return NewFromParts(parts)
 	}
 }
 
+func (d Decimal) StringParts() [2]string {
+	parts := strings.Split(d.string(false), ".")
+	if len(parts) == 1 {
+		parts = append(parts, "")
+	}
+	return [2]string(parts)
+}
+
+func NewFromParts(parts [2]string) Decimal {
+	d, err := NewFromString(parts[0] + "." + parts[1])
+	if err != nil {
+		decThrow(err.Error())
+	}
+	return d
+}
+
 // custom decimal rounding function to...
-// add trailing zeroes
+// add trailing zeroes (if more precision than original decimal)
 // trim trailing zeroes
 // using a mode setting
-func (d Decimal) RoundByMode(places int32, addTrailingZeroes, trimTrailingZeroes bool, mode int) Decimal {
-	var d2 Decimal
-	switch mode {
-	case RoundingMode_HalfAwayFromZero:
-		d2 = d.Round(places)
-	case RoundingMode_HalfEven:
-		d2 = d.RoundBank(places)
-	default:
-		decThrow("Invalid Rounding Mode")
-		return Zero
-	}
-	if !addTrailingZeroes && decimalScale(d2) > decimalScale(d) {
-		// The decimal functions used above may add trailing zeroes.
-		// Here we trim just the added zeroes and no more.
-		parts := strings.Split(d2.string(false), ".")
-		originalScale := decimalScale(d)
-		if originalScale == 0 {
-			d2, _ = NewFromString(parts[0])
-		} else {
-			d2, _ = NewFromString(parts[0] + "." + parts[1][:originalScale])
+func (d Decimal) RoundByMode(
+	places int32, addTrailingZeroes, trimTrailingZeroes bool,
+	mode int) Decimal {
+
+	originalScale := decimalScale(d)
+
+	if originalScale < int(places) {
+		// nothing to round
+		// add zeroes?
+		if addTrailingZeroes && !trimTrailingZeroes {
+			parts := d.StringParts()
+			parts[1] += strings.Repeat("0", int(places)-originalScale)
+			d = NewFromParts(parts)
+		}
+
+	} else {
+		switch mode {
+		case modes.Round_halfAwayFromZero:
+			d = d.Round(places)
+		case modes.Round_halfEven:
+			d = d.RoundBank(places)
+		default:
+			decThrow("Invalid Rounding Mode")
+			return Zero
 		}
 	}
+
 	if trimTrailingZeroes {
-		return d2.Simplify()
+		return d.Simplify()
 	}
-	return d2
+	return d
 }
 
 func (d Decimal) DivWithMinMaxScale(d2 Decimal) Decimal {

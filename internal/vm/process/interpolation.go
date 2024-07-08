@@ -1,4 +1,4 @@
-// langur/vm/process/misc.go
+// langur/vm/process/interpolation.go
 
 package process
 
@@ -9,72 +9,12 @@ import (
 	"langur/object"
 	"langur/regex"
 	"langur/str"
-	"math"
-	"os"
 )
-
-func (pr *Process) setMode(code int, setting object.Object) error {
-	switch code {
-	case modes.MODE_DIVISION_MAX_SCALE:
-		i, ok := object.NumberToInt(setting)
-		if !ok {
-			return fmt.Errorf("Expected integer for mode division max scale, not %s", setting.TypeString())
-		}
-		if i < 0 || i > math.MaxInt32-2 {
-			return fmt.Errorf("Integer %d for mode division max scale out of range", i)
-		}
-		pr.Modes.DivisionMaxScale = i
-		// FIXME: not safe for concurrency
-		return object.SetDivisionMaxScaleMode(i)
-
-	case modes.MODE_ROUNDING:
-		i, ok := object.NumberToInt(setting)
-		if !ok {
-			return fmt.Errorf("Expected rounding mode (from %s hash), not %s", modes.RoundHashName, setting.TypeString())
-		}
-		// ensure it's in the enumeration
-		_, ok = modes.RoundHashModeNames[i]
-		if !ok {
-			return fmt.Errorf("Unknown rounding mode")
-		}
-		pr.Modes.Rounding = i
-		// FIXME: not safe for concurrency
-		modes.RoundingMode = i
-
-	case modes.MODE_CONSOLE_TEXT_MODE:
-		b, ok := setting.(*object.Boolean)
-		if !ok {
-			return fmt.Errorf("Expected Boolean for mode console text mode")
-		}
-		pr.Modes.ConsoleTextMode = b.Value
-
-	case modes.MODE_NEW_FILE_PERMISSIONS:
-		i, ok := object.NumberToInt(setting)
-		if !ok {
-			return fmt.Errorf("Expected integer for mode new file permissions, not %s", setting.TypeString())
-		}
-		if i < 0 || i > 0o777 {
-			return fmt.Errorf("Integer 8x%s for mode new file permissions out of range", str.IntToStr(i, 8))
-		}
-		pr.Modes.NewFilePermissions = os.FileMode(i)
-
-	case modes.MODE_NOW_INCLUDES_NANO:
-		b, ok := setting.(*object.Boolean)
-		if !ok {
-			return fmt.Errorf("Expected Boolean for mode now includes nanoseconds")
-		}
-		pr.Modes.NowIncludesNano = b.Value
-
-	default:
-		bug("setMode", fmt.Sprintf("Unknown mode setting %d", code))
-		return fmt.Errorf("Unknown mode setting %d", code)
-	}
-
-	return nil
-}
 
 func (pr *Process) format(code int) (result object.Object, err error) {
 	// used for string interpolation modifiers
+	// must be coordinated with compiler.compileInterpolationModifiers()
+
 	switch code {
 	case format.FORMAT_TYPE:
 		original := pr.pop()
@@ -128,9 +68,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		result = object.NewString(str.LimitGraphemes(original.String(), limits, internal))
 
 	case format.FORMAT_TRUNCATE:
-		things := pr.popMultiple(3)
+		things := pr.popMultiple(4)
 
-		trimTrailingZeroes := things[2].(*object.Boolean).Value
+		trimTrailingZeroes := things[3].(*object.Boolean).Value
+		addTrailingZeroes := things[2].(*object.Boolean).Value
 		max := things[1]
 		original := things[0]
 
@@ -145,15 +86,13 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		// TODO:
-		addTrailingZeroes := true
-
 		result, err = orig.Truncate(m, addTrailingZeroes, trimTrailingZeroes)
 
 	case format.FORMAT_ROUND:
-		things := pr.popMultiple(3)
+		things := pr.popMultiple(4)
 
-		trimTrailingZeroes := things[2].(*object.Boolean).Value
+		trimTrailingZeroes := things[3].(*object.Boolean).Value
+		addTrailingZeroes := things[2].(*object.Boolean).Value
 		max := things[1]
 		original := things[0]
 
@@ -167,9 +106,6 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			err = fmt.Errorf("Unable to convert number for rounding for interpolation")
 			return
 		}
-
-		// TODO:
-		addTrailingZeroes := true
 
 		result, err = orig.RoundByMode(m, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode)
 
@@ -244,15 +180,15 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			addFractionalZeroes, trimFractionalZeroes, min, 0, b, padWith)
 
 	case format.FORMAT_FIXED:
-		things := pr.popMultiple(6)
-		trimFractionalZeroes := things[5].(*object.Boolean).Value
+		things := pr.popMultiple(7)
+
+		trimFractionalZeroes := things[6].(*object.Boolean).Value
+		addFractionalZeroes := things[5].(*object.Boolean).Value
 		padIntWithZeroes := things[4].(*object.Boolean).Value
 		frac := things[3]
 		integer := things[2]
 		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
-
-		addFractionalZeroes := true
 
 		intMin, ok := object.NumberToInt(integer)
 		if !ok {
@@ -275,12 +211,13 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			addFractionalZeroes, trimFractionalZeroes, intMin, fracRound, 10, padIntWith)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
-		things := pr.popMultiple(7)
+		things := pr.popMultiple(8)
 
-		scaleExp := things[6]
-		requireExpSign := things[5].(*object.Boolean).Value
-		uppercase := things[4].(*object.Boolean).Value
-		scaleTrimTrailingZeroes := things[3].(*object.Boolean).Value
+		scaleExp := things[7]
+		requireExpSign := things[6].(*object.Boolean).Value
+		uppercase := things[5].(*object.Boolean).Value
+		scaleTrimTrailingZeroes := things[4].(*object.Boolean).Value
+		scaleAddTrailingZeroes := things[3].(*object.Boolean).Value
 		scale := things[2]
 		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
@@ -312,7 +249,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		}
 
 		result = object.NewString(
-			orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleTrimTrailingZeroes, sc, scExp))
+			orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, sc, scExp))
 
 	case format.FORMAT_CODE_POINT:
 		rSlc, err := object.CodePointsToFlatRuneSlice(pr.pop())

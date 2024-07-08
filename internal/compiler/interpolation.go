@@ -250,8 +250,18 @@ func (c *Compiler) compileModifierInsForTruncate(node ast.Node, m []string) (
 		return
 	}
 
+	// add codes in order
+	// truncate to
 	ins = append(ins, c.constantIns(max)...)
 
+	// add trailing zeroes?
+	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
+	ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	// } else {
+	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	// }
+
+	// trim trailing zeroes?
 	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
@@ -280,8 +290,18 @@ func (c *Compiler) compileModifierInsForRounding(node ast.Node, m []string) (
 		return
 	}
 
+	// add codes in order
+	// round to
 	ins = append(ins, c.constantIns(max)...)
 
+	// add trailing zeroes?
+	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
+	ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	// } else {
+	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	// }
+
+	// trim trailing zeroes?
 	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
@@ -422,20 +442,32 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 		return
 	}
 
+	// add codes in order
+	// sign required?
 	if subMatchByName("sign", m, names) == "+" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
+	// integer and fractional
 	ins = append(ins, c.constantIns(integer)...)
 	ins = append(ins, c.constantIns(frac)...)
 
+	// pad left (integer portion) with zeroes?
 	if padIntWithZeroes {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
 
+	// add trailing zeroes?
+	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
+	ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	// } else {
+	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	// }
+
+	// trim trailing zeroes?
 	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
@@ -488,7 +520,14 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 	// scale
 	ins = append(ins, c.constantIns(scale)...)
 
-	// include trailing zeroes on scale?
+	// add trailing zeroes on scale?
+	// if subMatchByName("scaleTrimTrailingZeroes", m, names) == "-" {
+	ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	// } else {
+	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	// }
+
+	// trim trailing zeroes on scale?
 	if subMatchByName("scaleTrimTrailingZeroes", m, names) == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {

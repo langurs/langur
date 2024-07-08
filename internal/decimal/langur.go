@@ -84,18 +84,11 @@ func (d Decimal) TrueMod(d2 Decimal) Decimal {
 // The rescale Boolean determines if the part left of e should be rounded.
 func (d Decimal) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
-	rescale, scaleTrimTrailingZeroes bool,
+	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
 	scale, scaleExp int) string {
 
-	// TODO:
-	scaleAddTrailingZeroes := true
-
-	parts := strings.Split(d.string(true), ".")
-	p1 := parts[0]
-	p2 := ""
-	if len(parts) == 2 {
-		p2 = parts[1]
-	}
+	parts := d.StringParts()
+	p1, p2 := parts[0], parts[1]
 
 	sign := "+"
 	if p1[0] == '-' {
@@ -133,9 +126,10 @@ func (d Decimal) ScientificNotation(
 	p1p2 := p1 + "." + p2
 
 	if rescale && len(p2) != scale {
-		d2 := RequireFromString(strings.TrimRight(p1p2, "0"))
-		// NOTE: if scale negative, RoundWithZeroes() removes trailing zeroes when rounding
-		d2 = d2.RoundByMode(int32(scale), scaleAddTrailingZeroes, scaleTrimTrailingZeroes, modes.RoundingMode)
+		d2 := RequireFromString(strings.TrimRight(p1p2, "0")).
+			RoundByMode(int32(scale),
+				scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
+				modes.RoundingMode)
 		p1p2 = d2.string(scaleTrimTrailingZeroes)
 
 	} else if scaleTrimTrailingZeroes {
