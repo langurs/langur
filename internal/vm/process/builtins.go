@@ -452,7 +452,7 @@ func init() {
 
 		&object.BuiltIn{
 			Name: "round", Fn: bi_round,
-			Description: "round(number, max, trim, mode); rounds number to specified digits after decimal point; max < 0 means not to pad with extra trailing zeros; mode from the " + modes.RoundHashName + " hash",
+			Description: "round(number, max, addzeroes, mode); rounds number to specified digits after decimal point; mode from the " + modes.RoundHashName + " hash",
 			ParamMin:    1, ParamMax: 4,
 			Library: LIBRARY_MATH},
 
@@ -592,7 +592,7 @@ func init() {
 
 		&object.BuiltIn{
 			Name: "trunc", Fn: bi_trunc,
-			Description: "trunc(number, max, trim); truncate number to specified digits after decimal point; max < 0 means not to pad with extra trailing zeros",
+			Description: "trunc(number, max, addzeroes); truncate number to specified digits after decimal point",
 			ParamMin:    1, ParamMax: 3,
 			Library: LIBRARY_MATH},
 

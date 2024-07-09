@@ -3249,6 +3249,11 @@ func TestInterpolationModifierForRound(t *testing.T) {
 		{`val x = 1.23456879; "{{x:r1-}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:r4-}}"`, "1.2346", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:r1-}}"`, "123456879", object.STRING_OBJ},
+
+		// without adding zeroes...
+		{`val x = 123.1590; "{{x:r5!}}"`, "123.1590", object.STRING_OBJ},
+		{`val x = 123.1590; "{{x:r5}}"`, "123.15900", object.STRING_OBJ},
+		{`val x = 123.1590; "{{x:r5-}}"`, "123.159", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3286,6 +3291,11 @@ func TestInterpolationModifierForTrunc(t *testing.T) {
 		{`val x = 1.23456879; "{{x:t1-}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:t4-}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:t1-}}"`, "123456879", object.STRING_OBJ},
+
+		// without adding zeroes...
+		{`val x = 123.1590; "{{x:t5!}}"`, "123.1590", object.STRING_OBJ},
+		{`val x = 123.1590; "{{x:t5}}"`, "123.15900", object.STRING_OBJ},
+		{`val x = 123.1590; "{{x:t5-}}"`, "123.159", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3392,36 +3402,43 @@ func TestInterpolationModifierForHexAndBaseConversion(t *testing.T) {
 
 func TestInterpolationModifierForFixedPoint(t *testing.T) {
 	tests := []vmTestCase{
-		{`val x = 255; "{{x:10x0.2}}"`, "255.00", object.STRING_OBJ},
+		{`val x = 255; "{{x:10x1.2}}"`, "255.00", object.STRING_OBJ},
 		{`val x = 255; "{{x:10x7.2}}"`, "    255.00", object.STRING_OBJ},
 
-		{`val x = -255; "{{x:+10x0.2}}"`, "-255.00", object.STRING_OBJ},
+		{`val x = -255; "{{x:+10x1.2}}"`, "-255.00", object.STRING_OBJ},
 		{`val x = -255; "{{x:+10x7.2}}"`, "   -255.00", object.STRING_OBJ},
-		{`val x = 255; "{{x:+10x0.2}}"`, "+255.00", object.STRING_OBJ},
+		{`val x = 255; "{{x:+10x1.2}}"`, "+255.00", object.STRING_OBJ},
 		{`val x = 255; "{{x:+10x7.2}}"`, "   +255.00", object.STRING_OBJ},
 
-		{`val x = 3.14159; "{{x:10x0.2}}"`, "3.14", object.STRING_OBJ},
+		{`val x = 3.14159; "{{x:10x1.2}}"`, "3.14", object.STRING_OBJ},
 		{`val x = 3.14159; "{{x:10x3.0}}"`, "  3", object.STRING_OBJ},
 
-		{`val x = 255; "{{x:10x0.2}}"`, "255.00", object.STRING_OBJ},
+		{`val x = 255; "{{x:10x1.2}}"`, "255.00", object.STRING_OBJ},
 		{`val x = 255; "{{x:10x07.2}}"`, "0000255.00", object.STRING_OBJ},
 
-		{`val x = -255; "{{x: +10x0.2 }}"`, "-255.00", object.STRING_OBJ},
+		{`val x = -255; "{{x: +10x1.2 }}"`, "-255.00", object.STRING_OBJ},
 		{`val x = -255; "{{x:+10x07.2}}"`, "-000255.00", object.STRING_OBJ},
-		{`val x = 255; "{{x:+10x0.2}}"`, "+255.00", object.STRING_OBJ},
+		{`val x = 255; "{{x:+10x1.2}}"`, "+255.00", object.STRING_OBJ},
 		{`val x = 255; "{{x:+10x07.2}}"`, "+000255.00", object.STRING_OBJ},
 
-		{`val x = 3.14159; "{{x:10x0.2}}"`, "3.14", object.STRING_OBJ},
+		{`val x = 3.14159; "{{x:10x1.2}}"`, "3.14", object.STRING_OBJ},
 		{`val x = 3.14159; "{{x:10x03.0}}"`, "003", object.STRING_OBJ},
 
 		// trim trailing zeroes
-		{`val x = 3.14159; "{{x:10x0.2-}}"`, "3.14", object.STRING_OBJ},
-		{`val x = 3.10; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
-		{`val x = 3.100; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
-		{`val x = 3.1001; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
-		{`val x = 3.1; "{{x:10x0.2-}}"`, "3.1", object.STRING_OBJ},
-		{`val x = 3.11; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
-		{`val x = 3.111; "{{x:10x0.2-}}"`, "3.11", object.STRING_OBJ},
+		{`val x = 3.14159; "{{x:10x1.2-}}"`, "3.14", object.STRING_OBJ},
+		{`val x = 3.10; "{{x:10x1.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.100; "{{x:10x1.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.1001; "{{x:10x1.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.1; "{{x:10x1.2-}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.11; "{{x:10x1.2-}}"`, "3.11", object.STRING_OBJ},
+		{`val x = 3.111; "{{x:10x1.2-}}"`, "3.11", object.STRING_OBJ},
+
+		// add trailing zeroes?
+		{`val x = 3.14159; "{{x:10x1.2!}}"`, "3.14", object.STRING_OBJ},
+		{`val x = 3.1; "{{x:10x1.2!}}"`, "3.1", object.STRING_OBJ},
+		{`val x = 3.1; "{{x:10x1.2}}"`, "3.10", object.STRING_OBJ},
+		{`val x = 3; "{{x:10x1.2!}}"`, "3", object.STRING_OBJ},
+		{`val x = 3; "{{x:10x1.2}}"`, "3.00", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3554,6 +3571,14 @@ func TestInterpolationModifierForScientificNotation(t *testing.T) {
 		{`val x = -100; "{{x:2-e+4}}"`, "-1e+0002", object.STRING_OBJ},
 		{`val x = -10; "{{x:2-e+4}}"`, "-1e+0001", object.STRING_OBJ},
 		{`val x = -1; "{{x:2-e+4}}"`, "-1e+0000", object.STRING_OBJ},
+
+		// add zeroes to scale?
+		{`val x = 1; "{{x:2!e+4}}"`, "1e+0000", object.STRING_OBJ},
+		{`val x = 1; "{{x:2e+4}}"`, "1.00e+0000", object.STRING_OBJ},
+		{`val x = 100; "{{x:2!e+4}}"`, "1.00e+0002", object.STRING_OBJ},
+		{`val x = 1000; "{{x:2!e+4}}"`, "1.00e+0003", object.STRING_OBJ},
+		{`val x = 10; "{{x:2!e+4}}"`, "1.0e+0001", object.STRING_OBJ},
+		{`val x = 1.2; "{{x:3e}}"`, "1.200e0", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6065,13 +6090,13 @@ func TestMathFunctions(t *testing.T) {
 		// truncate without padding zeroes
 		{`trunc(123)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123, 2, true)`, 123, object.NUMBER_OBJ},
+		{`trunc(123, 2, false)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.123456789, 4, true)`, "123.1234", object.NUMBER_OBJ},
-		{`trunc(123.123456789, 8, true)`, "123.12345678", object.NUMBER_OBJ},
-		{`trunc(123.123456789, 9, true)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, 10, true)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, 12, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 4, false)`, "123.1234", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 8, false)`, "123.12345678", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 9, false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 10, false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, 12, false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// truncate with padding zeros
 		{`trunc(123, 0)`, 123, object.NUMBER_OBJ},
@@ -6099,12 +6124,12 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.4)`, 123, object.NUMBER_OBJ},
 		{`round(123.7)`, 124, object.NUMBER_OBJ},
 		{`round(123.0)`, 123, object.NUMBER_OBJ},
-		{`round(123, 2, true)`, 123, object.NUMBER_OBJ},
+		{`round(123, 2, false)`, 123, object.NUMBER_OBJ},
 		{`round(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`round(123.123456789, 4, true)`, "123.1235", object.NUMBER_OBJ},
-		{`round(123.123456789, 9, true)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, 10, true)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, 12, true)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 4, false)`, "123.1235", object.NUMBER_OBJ},
+		{`round(123.123456789, 9, false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 10, false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, 12, false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// round with padding zeroes
 		{`round(123, 0)`, 123, object.NUMBER_OBJ},
@@ -6129,14 +6154,14 @@ func TestMathFunctions(t *testing.T) {
 		{`round(153.4, -2)`, 200, object.NUMBER_OBJ},
 
 		// test passing rounding mode to round() function
-		{`round(123.5, 0, false, _round'halfeven)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, 0, false, _round'halfeven)`, 122, object.NUMBER_OBJ},
-		{`round(123.5, 0, false, _round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, 0, false, _round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
+		{`round(123.5, 0, true, _round'halfeven)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, 0, true, _round'halfeven)`, 122, object.NUMBER_OBJ},
+		{`round(123.5, 0, true, _round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, 0, true, _round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
 
-		{`val x = round(2.5, 0, false, _round'halfeven)
-		  val y = round(2.5, 0, false, _round'halfawayfrom0)
-		  val z = round(4.45, 1, false, _round'halfeven)
+		{`val x = round(2.5, 0, true, _round'halfeven)
+		  val y = round(2.5, 0, true, _round'halfawayfrom0)
+		  val z = round(4.45, 1, true, _round'halfeven)
 		  x + y + z`, "9.4", object.NUMBER_OBJ},
 
 		// alternating rounding modes

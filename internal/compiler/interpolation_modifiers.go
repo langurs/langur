@@ -26,8 +26,10 @@ var modifierRegexForDateTime = regexp.MustCompile(
 	`^` + common.DateTimeTokenLiteral + `\((?P<format>.+)\)$|^` +
 		common.DateTimeTokenLiteral + ` (?P<var>` + common.IdentifierRegexString + `)$`)
 
-var modifierRegexForTruncate = regexp.MustCompile(`^t(?:(?P<max>-?[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
-var modifierRegexForRounding = regexp.MustCompile(`^r(?:(?P<max>-?[0-9]+)(?P<trimTrailingZeroes>-)?)?$`)
+var modifierRegexForTruncate = regexp.MustCompile(
+	`^t(?:(?P<max>-?[0-9]+)(?P<trailingZeroes>[!\-])?)?$`)
+var modifierRegexForRounding = regexp.MustCompile(
+	`^r(?:(?P<max>-?[0-9]+)(?P<trailingZeroes>[!\-])?)?$`)
 
 var modifierRegexForAlign = regexp.MustCompile(
 	`^(?P<align>-?[1-9][0-9]*)(?:\((?:(?P<withcp>.)|(?P<withcpnum>[0-9a-fA-F]{2,8}))\))?$`)
@@ -45,10 +47,10 @@ var modifierRegexForHex = regexp.MustCompile(`^(?P<sign>[+])?(?P<uc>[xX])(?P<min
 var modifierRegexForBase = regexp.MustCompile(
 	`^(?P<sign>[+])?(?P<base>[1-9][0-9]*)(?P<uc>[xX])(?:(?P<min>[0-9]+))?$`)
 var modifierRegexForFixed = regexp.MustCompile(
-	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)(?P<trimTrailingZeroes>-)?$`)
+	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?$`)
 
 var modifierRegexForScientificNotation = regexp.MustCompile(
-	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<scaleTrimTrailingZeroes>-)?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
+	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
 
 func subMatchByName(name string, subs, names []string) string {
 	// used internally and assuming slices match
@@ -74,8 +76,6 @@ func (c *Compiler) compileInterpolationModifiers(node ast.Node, modifiers []stri
 		}
 		mods = append(mods, temp)
 	}
-	// TODO: check for scientific notation modifier following a fixed point modifier
-	// That is, if a number doesn't fit within fixed point, optionally convert to scientific notation.
 	for _, m := range mods {
 		ins = append(ins, m...)
 	}
@@ -255,14 +255,15 @@ func (c *Compiler) compileModifierInsForTruncate(node ast.Node, m []string) (
 	ins = append(ins, c.constantIns(max)...)
 
 	// add trailing zeroes?
-	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
-	ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	// } else {
-	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	// }
+	trailing := subMatchByName("trailingZeroes", m, names)
+	if trailing == "!" {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	}
 
 	// trim trailing zeroes?
-	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
+	if trailing == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
@@ -295,14 +296,15 @@ func (c *Compiler) compileModifierInsForRounding(node ast.Node, m []string) (
 	ins = append(ins, c.constantIns(max)...)
 
 	// add trailing zeroes?
-	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
-	ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	// } else {
-	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	// }
+	trailing := subMatchByName("trailingZeroes", m, names)
+	if trailing == "!" {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	}
 
 	// trim trailing zeroes?
-	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
+	if trailing == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
@@ -427,6 +429,10 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	padIntWithZeroes := false
 
 	mm := subMatchByName("int", m, names)
+	if mm == "0" {
+		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: integer cannot be 0 (maybe you meant 1?)"))
+		return
+	}
 	integer, err = object.NumberFromString(mm)
 	if err != nil {
 		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: %s", err))
@@ -461,14 +467,15 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	}
 
 	// add trailing zeroes?
-	// if subMatchByName("addTrailingZeroes", m, names) == "-" {
-	ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	// } else {
-	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	// }
+	trailing := subMatchByName("trailingZeroes", m, names)
+	if trailing == "!" {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	}
 
 	// trim trailing zeroes?
-	if subMatchByName("trimTrailingZeroes", m, names) == "-" {
+	if trailing == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
@@ -521,14 +528,15 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 	ins = append(ins, c.constantIns(scale)...)
 
 	// add trailing zeroes on scale?
-	// if subMatchByName("scaleTrimTrailingZeroes", m, names) == "-" {
-	ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	// } else {
-	// 	ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	// }
+	trailing := subMatchByName("trailingZeroes", m, names)
+	if trailing == "!" {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	}
 
 	// trim trailing zeroes on scale?
-	if subMatchByName("scaleTrimTrailingZeroes", m, names) == "-" {
+	if trailing == "-" {
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)

@@ -1,16 +1,16 @@
 langur revision history
 https://langurlang.org
 
-... - 0.16.5
-- updated to read version number from file VERSION.txt
-- changed interpolation modifier for scientific notation to use - after scale to indicate to trim trailing zeroes on scale, rather than using a negative scale
-- changed interpolation modifiers for round and truncate to use - after rather than before number to indicate to trim trailing zeroes
-- updated interpolation modifier for fixed point to allow to indicate to trim trailing zeroes
-- updated round() and trunc() functions to accept another argument to indicate whether to trim trailing zeroes
+2024-07-09 - 0.16.5
+- changed interpolation modifier for scientific notation to use dash after scale to indicate to trim trailing zeroes on scale, rather than using a negative scale
+- updated interpolation modifier for scientific notation to use ! after scale to indicate not to add trailing zeroes on scale
+- changed interpolation modifiers for round and truncate to use dash after rather than before number to indicate to trim trailing zeroes
+- updated interpolation modifiers for round and truncate to use ! after number to indicate not to add trailing zeroes
+- updated interpolation modifier for fixed point to allow to indicators for whether to add or trim trailing zeroes
+- updated round() and trunc() functions to accept another argument to indicate whether to add trailing zeroes (default true)
 - updated round() and trunc() and interpolation modifiers to use negative numbers to round an integer portion
 - fixed bug in rounding/truncation, and in the scientific notation modifier that failed to remove trailing zeroes when the actual scale was equal to the scale parameter
-
-
+- disallow 0 as the integer portion on fixed point interpolation modifier (should be 1, not 0)
 
 2024-06-30 - 0.16.4
 - updated regexp package (re2) from go 1.22.4

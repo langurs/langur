@@ -119,24 +119,35 @@ func (d Decimal) ScientificNotation(
 			}
 		}
 	}
-	if p2 == "" {
-		p2 = "0"
+
+	p1p2 := p1
+	if p2 != "" {
+		p1p2 += "." + p2
 	}
 
-	p1p2 := p1 + "." + p2
-
 	if rescale && len(p2) != scale {
-		d2 := RequireFromString(strings.TrimRight(p1p2, "0")).
+		p1p2 = RequireFromString(p1p2).
 			RoundByMode(int32(scale),
 				scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
-				modes.RoundingMode)
-		p1p2 = d2.string(scaleTrimTrailingZeroes)
+				modes.RoundingMode).
+			string(false)
 
-	} else if scaleTrimTrailingZeroes {
-		p1p2 = strings.TrimRight(p1p2, "0")
-		if p1p2[len(p1p2)-1] == '.' {
-			// removes hanging dot
-			p1p2 = p1p2[:len(p1p2)-1]
+	} else {
+		if scaleAddTrailingZeroes && len(p2) < scale {
+			if p1p2 == "0" {
+				p1p2 += "."
+			}
+			p1p2 += strings.Repeat("0", scale-len(p2))
+		}
+
+		if scaleTrimTrailingZeroes {
+			if p1p2 != "0" {
+				p1p2 = strings.TrimRight(p1p2, "0")
+			}
+			if p1p2[len(p1p2)-1] == '.' {
+				// removes hanging dot
+				p1p2 = p1p2[:len(p1p2)-1]
+			}
 		}
 	}
 

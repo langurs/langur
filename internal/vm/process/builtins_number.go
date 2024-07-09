@@ -416,17 +416,16 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
-	// TODO:
 	addTrailingZeroes := true
-
-	trimTrailingZeroes := false
 	if len(args) > 2 {
 		trim, ok := args[2].(*object.Boolean)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to trim trailing zeroes)")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to add trailing zeroes)")
 		}
-		trimTrailingZeroes = trim.Value
+		addTrailingZeroes = trim.Value
 	}
+
+	trimTrailingZeroes := false
 
 	var num *object.Number
 	var err error
@@ -465,17 +464,16 @@ func bi_trunc(pr *Process, args ...object.Object) object.Object {
 		}
 	}
 
-	// TODO:
 	addTrailingZeroes := true
-
-	trimTrailingZeroes := false
 	if len(args) > 2 {
 		trim, ok := args[2].(*object.Boolean)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to trim trailing zeroes)")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to add trailing zeroes)")
 		}
-		trimTrailingZeroes = trim.Value
+		addTrailingZeroes = trim.Value
 	}
+
+	trimTrailingZeroes := false
 
 	num, err := n.Truncate(max, addTrailingZeroes, trimTrailingZeroes)
 
