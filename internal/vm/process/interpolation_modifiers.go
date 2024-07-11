@@ -131,6 +131,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 		addFractionalZeroes := true
 		trimFractionalZeroes := false
+		fractionalAffectsIntegerPadding := false
 
 		min, ok := object.NumberToInt(minimum)
 		if !ok {
@@ -145,7 +146,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 		result, err = object.ToBaseString(
 			original, uppercase, requireSign, true,
-			addFractionalZeroes, trimFractionalZeroes, min, 0, 16, padWith)
+			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
+			min, 0, 16, padWith)
 
 	case format.FORMAT_BASE:
 		things := pr.popMultiple(6)
@@ -158,6 +160,7 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 		addFractionalZeroes := true
 		trimFractionalZeroes := false
+		fractionalAffectsIntegerPadding := false
 
 		b, ok := object.NumberToInt(base)
 		if !ok {
@@ -177,7 +180,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 		result, err = object.ToBaseString(
 			original, uppercase, requireSign, true,
-			addFractionalZeroes, trimFractionalZeroes, min, 0, b, padWith)
+			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
+			min, 0, b, padWith)
 
 	case format.FORMAT_FIXED:
 		things := pr.popMultiple(7)
@@ -189,6 +193,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		integer := things[2]
 		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
+
+		fractionalAffectsIntegerPadding := false
 
 		intMin, ok := object.NumberToInt(integer)
 		if !ok {
@@ -208,7 +214,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 		result, err = object.ToBaseString(
 			original, false, requireSign, true,
-			addFractionalZeroes, trimFractionalZeroes, intMin, fracRound, 10, padIntWith)
+			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
+			intMin, fracRound, 10, padIntWith)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
 		things := pr.popMultiple(8)

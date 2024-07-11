@@ -377,10 +377,12 @@ func CodePointsToFlatRuneSlice(cp Object) ([]rune, error) {
 func ToBaseString(
 	original Object,
 	uppercase, requireSign, signCountsForPadding,
-	addFractionalZeroes, trimFractionalZeroes bool,
+	addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding bool,
 	integerMin, fracRound, base int,
 	padIntWith rune) (
 	*String, error) {
+
+	fracDiff := 0
 
 	var parts []string
 	var intErr error
@@ -403,16 +405,25 @@ func ToBaseString(
 	var s, intPadding string
 	var isNeg bool
 	if base == 10 && len(parts) == 2 {
+		if fractionalAffectsIntegerPadding {
+			fracDiff = fracRound - len(parts[1])
+		}
+
 		if parts[0][0] == '-' {
 			parts[0] = parts[0][1:]
 			isNeg = true
 		}
 		if len(parts[0]) < integerMin {
-			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0]))
+			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0])+fracDiff)
 		}
 		s = parts[0] + "." + parts[1]
 
 	} else {
+		// no fractional part
+		if fractionalAffectsIntegerPadding {
+			fracDiff = fracRound
+		}
+
 		if intErr != nil {
 			return nil, intErr
 		}
@@ -423,7 +434,7 @@ func ToBaseString(
 			isNeg = true
 		}
 		if len(s) < integerMin {
-			intPadding = strings.Repeat(string(padIntWith), integerMin-len(s))
+			intPadding = strings.Repeat(string(padIntWith), integerMin-len(s)+fracDiff)
 		}
 
 		if uppercase {
@@ -438,7 +449,7 @@ func ToBaseString(
 		sign = "+"
 	}
 
-	if signCountsForPadding && sign != "" && len(intPadding) > 0 {
+	if signCountsForPadding && sign != "" && intPadding != "" {
 		intPadding = intPadding[1:]
 	}
 
