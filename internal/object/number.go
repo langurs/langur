@@ -442,10 +442,10 @@ func ToBaseString(
 		intPadding = intPadding[1:]
 	}
 
-	if padIntWith == ' ' {
-		s = intPadding + sign + s
-	} else {
+	if padIntWith == '0' {
 		s = sign + intPadding + s
+	} else {
+		s = intPadding + sign + s
 	}
 
 	return NewString(s), nil
