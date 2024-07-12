@@ -85,7 +85,8 @@ func (d Decimal) TrueMod(d2 Decimal) Decimal {
 func (d Decimal) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
 	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
-	scale, scaleExp int) string {
+	scale, scaleExp int,
+	decimalPoint rune) string {
 
 	parts := d.StringParts()
 	p1, p2 := parts[0], parts[1]
@@ -122,6 +123,7 @@ func (d Decimal) ScientificNotation(
 
 	p1p2 := p1
 	if p2 != "" {
+		// use dot here; replace later if necessary
 		p1p2 += "." + p2
 	}
 
@@ -135,7 +137,7 @@ func (d Decimal) ScientificNotation(
 	} else {
 		if scaleAddTrailingZeroes && len(p2) < scale {
 			if p1p2 == "0" {
-				p1p2 += "."
+				p1p2 += string(decimalPoint)
 			}
 			p1p2 += strings.Repeat("0", scale-len(p2))
 		}
@@ -172,6 +174,10 @@ func (d Decimal) ScientificNotation(
 	}
 	if expLen < scaleExp {
 		expStr = strings.Repeat("0", scaleExp-expLen) + expStr
+	}
+
+	if decimalPoint != '.' {
+		p1p2 = strings.Replace(p1p2, ".", string(decimalPoint), 1)
 	}
 
 	return sign + p1p2 + e + expSign + expStr

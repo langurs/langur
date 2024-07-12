@@ -1,9 +1,10 @@
 langur revision history
 https://langurlang.org
 
-... - 0.16.6
+2024-07-12 - 0.16.6
+- updated fixed point and scientific notation interpolation modifiers to accept comma for decimal point
+- changed scientific notation interpolation modifier to require 1. or 1, to start specified scale
 - updated interpolation modifers internally (combined hex and base with fixed point)
-
 
 2024-07-09 - 0.16.5
 - changed interpolation modifier for scientific notation to use dash after scale to indicate to trim trailing zeroes on scale, rather than using a negative scale

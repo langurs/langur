@@ -49,13 +49,13 @@ var modifierRegexForFixed = regexp.MustCompile(`(?x)
 	(?P<base>[1-9][0-9]*)?
 	(?P<uc>[xX])
 	(?:(?P<padint>0)?(?P<int>[0-9]+))?
-	(?:\.(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?)?
+	(?:(?P<point>[.,])(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?)?
 	$`)
 
 var modifierRegexForScientificNotation = regexp.MustCompile(`(?x)
 	^
 	(?P<sign>[+])?
-	(?:(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
+	(?:1(?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
 	(?P<uc>[eE])
 	(?P<expsign>[+])?
 	(?P<scaleExp>\d+)?
@@ -360,12 +360,25 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	mm = subMatchByName("frac", m, names)
 	if mm == "" {
 		frac = object.Zero
+
 	} else {
+		if b != "10" {
+			err = makeErr(node, "Fractional only valid with base 10")
+			return
+		}
+
 		frac, err = object.NumberFromString(mm)
 		if err != nil {
 			err = makeErr(node, fmt.Sprintf("Error processing fractional for fixed point interpolation modifier: %s", err))
 			return
 		}
+	}
+	trailing := subMatchByName("trailingZeroes", m, names)
+
+	point := object.NumberFromRune('.')
+	p := subMatchByName("point", m, names)
+	if p != "" {
+		point = object.NumberFromInt(int(p[0]))
 	}
 
 	// add codes in order
@@ -386,8 +399,9 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
 
-	// integer and fractional
+	// integer, decimal point, and fractional
 	ins = append(ins, c.constantIns(integer)...)
+	ins = append(ins, c.constantIns(point)...)
 	ins = append(ins, c.constantIns(frac)...)
 
 	// pad left (integer portion) with zeroes?
@@ -398,7 +412,6 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	}
 
 	// add trailing zeroes?
-	trailing := subMatchByName("trailingZeroes", m, names)
 	if trailing == "!" {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	} else {
@@ -435,6 +448,12 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		return
 	}
 
+	point := object.NumberFromRune('.')
+	p := subMatchByName("point", m, names)
+	if p != "" {
+		point = object.NumberFromInt(int(p[0]))
+	}
+
 	var scaleExp object.Object
 	mm = subMatchByName("scaleExp", m, names)
 	if mm == "" {
@@ -454,6 +473,9 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
+
+	// decimal point
+	ins = append(ins, c.constantIns(point)...)
 
 	// scale
 	ins = append(ins, c.constantIns(scale)...)

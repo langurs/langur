@@ -277,11 +277,11 @@ func NumberFromStringBase(s string, base int) (*Number, error) {
 func (n *Number) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
 	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
-	scale, scaleExp int) string {
+	scale, scaleExp int, decimalPoint rune) string {
 
 	// convert to decimal to use already developed method
 	return n.UseDecimal().decimal.ScientificNotation(
-		capitalize, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, scale, scaleExp)
+		capitalize, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, scale, scaleExp, decimalPoint)
 }
 
 func ToNumber(obj Object, base int) (*Number, bool) {
@@ -379,7 +379,7 @@ func ToBaseString(
 	uppercase, requireSign, signCountsForPadding,
 	addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding bool,
 	integerMin, fracRound, base int,
-	padIntWith rune) (
+	padIntWith, decimalPoint rune) (
 	*String, error) {
 
 	fracDiff := 0
@@ -416,7 +416,7 @@ func ToBaseString(
 		if len(parts[0]) < integerMin {
 			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0])+fracDiff)
 		}
-		s = parts[0] + "." + parts[1]
+		s = parts[0] + string(decimalPoint) + parts[1]
 
 	} else {
 		// no fractional part

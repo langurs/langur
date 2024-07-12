@@ -125,17 +125,18 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		result, err = object.EscString(original, regex.RegexType(reType))
 
 	case format.FORMAT_FIXED:
-		things := pr.popMultiple(9)
+		things := pr.popMultiple(10)
 
 		original := things[0]
 		requireSign := things[1].(*object.Boolean).Value
 		base := things[2]
 		uppercase := things[3].(*object.Boolean).Value
 		integer := things[4]
-		frac := things[5]
-		padIntWithZeroes := things[6].(*object.Boolean).Value
-		addFractionalZeroes := things[7].(*object.Boolean).Value
-		trimFractionalZeroes := things[8].(*object.Boolean).Value
+		point := things[5].(*object.Number)
+		frac := things[6]
+		padIntWithZeroes := things[7].(*object.Boolean).Value
+		addFractionalZeroes := things[8].(*object.Boolean).Value
+		trimFractionalZeroes := things[9].(*object.Boolean).Value
 
 		fractionalAffectsIntegerPadding := false
 
@@ -160,22 +161,30 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			padIntWith = '0'
 		}
 
+		var decimalPoint rune
+		decimalPoint, err = point.ToRune()
+		if err != nil {
+			err = fmt.Errorf("Unable to determine decimal point for fixed point interpolation")
+			return
+		}
+
 		result, err = object.ToBaseString(
 			original, uppercase, requireSign, true,
 			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
-			intMin, fracRound, b, padIntWith)
+			intMin, fracRound, b, padIntWith, decimalPoint)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
-		things := pr.popMultiple(8)
+		things := pr.popMultiple(9)
 
 		original := things[0]
 		requireSign := things[1].(*object.Boolean).Value
-		scale := things[2]
-		scaleAddTrailingZeroes := things[3].(*object.Boolean).Value
-		scaleTrimTrailingZeroes := things[4].(*object.Boolean).Value
-		uppercase := things[5].(*object.Boolean).Value
-		requireExpSign := things[6].(*object.Boolean).Value
-		scaleExp := things[7]
+		point := things[2].(*object.Number)
+		scale := things[3]
+		scaleAddTrailingZeroes := things[4].(*object.Boolean).Value
+		scaleTrimTrailingZeroes := things[5].(*object.Boolean).Value
+		uppercase := things[6].(*object.Boolean).Value
+		requireExpSign := things[7].(*object.Boolean).Value
+		scaleExp := things[8]
 
 		rescale := true
 		sc := 0
@@ -203,8 +212,14 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result = object.NewString(
-			orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, sc, scExp))
+		var decimalPoint rune
+		decimalPoint, err = point.ToRune()
+		if err != nil {
+			err = fmt.Errorf("Unable to determine decimal point for scientific notation interpolation")
+			return
+		}
+
+		result = object.NewString(orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, sc, scExp, decimalPoint))
 
 	case format.FORMAT_CODE_POINT:
 		rSlc, err := object.CodePointsToFlatRuneSlice(pr.pop())
