@@ -384,18 +384,18 @@ For RFC 3339, a -00 offset is an "Unknown Local Offset Convention." For ISO 8601
 // no short form; colons and dashes required
 var dtRegexDateLiteralString = "(?P<year>[0-9]{4})-(?P<month>1[0-2]|0[1-9])-(?P<day>3[01]|[12][0-9]|0[1-9])"
 
-var dtRegexTimeLiteralString = `(?x:
+var dtRegexTimeLiteralString = `(?x)
 	(?P<hour>2[0-3]|[01][0-9])
     	(?: :(?P<minute>[0-5][0-9])
         	(?: :(?P<second>[0-5][0-9]) (?: \. (?P<secondsfraction>[0-9]{1,9}))? )?
-		)?)`
+		)?`
 
-var dtRegexTimeZoneLiteralString = `(?x:
+var dtRegexTimeZoneLiteralString = `(?x)
     (?:(?P<tzutc>Z)
     	|
         (?P<tzhours>[+-] (?: 2[0-3]|[01][0-9]))
         (?: :(?P<tzminutes>[0-5][0-9]) )?
-    )?)`
+    )?`
 
 var dtRegexLiteral = regexp.MustCompile(
 	"^" + dtRegexDateLiteralString + "(?:(?: |T)" + dtRegexTimeLiteralString + dtRegexTimeZoneLiteralString + ")?$")
@@ -407,18 +407,18 @@ var dtRegexTZLiteral = regexp.MustCompile("^" + dtRegexTimeZoneLiteralString + "
 // allowing conversion of a string to a date-time from the short form
 var dtRegexDateString = "(?P<year>[0-9]{4})-?(?P<month>1[0-2]|0[1-9])-?(?P<day>3[01]|[12][0-9]|0[1-9])"
 
-var dtRegexTimeString = `(?x:
+var dtRegexTimeString = `(?x)
 	(?P<hour>2[0-3]|[01][0-9])
     	(?: :?(?P<minute>[0-5][0-9])
         	(?: :?(?P<second>[0-5][0-9]) (?: \. (?P<secondsfraction>[0-9]{1,9}))? )?
-		)?)`
+		)?`
 
-var dtRegexTimeZoneString = `(?x:
+var dtRegexTimeZoneString = `(?x)
     (?:(?P<tzutc>Z)
     	|
         (?P<tzhours>[+-] (?: 2[0-3]|[01][0-9]))
         (?: :?(?P<tzminutes>[0-5][0-9]) )?
-    )?)`
+    )?`
 
 var dtRegex = regexp.MustCompile(
 	"^" + dtRegexDateString + "(?:(?: |T)" + dtRegexTimeString + dtRegexTimeZoneString + ")?$")

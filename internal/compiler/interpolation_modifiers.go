@@ -43,14 +43,23 @@ var modifierRegexForLimit = regexp.MustCompile(
 var modifierRegexForLimitGraphemes = regexp.MustCompile(
 	`^Lg(?P<limit>-?[1-9][0-9]*)(?:\((?P<internal>[^)]*)\))?$`)
 
-var modifierRegexForHex = regexp.MustCompile(`^(?P<sign>[+])?(?P<uc>[xX])(?P<min>[0-9]+)?$`)
-var modifierRegexForBase = regexp.MustCompile(
-	`^(?P<sign>[+])?(?P<base>[1-9][0-9]*)(?P<uc>[xX])(?:(?P<min>[0-9]+))?$`)
-var modifierRegexForFixed = regexp.MustCompile(
-	`^(?P<sign>[+])?10x(?P<int>[0-9]+)\.(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?$`)
+var modifierRegexForFixed = regexp.MustCompile(`(?x)
+	^
+	(?P<sign>[+])?
+	(?P<base>[1-9][0-9]*)?
+	(?P<uc>[xX])
+	(?:(?P<padint>0)?(?P<int>[0-9]+))?
+	(?:\.(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?)?
+	$`)
 
-var modifierRegexForScientificNotation = regexp.MustCompile(
-	`^(?P<sign>[+])?(?:(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?(?P<uc>[eE])(?P<expsign>[+])?(?P<scaleExp>\d+)?$`)
+var modifierRegexForScientificNotation = regexp.MustCompile(`(?x)
+	^
+	(?P<sign>[+])?
+	(?:(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
+	(?P<uc>[eE])
+	(?P<expsign>[+])?
+	(?P<scaleExp>\d+)?
+	$`)
 
 func subMatchByName(name string, subs, names []string) string {
 	// used internally and assuming slices match
@@ -118,12 +127,6 @@ func (c *Compiler) compileInterpolationModifierIns(
 
 	} else if m := modifierRegexForFn.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForCustomFn(node, m)
-
-	} else if m := modifierRegexForHex.FindStringSubmatch(mod); m != nil {
-		return c.compileModifierInsForHex(node, m)
-
-	} else if m := modifierRegexForBase.FindStringSubmatch(mod); m != nil {
-		return c.compileModifierInsForCustomBase(node, m)
 
 	} else if m := modifierRegexForFixed.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForFixedNotation(node, m)
@@ -315,121 +318,36 @@ func (c *Compiler) compileModifierInsForRounding(node ast.Node, m []string) (
 	return
 }
 
-func (c *Compiler) compileModifierInsForHex(node ast.Node, m []string) (
+func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string) (
 	ins opcode.Instructions, err error) {
 
-	names := modifierRegexForHex.SubexpNames()
+	var integer, frac *object.Number
 
-	padWithZeroes := false
+	names := modifierRegexForFixed.SubexpNames()
 
-	var min *object.Number
-	mm := subMatchByName("min", m, names)
-	if mm == "" {
-		min, err = object.NumberFromString("0")
-	} else {
-		if mm[0] == '0' {
-			padWithZeroes = true
-		}
-		min, err = object.NumberFromString(mm)
+	// base from 2 to 36
+	b := subMatchByName("base", m, names)
+	if b == "" {
+		// none specified; is hexadecimal
+		b = "16"
 	}
-	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing hex minimum for interpolation modifier: %s", err))
-		return
-	}
-
-	// add codes to stack
-	ins = append(ins, c.constantIns(min)...)
-	if subMatchByName("uc", m, names) == "X" {
-		// uppercase
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-	if subMatchByName("sign", m, names) == "+" {
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-
-	if padWithZeroes {
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-
-	ins = append(ins, opcode.Make(opcode.OpFormat, format.FORMAT_HEX)...)
-
-	return
-}
-
-func (c *Compiler) compileModifierInsForCustomBase(node ast.Node, m []string) (
-	ins opcode.Instructions, err error) {
-
-	names := modifierRegexForBase.SubexpNames()
-
-	// custom base specified (from 2 to 36)
 	var base *object.Number
-	base, err = object.NumberFromString(subMatchByName("base", m, names))
+	base, err = object.NumberFromString(b)
 	if err != nil {
 		err = makeErr(node, fmt.Sprintf("Error processing base for interpolation modifier: %s", err))
 		return
 	}
 
-	padWithZeroes := false
-
-	var min *object.Number
-	mm := subMatchByName("min", m, names)
-	if mm == "" {
-		min, err = object.NumberFromString("0")
-	} else {
-		if mm[0] == '0' {
-			padWithZeroes = true
-		}
-		min, err = object.NumberFromString(mm)
-	}
-	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing base minimum width for interpolation modifier: %s", err))
-		return
-	}
-
-	// add codes to stack
-	ins = append(ins, c.constantIns(base)...)
-	ins = append(ins, c.constantIns(min)...)
-	if subMatchByName("uc", m, names) == "X" {
-		// uppercase
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-	if subMatchByName("sign", m, names) == "+" {
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-
-	if padWithZeroes {
-		ins = append(ins, opcode.Make(opcode.OpTrue)...)
-	} else {
-		ins = append(ins, opcode.Make(opcode.OpFalse)...)
-	}
-
-	ins = append(ins, opcode.Make(opcode.OpFormat, format.FORMAT_BASE)...)
-
-	return
-}
-
-func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string) (
-	ins opcode.Instructions, err error) {
-
-	names := modifierRegexForFixed.SubexpNames()
-
-	// fixed point
-	var integer, frac *object.Number
-
 	padIntWithZeroes := false
-
-	mm := subMatchByName("int", m, names)
+	mm := subMatchByName("padint", m, names)
 	if mm == "0" {
+		padIntWithZeroes = true
+	}
+
+	mm = subMatchByName("int", m, names)
+	if mm == "" {
+		mm = "1"
+	} else if mm == "0" {
 		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: integer cannot be 0 (maybe you meant 1?)"))
 		return
 	}
@@ -438,14 +356,16 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: %s", err))
 		return
 	}
-	if mm[0] == '0' {
-		padIntWithZeroes = true
-	}
+
 	mm = subMatchByName("frac", m, names)
-	frac, err = object.NumberFromString(mm)
-	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing fractional for fixed point interpolation modifier: %s", err))
-		return
+	if mm == "" {
+		frac = object.Zero
+	} else {
+		frac, err = object.NumberFromString(mm)
+		if err != nil {
+			err = makeErr(node, fmt.Sprintf("Error processing fractional for fixed point interpolation modifier: %s", err))
+			return
+		}
 	}
 
 	// add codes in order
@@ -455,6 +375,17 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
+
+	// base
+	ins = append(ins, c.constantIns(base)...)
+
+	// uppercase?
+	if subMatchByName("uc", m, names) == "X" {
+		ins = append(ins, opcode.Make(opcode.OpTrue)...)
+	} else {
+		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	}
+
 	// integer and fractional
 	ins = append(ins, c.constantIns(integer)...)
 	ins = append(ins, c.constantIns(frac)...)
@@ -507,7 +438,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 	var scaleExp object.Object
 	mm = subMatchByName("scaleExp", m, names)
 	if mm == "" {
-		scaleExp = object.NumberFromInt(1)
+		scaleExp = object.One
 	} else {
 		scaleExp, err = object.NumberFromString(mm)
 	}

@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.16.6
+
+
+
 2024-07-09 - 0.16.5
 - changed interpolation modifier for scientific notation to use dash after scale to indicate to trim trailing zeroes on scale, rather than using a negative scale
 - updated interpolation modifier for scientific notation to use ! after scale to indicate not to add trailing zeroes on scale

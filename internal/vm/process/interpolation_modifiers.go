@@ -22,9 +22,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 	case format.FORMAT_ALIGN:
 		things := pr.popMultiple(3)
-		withCp := things[2]
-		alignment := things[1]
+
 		original := things[0]
+		alignment := things[1]
+		withCp := things[2]
 
 		cp, ok := object.NumberToRune(withCp)
 		if !ok {
@@ -41,9 +42,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 	case format.FORMAT_LIMIT:
 		things := pr.popMultiple(3)
-		internal := things[2].String()
-		limit := things[1]
+
 		original := things[0]
+		limit := things[1]
+		internal := things[2].String()
 
 		limits, ok := object.NumberToInt(limit)
 		if !ok {
@@ -55,9 +57,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 	case format.FORMAT_LIMIT_GRAPHEMES:
 		things := pr.popMultiple(3)
-		internal := things[2].String()
-		limit := things[1]
+
 		original := things[0]
+		limit := things[1]
+		internal := things[2].String()
 
 		limits, ok := object.NumberToInt(limit)
 		if !ok {
@@ -70,10 +73,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 	case format.FORMAT_TRUNCATE:
 		things := pr.popMultiple(4)
 
-		trimTrailingZeroes := things[3].(*object.Boolean).Value
-		addTrailingZeroes := things[2].(*object.Boolean).Value
-		max := things[1]
 		original := things[0]
+		max := things[1]
+		addTrailingZeroes := things[2].(*object.Boolean).Value
+		trimTrailingZeroes := things[3].(*object.Boolean).Value
 
 		m, ok := object.NumberToInt(max)
 		if !ok {
@@ -91,10 +94,10 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 	case format.FORMAT_ROUND:
 		things := pr.popMultiple(4)
 
-		trimTrailingZeroes := things[3].(*object.Boolean).Value
-		addTrailingZeroes := things[2].(*object.Boolean).Value
-		max := things[1]
 		original := things[0]
+		max := things[1]
+		addTrailingZeroes := things[2].(*object.Boolean).Value
+		trimTrailingZeroes := things[3].(*object.Boolean).Value
 
 		m, ok := object.NumberToInt(max)
 		if !ok {
@@ -111,8 +114,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)
-		regexType := things[1]
 		original := things[0]
+		regexType := things[1]
 
 		reType, ok := object.NumberToInt(regexType)
 		if !ok {
@@ -121,45 +124,19 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		}
 		result, err = object.EscString(original, regex.RegexType(reType))
 
-	case format.FORMAT_HEX:
-		things := pr.popMultiple(5)
-		padWithZeroes := things[4].(*object.Boolean).Value
-		requireSign := things[3].(*object.Boolean).Value
-		uppercase := things[2].(*object.Boolean).Value
-		minimum := things[1]
+	case format.FORMAT_FIXED:
+		things := pr.popMultiple(9)
+
 		original := things[0]
-
-		addFractionalZeroes := true
-		trimFractionalZeroes := false
-		fractionalAffectsIntegerPadding := false
-
-		min, ok := object.NumberToInt(minimum)
-		if !ok {
-			err = fmt.Errorf("Unable to convert integer for hex minimum for interpolation")
-			return
-		}
-
-		padWith := ' '
-		if padWithZeroes {
-			padWith = '0'
-		}
-
-		result, err = object.ToBaseString(
-			original, uppercase, requireSign, true,
-			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
-			min, 0, 16, padWith)
-
-	case format.FORMAT_BASE:
-		things := pr.popMultiple(6)
-		padWithZeroes := things[5].(*object.Boolean).Value
-		requireSign := things[4].(*object.Boolean).Value
+		requireSign := things[1].(*object.Boolean).Value
+		base := things[2]
 		uppercase := things[3].(*object.Boolean).Value
-		minimum := things[2]
-		base := things[1]
-		original := things[0]
+		integer := things[4]
+		frac := things[5]
+		padIntWithZeroes := things[6].(*object.Boolean).Value
+		addFractionalZeroes := things[7].(*object.Boolean).Value
+		trimFractionalZeroes := things[8].(*object.Boolean).Value
 
-		addFractionalZeroes := true
-		trimFractionalZeroes := false
 		fractionalAffectsIntegerPadding := false
 
 		b, ok := object.NumberToInt(base)
@@ -167,35 +144,6 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			err = fmt.Errorf("Unable to convert integer for base for interpolation")
 			return
 		}
-		min, ok := object.NumberToInt(minimum)
-		if !ok {
-			err = fmt.Errorf("Unable to convert integer for base minimum width for interpolation")
-			return
-		}
-
-		padWith := ' '
-		if padWithZeroes {
-			padWith = '0'
-		}
-
-		result, err = object.ToBaseString(
-			original, uppercase, requireSign, true,
-			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
-			min, 0, b, padWith)
-
-	case format.FORMAT_FIXED:
-		things := pr.popMultiple(7)
-
-		trimFractionalZeroes := things[6].(*object.Boolean).Value
-		addFractionalZeroes := things[5].(*object.Boolean).Value
-		padIntWithZeroes := things[4].(*object.Boolean).Value
-		frac := things[3]
-		integer := things[2]
-		requireSign := things[1].(*object.Boolean).Value
-		original := things[0]
-
-		fractionalAffectsIntegerPadding := false
-
 		intMin, ok := object.NumberToInt(integer)
 		if !ok {
 			err = fmt.Errorf("Unable to convert integer minimum width for fixed point interpolation")
@@ -213,21 +161,21 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		}
 
 		result, err = object.ToBaseString(
-			original, false, requireSign, true,
+			original, uppercase, requireSign, true,
 			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
-			intMin, fracRound, 10, padIntWith)
+			intMin, fracRound, b, padIntWith)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
 		things := pr.popMultiple(8)
 
-		scaleExp := things[7]
-		requireExpSign := things[6].(*object.Boolean).Value
-		uppercase := things[5].(*object.Boolean).Value
-		scaleTrimTrailingZeroes := things[4].(*object.Boolean).Value
-		scaleAddTrailingZeroes := things[3].(*object.Boolean).Value
-		scale := things[2]
-		requireSign := things[1].(*object.Boolean).Value
 		original := things[0]
+		requireSign := things[1].(*object.Boolean).Value
+		scale := things[2]
+		scaleAddTrailingZeroes := things[3].(*object.Boolean).Value
+		scaleTrimTrailingZeroes := things[4].(*object.Boolean).Value
+		uppercase := things[5].(*object.Boolean).Value
+		requireExpSign := things[6].(*object.Boolean).Value
+		scaleExp := things[7]
 
 		rescale := true
 		sc := 0
@@ -271,8 +219,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 
 	case format.FORMAT_DATE_TIME:
 		things := pr.popMultiple(2)
-		dtformat := things[1].String()
 		original := things[0]
+		dtformat := things[1].String()
 
 		orig, ok := original.(*object.DateTime)
 		if !ok {
