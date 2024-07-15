@@ -7,6 +7,7 @@ import (
 	"langur/compiler"
 	"langur/object"
 	"langur/system"
+	"langur/vm"
 	"runtime"
 	"strings"
 	"testing"
@@ -4864,13 +4865,13 @@ func TestIntRangeExpressions(t *testing.T) {
 			t.Fatalf("(%q) compiler error: %s", tt.input, err)
 		}
 
-		vm := New(comp.ByteCode(), nil)
-		err = vm.Run()
+		machine := vm.New(comp.ByteCode(), nil)
+		err = machine.Run()
 		if err != nil {
 			t.Fatalf("(%q) vm error: %s", tt.input, err)
 		}
 
-		stackElem := vm.LastValue()
+		stackElem := machine.LastValue()
 
 		err = testRangeOfIntObject(tt.start, tt.end, stackElem)
 		if err != nil {
@@ -5162,8 +5163,8 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}
 
-		vm := New(comp.ByteCode(), nil)
-		err = vm.Run()
+		machine := vm.New(comp.ByteCode(), nil)
+		err = machine.Run()
 		if err == nil {
 			t.Fatalf("(%s)\nexpected VM error but resulted in none.", tt.input)
 		}
@@ -6508,8 +6509,8 @@ func TestExecT(t *testing.T) {
 		t.Fatalf("Expected String object, received=%s", result.TypeString())
 	}
 
-	if !strings.Contains(s.String(), "vm.go") {
-		t.Errorf(`String returned did not contain "vm.go"`)
+	if !strings.Contains(s.String(), "vm_test.go") {
+		t.Errorf(`String returned did not contain "vm_test.go"`)
 	}
 }
 

@@ -79,6 +79,9 @@ type CompiledCode struct {
 
 	// "free" variables for closures
 	Free []Object
+
+	// TODO: CHANGE TO COME
+	FnSignature *Signature
 }
 
 func (cf *CompiledCode) HasImpureEffects() bool {
@@ -97,6 +100,7 @@ func (cf *CompiledCode) Copy() Object {
 		ParamExpansionMin:  cf.ParamExpansionMin,
 		ParamExpansionMax:  cf.ParamExpansionMax,
 		Free:               CopySlice(cf.Free),
+		FnSignature:        cf.FnSignature.Copy(),
 	}
 }
 

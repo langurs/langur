@@ -51,16 +51,34 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 		}
 
 	case "":
-		// no defining self
+		// no name ... no defining self
 
 	default:
 		c.symbolTable.DefineSelf(node.Name)
 	}
 
+	var params []object.Parameter
 	var paramExpansionMin, paramExpansionMax int
-	paramExpansionMin, paramExpansionMax, err = c.compileFunctionNodeParameters(node)
+	params, paramExpansionMin, paramExpansionMax, err = c.compileFunctionNodeParameters(node)
 	if err != nil {
 		return
+	}
+	sig := &object.Signature{}
+	opt := false
+	for _, p := range params {
+		if p.DefaultValue == nil && len(p.DefaultValueInstructions) == 0 {
+			if opt {
+				// a positional parameter declared after optional parameters
+				err = makeErr(node, "Cannot declare positional parameter after optional parameter")
+				return
+			}
+			sig.ParamPositional = append(sig.ParamPositional, p)
+
+		} else {
+			// optional parameter
+			opt = true
+			sig.ParamByName = append(sig.ParamByName, p)
+		}
 	}
 
 	if node.Body != nil {
@@ -104,6 +122,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 		ParamExpansionMin:  paramExpansionMin,
 		ParamExpansionMax:  paramExpansionMax,
 		ImpureEffects:      isImpure,
+		FnSignature:        sig,
 	}
 	fnIndex := c.addConstant(compiledFn)
 
@@ -138,52 +157,59 @@ func (c *Compiler) instructionsForSymbols(node ast.Node, symbols []symbol.Symbol
 }
 
 func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode) (
-	paramExpansionMin, paramExpansionMax int, err error) {
+	params []object.Parameter, paramExpansionMin, paramExpansionMax int, err error) {
 
 	for i, p := range node.Parameters {
-		_, paramExpansionMin, paramExpansionMax, err = c.compileParameter(p, i+1, 0, i == len(node.Parameters)-1)
+		var param object.Parameter
+		param, paramExpansionMin, paramExpansionMax, err = c.compileParameter(p, i+1, 0, i == len(node.Parameters)-1)
 		if err != nil {
 			return
 		}
+		params = append(params, param)
 	}
 
 	return
 }
 
 func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
-	mutable bool, paramExpansionMin, paramExpansionMax int, err error) {
+	param object.Parameter, paramExpansionMin, paramExpansionMax int, err error) {
 
-	var name string
 	system := false
-	mutable = false
+	param.Mutable = false
 
 	switch p := node.(type) {
 	case *ast.IdentNode:
-		name = p.Name
+		param.InternalName = p.Name
 		system = p.System
 
 	case *ast.LineDeclarationNode:
 		// to use var token to make parameter mutable
 		switch assign := p.Assignment.(type) {
-		case *ast.AssignmentNode:
-			// no optional parameters option
-			err = makeErr(node, fmt.Sprintf("Parameter %d contains assignment", pnum))
-			return
-
 		case *ast.IdentNode:
-			name = assign.Name
+			param.InternalName = assign.Name
 			system = assign.System
+
+		case *ast.AssignmentNode:
+			param, err = c.assessOptionalParameter(assign)
+			if err != nil {
+				err = makeErr(node, err.Error())
+				return
+			}
+			system = assign.SystemAssignment
 
 		default:
 			err = makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
 			return
 		}
-		mutable = p.Mutable
+		param.Mutable = p.Mutable
 
 	case *ast.AssignmentNode:
-		// no optional parameters option
-		err = makeErr(node, fmt.Sprintf("Parameter %d contains assignment", pnum))
-		return
+		param, err = c.assessOptionalParameter(p)
+		if err != nil {
+			err = makeErr(node, err.Error())
+			return
+		}
+		system = p.SystemAssignment
 
 	case *ast.ExpansionNode:
 		// mutable, paramExpansionMin, paramExpansionMax, err =
@@ -194,7 +220,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
 			return
 		}
 		if !last {
-			err = makeErr(node, "Parameter expansion only allowed on last parameter")
+			err = makeErr(node, "Parameter expansion only allowed on last positional parameter")
 			return
 		}
 
@@ -239,7 +265,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
 			return
 		}
 
-		mutable, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, last)
+		param, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, last)
 		return
 
 	default:
@@ -247,10 +273,49 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
 		return
 	}
 
-	_, err = c.symbolTable.DefineVariable(name, mutable, system)
+	// An external name (for an optional parameter) may shadow a keyword ...
+	// since the context makes the meaning clear, ...
+	// but an internal name (used within the function) may not.
+
+	_, err = c.symbolTable.DefineVariable(param.InternalName, param.Mutable, system)
 	if err != nil {
 		err = makeErr(node, fmt.Sprintf("Parameter %d definition error: %s", pnum, err.Error()))
 	}
+
+	return
+}
+
+func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (param object.Parameter, err error) {
+	if len(assign.Identifiers) != 1 || len(assign.Values) != 1 {
+		err = makeErr(assign, "Expected 1 identifier and 1 value for optional parameter assignment")
+		return
+	}
+
+	param = object.Parameter{}
+
+	switch expr := assign.Identifiers[0].(type) {
+	case *ast.IdentNode:
+		param.InternalName, param.ExternalName = expr.Name, expr.Name
+
+	case *ast.InfixExpressionNode:
+		if expr.Operator.Type == token.AS {
+			param.InternalName = expr.Left.(*ast.IdentNode).Name
+			param.ExternalName = expr.Right.(*ast.IdentNode).Name
+		} else {
+			err = makeErr(assign, "Expected identifier or identifier/alias for optional parameter")
+		}
+
+	default:
+		err = makeErr(assign, "Expected identifier or identifier/alias for optional parameter")
+		return
+	}
+
+	defaultIns, err := c.compileNode(assign.Values[0], true)
+	if err != nil {
+		err = makeErr(assign, fmt.Sprintf("Failure to compile default value for parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
+		return
+	}
+	param.DefaultValueInstructions = defaultIns
 
 	return
 }

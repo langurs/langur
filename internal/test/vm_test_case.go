@@ -10,6 +10,7 @@ import (
 	"langur/object"
 	"langur/parser"
 	"langur/str"
+	"langur/vm"
 	"testing"
 	"time"
 )
@@ -45,7 +46,7 @@ func oneResult(t *testing.T, input string, printTestFirst, testPrintSpeed bool) 
 		t.Fatalf("(%q)\ncompiler error: %s", input, err)
 	}
 
-	vm := New(comp.ByteCode(), nil)
+	machine := vm.New(comp.ByteCode(), nil)
 
 	var start, end int64
 
@@ -53,7 +54,7 @@ func oneResult(t *testing.T, input string, printTestFirst, testPrintSpeed bool) 
 		start = time.Now().UnixNano()
 	}
 
-	err = vm.Run()
+	err = machine.Run()
 	if err != nil {
 		t.Fatalf("(%q)\nvm error: %s", input, err)
 	}
@@ -63,7 +64,7 @@ func oneResult(t *testing.T, input string, printTestFirst, testPrintSpeed bool) 
 		fmt.Printf("VM Test Time in Microseconds (Nanoseconds): %d (%d)\n", (end-start)/1000, end-start)
 	}
 
-	return vm.LastValue()
+	return machine.LastValue()
 }
 
 func parse(t *testing.T, input string) *ast.Program {

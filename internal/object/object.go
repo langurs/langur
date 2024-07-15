@@ -93,6 +93,13 @@ func ComposedOrRegularString(obj Object) string {
 	}
 }
 
+func CopyOrNil(obj Object) Object {
+	if obj == nil {
+		return nil
+	}
+	return obj.Copy()
+}
+
 func CopyRefSlice(objSlc []Object) []Object {
 	copiedObjs := make([]Object, len(objSlc))
 	copy(copiedObjs, objSlc)

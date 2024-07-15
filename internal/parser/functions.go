@@ -72,7 +72,7 @@ func (p *Parser) parseFunction() ast.Node {
 
 	if longForm {
 		// NOTE: potential optional explicit return type here
-		// fn(.x, .y) string { ... }
+		// fn(x, y) string { ... }
 
 		if p.tok.Type != token.LBRACE {
 			p.addError("Expected left brace { to start function body for long form")
@@ -109,16 +109,60 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (params []ast.Node)
 }
 
 func (p *Parser) parseParameter(level int) ast.Node {
+	var ident, value, alias ast.Node
+	var aliasTok token.Token
+
+	parseIdentAliasAndAssignment := func() {
+		ident = p.parseIdentifier()
+		if p.tok.Type == token.AS {
+			if level != 0 {
+				p.addError("Unexpected alias on parameter expansion")
+			}
+			aliasTok = p.tok
+			p.advanceToken()
+			alias = p.parseIdentifier()
+		}
+		if p.tok.Type == token.ASSIGN {
+			if level != 0 {
+				p.addError("Unexpected assignment on parameter expansion")
+			}
+			p.advanceToken()
+			value = p.parseExpression(precedence_LOWEST)
+			if alias != nil {
+				ident = &ast.InfixExpressionNode{
+					Token:    ident.TokenInfo(),
+					Left:     ident,
+					Operator: aliasTok,
+					Right:    alias,
+				}
+			}
+		}
+	}
+
 	switch p.tok.Type {
 	case token.IDENT:
-		return p.parseIdentifier()
+		parseIdentAliasAndAssignment()
+		if value != nil {
+			return ast.MakeAssignmentExpression(ident, value, false)
+		}
+		if alias != nil {
+			p.addError("Expected assignment after alias in parameter")
+		}
+		return ident
 
 	case token.VAR:
+		mutable := true
 		p.advanceToken()
-		ident := p.parseIdentifier()
+		parseIdentAliasAndAssignment()
+		if value != nil {
+			return ast.MakeDeclarationAssignmentExpression(ident, value, false, mutable)
+		}
+		if alias != nil {
+			p.addError("Expected assignment after alias in parameter")
+		}
 		return &ast.LineDeclarationNode{
-			Mutable:    true,
 			Token:      ident.TokenInfo(),
+			Mutable:    mutable,
 			Assignment: ident,
 		}
 
