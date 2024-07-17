@@ -10,7 +10,7 @@ import (
 	"langur/token"
 )
 
-func (p *Parser) parseStatement(firstInBlock, eatSemicolon bool) ast.Node {
+func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 	var stmt ast.Node
 
 	p.pushContext(context_statement)
@@ -21,11 +21,6 @@ func (p *Parser) parseStatement(firstInBlock, eatSemicolon bool) ast.Node {
 		// A catch in langur is neither an expression nor a statement (is part of an expression).
 		// It should not be parsed as an expression itself.
 		// It should be parsed in statement context.
-
-		if firstInBlock {
-			p.addError("Catch cannot be first statement in block")
-		}
-
 		stmt = p.parseCatch()
 
 	case token.THROW:
@@ -422,11 +417,9 @@ func (p *Parser) parseStatements(
 	}
 
 	var errCnt int
-	noneDone := true
 
 	if first != nil {
 		nodes = []ast.Node{first}
-		noneDone = false
 	}
 
 	for {
@@ -453,7 +446,7 @@ func (p *Parser) parseStatements(
 			break
 		}
 
-		next := p.parseStatement(noneDone, eatSemicolon)
+		next := p.parseStatement(eatSemicolon)
 
 		if next == nil {
 			//p.addError("Nil node returned in group expression")
@@ -470,8 +463,6 @@ func (p *Parser) parseStatements(
 			// no new errors added, yet failed to advance
 			bug("parseStatements", "Failed to advance the token position")
 		}
-
-		noneDone = false
 	}
 
 	var err error

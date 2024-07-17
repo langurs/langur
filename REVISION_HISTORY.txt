@@ -1,6 +1,14 @@
 langur revision history
 https://langurlang.org
 
+... 0.17.0
+- fixed bug of wrapping module node into implicit try block of try/catch
+- removed unnecessary duplicate check of whether catch is first in block; checked when fixing (via ast function)
+
+
+changing how parameters are dealt with
+
+
 2024-07-12 - 0.16.6
 - updated fixed point and scientific notation interpolation modifiers to accept comma for decimal point
 - changed scientific notation interpolation modifier to require 1. or 1, to start specified scale

@@ -137,12 +137,21 @@ func FixTryCatchInNodeSlice(nodes []Node, asExprStatement bool) (
 
 	var expr *ExpressionStatementNode
 
-	newNodes := nodes
-	for i := 0; i < len(newNodes); i++ {
+	// remove nodes to add back when done
+	var earlyNodes []Node
+	if len(nodes) > 1 {
+		switch nodes[0].(type) {
+		case *ModuleNode:
+			earlyNodes = []Node{nodes[0]}
+			nodes = nodes[1:]
+		}
+	}
+
+	for i := 0; i < len(nodes); i++ {
 		// look for catch...
-		tryCatch, ok := newNodes[i].(*TryCatchNode)
+		tryCatch, ok := nodes[i].(*TryCatchNode)
 		if !ok {
-			expr, ok = newNodes[i].(*ExpressionStatementNode)
+			expr, ok = nodes[i].(*ExpressionStatementNode)
 			if ok {
 				// try/catch node embedded in expression statement node
 				tryCatch, ok = expr.Expression.(*TryCatchNode)
@@ -158,31 +167,36 @@ func FixTryCatchInNodeSlice(nodes []Node, asExprStatement bool) (
 		}
 
 		// move all preceding nodes within the statement slice into Try as a Block
-		precedingNodes := newNodes[:i]
+		precedingNodes := nodes[:i]
 
 		if blk, ok := precedingNodes[0].(*BlockNode); ok && len(precedingNodes) == 1 {
 			tryCatch.Try = blk
 
 		} else {
 			tryCatch.Try = &BlockNode{
-				Token:      newNodes[i].TokenInfo(),
+				Token:      nodes[i].TokenInfo(),
 				Statements: precedingNodes}
 		}
 
 		if asExprStatement {
 			// NOTE: wraps entire try/catch in an expression statement node, not the try and catch individually
-			newNodes[i] = &ExpressionStatementNode{
-				Token: newNodes[i].TokenInfo(), Expression: tryCatch}
+			nodes[i] = &ExpressionStatementNode{
+				Token: nodes[i].TokenInfo(), Expression: tryCatch}
 
 		} else {
-			newNodes[i] = tryCatch
+			nodes[i] = tryCatch
 		}
-		newNodes = newNodes[i:]
+		nodes = nodes[i:]
 
-		// start over at second node
+		// start over at second node to find more catch blocks
 		i = 0
 	}
-	return newNodes, nil
+
+	if earlyNodes != nil {
+		nodes = append(earlyNodes, nodes...)
+	}
+
+	return nodes, nil
 }
 
 func MakeFunctionFromOperator(op token.Token, left, right Node) (

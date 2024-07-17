@@ -251,7 +251,7 @@ func (p *Parser) parseLBrace() ast.Node {
 	}
 
 	// parse first statement, not knowing if we have a scope block or something else
-	first := p.parseStatement(true, false)
+	first := p.parseStatement(false)
 	var statements []ast.Node
 
 	switch p.tok.Type {
@@ -304,7 +304,7 @@ func (p *Parser) parseBlockOrIntoBlock() (node ast.Node, wasBlock bool) {
 		node, wasBlock = p.parseBlock(), true
 
 	} else if token.BeginsFlowBreakingStatement(p.tok.Type) {
-		node, wasBlock = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true, true)}}, false
+		node, wasBlock = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true)}}, false
 
 	} else {
 		// single expression for body (no braces required)
@@ -319,7 +319,7 @@ func (p *Parser) parseBlockOrIntoBlockWithPotentialAssignment() (node ast.Node, 
 		node, wasBlock = p.parseBlock(), true
 
 	} else if token.BeginsFlowBreakingStatement(p.tok.Type) {
-		node, wasBlock = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true, true)}}, false
+		node, wasBlock = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true)}}, false
 
 	} else {
 		node, wasBlock = &ast.BlockNode{Token: p.tok,
