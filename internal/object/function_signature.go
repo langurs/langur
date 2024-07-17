@@ -4,16 +4,89 @@ package object
 
 import (
 	"langur/opcode"
+	"langur/str"
+	"strings"
 )
 
-// NOTE: signatures to be used for both compiled functions and built-in functions
+// signatures to be used for both compiled functions and built-in functions
+type Signature struct {
+	Name              string
+	Description       string
+	ImpureEffects     bool
+	ParamPositional   []Parameter
+	ParamByName       []Parameter
+	ParamExpansionMin int
+	ParamExpansionMax int
+}
+
+func (s *Signature) Copy() *Signature {
+	return &Signature{
+		Name:              s.Name,
+		Description:       s.Description,
+		ImpureEffects:     s.ImpureEffects,
+		ParamPositional:   copyParamList(s.ParamPositional),
+		ParamByName:       copyParamList(s.ParamByName),
+		ParamExpansionMin: s.ParamExpansionMin,
+		ParamExpansionMax: s.ParamExpansionMax,
+	}
+}
+
+func (s *Signature) String() string {
+	var sb strings.Builder
+
+	if s.Name == "" {
+		sb.WriteString("fn")
+	} else {
+		sb.WriteString("(fn)")
+		sb.WriteString(s.Name)
+	}
+
+	if s.ImpureEffects {
+		sb.WriteRune('*')
+	}
+
+	sb.WriteRune('(')
+
+	for i, p := range s.ParamPositional {
+		lastPositional := i == len(s.ParamPositional)-1
+
+		if lastPositional &&
+			(s.ParamExpansionMin != 0 || s.ParamExpansionMax != 0) {
+			sb.WriteString("...[")
+			sb.WriteString(str.IntToStr(s.ParamExpansionMin, 10))
+			sb.WriteString("..")
+			if s.ParamExpansionMax != -1 {
+				sb.WriteString(str.IntToStr(s.ParamExpansionMax, 10))
+			}
+			sb.WriteString("] ")
+		}
+
+		sb.WriteString(p.String())
+
+		if !lastPositional || len(s.ParamByName) != 0 {
+			sb.WriteString(", ")
+		}
+	}
+
+	for i, p := range s.ParamByName {
+		lastByName := i == len(s.ParamByName)-1
+		sb.WriteString(p.String())
+		if !lastByName {
+			sb.WriteString(", ")
+		}
+	}
+
+	sb.WriteRune(')')
+	return sb.String()
+}
 
 type Parameter struct {
 	InternalName string // variable name within function; may change without affecting API
 	ExternalName string // API / call name for optional parameter
 	Mutable      bool
 
-	DefaultValue             Object // for optional parameter; nil for positional parameters
+	// default for optional parameter
+	DefaultValue             Object
 	DefaultValueInstructions opcode.Instructions
 }
 
@@ -27,6 +100,31 @@ func (p Parameter) Copy() Parameter {
 	}
 }
 
+func (p Parameter) String() string {
+	var sb strings.Builder
+
+	if p.Mutable {
+		sb.WriteString("var ")
+	}
+
+	sb.WriteString(p.InternalName)
+	if p.InternalName != p.ExternalName && p.ExternalName != "" {
+		sb.WriteString(" as ")
+		sb.WriteString(p.ExternalName)
+	}
+
+	if p.DefaultValue != nil || len(p.DefaultValueInstructions) != 0 {
+		sb.WriteRune('=')
+		if p.DefaultValue == nil {
+			sb.WriteString("TBD")
+		} else {
+			sb.WriteString(p.DefaultValue.String())
+		}
+	}
+
+	return sb.String()
+}
+
 func copyParamList(pl []Parameter) []Parameter {
 	if pl == nil {
 		return nil
@@ -38,14 +136,12 @@ func copyParamList(pl []Parameter) []Parameter {
 	return newPl
 }
 
-type Signature struct {
-	ParamPositional []Parameter
-	ParamByName     []Parameter
+type Argument struct {
+	Value        Object
+	ExternalName string
 }
 
-func (s *Signature) Copy() *Signature {
-	return &Signature{
-		ParamPositional: copyParamList(s.ParamPositional),
-		ParamByName:     copyParamList(s.ParamByName),
-	}
+type ArgumentPackage struct {
+	ArgsPositional []Object
+	ArgsByName     []Argument
 }

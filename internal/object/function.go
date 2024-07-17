@@ -17,7 +17,7 @@ func IsCallable(obj Object) bool {
 }
 
 func IsCompiledFunction(obj Object) bool {
-	return obj.Type() == COMPILED_CODE_OBJ && obj.(*CompiledCode).IsFunction
+	return obj.Type() == COMPILED_CODE_OBJ && obj.(*CompiledCode).IsFunction()
 }
 
 // -1 used to indicate no maximum
@@ -31,33 +31,43 @@ func ParamExpectedString(obj Object) string {
 	return fmt.Sprintf("%d..%d", min, max)
 }
 
+// minimum, including parameter expansion
 func ParamMin(obj Object) int {
 	switch fn := obj.(type) {
 	case *CompiledCode:
-		if fn.ParamExpansionMin > 0 {
-			return fn.ParamMin + fn.ParamExpansionMin - 1
-		} else if fn.ParamExpansionMax != 0 {
+		if fn.FnSignature == nil {
+			return 0
+		}
+		if fn.FnSignature.ParamExpansionMin > 0 {
+			return len(fn.FnSignature.ParamPositional) + fn.FnSignature.ParamExpansionMin - 1
+		} else if fn.FnSignature.ParamExpansionMax != 0 {
 			// We already know that ParamExpansionMin == 0 (from the previous test failing), ...
 			// ... so if the maximum is not 0, we have an optional one at the end, so we subtract 1.
-			return fn.ParamMin - 1
+			return len(fn.FnSignature.ParamPositional) - 1
 		}
-		return fn.ParamMin
+		return len(fn.FnSignature.ParamPositional)
+
 	case *BuiltIn:
 		return fn.ParamMin
 	}
 	return NotCallable
 }
 
+// maximum, including parameter expansion
 func ParamMax(obj Object) int {
 	switch fn := obj.(type) {
 	case *CompiledCode:
-		if fn.ParamExpansionMax == -1 {
+		if fn.FnSignature == nil {
+			return 0
+		}
+		if fn.FnSignature.ParamExpansionMax == -1 {
 			return -1
 		}
-		if fn.ParamExpansionMax > 0 {
-			return fn.ParamMax + fn.ParamExpansionMax - 1
+		if fn.FnSignature.ParamExpansionMax > 0 {
+			return len(fn.FnSignature.ParamPositional) + fn.FnSignature.ParamExpansionMax - 1
 		}
-		return fn.ParamMax
+		return len(fn.FnSignature.ParamPositional)
+
 	case *BuiltIn:
 		return fn.ParamMax
 	}
@@ -65,42 +75,30 @@ func ParamMax(obj Object) int {
 }
 
 type CompiledCode struct {
-	Name          string
-	IsFunction    bool
-	ImpureEffects bool
-	Instructions  opcode.Instructions
+	FnSignature        *Signature
+	Instructions       opcode.Instructions
+	LocalBindingsCount int      // including parameters
+	Free               []Object // "free" variables for closures
+}
 
-	ParamMin           int
-	ParamMax           int
-	LocalBindingsCount int // including parameters
-
-	ParamExpansionMin int
-	ParamExpansionMax int
-
-	// "free" variables for closures
-	Free []Object
-
-	// TODO: CHANGE TO COME
-	FnSignature *Signature
+func (cf *CompiledCode) IsFunction() bool {
+	return cf.FnSignature != nil
 }
 
 func (cf *CompiledCode) HasImpureEffects() bool {
-	return cf.ImpureEffects
+	// TODO(?): check
+	if cf.FnSignature == nil {
+		return false
+	}
+	return cf.FnSignature.ImpureEffects
 }
 
 func (cf *CompiledCode) Copy() Object {
 	return &CompiledCode{
-		Name:               cf.Name,
-		IsFunction:         cf.IsFunction,
-		ImpureEffects:      cf.ImpureEffects,
-		Instructions:       cf.Instructions.Copy(),
-		ParamMin:           cf.ParamMin,
-		ParamMax:           cf.ParamMax,
-		LocalBindingsCount: cf.LocalBindingsCount,
-		ParamExpansionMin:  cf.ParamExpansionMin,
-		ParamExpansionMax:  cf.ParamExpansionMax,
-		Free:               CopySlice(cf.Free),
 		FnSignature:        cf.FnSignature.Copy(),
+		Instructions:       cf.Instructions.Copy(),
+		LocalBindingsCount: cf.LocalBindingsCount,
+		Free:               CopyRefSlice(cf.Free),
 	}
 }
 
@@ -112,7 +110,7 @@ func (cf *CompiledCode) Type() ObjectType {
 	return COMPILED_CODE_OBJ
 }
 func (cf *CompiledCode) TypeString() string {
-	if cf.IsFunction {
+	if cf.IsFunction() {
 		return common.FuntionTypeName
 	}
 	// a string not likely to be seen in langur...
@@ -120,25 +118,12 @@ func (cf *CompiledCode) TypeString() string {
 }
 
 func (cf *CompiledCode) IsTruthy() bool {
-	return !cf.ImpureEffects
+	return !cf.HasImpureEffects()
 }
 
 func (cf *CompiledCode) String() string {
-	if cf.IsFunction {
-		var out bytes.Buffer
-
-		out.WriteRune('(')
-		out.WriteString("fn")
-		if cf.ImpureEffects {
-			out.WriteRune('*')
-		}
-		out.WriteRune(')')
-
-		if cf.Name != "" {
-			out.WriteString(" " + cf.Name)
-		}
-
-		return out.String()
+	if cf.IsFunction() {
+		return cf.FnSignature.String()
 
 	} else {
 		// wouldn't likely happen
@@ -149,18 +134,21 @@ func (cf *CompiledCode) String() string {
 func (cf *CompiledCode) ReplString() string {
 	var out bytes.Buffer
 
-	if cf.ImpureEffects {
+	if cf.FnSignature.ImpureEffects {
 		out.WriteString("Impure ")
 	}
 
-	if cf.IsFunction {
-		out.WriteString(fmt.Sprintf(common.FuntionTypeName+" %s (%p)", cf.Name, cf))
+	if cf.IsFunction() {
+		out.WriteString(fmt.Sprintf(common.FuntionTypeName+" %s (%p)", cf.FnSignature.Name, cf))
 	} else {
 		out.WriteString(fmt.Sprintf(common.CompiledCodeTypeName+" (%p)", cf))
 	}
 
-	if cf.ParamMin > 0 || cf.ParamMax != 0 {
-		out.WriteString(fmt.Sprintf("; Parameters: %d..%d", cf.ParamMin, cf.ParamMax))
+	if len(cf.FnSignature.ParamPositional) != 0 {
+		out.WriteString(fmt.Sprintf("; Positional Parameters: %d..%d", ParamMin(cf), ParamMax(cf)))
+	}
+	if len(cf.FnSignature.ParamByName) != 0 {
+		out.WriteString(fmt.Sprintf("; Parameters By Name: %d", len(cf.FnSignature.ParamByName)))
 	}
 	if cf.LocalBindingsCount > 0 {
 		out.WriteString(fmt.Sprintf("; LocalBindingsCount: %d", cf.LocalBindingsCount))
@@ -180,7 +168,6 @@ func (cf *CompiledCode) ReplString() string {
 type BuiltIn struct {
 	// Fn an interface{} here and type assertion in the process package to avoid an import cycle
 	Fn            interface{}
-	Library       string
 	Name          string
 	Description   string
 	ParamMin      int
@@ -191,7 +178,6 @@ type BuiltIn struct {
 func (b *BuiltIn) Copy() Object {
 	return &BuiltIn{
 		Fn:            b.Fn,
-		Library:       b.Library,
 		Name:          b.Name,
 		Description:   b.Description,
 		ParamMin:      b.ParamMin,
@@ -201,10 +187,7 @@ func (b *BuiltIn) Copy() Object {
 }
 
 func (b *BuiltIn) FullName() string {
-	if b.Library == "" {
-		return b.Name
-	}
-	return b.Library + "." + b.Name
+	return b.Name
 }
 
 func (b *BuiltIn) HasImpureEffects() bool {

@@ -34,18 +34,6 @@ type BuiltInFunction = func(pr *Process, args ...object.Object) object.Object
 
 var BuiltIns []*object.BuiltIn
 
-const (
-	// TODO: libraries
-	LIBRARY_MATH   = "math"
-	LIBRARY_TRIG   = "trig"
-	LIBRARY_STDIO  = "io"
-	LIBRARY_STRING = "string"
-	LIBRARY_REGEX  = "regex"
-	LIBRARY_FILES  = "file"
-	LIBRARY_FUNC   = "func"
-	LIBRARY_EXEC   = "exec"
-)
-
 // using init() to avoid an initialization cycle
 func init() {
 	BuiltIns = []*object.BuiltIn{
@@ -100,45 +88,38 @@ func init() {
 		&object.BuiltIn{
 			Name: "abs", Fn: bi_abs,
 			Description: "abs(number); returns the absolute value of a number",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "all", Fn: bi_all,
 			Description: "all(validation, list); returns Boolean indicating whether the validation function or regex returns true for all elements of a list or hash, or null when given an empty list or hash",
-			ParamMin:    1, ParamMax: 2,
-			Library: LIBRARY_FUNC},
+			ParamMin:    1, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "any", Fn: bi_any,
 			Description: "any(validation, list); returns Boolean indicating whether the validation function or regex returns true for any elements of a list or hash, or null when given an empty list or hash",
-			ParamMin:    1, ParamMax: 2,
-			Library: LIBRARY_FUNC},
+			ParamMin:    1, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "appendfile", Fn: bi_appendfile,
 			Description: "appendfile(filename, string, permissions); appends string to specified file name (or writes new file if it doesn't exist); permissions optional (default 664); permissions in form of 8x644 (NOT 0644, which would give the wrong number)",
 			ParamMin:    2, ParamMax: 3,
-			ImpureEffects: true,
-			Library:       LIBRARY_FILES},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "atan", Fn: bi_atan,
 			Description: "return arctangent of a number given in radians",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_TRIG},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "b2s", Fn: bi_b2s,
 			Description: "converts a byte or list of UTF-8 bytes to a langur string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "benchmark", Fn: bi_benchmark,
 			Description: "benchmark(function, times); runs function specified number of times (default 1), returning time elapsed (as string)",
-			ParamMin:    1, ParamMax: 2,
-			Library: LIBRARY_FUNC},
+			ParamMin:    1, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "cd", Fn: bi_cd,
@@ -149,8 +130,7 @@ func init() {
 		&object.BuiltIn{
 			Name: "ceiling", Fn: bi_ceiling,
 			Description: "returns least integer greater than or equal to input number",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "count", Fn: bi_count,
@@ -160,28 +140,24 @@ func init() {
 		&object.BuiltIn{
 			Name: "cos", Fn: bi_cos,
 			Description: "return cosine of a number given in radians",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_TRIG},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "cp2s", Fn: bi_cp2s,
 			Description: "converts a code point (integer) or list of code points to a string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "execT", Fn: bi_execT,
 			Description: "executes the given command string from a trusted source, returning a result or throwing an exception",
 			ParamMin:    1, ParamMax: 1,
-			ImpureEffects: true,
-			Library:       LIBRARY_EXEC},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "execTH", Fn: bi_execTH,
 			Description: "executes the given command string from a trusted source, returning a hash",
 			ParamMin:    1, ParamMax: 1,
-			ImpureEffects: true,
-			Library:       LIBRARY_EXEC},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "exit", Fn: bi_exit,
@@ -192,8 +168,7 @@ func init() {
 		&object.BuiltIn{
 			Name: "filter", Fn: bi_filter,
 			Description: "filter(validation, list); returns list (or hash) of values verified by given function or regex, or an empty list or hash if there are no matches",
-			ParamMin:    1, ParamMax: 2,
-			Library: LIBRARY_FUNC},
+			ParamMin:    1, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "first", Fn: bi_first,
@@ -203,26 +178,22 @@ func init() {
 		&object.BuiltIn{
 			Name: "floor", Fn: bi_floor,
 			Description: "returns greatest integer less than or equal to input number",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "fold", Fn: bi_fold,
 			Description: "fold(function, list); returns list of values folded by the given function from the given list",
-			ParamMin:    2, ParamMax: 2,
-			Library: LIBRARY_FUNC},
+			ParamMin:    2, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "foldfrom", Fn: bi_foldfrom,
 			Description: "foldfrom(function, init, lists...); returns list of values folded by the given function from the given lists; given function parameter count == number of lists + 1 for the result (result as first parameter in given function)",
-			ParamMin:    3, ParamMax: -1,
-			Library: LIBRARY_FUNC},
+			ParamMin:    3, ParamMax: -1},
 
 		&object.BuiltIn{
 			Name: "gcd", Fn: bi_gcd,
 			Description: "returns the greatest common divisor of 2 or more integers",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "group", Fn: bi_group,
@@ -247,20 +218,17 @@ func init() {
 		&object.BuiltIn{
 			Name: "index", Fn: bi_index,
 			Description: "index(regex, anything, alternate); accepts regex and returns code point range for match, or returns null or alternate value (optional) for no match",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "indices", Fn: bi_indices,
 			Description: `indices(regex, anything, max); accepts regex and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match; max optional`,
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "join", Fn: bi_join,
 			Description: "join(delim, list); joins list into a single string; uses auto-stringification on all list elements",
-			ParamMin:    1, ParamMax: 2,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "keys", Fn: bi_keys,
@@ -275,14 +243,12 @@ func init() {
 		&object.BuiltIn{
 			Name: "lcase", Fn: bi_lcase,
 			Description: "converts string (or code point integer) to lowercase string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "lcm", Fn: bi_lcm,
 			Description: "returns the least common multiple of 2 or more integers",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "len", Fn: bi_len,
@@ -297,38 +263,32 @@ func init() {
 		&object.BuiltIn{
 			Name: "ltrim", Fn: bi_ltrim,
 			Description: "trims left-most Unicode whitespace in a string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "map", Fn: bi_map,
 			Description: "map(function, lists...); returns list (or hash) of values mapped to the given function from the given lists or hashes (one type only)",
-			ParamMin:    2, ParamMax: -1,
-			Library: LIBRARY_FUNC},
+			ParamMin:    2, ParamMax: -1},
 
 		&object.BuiltIn{
 			Name: "mapX", Fn: bi_mapX,
 			Description: "mapX(function, lists...); returns list of values mapped to the given function from the given lists",
-			ParamMin:    2, ParamMax: -1,
-			Library: LIBRARY_FUNC},
+			ParamMin:    2, ParamMax: -1},
 
 		&object.BuiltIn{
 			Name: "match", Fn: bi_match,
 			Description: "match(regex, anything, alternate); accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "matches", Fn: bi_matches,
 			Description: "matches(regex, anything, max); accepts compiled regex and returns list of progressive matches (empty list if no matches); max optional (defaults to -1 meaning infinite)",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "matching", Fn: bi_matching,
 			Description: "matching(regex, anything); accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
-			ParamMin:    2, ParamMax: 2,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "max", Fn: bi_max,
@@ -338,14 +298,12 @@ func init() {
 		&object.BuiltIn{
 			Name: "mean", Fn: bi_mean,
 			Description: "returns mean (average) from given set of numbers",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "mid", Fn: bi_mid,
 			Description: "returns mid-point from given set of numbers",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "min", Fn: bi_min,
@@ -365,26 +323,22 @@ func init() {
 		&object.BuiltIn{
 			Name: "nfc", Fn: bi_nfc,
 			Description: "converts string to NFC form (Unicode normalization form)",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "nfd", Fn: bi_nfd,
 			Description: "converts string to NFD form (Unicode normalization form)",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "nfkc", Fn: bi_nfkc,
 			Description: "converts string to NFKC form (Unicode normalization form)",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "nfkd", Fn: bi_nfkd,
 			Description: "converts string to NFKD form (Unicode normalization form)",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "nn", Fn: bi_nn,
@@ -395,8 +349,7 @@ func init() {
 			Name: "prop", Fn: bi_prop,
 			Description: "returns hash of properties of file or directory if it exists at the given moment of execution; otherwise returns null",
 			ParamMin:    1, ParamMax: 1,
-			ImpureEffects: true,
-			Library:       LIBRARY_FILES},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "pseries", Fn: bi_pseries,
@@ -412,33 +365,28 @@ func init() {
 			Name: "read", Fn: bi_read,
 			Description: "read(prompt, validation, errmessage, maxattempts, alternate); reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
 			ParamMin:    0, ParamMax: 5,
-			ImpureEffects: true,
-			Library:       LIBRARY_STDIO},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "readfile", Fn: bi_readfile,
 			Description: "reads text of file name given, returning a string",
 			ParamMin:    1, ParamMax: 1,
-			ImpureEffects: true,
-			Library:       LIBRARY_FILES},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "reCompile", Fn: bi_reCompile,
 			Description: "compiles string pattern into re2 regex",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_REGEX},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "reEsc", Fn: bi_reEsc,
 			Description: "escapes re2 metacharacters in a pattern string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_REGEX},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "replace", Fn: bi_replace,
 			Description: "replace(source, find, replace, max); accepts string or regex for find, and replaces portion of string with given replacement string; max optional",
-			ParamMin:    2, ParamMax: 4,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 4},
 
 		&object.BuiltIn{
 			Name: "rest", Fn: bi_rest,
@@ -453,8 +401,7 @@ func init() {
 		&object.BuiltIn{
 			Name: "round", Fn: bi_round,
 			Description: "round(number, max, addzeroes, mode); rounds number to specified digits after decimal point; mode from the " + modes.RoundHashName + " hash",
-			ParamMin:    1, ParamMax: 4,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 4},
 
 		&object.BuiltIn{
 			Name: "rotate", Fn: bi_rotate,
@@ -464,38 +411,32 @@ func init() {
 		&object.BuiltIn{
 			Name: "rtrim", Fn: bi_rtrim,
 			Description: "trims right-most Unicode whitespace in a string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "s2b", Fn: bi_s2b,
 			Description: "returns list of UTF-8 bytes from a langur string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "s2cp", Fn: bi_s2cp,
 			Description: "s2cp(string, index, alternate); indexes a string to a code point or a list of code points",
-			ParamMin:    1, ParamMax: 3,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "s2gc", Fn: bi_s2gc,
 			Description: "s2gc(string); converts string to grapheme clusters list",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "s2n", Fn: bi_s2n,
 			Description: "returns list of numbers from a langur string, interpreting 0-9, A-Z, and a-z as base 36 numbers",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "s2s", Fn: bi_s2s,
 			Description: "s2s(string, index, alternate); indexes a string to a string",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_STRING},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "series", Fn: bi_series,
@@ -505,14 +446,12 @@ func init() {
 		&object.BuiltIn{
 			Name: "simplify", Fn: bi_simplify,
 			Description: "simplifies number, removing trailing zeros",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "sine", Fn: bi_sine,
 			Description: "return sine of a number given in radians",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_TRIG},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "sleep", Fn: bi_sleep,
@@ -528,56 +467,47 @@ func init() {
 		&object.BuiltIn{
 			Name: "split", Fn: bi_split,
 			Description: "split(delim, anything, max); accepts regex or string delimiter and splits string into a list of strings; max optional",
-			ParamMin:    1, ParamMax: 3,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "subindex", Fn: bi_subindex,
 			Description: `subindex(regex, anything); accepts regex and returns list of code point ranges for submatches, or empty list for no match`,
-			ParamMin:    2, ParamMax: 2,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "subindices", Fn: bi_subindices,
 			Description: `subindices(regex, anything, max); accepts regex and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match; max optional`,
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "submatch", Fn: bi_submatch,
 			Description: "submatch(regex, anything); returns list of submatches (empty list if not a match)",
-			ParamMin:    2, ParamMax: 2,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "submatchH", Fn: bi_submatchH,
 			Description: "submatchH(regex, anything); returns hash of submatches (empty hash if not a match)",
-			ParamMin:    2, ParamMax: 2,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 2},
 
 		&object.BuiltIn{
 			Name: "submatches", Fn: bi_submatches,
 			Description: "submatches(regex, anything, max); returns list of lists of progressive submatches (empty list if not a match); max optional (defaults to -1 meaning infinite)",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "submatchesH", Fn: bi_submatchesH,
 			Description: "submatchesH(regex, anything, max); returns list of hashes of progressive whole match and submatches (empty list if not a match); max optional (defaults to -1 meaning infinite)",
-			ParamMin:    2, ParamMax: 3,
-			Library: LIBRARY_REGEX},
+			ParamMin:    2, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "tan", Fn: bi_tan,
 			Description: "return tangent of a number given in radians",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_TRIG},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "tcase", Fn: bi_tcase,
 			Description: "converts string (or code point integer) to titlecase string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "ticks", Fn: bi_ticks,
@@ -587,60 +517,51 @@ func init() {
 		&object.BuiltIn{
 			Name: "trim", Fn: bi_trim,
 			Description: "trims Unicode whitespace around a string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "trunc", Fn: bi_trunc,
 			Description: "trunc(number, max, addzeroes); truncate number to specified digits after decimal point",
-			ParamMin:    1, ParamMax: 3,
-			Library: LIBRARY_MATH},
+			ParamMin:    1, ParamMax: 3},
 
 		&object.BuiltIn{
 			Name: "ucase", Fn: bi_ucase,
 			Description: "converts string (or code point integer) to uppercase string",
-			ParamMin:    1, ParamMax: 1,
-			Library: LIBRARY_STRING},
+			ParamMin:    1, ParamMax: 1},
 
 		&object.BuiltIn{
 			Name: "write", Fn: bi_write,
 			Description: "writes to the console",
 			ParamMin:    0, ParamMax: -1,
-			ImpureEffects: true,
-			Library:       LIBRARY_STDIO},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "writeErr", Fn: bi_write,
 			Description: "writes to standard error",
 			ParamMin:    0, ParamMax: -1,
-			ImpureEffects: true,
-			Library:       LIBRARY_STDIO},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "writefile", Fn: bi_writefile,
 			Description: "writefile(filename, string, permissions); writes string to specified file name; permissions optional (default 664); permissions in form of 8x644 (NOT 0644, which would give the wrong number)",
 			ParamMin:    2, ParamMax: 3,
-			ImpureEffects: true,
-			Library:       LIBRARY_FILES},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "writeln", Fn: bi_writeln,
 			Description: "writes to the console, adding a system newline at the end",
 			ParamMin:    0, ParamMax: -1,
-			ImpureEffects: true,
-			Library:       LIBRARY_STDIO},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "writelnErr", Fn: bi_writeln,
 			Description: "writes to standard error, adding a system newline at the end",
 			ParamMin:    0, ParamMax: -1,
-			ImpureEffects: true,
-			Library:       LIBRARY_STDIO},
+			ImpureEffects: true},
 
 		&object.BuiltIn{
 			Name: "zip", Fn: bi_zip,
 			Description: "zips together lists; may optionally use a function (first argument)",
-			ParamMin:    2, ParamMax: -1,
-			Library: LIBRARY_FUNC},
+			ParamMin:    2, ParamMax: -1},
 	}
 }

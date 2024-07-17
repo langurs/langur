@@ -30,20 +30,22 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	c.symbolTable.IsFunction = true
 	c.functionLevel++
 
-	isImpure := node.Impure // self-declared impure; to be tested later...
+	sig := &object.Signature{Name: node.Name}
+
+	sig.ImpureEffects = node.Impure // self-declared impure; to be tested later...
 	defer func() {
 		c.popVariableScope()
 		c.functionLevel--
 
 		// Impurity is transitive.
-		if isImpure {
+		if sig.ImpureEffects {
 			c.addToImpuritiesList(node.Name)
 		}
 	}()
 
 	var body opcode.Instructions
 
-	switch node.Name {
+	switch sig.Name {
 	case "_main":
 		if len(node.Parameters) != 0 {
 			err = makeErr(node, "Function _main() cannot have parameters")
@@ -54,31 +56,12 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 		// no name ... no defining self
 
 	default:
-		c.symbolTable.DefineSelf(node.Name)
+		c.symbolTable.DefineSelf(sig.Name)
 	}
 
-	var params []object.Parameter
-	var paramExpansionMin, paramExpansionMax int
-	params, paramExpansionMin, paramExpansionMax, err = c.compileFunctionNodeParameters(node)
+	err = c.compileFunctionNodeParameters(node, sig)
 	if err != nil {
 		return
-	}
-	sig := &object.Signature{}
-	opt := false
-	for _, p := range params {
-		if p.DefaultValue == nil && len(p.DefaultValueInstructions) == 0 {
-			if opt {
-				// a positional parameter declared after optional parameters
-				err = makeErr(node, "Cannot declare positional parameter after optional parameter")
-				return
-			}
-			sig.ParamPositional = append(sig.ParamPositional, p)
-
-		} else {
-			// optional parameter
-			opt = true
-			sig.ParamByName = append(sig.ParamByName, p)
-		}
 	}
 
 	if node.Body != nil {
@@ -101,9 +84,9 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	localsCount := c.symbolTable.DefinitionCount
 
 	// may be self-declared or proven impure
-	isImpure = isImpure || c.symbolTable.Impurities != nil
+	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.Impurities != nil
 
-	if isImpure && !node.Impure {
+	if sig.ImpureEffects && !node.Impure {
 		if node.Name == "" {
 			err = makeErr(node, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
 		} else {
@@ -113,16 +96,9 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	}
 
 	compiledFn := &object.CompiledCode{
-		Name:               node.Name,
-		IsFunction:         true,
+		FnSignature:        sig,
 		Instructions:       body,
 		LocalBindingsCount: localsCount,
-		ParamMin:           len(node.Parameters),
-		ParamMax:           len(node.Parameters),
-		ParamExpansionMin:  paramExpansionMin,
-		ParamExpansionMax:  paramExpansionMax,
-		ImpureEffects:      isImpure,
-		FnSignature:        sig,
 	}
 	fnIndex := c.addConstant(compiledFn)
 
@@ -156,22 +132,73 @@ func (c *Compiler) instructionsForSymbols(node ast.Node, symbols []symbol.Symbol
 	return
 }
 
-func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode) (
-	params []object.Parameter, paramExpansionMin, paramExpansionMax int, err error) {
+func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode, sig *object.Signature) (err error) {
+	var params []object.Parameter
 
+	isOptionalParameterNode := func(node ast.Node) bool {
+		switch p := node.(type) {
+		case *ast.LineDeclarationNode:
+			switch p.Assignment.(type) {
+			case *ast.AssignmentNode:
+				return true
+			}
+
+		case *ast.AssignmentNode:
+			return true
+		}
+		return false
+	}
+
+	opt := false
 	for i, p := range node.Parameters {
 		var param object.Parameter
-		param, paramExpansionMin, paramExpansionMax, err = c.compileParameter(p, i+1, 0, i == len(node.Parameters)-1)
+
+		lastPositional := false
+		if len(node.Parameters) == 1 && !isOptionalParameterNode(node.Parameters[0]) {
+			lastPositional = true
+
+		} else if !opt {
+			if i < len(node.Parameters)-1 {
+				if isOptionalParameterNode(node.Parameters[i+1]) {
+					opt = true
+					lastPositional = true
+				}
+
+			} else if i == len(node.Parameters)-1 {
+				lastPositional = true
+			}
+		}
+
+		param, sig.ParamExpansionMin, sig.ParamExpansionMax, err =
+			c.compileParameter(p, i+1, 0, lastPositional)
+
 		if err != nil {
 			return
 		}
 		params = append(params, param)
 	}
 
+	opt = false
+	for _, p := range params {
+		if p.DefaultValue == nil && len(p.DefaultValueInstructions) == 0 {
+			if opt {
+				// a positional parameter declared after optional parameters
+				err = makeErr(node, "Cannot declare positional parameter after optional parameter")
+				return
+			}
+			sig.ParamPositional = append(sig.ParamPositional, p)
+
+		} else {
+			// optional parameter
+			opt = true
+			sig.ParamByName = append(sig.ParamByName, p)
+		}
+	}
+
 	return
 }
 
-func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
+func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPositional bool) (
 	param object.Parameter, paramExpansionMin, paramExpansionMax int, err error) {
 
 	system := false
@@ -212,14 +239,11 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
 		system = p.SystemAssignment
 
 	case *ast.ExpansionNode:
-		// mutable, paramExpansionMin, paramExpansionMax, err =
-		// 	c.compileParameterExpansion(node, p, pnum, level, last)
-
 		if level > 0 {
 			err = makeErr(node, "Invalid parameter expansion node")
 			return
 		}
-		if !last {
+		if !lastPositional {
 			err = makeErr(node, "Parameter expansion only allowed on last positional parameter")
 			return
 		}
@@ -265,7 +289,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, last bool) (
 			return
 		}
 
-		param, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, last)
+		param, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, lastPositional)
 		return
 
 	default:

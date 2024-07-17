@@ -87,14 +87,14 @@ func (pr *Process) releaseFrame(fr *frame) {
 // no functions to get/set globals b/c they are relatively simple
 
 func (fr *frame) getSelf() (obj object.Object, err error) {
-	if fr.code.IsFunction {
+	if fr.code.IsFunction() {
 		return fr.code, nil
 	}
 	return fr.base.getSelf()
 }
 
 func (fr *frame) getFree(freeIndex int) (obj object.Object, err error) {
-	if fr.code.IsFunction {
+	if fr.code.IsFunction() {
 		return fr.code.Free[freeIndex], nil
 	}
 	return fr.base.getFree(freeIndex)
@@ -159,8 +159,8 @@ func (fr *frame) setNonLocalIndexedValue(localIndex, count int, objIndex, setTo 
 }
 
 func (fr *frame) getFnName() (string, bool) {
-	if fr.code.IsFunction && fr.code.Name != "" {
-		return fr.code.Name, true
+	if fr.code.IsFunction() && fr.code.FnSignature.Name != "" {
+		return fr.code.FnSignature.Name, true
 	} else if fr.base != nil {
 		return fr.base.getFnName()
 	}

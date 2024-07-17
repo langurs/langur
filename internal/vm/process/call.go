@@ -5,6 +5,7 @@ package process
 import (
 	"fmt"
 	"langur/object"
+	"langur/str"
 )
 
 // call from VM (opcodes)
@@ -47,65 +48,68 @@ func (pr *Process) executeFunctionCall(fr *frame, argCount int, argExpansion boo
 	return fnReturn, err
 }
 
-// may convert last arguments in a function call into a list
-func parameterCompression(fn *object.CompiledCode, args []object.Object) (
-	params []object.Object, err error) {
-
-	params = args
-	if fn.ParamExpansionMax != 0 || fn.ParamExpansionMin != 0 {
-		var last []object.Object
-		diff := len(args) - fn.ParamMax + 1
-		if diff > 0 && len(args) != 0 {
-			// must copy before use in append following
-			last = object.CopyRefSlice(args[fn.ParamMax-1:])
-			params = append(args[:fn.ParamMax-1], &object.List{Elements: last})
-
-			if fn.ParamExpansionMax != -1 && len(last) > fn.ParamExpansionMax {
-				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", fn.ParamExpansionMax, len(last))
-			}
-
-		} else if diff == 0 && fn.ParamExpansionMin == 0 {
-			// not a required parameter; since it's missing, add an empty list
-			params = append(args, &object.List{})
-		}
-
-		if len(last) < fn.ParamExpansionMin {
-			err = fmt.Errorf("Parameter expansion min (%d) not met (%d)", fn.ParamExpansionMin, len(last))
-		}
-	}
-
-	return
-}
-
 func (pr *Process) runCompiledCode(
 	code *object.CompiledCode, baseFr *frame, args, late []object.Object) (
 	fnReturn object.Object, relay *jumpRelay, err error) {
 
-	// convert args if necessary
-	args, err = parameterCompression(code, args)
-	if err != nil {
-		return
-	}
-
-	// check arg counts
-	argCnt := len(args)
-	if argCnt < code.ParamMin ||
-		argCnt > code.ParamMax && code.ParamMax > -1 {
-
-		name := "f"
-		if code.Name != "" {
-			name = code.Name
+	if code.FnSignature != nil {
+		// convert args if necessary
+		args, err = parameterCompression(code, args)
+		if err != nil {
+			return
 		}
-		return nil, nil,
-			object.NewError(object.ERR_ARGUMENTS, name,
-				fmt.Sprintf("Argument/Parameter Count Mismatch, expected=%s, received=%d",
-					object.ParamExpectedString(code), argCnt))
+
+		// check arg counts after expansion/compression, not including optional parameters
+		argCnt := len(args)
+		max := len(code.FnSignature.ParamPositional)
+		if argCnt != max && max > -1 {
+			name := "fn"
+			if code.FnSignature.Name != "" {
+				name = code.FnSignature.Name
+			}
+			return nil, nil,
+				object.NewError(object.ERR_ARGUMENTS, name,
+					fmt.Sprintf("Argument/Parameter Count Mismatch, expected=%s, received=%d",
+						object.ParamExpectedString(code), argCnt))
+		}
 	}
 
 	// make and run the frame
 	fr := pr.newFrame(code, baseFr, args)
 	defer pr.releaseFrame(fr)
 	fnReturn, relay, err = pr.RunFrame(fr, late)
+	return
+}
+
+// may convert last positional arguments in a function call into a list
+func parameterCompression(fn *object.CompiledCode, args []object.Object) (
+	params []object.Object, err error) {
+
+	params = args
+	if fn.FnSignature.ParamExpansionMax != 0 || fn.FnSignature.ParamExpansionMin != 0 {
+		var last []object.Object
+		max := len(fn.FnSignature.ParamPositional)
+		diff := len(args) - max + 1
+
+		if diff > 0 && len(args) != 0 {
+			// must copy before use in append following
+			last = object.CopyRefSlice(args[max-1:])
+			params = append(args[:max-1], &object.List{Elements: last})
+
+			if fn.FnSignature.ParamExpansionMax != -1 && len(last) > fn.FnSignature.ParamExpansionMax {
+				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", fn.FnSignature.ParamExpansionMax, len(last))
+			}
+
+		} else if diff == 0 && fn.FnSignature.ParamExpansionMin == 0 {
+			// not a required parameter; since it's missing, add an empty list
+			params = append(args, &object.List{})
+		}
+
+		if len(last) < fn.FnSignature.ParamExpansionMin {
+			err = fmt.Errorf("Parameter expansion min (%d) not met (%d)", fn.FnSignature.ParamExpansionMin, len(last))
+		}
+	}
+
 	return
 }
 
@@ -158,4 +162,92 @@ func (pr *Process) call(fn object.Object,
 	}
 
 	return nil, fmt.Errorf("Not a callable object (%s)", fn.TypeString())
+}
+
+func reformArgumentsBySignature(
+	args *object.ArgumentPackage, sig *object.Signature) (
+	args2 []object.Object, err error) {
+
+	var positional []object.Object
+
+	// do parameter compression if applicable
+	positional, err = parameterCompressionNEW(sig, args.ArgsPositional)
+	if err != nil {
+		return
+	}
+
+	// check positional argument counts
+	if len(positional) != len(sig.ParamPositional) {
+		return nil,
+			object.NewError(object.ERR_ARGUMENTS, sig.Name,
+				fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%d, received=%d",
+					len(sig.ParamPositional), len(positional)))
+	}
+
+	args2 = make([]object.Object, 0, len(positional)+len(sig.ParamByName))
+	copy(positional, args2)
+
+	// ---- now to work on optional parameters ----
+
+	// check / pick up optional parameter values in order listed in signature
+	for _, param := range sig.ParamByName {
+		found := false
+		for _, arg := range args.ArgsByName {
+			if param.ExternalName == arg.ExternalName {
+				found = true
+				// use passed optional value from argument
+				args2 = append(args2, arg.Value)
+			}
+		}
+		if !found {
+			// no argument found for this one; use default
+			args2 = append(args2, param.DefaultValue)
+		}
+	}
+
+	// check if any invalid optional arguments passed
+	for _, arg := range args.ArgsByName {
+		found := false
+		for _, param := range sig.ParamByName {
+			if param.ExternalName == arg.ExternalName {
+				found = true
+			}
+		}
+		if !found {
+			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(arg.ExternalName))
+			return
+		}
+	}
+
+	return
+}
+
+// may convert last arguments in a function call into a list
+func parameterCompressionNEW(sig *object.Signature, args []object.Object) (
+	params []object.Object, err error) {
+
+	params = args
+	if sig.ParamExpansionMax != 0 || sig.ParamExpansionMin != 0 {
+		var last []object.Object
+		diff := len(args) - len(sig.ParamPositional) + 1
+		if diff > 0 && len(args) != 0 {
+			// must copy before use in append following
+			last = object.CopyRefSlice(args[len(sig.ParamPositional)-1:])
+			params = append(args[:len(sig.ParamPositional)-1], &object.List{Elements: last})
+
+			if sig.ParamExpansionMax != -1 && len(last) > sig.ParamExpansionMax {
+				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last))
+			}
+
+		} else if diff == 0 && sig.ParamExpansionMin == 0 {
+			// not a required parameter; since it's missing, add an empty list
+			params = append(args, &object.List{})
+		}
+
+		if len(last) < sig.ParamExpansionMin {
+			err = fmt.Errorf("Parameter expansion min (%d) not met (%d)", sig.ParamExpansionMin, len(last))
+		}
+	}
+
+	return
 }
