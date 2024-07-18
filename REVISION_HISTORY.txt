@@ -2,11 +2,16 @@ langur revision history
 https://langurlang.org
 
 ... 0.17.0
+
+changing how parameters are dealt with
+
+
+- updated to require module declaration as impure if impure (use module*)
+- renamed some tokens
 - fixed bug of wrapping module and import nodes into implicit try block of try/catch
 - removed unnecessary duplicate check of whether catch is first in block; checked when fixing (via ast function)
 
 
-changing how parameters are dealt with
 
 
 2024-07-12 - 0.16.6
