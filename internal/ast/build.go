@@ -137,13 +137,16 @@ func FixTryCatchInNodeSlice(nodes []Node, asExprStatement bool) (
 
 	var expr *ExpressionStatementNode
 
-	// remove nodes to add back when done
+	// remove early nodes to add back when done
 	var earlyNodes []Node
-	if len(nodes) > 1 {
-		switch nodes[0].(type) {
-		case *ModuleNode:
-			earlyNodes = []Node{nodes[0]}
-			nodes = nodes[1:]
+loop:
+	for i := range nodes {
+		switch nodes[i].(type) {
+		case *ModuleNode, *ImportNode:
+			earlyNodes = append(earlyNodes, nodes[i])
+		default:
+			nodes = nodes[i:]
+			break loop
 		}
 	}
 
