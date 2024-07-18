@@ -451,7 +451,7 @@ type FunctionNode struct {
 	Name       string
 	Parameters []Node
 	Body       Node
-	Impure     bool
+	ImpureEffects     bool
 }
 
 func (f *FunctionNode) expressionNode() {}
@@ -463,7 +463,7 @@ func (f *FunctionNode) Copy() Node {
 		Name:       f.Name,
 		Parameters: copyNodeSlice(f.Parameters),
 		Body:       copyOrNil(f.Body),
-		Impure:     f.Impure,
+		ImpureEffects:     f.ImpureEffects,
 	}
 }
 
@@ -475,7 +475,7 @@ func (f *FunctionNode) TokenRepresentation() string {
 
 	var sb strings.Builder
 	sb.WriteString(common.FunctionTokenLiteral)
-	if f.Impure {
+	if f.ImpureEffects {
 		sb.WriteRune('*')
 	}
 	sb.WriteString("(")
@@ -501,7 +501,7 @@ func (f *FunctionNode) String() string {
 
 	var sb strings.Builder
 	sb.WriteString(common.FuntionTypeName)
-	if f.Impure {
+	if f.ImpureEffects {
 		sb.WriteRune('*')
 	}
 	sb.WriteRune(' ')

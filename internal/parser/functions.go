@@ -30,8 +30,8 @@ func (p *Parser) parseFunction() ast.Node {
 	}
 
 	lit := &ast.FunctionNode{
-		Token:  tok,
-		Impure: impureEffects,
+		Token:         tok,
+		ImpureEffects: impureEffects,
 	}
 
 	if specialFn := p.maybeParseSpecialFunction(); specialFn != nil {

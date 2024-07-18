@@ -32,14 +32,14 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 
 	sig := &object.Signature{Name: node.Name}
 
-	sig.ImpureEffects = node.Impure // self-declared impure; to be tested later...
+	sig.ImpureEffects = node.ImpureEffects // self-declared impure; to be tested later...
 	defer func() {
 		c.popVariableScope()
 		c.functionLevel--
 
 		// Impurity is transitive.
 		if sig.ImpureEffects {
-			c.addToImpuritiesList(node.Name)
+			c.addToImpureEffectsList(node.Name)
 		}
 	}()
 
@@ -84,9 +84,9 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	localsCount := c.symbolTable.DefinitionCount
 
 	// may be self-declared or proven impure
-	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.Impurities != nil
+	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.ImpureEffects != nil
 
-	if sig.ImpureEffects && !node.Impure {
+	if sig.ImpureEffects && !node.ImpureEffects {
 		if node.Name == "" {
 			err = makeErr(node, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
 		} else {

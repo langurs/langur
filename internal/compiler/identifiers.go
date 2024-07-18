@@ -22,15 +22,15 @@ func (c *Compiler) compileIdentifierNode(node *ast.IdentNode) (ins opcode.Instru
 	}
 
 	if process.GetBuiltInImpurityStatus(node.Name) {
-		c.addToImpuritiesList(node.Name)
+		c.addToImpureEffectsList(node.Name)
 	}
 
 	ins = c.constantIns(bi)
 	return
 }
 
-func (c *Compiler) addToImpuritiesList(s string) {
-	c.symbolTable.AddImpurity(s)
+func (c *Compiler) addToImpureEffectsList(s string) {
+	c.symbolTable.AddImpureEffects(s)
 	c.impureEffects = true
 }
 

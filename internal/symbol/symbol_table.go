@@ -42,7 +42,7 @@ type SymbolTable struct {
 	IsFunction  bool
 
 	Modes      *modes.CompileModes
-	Impurities []string
+	ImpureEffects []string
 }
 
 func NewSymbolTable(
@@ -164,15 +164,15 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 	return
 }
 
-func (st *SymbolTable) AddImpurity(s string) {
+func (st *SymbolTable) AddImpureEffects(s string) {
 	// add to impurities list at the function level
 	if st.IsFunction {
-		if !str.IsInSlice(s, st.Impurities) {
-			st.Impurities = append(st.Impurities, s)
+		if !str.IsInSlice(s, st.ImpureEffects) {
+			st.ImpureEffects = append(st.ImpureEffects, s)
 		}
 	} else {
 		if st.Outer != nil {
-			st.Outer.AddImpurity(s)
+			st.Outer.AddImpureEffects(s)
 		}
 	}
 }
