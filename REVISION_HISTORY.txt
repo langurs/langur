@@ -2,7 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... 0.17.0
-- fixed bug of wrapping module node into implicit try block of try/catch
+- fixed bug of wrapping module and import nodes into implicit try block of try/catch
 - removed unnecessary duplicate check of whether catch is first in block; checked when fixing (via ast function)
 
 

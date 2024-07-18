@@ -232,19 +232,19 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return plain(opcode.OpAdd)
 	case token.MINUS:
 		return plain(opcode.OpSubtract)
-	case token.TIMES:
+	case token.ASTERISK:
 		return plain(opcode.OpMultiply)
-	case token.DIVIDE:
+	case token.SLASH:
 		return plain(opcode.OpDivide)
-	case token.DIVIDEINT:
+	case token.BACKSLASH:
 		return plain(opcode.OpTruncateDivide)
-	case token.DIVIDEFLOOR:
+	case token.DOUBLESLASH:
 		return plain(opcode.OpFloorDivide)
 	case token.REMAINDER:
 		return plain(opcode.OpRemainder)
 	case token.MODULUS:
 		return plain(opcode.OpModulus)
-	case token.EXPONENT:
+	case token.POWER:
 		return plain(opcode.OpPower)
 	case token.ROOT:
 		return plain(opcode.OpRoot)

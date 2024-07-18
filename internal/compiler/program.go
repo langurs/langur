@@ -27,6 +27,9 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 					err = makeErr(node, "No name expected on module")
 					return
 				}
+
+				c.moduleDeclaredImpureEffects = n.ImpureEffects
+
 				// A module has a more defined structure that must be followed.
 				return c.compileModule(node.Statements[1:], executeModule)
 
@@ -155,6 +158,10 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 			return
 		}
 		ins = append(ins, bytes...)
+	}
+
+	if c.impureEffects && !c.moduleDeclaredImpureEffects {
+		err = makeErr(nodes[0], "Module contains impure effects and is not declared impure; use module* (with asterisk)")
 	}
 
 	return

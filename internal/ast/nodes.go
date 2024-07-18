@@ -55,8 +55,9 @@ func (p *Program) TokenInfo() token.Token {
 
 // MODULE STATEMENT
 type ModuleNode struct {
-	Token token.Token
-	Name  string
+	Token         token.Token
+	Name          string
+	ImpureEffects bool
 }
 
 func (m *ModuleNode) statementNode() {}
@@ -66,17 +67,35 @@ func (m *ModuleNode) Copy() Node {
 }
 
 func (m *ModuleNode) TokenRepresentation() string {
-	if m.Name == "" {
-		return "module"
+	var sb strings.Builder
+
+	sb.WriteString("module")
+	if m.ImpureEffects {
+		sb.WriteRune('*')
 	}
-	return "module " + m.Name
+
+	if m.Name != "" {
+		sb.WriteRune(' ')
+		sb.WriteString(m.Name)
+	}
+
+	return sb.String()
 }
 
 func (m *ModuleNode) String() string {
-	if m.Name == "" {
-		return "Module"
+	var sb strings.Builder
+
+	if m.ImpureEffects {
+		sb.WriteString("Impure ")
 	}
-	return "Module " + m.Name
+	sb.WriteString("Module")
+
+	if m.Name != "" {
+		sb.WriteRune(' ')
+		sb.WriteString(m.Name)
+	}
+
+	return sb.String()
 }
 
 func (m *ModuleNode) TokenInfo() token.Token {
@@ -973,7 +992,7 @@ func (n *NullNode) TokenInfo() token.Token {
 	return n.Token
 }
 
-// NONE, THAT IS _ (UNDERSCORE) SOMETIMES
+// NONE, THAT IS _ (UNDERSCORE) SOMEASTERISK
 func IsNoOp(node Node) bool {
 	switch node.(type) {
 	case *NoneNode:

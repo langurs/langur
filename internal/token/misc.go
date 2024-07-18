@@ -28,8 +28,9 @@ type Token struct {
 	Line         int
 	LinePosition int
 
-	NewLinePrecedes bool
-	CpDiff          int // number of code points from previous token
+	NewLinePrecedes              bool
+	CpDiff                       int  // number of code points from previous token
+	AddImpliedSemicolonAtNewLine bool // an override of the norm
 
 	// lexing or parsing errors
 	Errs []tokenErr
@@ -44,6 +45,8 @@ func (tok Token) Copy() Token {
 		LinePosition:    tok.LinePosition,
 		NewLinePrecedes: tok.NewLinePrecedes,
 		CpDiff:          tok.CpDiff,
+
+		AddImpliedSemicolonAtNewLine: tok.AddImpliedSemicolonAtNewLine,
 	}
 
 	if len(tok.Attachments) > 0 {

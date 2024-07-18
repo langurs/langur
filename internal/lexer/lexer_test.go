@@ -127,9 +127,9 @@ func TestGeneralTokens(t *testing.T) {
 		{"<=?", &token.Token{Type: token.LT_OR_EQUAL, Literal: "<=?", Code: token.CODE_DB_OPERATOR}, false},
 		{">=?", &token.Token{Type: token.GT_OR_EQUAL, Literal: ">=?", Code: token.CODE_DB_OPERATOR}, false},
 
-		{"*", &token.Token{Type: token.TIMES, Literal: "*"}, false},
-		{"/", &token.Token{Type: token.DIVIDE, Literal: "/"}, false},
-		{`\`, &token.Token{Type: token.DIVIDEINT, Literal: `\`}, false},
+		{"*", &token.Token{Type: token.ASTERISK, Literal: "*"}, false},
+		{"/", &token.Token{Type: token.SLASH, Literal: "/"}, false},
+		{`\`, &token.Token{Type: token.BACKSLASH, Literal: `\`}, false},
 		{"rem", &token.Token{Type: token.REMAINDER, Literal: "rem"}, false},
 		{"mod", &token.Token{Type: token.MODULUS, Literal: "mod"}, false},
 		{"+", &token.Token{Type: token.PLUS, Literal: "+"}, false},
@@ -458,14 +458,14 @@ func TestTokenSequencing(t *testing.T) {
 		{"fn{*}", []*token.Token{
 			&token.Token{Type: token.FUNCTION, Literal: "fn"},
 			&token.Token{Type: token.LBRACE, Literal: "{"},
-			&token.Token{Type: token.TIMES, Literal: "*"},
+			&token.Token{Type: token.ASTERISK, Literal: "*"},
 			&token.Token{Type: token.RBRACE, Literal: "}"},
 		}},
 
 		{"fn{* 2}", []*token.Token{
 			&token.Token{Type: token.FUNCTION, Literal: "fn"},
 			&token.Token{Type: token.LBRACE, Literal: "{"},
-			&token.Token{Type: token.TIMES, Literal: "*"},
+			&token.Token{Type: token.ASTERISK, Literal: "*"},
 			&token.Token{Type: token.INT, Literal: "2"},
 			&token.Token{Type: token.RBRACE, Literal: "}"},
 		}},

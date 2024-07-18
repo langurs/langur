@@ -148,13 +148,13 @@ func (p *Parser) setParseFunctionMaps() {
 		token.APPEND:      p.parseInfixExpression,
 		token.PLUS:        p.parseInfixExpression,
 		token.MINUS:       p.parseInfixExpression,
-		token.TIMES:       p.parseInfixExpression,
-		token.DIVIDE:      p.parseInfixExpression,
-		token.DIVIDEINT:   p.parseInfixExpression,
-		token.DIVIDEFLOOR: p.parseInfixExpression,
+		token.ASTERISK:       p.parseInfixExpression,
+		token.SLASH:      p.parseInfixExpression,
+		token.BACKSLASH:   p.parseInfixExpression,
+		token.DOUBLESLASH: p.parseInfixExpression,
 		token.REMAINDER:   p.parseInfixExpression,
 		token.MODULUS:     p.parseInfixExpression,
-		token.EXPONENT:    p.parseInfixExpression,
+		token.POWER:    p.parseInfixExpression,
 		token.ROOT:        p.parseInfixExpression,
 
 		// token.NOT as infix for not in/not of; checked elsewhere that only used as such for infix (normally prefix)

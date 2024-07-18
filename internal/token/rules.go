@@ -59,11 +59,11 @@ func IsInfixValueOp(tt Type) bool {
 	switch tt {
 	case FORWARD,
 		PLUS, MINUS,
-		TIMES,
-		DIVIDE, DIVIDEINT, DIVIDEFLOOR,
+		ASTERISK,
+		SLASH, BACKSLASH, DOUBLESLASH,
 		REMAINDER,
 		MODULUS,
-		EXPONENT, ROOT:
+		POWER, ROOT:
 
 		return true
 	}
@@ -91,7 +91,7 @@ func IsPrefixOp(tt Type) bool {
 
 func IsRightAssociativeOp(tt Type) bool {
 	switch tt {
-	case EXPONENT, ROOT,
+	case POWER, ROOT,
 		ASSIGN:
 
 		return true
@@ -116,8 +116,14 @@ func ExpressionContinuationExpected(tt Type) bool {
 	return true
 }
 
-func ImpliedExprTerminatorIfFollowedByNewline(tt Type) bool {
+func ImpliedExprTerminatorIfFollowedByNewline(tok Token) bool {
+	if tok.AddImpliedSemicolonAtNewLine {
+		// check for override of norm
+		return true
+	}
+
 	// used by lexer to determine when to insert a semicolon
+	tt := tok.Type
 	switch tt {
 	case
 		// false if...

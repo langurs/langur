@@ -167,7 +167,8 @@ func (cf *CompiledCode) ReplString() string {
 
 type BuiltIn struct {
 	// Fn an interface{} here and type assertion in the process package to avoid an import cycle
-	Fn            interface{}
+	Fn interface{}
+
 	Name          string
 	Description   string
 	ParamMin      int

@@ -48,6 +48,9 @@ type Compiler struct {
 	loopVarStack []ast.Node
 
 	functionLevel int
+
+	moduleDeclaredImpureEffects bool
+	impureEffects               bool
 }
 
 // to pass from compiler to VM

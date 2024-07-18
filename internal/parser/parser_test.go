@@ -42,7 +42,7 @@ func TestListLiterals(t *testing.T) {
 
 	testNumberLiteral(t, list.Elements[0], str.IntToStr(1, 10))
 	testInfixExpression(t, list.Elements[1], 5, token.PLUS, 2)
-	testInfixExpression(t, list.Elements[2], 7, token.TIMES, 7)
+	testInfixExpression(t, list.Elements[2], 7, token.ASTERISK, 7)
 }
 
 func TestParsingIndexExpressions(t *testing.T) {
@@ -353,16 +353,16 @@ func TestParsingInfixExpressions(t *testing.T) {
 	}{
 		{"7 + 70;", 7, token.PLUS, 70},
 		{"7 - 70;", 7, token.MINUS, 70},
-		{"7 * 70;", 7, token.TIMES, 70},
-		{"7 / 70;", 7, token.DIVIDE, 70},
+		{"7 * 70;", 7, token.ASTERISK, 70},
+		{"7 / 70;", 7, token.SLASH, 70},
 		{"7 > 70;", 7, token.GREATER_THAN, 70},
 		{"7 < 70;", 7, token.LESS_THAN, 70},
 		{"7 == 70;", 7, token.EQUAL, 70},
 		{"7 != 70;", 7, token.NOT_EQUAL, 70},
 		{"fooey + nofoobars;", "fooey", token.PLUS, "nofoobars"},
 		{"fooey - nofoobars;", "fooey", token.MINUS, "nofoobars"},
-		{"fooey * nofoobars;", "fooey", token.TIMES, "nofoobars"},
-		{"fooey / nofoobars;", "fooey", token.DIVIDE, "nofoobars"},
+		{"fooey * nofoobars;", "fooey", token.ASTERISK, "nofoobars"},
+		{"fooey / nofoobars;", "fooey", token.SLASH, "nofoobars"},
 		{"fooey > nofoobars;", "fooey", token.GREATER_THAN, "nofoobars"},
 		{"fooey < nofoobars;", "fooey", token.LESS_THAN, "nofoobars"},
 		{"fooey == nofoobars;", "fooey", token.EQUAL, "nofoobars"},
@@ -479,7 +479,7 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 			testInfixExpression(t, e, 9, token.MINUS, 7)
 		},
 		"three": func(e ast.Node) {
-			testInfixExpression(t, e, 21, token.DIVIDE, 7)
+			testInfixExpression(t, e, 21, token.SLASH, 7)
 		},
 	}
 
@@ -963,7 +963,7 @@ func TestParsingCallExpression(t *testing.T) {
 	}
 
 	testLiteralExpression(t, exp.Args[0], 1)
-	testInfixExpression(t, exp.Args[1], 2, token.TIMES, 3)
+	testInfixExpression(t, exp.Args[1], 2, token.ASTERISK, 3)
 	testInfixExpression(t, exp.Args[2], 4, token.PLUS, 5)
 }
 

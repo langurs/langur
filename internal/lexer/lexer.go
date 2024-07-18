@@ -323,20 +323,21 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 			lex.advanceCodePoint()
 
 		case '*':
-			tok.Type, tok.Literal = token.TIMES, "*"
+			tok.Type, tok.Literal = token.ASTERISK, "*"
+			tok.AddImpliedSemicolonAtNewLine = lex.previousToken.Type == token.MODULE
 			lex.advanceCodePoint()
 
 		case '/':
 			if lex.peekCp == '/' {
-				tok.Literal, tok.Type = `//`, token.DIVIDEFLOOR
+				tok.Literal, tok.Type = `//`, token.DOUBLESLASH
 				lex.advanceCodePoint()
 			} else {
-				tok.Type = token.DIVIDE
+				tok.Type = token.SLASH
 			}
 			lex.advanceCodePoint()
 
 		case '\\':
-			tok.Type = token.DIVIDEINT
+			tok.Type = token.BACKSLASH
 			lex.advanceCodePoint()
 
 		case '^':
@@ -344,7 +345,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 				tok.Literal, tok.Type = "^/", token.ROOT
 				lex.advanceCodePoint()
 			} else {
-				tok.Type = token.EXPONENT
+				tok.Type = token.POWER
 			}
 			lex.advanceCodePoint()
 
@@ -496,7 +497,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 	} else {
 		// using newline as default expression terminator
 		if tok.NewLinePrecedes &&
-			token.ImpliedExprTerminatorIfFollowedByNewline(lex.previousToken.Type) {
+			token.ImpliedExprTerminatorIfFollowedByNewline(lex.previousToken) {
 
 			// Queue this token to pick up it up next time so we can add our implied expression terminator here.
 			lex.queueToken(tok)

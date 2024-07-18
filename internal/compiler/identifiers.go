@@ -31,6 +31,7 @@ func (c *Compiler) compileIdentifierNode(node *ast.IdentNode) (ins opcode.Instru
 
 func (c *Compiler) addToImpuritiesList(s string) {
 	c.symbolTable.AddImpurity(s)
+	c.impureEffects = true
 }
 
 func (c *Compiler) makeOpGetInstructions(node ast.Node, sym symbol.Symbol, level int) (

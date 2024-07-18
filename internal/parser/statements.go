@@ -137,6 +137,14 @@ func (p *Parser) parseModuleStatement() *ast.ModuleNode {
 		stmt.Name = mod.Name
 	}
 
+	if p.tok.Type == token.ASTERISK {
+		if p.tok.CpDiff != 0 {
+			p.addError("Asterisk * must immediately follow module keyword")
+		}
+		stmt.ImpureEffects = true
+		p.advanceToken()
+	}
+
 	return stmt
 }
 

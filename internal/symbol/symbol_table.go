@@ -87,6 +87,7 @@ func (st *SymbolTable) DefineSystemVariable(name string, mutable bool) (sym Symb
 	return st.defineSymbol(name, mutable)
 }
 
+// to check if identifier name allowed for declaration
 func isNonShadowedWord(name string) bool {
 	_, isKeyword := token.Keywords[name]
 	if isKeyword {

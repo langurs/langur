@@ -44,8 +44,8 @@ const (
 	precedence_PRODUCT // x / \ // rem mod
 
 	// NOTE(0.12): changed order of the following 2
-	precedence_PREFIX    // -X
-	precedence_EXPONENTS // ^  ^/
+	precedence_PREFIX // -X
+	precedence_POWER  // ^  ^/
 
 	precedence_AFTER // function call () or indexing []
 )
@@ -68,7 +68,7 @@ var infixPrecedences = map[token.Type]precedence{
 	token.IN: precedence_BOOLEAN,
 	token.OF: precedence_BOOLEAN,
 
-	// for not in/not of
+	// infix precedence for not in/not of
 	// should be same precedence as IN and OF tokens
 	token.NOT: precedence_BOOLEAN,
 
@@ -77,14 +77,14 @@ var infixPrecedences = map[token.Type]precedence{
 
 	token.PLUS:        precedence_SUM,
 	token.MINUS:       precedence_SUM,
-	token.TIMES:       precedence_PRODUCT,
-	token.DIVIDE:      precedence_PRODUCT,
-	token.DIVIDEINT:   precedence_PRODUCT,
-	token.DIVIDEFLOOR: precedence_PRODUCT,
+	token.ASTERISK:    precedence_PRODUCT,
+	token.SLASH:       precedence_PRODUCT,
+	token.BACKSLASH:   precedence_PRODUCT,
+	token.DOUBLESLASH: precedence_PRODUCT,
 	token.REMAINDER:   precedence_PRODUCT,
 	token.MODULUS:     precedence_PRODUCT,
-	token.EXPONENT:    precedence_EXPONENTS,
-	token.ROOT:        precedence_EXPONENTS,
+	token.POWER:       precedence_POWER,
+	token.ROOT:        precedence_POWER,
 
 	token.AND:  precedence_LOGICAL_AND,
 	token.OR:   precedence_LOGICAL_OR,
