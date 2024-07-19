@@ -1,6 +1,6 @@
-// langur/vm/speed_test.go
+// langur/test/speed_test.go
 
-package vm
+package test
 
 import (
 	"fmt"

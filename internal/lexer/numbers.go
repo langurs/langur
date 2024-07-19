@@ -63,7 +63,7 @@ func (lex *Lexer) readNumber() (
 					break
 				}
 				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {
-					err = fmt.Errorf("Expected underscore and digit after newline after underscore for number continuation")
+					err = fmt.Errorf("Expected underscore and digit after underscore and newline for number continuation")
 					break
 				}
 				lex.advanceCodePoint() // past underscore on second line
@@ -209,7 +209,7 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 					break
 				}
 				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {
-					err = fmt.Errorf("Expected underscore and digit after newline after underscore for number continuation")
+					err = fmt.Errorf("Expected underscore and digit after underscore and newline for number continuation")
 					break
 				}
 				lex.advanceCodePoint() // past underscore on second line

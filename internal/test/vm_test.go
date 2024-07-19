@@ -1,6 +1,6 @@
-// langur/vm/vm_test.go
+// langur/test/vm_test.go
 
-package vm
+package test
 
 import (
 	"langur/common"

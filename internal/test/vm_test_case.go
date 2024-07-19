@@ -1,6 +1,6 @@
-// langur/vm/vm_test_case.go
+// langur/test/vm_test_case.go
 
-package vm
+package test
 
 import (
 	"fmt"
