@@ -216,7 +216,9 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 	}
 
 	// skip whitespace first
-	tok.CpDiff, tok.NewLinePrecedes, err = lex.skipWhiteSpace()
+	var wsNewlineCount int
+	tok.CpDiff, wsNewlineCount, err = lex.skipWhiteSpace()
+	tok.NewLinePrecedes = wsNewlineCount != 0
 	if err != nil {
 		addError(&tok, err)
 	}
@@ -538,9 +540,9 @@ func (lex *Lexer) skipLineReturnOnly() bool {
 
 // skip comments and whitespace
 // returns the difference in code points
-func (lex *Lexer) skipWhiteSpace() (cpDiff int, includesNewline bool, err error) {
+func (lex *Lexer) skipWhiteSpace() (cpDiff, newlineCount int, err error) {
 	cpPosition := lex.cpPosition
-	commentIncludesNewLine := false
+	commentNewlineCount := 0
 
 	isCommentStart := func() bool {
 		return lex.cp == '#' || lex.cp == '/' && lex.peekCp == '*'
@@ -548,10 +550,10 @@ func (lex *Lexer) skipWhiteSpace() (cpDiff int, includesNewline bool, err error)
 
 	for cpoint.IsTokenSpace(lex.cp) || isCommentStart() {
 		if isCommentStart() {
-			commentIncludesNewLine, err = lex.skipComments()
+			commentNewlineCount, err = lex.skipComments()
 
-			if commentIncludesNewLine {
-				includesNewline = true
+			if commentNewlineCount != 0 {
+				newlineCount++
 			}
 
 		} else if cpoint.IsTokenVerticalSpace(lex.cp) {
@@ -560,7 +562,7 @@ func (lex *Lexer) skipWhiteSpace() (cpDiff int, includesNewline bool, err error)
 				lex.advanceCodePoint()
 			}
 			lex.advanceCodePoint()
-			includesNewline = true
+			newlineCount++
 
 		} else {
 			lex.advanceCodePoint()
@@ -571,7 +573,7 @@ func (lex *Lexer) skipWhiteSpace() (cpDiff int, includesNewline bool, err error)
 	return
 }
 
-func (lex *Lexer) skipComments() (includesNewline bool, err error) {
+func (lex *Lexer) skipComments() (newlineCount int, err error) {
 	isInline := false
 	position := lex.bytePosition
 
@@ -608,7 +610,7 @@ func (lex *Lexer) skipComments() (includesNewline bool, err error) {
 				lex.advanceCodePoint()
 			}
 			lex.advanceCodePoint()
-			includesNewline = true
+			newlineCount++
 
 			if !isInline {
 				// end of line comment
