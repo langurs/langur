@@ -25,6 +25,7 @@ func (lex *Lexer) readNumber() (
 	// Don't set a base if not explicit basex notation.
 	// Context may dictate a different default base (interpreted later).
 	base = token.CODE_DEFAULT
+	includesNewline := false
 
 	for cpoint.IsWordTokenChar(lex.cp) || lex.cp == '.' {
 		if lex.cp == '.' {
@@ -38,9 +39,7 @@ func (lex *Lexer) readNumber() (
 				tt = token.FLOAT
 			} else {
 				tt = token.INVALID
-				if err == nil {
-					err = fmt.Errorf("Multiple decimal points found in numeric literal")
-				}
+				err = fmt.Errorf("Multiple decimal points found in numeric literal")
 			}
 
 			addCp()
@@ -60,11 +59,10 @@ func (lex *Lexer) readNumber() (
 				_, newlineCount, err = lex.skipWhiteSpace()
 				if newlineCount != 1 {
 					err = fmt.Errorf("Expected 1 newline after underscore for number continuation")
-					break
 				}
+				includesNewline = true
 				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {
 					err = fmt.Errorf("Expected underscore and digit after underscore and newline for number continuation")
-					break
 				}
 				lex.advanceCodePoint() // past underscore on second line
 				// continue
@@ -101,6 +99,11 @@ func (lex *Lexer) readNumber() (
 			// move past the x
 			lex.advanceCodePoint()
 
+			if includesNewline {
+				err = fmt.Errorf("No line break expected in base specification")
+				break
+			}
+
 			if tt == token.INT {
 				base, err = str.StrToInt(b, 10)
 				// letting the parser decide if it's a valid base
@@ -111,14 +114,12 @@ func (lex *Lexer) readNumber() (
 			}
 
 			if err != nil {
-				continue
+				break
 			}
 
 			if !cpoint.IsWordTokenChar(lex.cp) {
 				tl, tt = str.IntToStr(base, 10)+"x", token.INVALID
-				if err == nil {
-					err = fmt.Errorf("Base specifier stump (missing number)")
-				}
+				err = fmt.Errorf("Base specifier stump (missing number)")
 
 			} else if tokLit, tokType, tokErr := lex.readNumberOfBase(base); tokErr == nil {
 				tl, tt = tokLit, tokType
@@ -135,6 +136,10 @@ func (lex *Lexer) readNumber() (
 		} else {
 			// keeps reading whether the token is legal or illegal (grab all identifier characters)
 			addCp()
+		}
+
+		if err != nil {
+			break
 		}
 	}
 
