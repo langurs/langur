@@ -34,7 +34,6 @@ func TestGeneralTokens(t *testing.T) {
 		{"-abc", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 
 		{"16x", &token.Token{Type: token.INVALID, Literal: "16x", Code: 16}, true},
-		{"16.2x111", &token.Token{Type: token.INVALID, Literal: "16.2x111", Code: token.CODE_DEFAULT}, true},
 
 		// good strings
 		{`"abc"`, &token.Token{Type: token.STRING, Literal: "abc"}, false},

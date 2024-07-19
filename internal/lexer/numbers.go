@@ -7,12 +7,17 @@ import (
 	"langur/cpoint"
 	"langur/str"
 	"langur/token"
+	"strings"
 )
 
 func (lex *Lexer) readNumber() (
 	tl string, tt token.Type, base int, err error) {
 
-	position := lex.bytePosition
+	var sb strings.Builder
+	addCp := func() {
+		sb.WriteRune(lex.cp)
+		lex.advanceCodePoint()
+	}
 
 	// unless we find out otherwise...
 	tt = token.INT
@@ -38,7 +43,7 @@ func (lex *Lexer) readNumber() (
 				}
 			}
 
-			lex.advanceCodePoint()
+			addCp()
 
 		} else if lex.cp == '_' {
 			// underscores okay in number literals
@@ -72,8 +77,8 @@ func (lex *Lexer) readNumber() (
 			if tt == token.INT {
 				tt = token.FLOAT
 			}
-			lex.advanceCodePoint()
-			lex.advanceCodePoint()
+			addCp()
+			addCp()
 
 			if err == nil && (lex.cp == '_' || !cpoint.IsWordTokenChar(lex.cp)) {
 				err = fmt.Errorf("Missing digits after start of e-notation")
@@ -85,12 +90,13 @@ func (lex *Lexer) readNumber() (
 			// Langur requires the plus or minus for e-notation, which we checked for in the "else if" above.
 			// We need to check this here, in case the decimal library we're using doesn't require it.
 			err = fmt.Errorf("Missing plus or minus after start of e-notation")
-			lex.advanceCodePoint()
+			addCp()
 
 		} else if err == nil && lex.cp == 'x' {
 			// numbers preceding x indicates a base, such as 16xFF or 2x1010
 			// read base section
-			b := lex.input[position:lex.bytePosition]
+			b := sb.String()
+			sb.Reset()
 
 			// move past the x
 			lex.advanceCodePoint()
@@ -128,14 +134,11 @@ func (lex *Lexer) readNumber() (
 
 		} else {
 			// keeps reading whether the token is legal or illegal (grab all identifier characters)
-			lex.advanceCodePoint()
+			addCp()
 		}
 	}
 
-	tl = lex.input[position:lex.bytePosition]
-
-	// remove whitespace for multi-line number literals
-	tl = cpoint.RemoveTokenSpacing(tl)
+	tl = sb.String()
 	return
 }
 
@@ -155,8 +158,13 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 	}
 
 	// We read in all the "word" characters whether they are valid or not.
-	position := lex.bytePosition
 	tt = token.INT
+
+	var sb strings.Builder
+	addCp := func() {
+		sb.WriteRune(lex.cp)
+		lex.advanceCodePoint()
+	}
 
 	for cpoint.IsWordTokenChar(lex.cp) || lex.cp == '.' {
 		if lex.cp == '.' {
@@ -174,15 +182,15 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 					err = fmt.Errorf("Multiple decimal points found in numeric literal")
 				}
 			}
-			lex.advanceCodePoint()
+			addCp()
 
 		} else if (lex.cp == 'e' || lex.cp == 'E') && (lex.peekCp == '+' || lex.peekCp == '-') {
 			// e-notation requiring + or -
 			if tt == token.INT {
 				tt = token.FLOAT
 			}
-			lex.advanceCodePoint()
-			lex.advanceCodePoint()
+			addCp()
+			addCp()
 
 			if err == nil && (lex.cp == '_' || !cpoint.IsWordTokenChar(lex.cp)) {
 				err = fmt.Errorf("Missing digits after start of e-notation")
@@ -211,16 +219,13 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 		} else if err == nil && !cpoint.IsDigitInBase(lex.cp, base) {
 			tt = token.INVALID
 			err = fmt.Errorf("Invalid characters for base used (" + str.IntToStr(base, 10) + ") in numeric literal")
-			lex.advanceCodePoint()
+			addCp()
 
 		} else {
-			lex.advanceCodePoint()
+			addCp()
 		}
 	}
 
-	tl = lex.input[position:lex.bytePosition]
-
-	// remove whitespace for multi-line number literals
-	tl = cpoint.RemoveTokenSpacing(tl)
+	tl = sb.String()
 	return
 }
