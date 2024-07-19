@@ -1,18 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... 0.17.0
-
-changing how parameters are dealt with
-
-
-- updated to require module declaration as impure if impure (use module*)
+2024-07-18 - 0.16.7
+- updated impure module to require declaration as impure (use module*)
 - renamed some tokens
 - fixed bug of wrapping module and import nodes into implicit try block of try/catch
 - removed unnecessary duplicate check of whether catch is first in block; checked when fixing (via ast function)
-
-
-
+- started changing how parameters are dealt with, but not completed
 
 2024-07-12 - 0.16.6
 - updated fixed point and scientific notation interpolation modifiers to accept comma for decimal point
