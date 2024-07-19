@@ -27,6 +27,26 @@ func TestEqualAndSame(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
+func TestNumberLiterals(t *testing.T) {
+	tests := []vmTestCase{
+		{"2", 2, object.NUMBER_OBJ},
+		{"16xff", 255, object.NUMBER_OBJ},
+		{"-2x0011_0000_0011_1011", -12347, object.NUMBER_OBJ},
+
+		// with continuation
+		{`6._
+			_2831853071_7958647692_
+			_5286766559_0057683943`,
+			"6.2831853071795864769252867665590057683943",
+			object.NUMBER_OBJ},
+
+		{`2x0011_0000_
+		  _0011_1011`, 12347, object.NUMBER_OBJ},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestMath(t *testing.T) {
 	tests := []vmTestCase{
 		{"1", "1", object.NUMBER_OBJ},

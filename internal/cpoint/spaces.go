@@ -5,6 +5,7 @@ package cpoint
 // spacing code points allowed in langur source code
 
 import (
+	"langur/regexp"
 	"unicode"
 )
 
@@ -14,6 +15,12 @@ func IsTrimmable(cp rune) bool {
 
 func IsTrimmableLeadingSpace(cp rune) bool {
 	return unicode.IsSpace(cp) && !IsVerticalSpace(cp)
+}
+
+var tokenSpacingRegex = regexp.MustCompile(`[\t \n\r]`)
+
+func RemoveTokenSpacing(s string) string {
+	return tokenSpacingRegex.ReplaceAllString(s, "")
 }
 
 func IsTokenSpace(cp rune) bool {

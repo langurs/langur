@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.16.8
+- updated lexer to allow number continuation on next line (see website for syntax)
+
+
 2024-07-18 - 0.16.7
 - updated impure module to require declaration as impure (use module*)
 - renamed some tokens

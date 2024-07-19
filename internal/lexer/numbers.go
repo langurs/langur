@@ -40,7 +40,34 @@ func (lex *Lexer) readNumber() (
 
 			lex.advanceCodePoint()
 
-		} else if (lex.cp == 'e' || lex.cp == 'E') && (lex.peekCp == '+' || lex.peekCp == '-') {
+		} else if lex.cp == '_' {
+			// underscores okay in number literals
+			lex.advanceCodePoint()
+
+			// check for number continuation (on next line)
+			// such as (for tau)...
+			// 6._
+			// _2831853071_7958647692_
+			// _5286766559_0057683943
+
+			if !cpoint.IsWordTokenChar(lex.cp) {
+				var newlineCount int
+				_, newlineCount, err = lex.skipWhiteSpace()
+				if newlineCount != 1 {
+					err = fmt.Errorf("Expected 1 newline after underscore for number continuation")
+					break
+				}
+				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {
+					err = fmt.Errorf("Expected underscore and digit after newline after underscore for number continuation")
+					break
+				}
+				lex.advanceCodePoint() // past underscore on second line
+				// continue
+			}
+
+		} else if (lex.cp == 'e' || lex.cp == 'E') &&
+			(lex.peekCp == '+' || lex.peekCp == '-') {
+
 			// e-notation requiring + or -
 			if tt == token.INT {
 				tt = token.FLOAT
@@ -106,6 +133,9 @@ func (lex *Lexer) readNumber() (
 	}
 
 	tl = lex.input[position:lex.bytePosition]
+
+	// remove whitespace for multi-line number literals
+	tl = cpoint.RemoveTokenSpacing(tl)
 	return
 }
 
@@ -159,8 +189,24 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 			}
 
 		} else if lex.cp == '_' {
-			// ok
+			// underscores okay in number literals
 			lex.advanceCodePoint()
+
+			// check for number continuation (on next line)
+			if !cpoint.IsWordTokenChar(lex.cp) {
+				var newlineCount int
+				_, newlineCount, err = lex.skipWhiteSpace()
+				if newlineCount != 1 {
+					err = fmt.Errorf("Expected 1 newline after underscore for number continuation")
+					break
+				}
+				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {
+					err = fmt.Errorf("Expected underscore and digit after newline after underscore for number continuation")
+					break
+				}
+				lex.advanceCodePoint() // past underscore on second line
+				// continue
+			}
 
 		} else if err == nil && !cpoint.IsDigitInBase(lex.cp, base) {
 			tt = token.INVALID
@@ -173,5 +219,8 @@ func (lex *Lexer) readNumberOfBase(base int) (tl string, tt token.Type, err erro
 	}
 
 	tl = lex.input[position:lex.bytePosition]
+
+	// remove whitespace for multi-line number literals
+	tl = cpoint.RemoveTokenSpacing(tl)
 	return
 }

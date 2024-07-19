@@ -551,10 +551,7 @@ func (lex *Lexer) skipWhiteSpace() (cpDiff, newlineCount int, err error) {
 	for cpoint.IsTokenSpace(lex.cp) || isCommentStart() {
 		if isCommentStart() {
 			commentNewlineCount, err = lex.skipComments()
-
-			if commentNewlineCount != 0 {
-				newlineCount++
-			}
+			newlineCount += commentNewlineCount
 
 		} else if cpoint.IsTokenVerticalSpace(lex.cp) {
 			if lex.cp == '\r' && lex.peekCp == '\n' {
