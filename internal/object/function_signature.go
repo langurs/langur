@@ -31,6 +31,17 @@ func (s *Signature) Copy() *Signature {
 	}
 }
 
+func copyParamList(pl []Parameter) []Parameter {
+	if pl == nil {
+		return nil
+	}
+	newPl := make([]Parameter, len(pl))
+	for i := range pl {
+		newPl[i] = pl[i].Copy()
+	}
+	return newPl
+}
+
 func (s *Signature) String() string {
 	var sb strings.Builder
 
@@ -125,23 +136,26 @@ func (p Parameter) String() string {
 	return sb.String()
 }
 
-func copyParamList(pl []Parameter) []Parameter {
-	if pl == nil {
-		return nil
-	}
-	newPl := make([]Parameter, len(pl))
-	for i := range pl {
-		newPl[i] = pl[i].Copy()
-	}
-	return newPl
-}
+// string == external name
+type Arguments map[string]Object
 
-type Argument struct {
-	Value        Object
-	ExternalName string
+func (a Arguments) Copy() Arguments {
+	a2 := make(Arguments)
+	for k, v := range a {
+		a2[k] = v.Copy()
+	}
+	return a2
 }
 
 type ArgumentPackage struct {
 	ArgsPositional []Object
-	ArgsByName     []Argument
+	ArgsByName     Arguments
+}
+
+func (a *ArgumentPackage) Copy() *ArgumentPackage {
+	a2 := &ArgumentPackage{
+		ArgsPositional: CopySlice(a.ArgsPositional),
+		ArgsByName:     a.ArgsByName.Copy(),
+	}
+	return a2
 }

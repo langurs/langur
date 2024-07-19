@@ -190,31 +190,32 @@ func reformArgumentsBySignature(
 	// ---- now to work on optional parameters ----
 
 	// check / pick up optional parameter values in order listed in signature
+	// order relevant for compiled functions, as they will be picked up in the same order
 	for _, param := range sig.ParamByName {
 		found := false
-		for _, arg := range args.ArgsByName {
-			if param.ExternalName == arg.ExternalName {
+		for argExtName, argValue := range args.ArgsByName {
+			if param.ExternalName == argExtName {
 				found = true
 				// use passed optional value from argument
-				args2 = append(args2, arg.Value)
+				args2 = append(args2, argValue)
 			}
 		}
 		if !found {
-			// no argument found for this one; use default
+			// no argument found for this one; all is well; use default
 			args2 = append(args2, param.DefaultValue)
 		}
 	}
 
 	// check if any invalid optional arguments passed
-	for _, arg := range args.ArgsByName {
+	for argExtName := range args.ArgsByName {
 		found := false
 		for _, param := range sig.ParamByName {
-			if param.ExternalName == arg.ExternalName {
+			if param.ExternalName == argExtName {
 				found = true
 			}
 		}
 		if !found {
-			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(arg.ExternalName))
+			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(argExtName))
 			return
 		}
 	}
