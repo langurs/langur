@@ -3,6 +3,7 @@
 package object
 
 import (
+	"fmt"
 	"langur/opcode"
 	"langur/str"
 	"strings"
@@ -17,6 +18,36 @@ type Signature struct {
 	ParamByName       []Parameter
 	ParamExpansionMin int
 	ParamExpansionMax int
+}
+
+// including parameter expansion
+// not including optional parameters
+func (s *Signature) Max() int {
+	if s.ParamExpansionMax == -1 {
+		return -1
+	}
+	if s.ParamExpansionMax > 0 {
+		return len(s.ParamPositional) + s.ParamExpansionMax - 1
+	}
+	return len(s.ParamPositional)
+}
+
+// including parameter expansion
+// not including optional parameters
+func (s *Signature) Min() int {
+	if s.ParamExpansionMin > 0 {
+		return len(s.ParamPositional) + s.ParamExpansionMin - 1
+	} else if s.ParamExpansionMax != 0 {
+		// We already know that ParamExpansionMin == 0 (from the previous test failing), ...
+		// ... so if the maximum is not 0, we have an optional one at the end, so we subtract 1.
+		return len(s.ParamPositional) - 1
+	}
+	return len(s.ParamPositional)
+}
+
+func (s *Signature) MinMaxString() string {
+	min, max := s.Min(), s.Max()
+	return fmt.Sprintf("%d..%d", min, max)
 }
 
 func (s *Signature) Copy() *Signature {

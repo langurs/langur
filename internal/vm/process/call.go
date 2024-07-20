@@ -70,7 +70,7 @@ func (pr *Process) runCompiledCode(
 			return nil, nil,
 				object.NewError(object.ERR_ARGUMENTS, name,
 					fmt.Sprintf("Argument/Parameter Count Mismatch, expected=%s, received=%d",
-						object.ParamExpectedString(code), argCnt))
+						code.FnSignature.MinMaxString(), argCnt))
 		}
 	}
 
@@ -180,8 +180,8 @@ func reformArgumentsBySignature(
 	if len(positional) != len(sig.ParamPositional) {
 		return nil,
 			object.NewError(object.ERR_ARGUMENTS, sig.Name,
-				fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%d, received=%d",
-					len(sig.ParamPositional), len(positional)))
+				fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%s, received=%d",
+					sig.MinMaxString(), len(positional)))
 	}
 
 	args2 = make([]object.Object, 0, len(positional)+len(sig.ParamByName))

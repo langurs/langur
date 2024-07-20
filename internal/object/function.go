@@ -38,14 +38,7 @@ func ParamMin(obj Object) int {
 		if fn.FnSignature == nil {
 			return 0
 		}
-		if fn.FnSignature.ParamExpansionMin > 0 {
-			return len(fn.FnSignature.ParamPositional) + fn.FnSignature.ParamExpansionMin - 1
-		} else if fn.FnSignature.ParamExpansionMax != 0 {
-			// We already know that ParamExpansionMin == 0 (from the previous test failing), ...
-			// ... so if the maximum is not 0, we have an optional one at the end, so we subtract 1.
-			return len(fn.FnSignature.ParamPositional) - 1
-		}
-		return len(fn.FnSignature.ParamPositional)
+		return fn.FnSignature.Min()
 
 	case *BuiltIn:
 		return fn.ParamMin
@@ -60,13 +53,7 @@ func ParamMax(obj Object) int {
 		if fn.FnSignature == nil {
 			return 0
 		}
-		if fn.FnSignature.ParamExpansionMax == -1 {
-			return -1
-		}
-		if fn.FnSignature.ParamExpansionMax > 0 {
-			return len(fn.FnSignature.ParamPositional) + fn.FnSignature.ParamExpansionMax - 1
-		}
-		return len(fn.FnSignature.ParamPositional)
+		return fn.FnSignature.Max()
 
 	case *BuiltIn:
 		return fn.ParamMax
