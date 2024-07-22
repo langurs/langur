@@ -20,9 +20,9 @@ type Signature struct {
 }
 
 func (s *Signature) SetParamDefault(name string, defaultValue Object) error {
-	for _, kv := range s.ParamByName {
-		if kv.ExternalName == name {
-			kv.DefaultValue = defaultValue
+	for i := range s.ParamByName {
+		if s.ParamByName[i].ExternalName == name {
+			s.ParamByName[i].DefaultValue = defaultValue
 			return nil
 		}
 	}

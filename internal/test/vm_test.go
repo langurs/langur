@@ -5219,7 +5219,15 @@ func TestOptionalParameters(t *testing.T) {
 		val mult = fn(a, b=12, c=4/2) { a * b + c }
 		mult(4, b=10)
 		`,
-			expected:     "42",
+			expected:     42,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b=12, c=4/2, d=42+0) { a * b - c + d }
+		mult(4)
+		`,
+			expected:     88,
 			expectedType: object.NUMBER_OBJ,
 		},
 
@@ -5276,6 +5284,22 @@ func TestOptionalParameters(t *testing.T) {
 			sum += b
 		}
 		add(4, 7, b=100)
+		`,
+			expected:     111,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// parameter expansion, argument expansion, and optional parameters
+		{
+			input: `
+		val add = fn(...a, b=12) {
+			var sum = 0
+			for i in a {
+				sum += i
+			}
+			sum += b
+		}
+		add([4, 7]..., b=100)
 		`,
 			expected:     111,
 			expectedType: object.NUMBER_OBJ,

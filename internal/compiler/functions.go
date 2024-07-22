@@ -140,8 +140,6 @@ func (c *Compiler) compileFunctionNodeParameters(
 	node *ast.FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.Instructions, defaultCount int, err error) {
 
-	var params []object.Parameter
-
 	isOptionalParameterNode := func(node ast.Node) bool {
 		switch p := node.(type) {
 		case *ast.LineDeclarationNode:
@@ -156,34 +154,54 @@ func (c *Compiler) compileFunctionNodeParameters(
 		return false
 	}
 
-	opt := false
+	optionalsStartIdx := -1
+	for i, p := range node.Parameters {
+		if isOptionalParameterNode(p) {
+			optionalsStartIdx = i
+			break
+		}
+	}
+
 	for i, p := range node.Parameters {
 		var param object.Parameter
 
+		positional := !isOptionalParameterNode(p)
+		if positional && optionalsStartIdx != -1 && i > optionalsStartIdx {
+			// a positional parameter declared after optional parameters
+			err = makeErr(node, "Cannot declare positional parameter after optional parameter")
+			return
+		}
+
+		// need to know if on last positional
+		// parameter expansion only allowed on last positional
 		lastPositional := false
-		if len(node.Parameters) == 1 && !isOptionalParameterNode(node.Parameters[0]) {
-			lastPositional = true
-
-		} else if !opt {
-			if i < len(node.Parameters)-1 {
-				if isOptionalParameterNode(node.Parameters[i+1]) {
-					opt = true
-					lastPositional = true
-				}
-
-			} else if i == len(node.Parameters)-1 {
+		if positional {
+			if len(node.Parameters) == 1 ||
+				optionalsStartIdx != -1 && i == optionalsStartIdx-1 ||
+				i == len(node.Parameters)-1 {
 				lastPositional = true
 			}
 		}
 
 		var defaultIns opcode.Instructions
-		param, defaultIns, sig.ParamExpansionMin, sig.ParamExpansionMax, err =
-			c.compileParameter(p, i+1, 0, lastPositional)
+		expansionMin, expansionMax := 0, 0
+		param, defaultIns, expansionMin, expansionMax, err =
+			c.compileParameter(p, i+1, lastPositional)
 
 		if err != nil {
 			return
 		}
-		params = append(params, param)
+
+		if lastPositional {
+			sig.ParamExpansionMin = expansionMin
+			sig.ParamExpansionMax = expansionMax
+		}
+
+		if positional {
+			sig.ParamPositional = append(sig.ParamPositional, param)
+		} else {
+			sig.ParamByName = append(sig.ParamByName, param)
+		}
 
 		if len(defaultIns) != 0 {
 			name := c.constantIns(object.NewString(param.ExternalName))
@@ -193,27 +211,10 @@ func (c *Compiler) compileFunctionNodeParameters(
 		}
 	}
 
-	opt = false
-	for _, p := range params {
-		if p.DefaultValue == nil {
-			if opt {
-				// a positional parameter declared after optional parameters
-				err = makeErr(node, "Cannot declare positional parameter after optional parameter")
-				return
-			}
-			sig.ParamPositional = append(sig.ParamPositional, p)
-
-		} else {
-			// optional parameter
-			opt = true
-			sig.ParamByName = append(sig.ParamByName, p)
-		}
-	}
-
 	return
 }
 
-func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPositional bool) (
+func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool) (
 	param object.Parameter, defaultIns opcode.Instructions,
 	paramExpansionMin, paramExpansionMax int, err error) {
 
@@ -255,10 +256,6 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 		system = p.SystemAssignment
 
 	case *ast.ExpansionNode:
-		if level > 0 {
-			err = makeErr(node, "Invalid parameter expansion node")
-			return
-		}
 		if !lastPositional {
 			err = makeErr(node, "Parameter expansion only allowed on last positional parameter")
 			return
@@ -282,7 +279,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 					return
 				}
 				if lim.Right == nil {
-					// [0..]
+					// ...[0..] x
 					paramExpansionMax = -1
 				} else {
 					paramExpansionMax, err = decodeInt(lim.Right)
@@ -305,14 +302,21 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 			return
 		}
 
-		param, _, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, lastPositional)
-		return
+		switch continuation := p.Continuation.(type) {
+		case *ast.IdentNode:
+			param.InternalName = continuation.Name
+			system = continuation.System
+		default:
+			err = makeErr(node, "Invalid parameter expansion; expected variable name only")
+			return
+		}
 
 	default:
-		err = makeErr(node, fmt.Sprintf("Parameter %d not a variable", pnum))
+		err = makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
 		return
 	}
 
+	// DEFINE IN SYMBOL TABLE
 	// An external name (for an optional parameter) may shadow a keyword ...
 	// since the context makes the meaning clear, ...
 	// but an internal name (used within a compiled function) may not.

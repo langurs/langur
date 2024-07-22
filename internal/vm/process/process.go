@@ -113,7 +113,7 @@ func (pr *Process) pushFunction(fr *frame, constIndex, freeCount, optionalsCount
 		// for any optional parameters that weren't set at compile-time
 		// name/value pairs
 		optionals := pr.popMultiple(optionalsCount * 2)
-		
+
 		for i := 0; i < len(optionals); i += 2 {
 			// name should be a string object
 			err := compiledFn.FnSignature.SetParamDefault(optionals[i].String(), optionals[i+1])
