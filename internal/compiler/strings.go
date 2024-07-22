@@ -23,15 +23,8 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 			return
 		}
 
-		if !object.StringForNowDateTime(s, true) {
-			// optimize by building a date-time now, rather than having the VM build it
-			// that is, it's not a "now" date-time, which would have to be determined at run-time
-			var dt object.Object
-
-			dt, err = object.NewDateTimeFromLiteralString(s, true)
-			if err != nil {
-				return
-			}
+		dt, ok := node.PreBuild()
+		if ok {
 			ins = c.constantIns(dt)
 			return
 		}
@@ -48,20 +41,15 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 }
 
 func (c *Compiler) compileDurationNode(node *ast.DurationNode) (ins opcode.Instructions, err error) {
+	dur, ok := node.PreBuild()
+	if ok {
+		ins = c.constantIns(dur)
+		return
+	}
+
 	patternNode, ok := node.Pattern.(*ast.StringNode)
 	if !ok {
 		return nil, makeErr(node, fmt.Sprintf("Expected String Node within Duration Node"))
-	}
-
-	if len(patternNode.Interpolations) == 0 {
-		// build object at compile-time
-		var dur *object.Duration
-		dur, err = object.NewDurationFromString(patternNode.Values[0])
-		if err != nil {
-			return
-		}
-		ins = c.constantIns(dur)
-		return
 	}
 
 	// built at run-time (contains interpolations)

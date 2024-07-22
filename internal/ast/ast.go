@@ -3,6 +3,7 @@
 package ast
 
 import (
+	"langur/object"
 	"langur/token"
 )
 
@@ -21,6 +22,10 @@ type Node interface {
 	TokenRepresentation() string
 	String() string
 	Copy() Node
+}
+
+type PreBuilder interface {
+	PreBuild() (object.Object, bool)
 }
 
 // simply marks it as a statement node (no action)

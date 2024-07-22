@@ -19,6 +19,16 @@ type Signature struct {
 	ParamExpansionMax int
 }
 
+func (s *Signature) SetParamDefault(name string, defaultValue Object) error {
+	for _, kv := range s.ParamByName {
+		if kv.ExternalName == name {
+			kv.DefaultValue = defaultValue
+			return nil
+		}
+	}
+	return fmt.Errorf("Optional parameter (%s) not found to set default", str.ReformatInput(name))
+}
+
 // including parameter expansion
 // not including optional parameters
 func (s *Signature) Max() int {

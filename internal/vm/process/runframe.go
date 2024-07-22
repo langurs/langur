@@ -79,11 +79,13 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			codeObj := pr.constants[constIndex].(*object.CompiledCode)
 			fnReturn, relay, err = pr.runCompiledCode(codeObj, fr, nil, nil)
 
-		case opcode.OpClosure:
+		case opcode.OpFunction:
 			constIndex := int(opcode.ReadUInt16(ins[ip+1:]))
 			freeCount := int(ins[ip+3])
-			ip += 3
-			err = pr.pushClosure(fr, constIndex, freeCount)
+			// optionalsCount for optional default instructions (optional defaults that weren't pre-built)
+			optionalsCount := int(ins[ip+4])
+			ip += 4
+			err = pr.pushFunction(fr, constIndex, freeCount, optionalsCount)
 
 		case opcode.OpSetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])

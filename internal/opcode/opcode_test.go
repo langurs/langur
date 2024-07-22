@@ -14,7 +14,7 @@ func TestMake(t *testing.T) {
 	}{
 		{OpConstant, []int{65534}, []byte{byte(OpConstant), 255, 254}},
 		{OpAdd, []int{}, []byte{byte(OpAdd)}},
-		{OpClosure, []int{65534, 255}, []byte{byte(OpClosure), 255, 254, 255}},
+		{OpFunction, []int{65534, 255, 4}, []byte{byte(OpFunction), 255, 254, 255, 4}},
 	}
 
 	for _, tt := range tests {
@@ -42,15 +42,15 @@ func TestInstructionsString(t *testing.T) {
 		Make(OpAdd),
 		Make(OpConstant, 2),
 		Make(OpConstant, 65535),
-		Make(OpClosure, 65535, 255),
+		Make(OpFunction, 65535, 255, 255),
 		Make(OpJumpRelay, 16777215, 7),
 	}
 
 	expected := `0000 Add
 0001 Constant 2
 0004 Constant 65535
-0007 Closure 65535 255
-0011 JumpRelay 16777215 7
+0007 Function 65535 255 255
+0012 JumpRelay 16777215 7
 `
 
 	appended := Instructions{}
@@ -74,7 +74,7 @@ func TestReadOperands(t *testing.T) {
 		{OpJump, []int{4294967295}, 4}, // max value of unsigned 32-bit integer
 		{OpJump, []int{77765535}, 4},
 		{OpConstant, []int{65535}, 2},
-		{OpClosure, []int{65535, 255}, 3},
+		{OpFunction, []int{65535, 255, 255}, 4},
 
 		// {TEST, []int{9223372036854775807}, 8}, // max value of signed 64-bit integer
 	}

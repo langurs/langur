@@ -5136,6 +5136,155 @@ func TestCallingFunctionsWithArgumentsAndBindings(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
+func TestOptionalParameters(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+		val mult = fn(a, b=12) { a * b }
+		mult(4)
+		`,
+			expected:     48,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b=12) { a * b }
+		mult(4, b=7)
+		`,
+			expected:     28,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		{
+			input: `
+		val mult = fn(a, b=12, c=10) { a * b + c }
+		mult(4)
+		`,
+			expected:     58,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b=12, c=10) { a * b + c }
+		mult(4, c=2.5)
+		`,
+			expected:     "50.5",
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b=12, c=10) { a * b + c }
+		mult(4, c=2.5, b=10)
+		`,
+			expected:     "42.5",
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b=12, c=10) { a * b + c }
+		mult(4, b=10, c=2.5)
+		`,
+			expected:     "42.5",
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// with external name different than internal name
+		{
+			input: `
+		val mult = fn(a, b as d=12, c=4) { a * b + c }	# internally use b
+		mult(4, d=10)									# called with d=...
+		`,
+			expected:     44,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val mult = fn(a, b as d=12, c=4) { a * b + c } # internally use b
+		mult(4)
+		`,
+			expected:     52,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{ // ... and external name same as a keyword
+			input: `
+		val mult = fn(a, b as len=12, c=4) { a * b + c }	# internally use b
+		mult(4, len=10)										# called with len=...
+		`,
+			expected:     44,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		{ // c not just a simple number; must be calculated
+			input: `
+		val mult = fn(a, b=12, c=4/2) { a * b + c }
+		mult(4, b=10)
+		`,
+			expected:     "42",
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// combined with parameter expansion
+		{
+			input: `
+		val add = fn(...a, b=12) {
+			var sum = 0
+			for i in a {
+				sum += i
+			}
+			sum += b
+		}
+		add()
+		`,
+			expected:     12,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val add = fn(...a, b=12) {
+			var sum = 0
+			for i in a {
+				sum += i
+			}
+			sum += b
+		}
+		add(4)
+		`,
+			expected:     16,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val add = fn(...a, b=12) {
+			var sum = 0
+			for i in a {
+				sum += i
+			}
+			sum += b
+		}
+		add(4, 7)
+		`,
+			expected:     23,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val add = fn(...a, b=12) {
+			var sum = 0
+			for i in a {
+				sum += i
+			}
+			sum += b
+		}
+		add(4, 7, b=100)
+		`,
+			expected:     111,
+			expectedType: object.NUMBER_OBJ,
+		},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	tests := []vmTestCase{
 		{

@@ -60,7 +60,9 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	}
 
 	// compile parameters before function body so that each is added to the symbol table
-	err = c.compileFunctionNodeParameters(node, sig)
+	var defaultInsTotal opcode.Instructions
+	var defaultCount int
+	defaultInsTotal, defaultCount, err = c.compileFunctionNodeParameters(node, sig)
 	if err != nil {
 		return
 	}
@@ -104,16 +106,17 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	fnIndex := c.addConstant(compiledFn)
 
 	ins = nil
-	if len(freeSymbols) > 0 {
-		// a closure
+	if len(freeSymbols) != 0 || defaultCount != 0 {
+		// a closure or has optional parameter defaults that aren't set yet
 		ins, err = c.instructionsForSymbols(node, freeSymbols)
 		if err != nil {
 			return
 		}
-		ins = append(ins, opcode.Make(opcode.OpClosure, fnIndex, len(freeSymbols))...)
+		ins = append(ins, defaultInsTotal...)
+		ins = append(ins, opcode.Make(opcode.OpFunction, fnIndex, len(freeSymbols), defaultCount)...)
 
 	} else {
-		// not a closure
+		// not a closure and has any optional parameter defaults already set
 		ins = opcode.Make(opcode.OpConstant, fnIndex)
 	}
 
@@ -133,7 +136,10 @@ func (c *Compiler) instructionsForSymbols(node ast.Node, symbols []symbol.Symbol
 	return
 }
 
-func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode, sig *object.Signature) (err error) {
+func (c *Compiler) compileFunctionNodeParameters(
+	node *ast.FunctionNode, sig *object.Signature) (
+	defaultInsTotal opcode.Instructions, defaultCount int, err error) {
+
 	var params []object.Parameter
 
 	isOptionalParameterNode := func(node ast.Node) bool {
@@ -170,13 +176,21 @@ func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode, sig *ob
 			}
 		}
 
-		param, sig.ParamExpansionMin, sig.ParamExpansionMax, err =
+		var defaultIns opcode.Instructions
+		param, defaultIns, sig.ParamExpansionMin, sig.ParamExpansionMax, err =
 			c.compileParameter(p, i+1, 0, lastPositional)
 
 		if err != nil {
 			return
 		}
 		params = append(params, param)
+
+		if len(defaultIns) != 0 {
+			name := c.constantIns(object.NewString(param.ExternalName))
+			defaultInsTotal = append(defaultInsTotal, name...)
+			defaultInsTotal = append(defaultInsTotal, defaultIns...)
+			defaultCount++
+		}
 	}
 
 	opt = false
@@ -200,15 +214,11 @@ func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode, sig *ob
 }
 
 func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPositional bool) (
-	param object.Parameter, paramExpansionMin, paramExpansionMax int, err error) {
+	param object.Parameter, defaultIns opcode.Instructions,
+	paramExpansionMin, paramExpansionMax int, err error) {
 
 	system := false
 	param.Mutable = false
-	var defaultValue opcode.Instructions
-
-	// TODO:
-	// FIXME:
-	_ = defaultValue
 
 	switch p := node.(type) {
 	case *ast.IdentNode:
@@ -223,7 +233,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 			system = assign.System
 
 		case *ast.AssignmentNode:
-			param, defaultValue, err = c.assessOptionalParameter(assign)
+			param, defaultIns, err = c.assessOptionalParameter(assign)
 			if err != nil {
 				err = makeErr(node, err.Error())
 				return
@@ -237,7 +247,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 		param.Mutable = p.Mutable
 
 	case *ast.AssignmentNode:
-		param, defaultValue, err = c.assessOptionalParameter(p)
+		param, defaultIns, err = c.assessOptionalParameter(p)
 		if err != nil {
 			err = makeErr(node, err.Error())
 			return
@@ -295,7 +305,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 			return
 		}
 
-		param, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, lastPositional)
+		param, _, _, _, err = c.compileParameter(p.Continuation, pnum, level+1, lastPositional)
 		return
 
 	default:
@@ -342,10 +352,15 @@ func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (
 		return
 	}
 
-	defaultIns, err = c.compileNode(assign.Values[0], true)
+	// attempt to build default value now (if possible)
+	defaultIns, param.DefaultValue, err = c.compileOrPreBuildNode(assign.Values[0], false)
 	if err != nil {
 		err = makeErr(assign, fmt.Sprintf("Failure to compile default value for parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
 		return
+	}
+	if param.DefaultValue == nil {
+		// set to no value for now
+		param.DefaultValue = object.NONE
 	}
 
 	return

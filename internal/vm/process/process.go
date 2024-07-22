@@ -101,18 +101,34 @@ func (pr *Process) throw(fr *frame, what object.Object) error {
 	return errObj
 }
 
-func (pr *Process) pushClosure(fr *frame, constIndex, freeCount int) error {
+func (pr *Process) pushFunction(fr *frame, constIndex, freeCount, optionalsCount int) error {
 	constant := pr.constants[constIndex]
 	compiledFn, ok := constant.(*object.CompiledCode)
 	if !ok {
-		bug("pushClosure", fmt.Sprintf("Not a function: %T", constant))
+		bug("pushFunction", fmt.Sprintf("Not a function: %T", constant))
 		return fmt.Errorf("Not a function: %s", constant.TypeString())
 	}
 
-	// copy to prevent one closure from clobbering another closure's free slice ...
-	// ... when there is a single *object.CompiledCode, but more than one definition
-	compiledFn = compiledFn.Copy().(*object.CompiledCode)
+	if optionalsCount != 0 {
+		// for any optional parameters that weren't set at compile-time
+		// name/value pairs
+		optionals := pr.popMultiple(optionalsCount * 2)
+		
+		for i := 0; i < len(optionals); i += 2 {
+			// name should be a string object
+			err := compiledFn.FnSignature.SetParamDefault(optionals[i].String(), optionals[i+1])
+			if err != nil {
+				return err
+			}
+		}
+	}
 
-	compiledFn.Free = pr.popMultiple(freeCount)
+	if freeCount != 0 {
+		// copy to prevent one closure from clobbering another closure's free slice ...
+		// ... when there is a single *object.CompiledCode, but more than one definition
+		compiledFn = compiledFn.Copy().(*object.CompiledCode)
+		compiledFn.Free = pr.popMultiple(freeCount)
+	}
+
 	return pr.push(compiledFn)
 }

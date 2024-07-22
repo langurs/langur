@@ -446,24 +446,24 @@ func (fc *CallNode) TokenInfo() token.Token {
 
 // UNCOMPILED FUNCTIONS
 type FunctionNode struct {
-	Token      token.Token
-	ReturnType Node // nil for no explicit return type
-	Name       string
-	Parameters []Node
-	Body       Node
-	ImpureEffects     bool
+	Token         token.Token
+	ReturnType    Node // nil for no explicit return type
+	Name          string
+	Parameters    []Node
+	Body          Node
+	ImpureEffects bool
 }
 
 func (f *FunctionNode) expressionNode() {}
 
 func (f *FunctionNode) Copy() Node {
 	return &FunctionNode{
-		Token:      f.Token.Copy(),
-		ReturnType: copyOrNil(f.ReturnType),
-		Name:       f.Name,
-		Parameters: copyNodeSlice(f.Parameters),
-		Body:       copyOrNil(f.Body),
-		ImpureEffects:     f.ImpureEffects,
+		Token:         f.Token.Copy(),
+		ReturnType:    copyOrNil(f.ReturnType),
+		Name:          f.Name,
+		Parameters:    copyNodeSlice(f.Parameters),
+		Body:          copyOrNil(f.Body),
+		ImpureEffects: f.ImpureEffects,
 	}
 }
 
@@ -953,6 +953,10 @@ type BooleanNode struct {
 	Value bool
 }
 
+func (b *BooleanNode) PreBuild() (object.Object, bool) {
+	return object.NativeBoolToObject(b.Value), true
+}
+
 func (b *BooleanNode) expressionNode() {}
 
 func (b *BooleanNode) Copy() Node {
@@ -973,6 +977,10 @@ func (b *BooleanNode) TokenInfo() token.Token {
 // NULL
 type NullNode struct {
 	Token token.Token
+}
+
+func (n *NullNode) PreBuild() (object.Object, bool) {
+	return object.NativeBoolToObject(false), true
 }
 
 func (n *NullNode) expressionNode() {}
@@ -1028,6 +1036,13 @@ type StringNode struct {
 	Token          token.Token
 	Values         []string
 	Interpolations []Node
+}
+
+func (s *StringNode) PreBuild() (object.Object, bool) {
+	if len(s.Interpolations) == 0 {
+		return object.NewString(s.Values[0]), true
+	}
+	return nil, false
 }
 
 func (s *StringNode) expressionNode() {}
@@ -1150,6 +1165,24 @@ type RegexNode struct {
 	RegexType regex.RegexType
 }
 
+func (r *RegexNode) PreBuild() (object.Object, bool) {
+	var re *object.Regex
+
+	patternNode, ok := r.Pattern.(*StringNode)
+	if ok {
+		ok = len(patternNode.Interpolations) == 0
+		if ok {
+			re2, err := object.NewRegex(patternNode.Values[0], r.RegexType)
+			ok = err != nil
+			if ok {
+				re = re2.(*object.Regex)
+			}
+		}
+	}
+
+	return re, ok
+}
+
 func (r *RegexNode) expressionNode() {}
 
 func (r *RegexNode) Copy() Node {
@@ -1195,6 +1228,27 @@ type DateTimeNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
+func (d *DateTimeNode) PreBuild() (object.Object, bool) {
+	var dt *object.DateTime
+
+	patternNode, ok := d.Pattern.(*StringNode)
+	if ok {
+		ok = len(patternNode.Interpolations) == 0
+		if ok {
+			s := patternNode.Values[0]
+			ok = !object.StringForNowDateTime(s, true)
+			if ok {
+				// only build if not a "now" datetime, which would have to be determined at run-time
+				var err error
+				dt, err = object.NewDateTimeFromLiteralString(s, false)
+				ok = err == nil
+			}
+		}
+	}
+
+	return dt, ok
+}
+
 func (dt *DateTimeNode) expressionNode() {}
 
 func (dt *DateTimeNode) Copy() Node {
@@ -1220,6 +1274,21 @@ func (dt *DateTimeNode) TokenInfo() token.Token {
 type DurationNode struct {
 	Token   token.Token
 	Pattern Node // pattern string, to be interpreted later
+}
+
+func (d *DurationNode) PreBuild() (object.Object, bool) {
+	var dur *object.Duration
+
+	patternNode, ok := d.Pattern.(*StringNode)
+	if ok {
+		ok = len(patternNode.Interpolations) == 0
+		if ok {
+			var err error
+			dur, err = object.NewDurationFromString(patternNode.Values[0])
+			ok = err == nil
+		}
+	}
+	return dur, ok
 }
 
 func (d *DurationNode) expressionNode() {}
@@ -1248,6 +1317,12 @@ type NumberNode struct {
 	Token token.Token
 	Value string
 	Base  int
+}
+
+func (n *NumberNode) PreBuild() (object.Object, bool) {
+	number, err := object.NumberFromStringBase(n.Value, n.Base)
+	ok := err == nil
+	return number, ok
 }
 
 func (n *NumberNode) expressionNode() {}

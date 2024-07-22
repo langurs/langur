@@ -57,7 +57,7 @@ const (
 	OpOf
 
 	OpConstant
-	OpClosure
+	OpFunction
 	OpExecute
 
 	OpMode
@@ -170,8 +170,8 @@ var definitions = map[OpCode]*Definition{
 	OpConstant: {Name: "Constant", OperandWidths: []int{OperandWidth_Constant}},
 	OpExecute:  {Name: "Execute", OperandWidths: []int{OperandWidth_Constant}},
 
-	// operands: constant, freecount
-	OpClosure: {Name: "Closure", OperandWidths: []int{OperandWidth_Constant, 1}},
+	// operands: constant, freecount, optional variables count
+	OpFunction: {Name: "Function", OperandWidths: []int{OperandWidth_Constant, 1, 1}},
 
 	OpMode: {Name: "Mode", OperandWidths: []int{1}},
 

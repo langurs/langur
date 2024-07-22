@@ -199,6 +199,22 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 	return
 }
 
+func (c *Compiler) compileOrPreBuildNode(node ast.Node, popAtEndOfExpression bool) (
+	ins opcode.Instructions, obj object.Object, err error) {
+
+	pre, ok := node.(ast.PreBuilder)
+	if ok {
+		obj, ok = pre.PreBuild()
+		if ok {
+			return
+		}
+		obj = nil
+	}
+
+	ins, err = c.compileNode(node, popAtEndOfExpression)
+	return
+}
+
 func (c *Compiler) compileNode(node ast.Node, popAtEndOfExpression bool) (ins opcode.Instructions, err error) {
 	switch node := node.(type) {
 	case *ast.BlockNode:
