@@ -26,8 +26,9 @@ const (
 	ListTypeName     = "List"
 	HashTypeName     = "Hash"
 
-	NullTypeName  = "Null"
-	ErrorTypeName = "Error"
+	NullTypeName      = "Null"
+	ErrorTypeName     = "Error"
+	NameValueTypeName = "NameValue"
 
 	CompiledCodeTypeName = "Compiled"
 	FuntionTypeName      = "Compiled"

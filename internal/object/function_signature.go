@@ -4,7 +4,6 @@ package object
 
 import (
 	"fmt"
-	"langur/opcode"
 	"langur/str"
 	"strings"
 )
@@ -47,6 +46,9 @@ func (s *Signature) Min() int {
 
 func (s *Signature) MinMaxString() string {
 	min, max := s.Min(), s.Max()
+	if min == max {
+		return fmt.Sprintf("%d", max)
+	}
 	return fmt.Sprintf("%d..%d", min, max)
 }
 
@@ -128,17 +130,15 @@ type Parameter struct {
 	Mutable      bool
 
 	// default for optional parameter
-	DefaultValue             Object
-	DefaultValueInstructions opcode.Instructions
+	DefaultValue Object
 }
 
 func (p Parameter) Copy() Parameter {
 	return Parameter{
-		InternalName:             p.InternalName,
-		ExternalName:             p.ExternalName,
-		Mutable:                  p.Mutable,
-		DefaultValue:             CopyOrNil(p.DefaultValue),
-		DefaultValueInstructions: p.DefaultValueInstructions.Copy(),
+		InternalName: p.InternalName,
+		ExternalName: p.ExternalName,
+		Mutable:      p.Mutable,
+		DefaultValue: CopyOrNil(p.DefaultValue),
 	}
 }
 
@@ -155,38 +155,10 @@ func (p Parameter) String() string {
 		sb.WriteString(p.ExternalName)
 	}
 
-	if p.DefaultValue != nil || len(p.DefaultValueInstructions) != 0 {
+	if p.DefaultValue != nil {
 		sb.WriteRune('=')
-		if p.DefaultValue == nil {
-			sb.WriteString("TBD")
-		} else {
-			sb.WriteString(p.DefaultValue.String())
-		}
+		sb.WriteString(p.DefaultValue.String())
 	}
 
 	return sb.String()
-}
-
-// string == external name
-type Arguments map[string]Object
-
-func (a Arguments) Copy() Arguments {
-	a2 := make(Arguments)
-	for k, v := range a {
-		a2[k] = v.Copy()
-	}
-	return a2
-}
-
-type ArgumentPackage struct {
-	ArgsPositional []Object
-	ArgsByName     Arguments
-}
-
-func (a *ArgumentPackage) Copy() *ArgumentPackage {
-	a2 := &ArgumentPackage{
-		ArgsPositional: CopySlice(a.ArgsPositional),
-		ArgsByName:     a.ArgsByName.Copy(),
-	}
-	return a2
 }

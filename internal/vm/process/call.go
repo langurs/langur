@@ -53,24 +53,25 @@ func (pr *Process) runCompiledCode(
 	fnReturn object.Object, relay *jumpRelay, err error) {
 
 	if code.FnSignature != nil {
-		// convert args if necessary
-		args, err = parameterCompression(code, args)
-		if err != nil {
-			return
+		// find split between positional and optional arguments
+		// compiler already verified that optional arguments all come after positional
+		optIndex := -1
+		for i := len(args) - 1; i > -1; i-- {
+			switch args[i].(type) {
+			case *object.NameValue:
+				optIndex = i
+			default:
+				break
+			}
 		}
 
-		// check arg counts after expansion/compression, not including optional parameters
-		argCnt := len(args)
-		max := len(code.FnSignature.ParamPositional)
-		if argCnt != max && max > -1 {
-			name := "fn"
-			if code.FnSignature.Name != "" {
-				name = code.FnSignature.Name
-			}
-			return nil, nil,
-				object.NewError(object.ERR_ARGUMENTS, name,
-					fmt.Sprintf("Argument/Parameter Count Mismatch, expected=%s, received=%d",
-						code.FnSignature.MinMaxString(), argCnt))
+		if optIndex == -1 {
+			args, err = reformArgumentsBySignature(args, nil, code.FnSignature)
+		} else {
+			args, err = reformArgumentsBySignature(args[:optIndex], args[optIndex:], code.FnSignature)
+		}
+		if err != nil {
+			return
 		}
 	}
 
@@ -78,38 +79,6 @@ func (pr *Process) runCompiledCode(
 	fr := pr.newFrame(code, baseFr, args)
 	defer pr.releaseFrame(fr)
 	fnReturn, relay, err = pr.RunFrame(fr, late)
-	return
-}
-
-// may convert last positional arguments in a function call into a list
-func parameterCompression(fn *object.CompiledCode, args []object.Object) (
-	params []object.Object, err error) {
-
-	params = args
-	if fn.FnSignature.ParamExpansionMax != 0 || fn.FnSignature.ParamExpansionMin != 0 {
-		var last []object.Object
-		max := len(fn.FnSignature.ParamPositional)
-		diff := len(args) - max + 1
-
-		if diff > 0 && len(args) != 0 {
-			// must copy before use in append following
-			last = object.CopyRefSlice(args[max-1:])
-			params = append(args[:max-1], &object.List{Elements: last})
-
-			if fn.FnSignature.ParamExpansionMax != -1 && len(last) > fn.FnSignature.ParamExpansionMax {
-				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", fn.FnSignature.ParamExpansionMax, len(last))
-			}
-
-		} else if diff == 0 && fn.FnSignature.ParamExpansionMin == 0 {
-			// not a required parameter; since it's missing, add an empty list
-			params = append(args, &object.List{})
-		}
-
-		if len(last) < fn.FnSignature.ParamExpansionMin {
-			err = fmt.Errorf("Parameter expansion min (%d) not met (%d)", fn.FnSignature.ParamExpansionMin, len(last))
-		}
-	}
-
 	return
 }
 
@@ -165,57 +134,67 @@ func (pr *Process) call(fn object.Object,
 }
 
 func reformArgumentsBySignature(
-	args *object.ArgumentPackage, sig *object.Signature) (
-	args2 []object.Object, err error) {
-
-	var positional []object.Object
+	positional, byname []object.Object, sig *object.Signature) (
+	args []object.Object, err error) {
 
 	// do parameter compression if applicable
-	positional, err = parameterCompressionNEW(sig, args.ArgsPositional)
+	positional, err = parameterCompression(sig, positional)
 	if err != nil {
 		return
 	}
 
 	// check positional argument counts
 	if len(positional) != len(sig.ParamPositional) {
-		return nil,
-			object.NewError(object.ERR_ARGUMENTS, sig.Name,
-				fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%s, received=%d",
-					sig.MinMaxString(), len(positional)))
+		err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+			fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%s, received=%d",
+				sig.MinMaxString(), len(positional)))
+		return
 	}
 
-	args2 = make([]object.Object, 0, len(positional)+len(sig.ParamByName))
-	copy(positional, args2)
+	if byname == nil && sig.ParamByName == nil {
+		// no optional arguments passed and no optional parameters
+		args = positional
+		return
+	}
+
+	args = make([]object.Object, len(positional)+len(sig.ParamByName))
+	copy(args, positional)
 
 	// ---- now to work on optional parameters ----
+	argPtr := len(positional)
 
 	// check / pick up optional parameter values in order listed in signature
 	// order relevant for compiled functions, as they will be picked up in the same order
 	for _, param := range sig.ParamByName {
 		found := false
-		for argExtName, argValue := range args.ArgsByName {
-			if param.ExternalName == argExtName {
+		for i := range byname {
+			nv := byname[i].(*object.NameValue)
+			if param.ExternalName == nv.Name {
 				found = true
 				// use passed optional value from argument
-				args2 = append(args2, argValue)
+				args[argPtr] = nv.Value
+				break
 			}
 		}
 		if !found {
-			// no argument found for this one; all is well; use default
-			args2 = append(args2, param.DefaultValue)
+			// no argument found for this optional parameter; use default
+			args[argPtr] = param.DefaultValue
 		}
+		argPtr++
 	}
 
 	// check if any invalid optional arguments passed
-	for argExtName := range args.ArgsByName {
+	for i := range byname {
+		nv := byname[i].(*object.NameValue)
 		found := false
 		for _, param := range sig.ParamByName {
-			if param.ExternalName == argExtName {
+			if param.ExternalName == nv.Name {
 				found = true
+				break
 			}
 		}
 		if !found {
-			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(argExtName))
+			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(nv.Name))
 			return
 		}
 	}
@@ -223,8 +202,8 @@ func reformArgumentsBySignature(
 	return
 }
 
-// may convert last arguments in a function call into a list
-func parameterCompressionNEW(sig *object.Signature, args []object.Object) (
+// may convert last positional arguments in a function call into a list
+func parameterCompression(sig *object.Signature, args []object.Object) (
 	params []object.Object, err error) {
 
 	params = args

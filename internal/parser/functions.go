@@ -288,7 +288,7 @@ func (p *Parser) parsePossibleUnboundedCall(ident ast.Node) (ast.Node, bool) {
 		if !p.likelyInfixPosition() {
 			expr := &ast.CallNode{Token: p.tok, Function: ident}
 			expr.Args, _ = p.parseExpressionList(
-				token.EndUnboundedArgumentList, token.COMMA, false, true)
+				token.EndUnboundedArgumentList, token.COMMA, true, false, true)
 			return expr, true
 		}
 	}
@@ -309,7 +309,7 @@ func (p *Parser) parseParenthesizedCallExpression(fn ast.Node) ast.Node {
 	expr := &ast.CallNode{Token: p.tok, Function: fn}
 	p.advanceToken() // past the opening parenthesis
 	expr.Args, _ = p.parseExpressionList(
-		[]token.Type{token.RPAREN}, token.COMMA, true, false)
+		[]token.Type{token.RPAREN}, token.COMMA, true, true, false)
 	// passes closing parenthesis
 
 	return expr

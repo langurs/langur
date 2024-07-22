@@ -44,7 +44,8 @@ var DefaultSubLexString = map[ModeNumber]string{
 }
 
 // modes not settable from source code so far
-// NOTE: if Default_GoPanicToLangurException set to false for debugging, should be set back to true after
+// NOTE: if Default_GoPanicToLangurException set to false for debugging, ...
+// ... should be set back to true after
 const Default_GoPanicToLangurException = true
 
 type VmModes struct {

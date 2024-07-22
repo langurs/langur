@@ -513,6 +513,15 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			fnReturn = pr.pop()
 			return
 
+		case opcode.OpNameValue:
+			value := pr.pop()
+			name := pr.pop()
+
+			result, err = object.NewNameValue(name, value)
+			if err == nil {
+				err = pr.push(result)
+			}
+
 		case opcode.OpJumpRelay:
 			jump := int(opcode.ReadUInt24(ins[ip+1:]))
 			level := int(ins[ip+4])

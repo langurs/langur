@@ -59,6 +59,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 		c.symbolTable.DefineSelf(sig.Name)
 	}
 
+	// compile parameters before function body so that each is added to the symbol table
 	err = c.compileFunctionNodeParameters(node, sig)
 	if err != nil {
 		return
@@ -180,7 +181,7 @@ func (c *Compiler) compileFunctionNodeParameters(node *ast.FunctionNode, sig *ob
 
 	opt = false
 	for _, p := range params {
-		if p.DefaultValue == nil && len(p.DefaultValueInstructions) == 0 {
+		if p.DefaultValue == nil {
 			if opt {
 				// a positional parameter declared after optional parameters
 				err = makeErr(node, "Cannot declare positional parameter after optional parameter")
@@ -203,6 +204,11 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 
 	system := false
 	param.Mutable = false
+	var defaultValue opcode.Instructions
+
+	// TODO:
+	// FIXME:
+	_ = defaultValue
 
 	switch p := node.(type) {
 	case *ast.IdentNode:
@@ -217,7 +223,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 			system = assign.System
 
 		case *ast.AssignmentNode:
-			param, err = c.assessOptionalParameter(assign)
+			param, defaultValue, err = c.assessOptionalParameter(assign)
 			if err != nil {
 				err = makeErr(node, err.Error())
 				return
@@ -231,7 +237,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 		param.Mutable = p.Mutable
 
 	case *ast.AssignmentNode:
-		param, err = c.assessOptionalParameter(p)
+		param, defaultValue, err = c.assessOptionalParameter(p)
 		if err != nil {
 			err = makeErr(node, err.Error())
 			return
@@ -299,7 +305,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 
 	// An external name (for an optional parameter) may shadow a keyword ...
 	// since the context makes the meaning clear, ...
-	// but an internal name (used within the function) may not.
+	// but an internal name (used within a compiled function) may not.
 
 	_, err = c.symbolTable.DefineVariable(param.InternalName, param.Mutable, system)
 	if err != nil {
@@ -309,7 +315,9 @@ func (c *Compiler) compileParameter(node ast.Node, pnum, level int, lastPosition
 	return
 }
 
-func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (param object.Parameter, err error) {
+func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (
+	param object.Parameter, defaultIns opcode.Instructions, err error) {
+
 	if len(assign.Identifiers) != 1 || len(assign.Values) != 1 {
 		err = makeErr(assign, "Expected 1 identifier and 1 value for optional parameter assignment")
 		return
@@ -334,12 +342,11 @@ func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (param ob
 		return
 	}
 
-	defaultIns, err := c.compileNode(assign.Values[0], true)
+	defaultIns, err = c.compileNode(assign.Values[0], true)
 	if err != nil {
 		err = makeErr(assign, fmt.Sprintf("Failure to compile default value for parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
 		return
 	}
-	param.DefaultValueInstructions = defaultIns
 
 	return
 }
@@ -385,11 +392,40 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 	}
 
 	var bslc []byte
+	opt := false
 	for _, arg := range node.Args {
-		bslc, err = c.compileNode(arg, true)
-		if err != nil {
-			break
+		if assign, ok := arg.(*ast.AssignmentNode); ok {
+			// optional argument
+			name := &ast.StringNode{
+				Token: assign.Token, Values: []string{assign.Identifiers[0].TokenRepresentation()}}
+			bslc, err = c.compileNode(name, true)
+			if err != nil {
+				return
+			}
+
+			// compiling to name/value object (internally used for optional parameter)
+			var value opcode.Instructions
+			value, err = c.compileNode(assign.Values[0], true)
+			if err != nil {
+				return
+			}
+			bslc = append(bslc, value...)
+			bslc = append(bslc, opcode.Make(opcode.OpNameValue)...)
+
+			opt = true
+
+		} else if opt {
+			err = makeErr(arg, "Cannot have positional argument after optional argument")
+			return
+
+		} else {
+			// positional argument
+			bslc, err = c.compileNode(arg, true)
+			if err != nil {
+				return
+			}
 		}
+
 		ins = append(ins, bslc...)
 	}
 

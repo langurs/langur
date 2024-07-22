@@ -53,14 +53,14 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 		// skip opening parenthesis
 		p.advanceToken()
 
-		exprs, _ = p.parseExpressionList([]token.Type{token.SEMICOLON}, token.COMMA, false, false)
+		exprs, _ = p.parseExpressionList([]token.Type{token.SEMICOLON}, token.COMMA, false, false, false)
 		// NOT past the opening semicolon (used to delimit cases)
 
 	} else {
 		// push context to differentiate between starting a hash literal after an infix operator, and the end of test expression list
 		p.pushContext(context_switch_test)
 
-		exprs, _ = p.parseExpressionList([]token.Type{token.LBRACE}, token.COMMA, true, false)
+		exprs, _ = p.parseExpressionList([]token.Type{token.LBRACE}, token.COMMA, false, true, false)
 		// now past the opening left brace {
 
 		p.popContext()
@@ -112,7 +112,7 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 
 	// now parse cases...
 	parseOtherConditions := func() {
-		nvc, _ := p.parseExpressionList([]token.Type{token.COLON}, token.COMMA, true, false)
+		nvc, _ := p.parseExpressionList([]token.Type{token.COLON}, token.COMMA, false, true, false)
 
 		if len(nvc) == 0 {
 			p.addError("Expected non-variable test expressions for switch case condition")
@@ -151,7 +151,7 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 					var conditionsOrDefault []ast.Node
 					// don't know if it's a set of test expressions or a default until we parse
 					conditionsOrDefault, end = p.parseExpressionList(
-						[]token.Type{token.COLON, token.SEMICOLON, token.RPAREN}, token.COMMA, true, false)
+						[]token.Type{token.COLON, token.SEMICOLON, token.RPAREN}, token.COMMA, false, true, false)
 
 					if end == token.RPAREN {
 						// is the default (no condition)
@@ -175,7 +175,7 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 				} else {
 					// not shortened form
 					cd.MatchConditions, end = p.parseExpressionList(
-						[]token.Type{token.COLON, token.SEMICOLON}, token.COMMA, true, false)
+						[]token.Type{token.COLON, token.SEMICOLON}, token.COMMA, false, true, false)
 				}
 
 				if len(cd.MatchConditions) > len(sw.Expressions) && len(sw.Expressions) > 1 {

@@ -159,7 +159,7 @@ func (p *Parser) fixNamesInFunctionAssignments(node *ast.AssignmentNode) ast.Nod
 }
 
 func (p *Parser) parseMultiVariableAssignmentValues(tok token.Token, idents []ast.Node) ast.Node {
-	values, _ := p.parseExpressionList(token.EndUnboundedAssignmentExprList, token.COMMA, false, false)
+	values, _ := p.parseExpressionList(token.EndUnboundedAssignmentExprList, token.COMMA, false, false, false)
 	if len(values) != 1 && len(values) != len(idents) {
 		p.addError("Identifier/value count mismatch in multi-variable declaration assignment")
 		return nil
@@ -255,7 +255,9 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 
 func (p *Parser) parseExpressionWithPotentialAssignment() ast.Node {
 	if p.tok.Type == token.IDENT {
-		expr := p.parseIdentifiersWithPotentialAssignments(true, true, false, true, true, false, false, false)
+		expr := p.parseIdentifiersWithPotentialAssignments(
+			true, true, false, true, true, false, false, false)
+
 		if _, ok := expr.(*ast.IdentNode); ok {
 			expr = p.parseContinuedExpression(expr, precedence_LOWEST)
 		}

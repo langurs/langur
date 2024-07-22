@@ -80,6 +80,7 @@ const (
 	OpCall
 	OpCallWithExpansion
 	OpReturnValue
+	OpNameValue
 
 	OpSetGlobal
 	OpSetLocal
@@ -197,6 +198,7 @@ var definitions = map[OpCode]*Definition{
 	OpCall:              {Name: "Call", OperandWidths: []int{1}},
 	OpCallWithExpansion: {Name: "CallWithExpansion", OperandWidths: []int{1}},
 	OpReturnValue:       {Name: "ReturnValue"},
+	OpNameValue:         {Name: "NameValue"},
 
 	OpSetGlobal:             {Name: "SetGlobal", OperandWidths: []int{2}},
 	OpGetGlobal:             {Name: "GetGlobal", OperandWidths: []int{2}},

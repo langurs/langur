@@ -5140,29 +5140,29 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input:    `fn() { }(1);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=0..0, received=1 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=0, received=1 ()`,
 		},
 		{
 			input:    `fn(a) { }();`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=1..1, received=0 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=1, received=0 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(1);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=2..2, received=1 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=1 ()`,
 		},
 
 		// with argument expansion
 		{
 			input:    `fn(a, b) { }([1, 2, 3]...);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=2..2, received=3 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=3 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(7, [1, 2, 3]...);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=2..2, received=4 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=4 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(7, []...);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=2..2, received=1 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=1 ()`,
 		},
 
 		// with parameter expansion
@@ -5173,7 +5173,7 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 		},
 		{
 			input:    `fn(a, c, ... b) { }(1);`,
-			expected: `args: Argument/Parameter Count Mismatch, expected=2..-1, received=1 (fn)`,
+			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2..-1, received=1 ()`,
 		},
 	}
 

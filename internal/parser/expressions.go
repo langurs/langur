@@ -103,7 +103,7 @@ func (p *Parser) parseList() ast.Node {
 
 	list := &ast.ListNode{Token: p.tok}
 	p.advanceToken()
-	list.Elements, _ = p.parseExpressionList([]token.Type{token.RBRACKET}, token.COMMA, true, false)
+	list.Elements, _ = p.parseExpressionList([]token.Type{token.RBRACKET}, token.COMMA, false, true, false)
 
 	return list
 }
@@ -494,6 +494,7 @@ func (p *Parser) parseNumber() ast.Node {
 func (p *Parser) parseExpressionList(
 	until []token.Type,
 	delimiterTokType token.Type,
+	forFunctionCall,
 	passClosingToken, endBeforeCommaPrecedingNewLine bool) (
 
 	nodes []ast.Node, closingtt token.Type) {
@@ -530,7 +531,21 @@ func (p *Parser) parseExpressionList(
 			p.addError("Expected expression in list, not free delimiter")
 		}
 
-		nodes = append(nodes, p.parseExpression(precedence_LOWEST))
+		if forFunctionCall && p.tok.Type == token.IDENT &&
+			p.peekTok.Type == token.ASSIGN {
+			// for optional argument
+			// externalname = value
+
+			externalName, _ := p.parseWord() // not parsing as normal identifier
+			p.advanceToken()                 // past assignment operator
+			value := p.parseExpression(precedence_LOWEST)
+			assign := ast.MakeAssignmentExpression(externalName, value, false)
+
+			nodes = append(nodes, assign)
+
+		} else {
+			nodes = append(nodes, p.parseExpression(precedence_LOWEST))
+		}
 
 		if p.tok.Type == delimiterTokType {
 			if endBeforeCommaPrecedingNewLine && p.peekTok.NewLinePrecedes {

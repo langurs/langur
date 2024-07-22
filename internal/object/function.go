@@ -153,7 +153,7 @@ func (cf *CompiledCode) ReplString() string {
 // BUILT-IN FUNCTIONS
 
 type BuiltIn struct {
-	// Fn an interface{} here and type assertion in the process package to avoid an import cycle
+	// Fn an interface{} here and type assertion in the process package to avoid an import cycle error
 	Fn interface{}
 
 	Name          string
