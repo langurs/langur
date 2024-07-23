@@ -392,15 +392,6 @@ func (c *Compiler) compileReturnNode(node *ast.ReturnNode) (ins opcode.Instructi
 
 func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions, err error) {
 	hasExpansion := false
-	if len(node.Args) > 0 {
-		switch post := node.Args[len(node.Args)-1].(type) {
-		case *ast.PostfixExpressionNode:
-			if post.Operator.Type == token.EXPANSION {
-				node.Args[len(node.Args)-1] = post.Left
-				hasExpansion = true
-			}
-		}
-	}
 
 	// Compiling the function first ...
 	// ... but we add it to the instructions after the arguments.
@@ -439,6 +430,20 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 
 		} else {
 			// positional argument
+			if hasExpansion {
+				// already set hasExpansion and have another positional argument
+				err = fmt.Errorf("Argument expansion only possible on last positional argument")
+				return
+			}
+
+			switch post := arg.(type) {
+			case *ast.PostfixExpressionNode:
+				if post.Operator.Type == token.EXPANSION {
+					arg = post.Left
+					hasExpansion = true
+				}
+			}
+
 			bslc, err = c.compileNode(arg, true)
 			if err != nil {
 				return

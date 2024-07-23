@@ -2,9 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.16.8
-
-added optional parameters to compiled functions (not to be confused with parameter expansion, which is still positional)
-
+- added optional parameters to compiled functions (not to be confused with parameter expansion, which is still positional)
 - changed how parameters/arguments are dealt with for compiled functions
 - changed OpClosure to OpFunction, with an another operand to indicate a count for defaults not yet built
 - updated lexer to allow number continuation on next line (see website for syntax)

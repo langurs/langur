@@ -17,12 +17,27 @@ func (pr *Process) executeFunctionCall(fr *frame, argCount int, argExpansion boo
 	args := pr.popMultiple(argCount)
 
 	if argExpansion {
-		switch pre := args[len(args)-1].(type) {
-		case *object.List:
-			args = append(args[:len(args)-1], pre.Elements...)
+		// TODO: CLEAN UP THIS MESS
+		optIndex := findOptionalIndex(args)
+		if optIndex == -1 {
+			switch pre := args[len(args)-1].(type) {
+			case *object.List:
+				args = append(args[:len(args)-1], pre.Elements...)
 
-		default:
-			return nil, fmt.Errorf("Expected list for argument expansion")
+			default:
+				return nil, fmt.Errorf("Expected list for argument expansion")
+			}
+
+		} else {
+			switch pre := args[optIndex-1].(type) {
+			case *object.List:
+				optionals := object.CopySlice(args[optIndex:])
+				args = append(args[:optIndex-1], pre.Elements...)
+				args = append(args, optionals...)
+
+			default:
+				return nil, fmt.Errorf("Expected list for argument expansion")
+			}
 		}
 	}
 
@@ -48,6 +63,19 @@ func (pr *Process) executeFunctionCall(fr *frame, argCount int, argExpansion boo
 	return fnReturn, err
 }
 
+func findOptionalIndex(args []object.Object) int {
+	optIndex := -1
+	for i := len(args) - 1; i > -1; i-- {
+		switch args[i].(type) {
+		case *object.NameValue:
+			optIndex = i
+		default:
+			break
+		}
+	}
+	return optIndex
+}
+
 func (pr *Process) runCompiledCode(
 	code *object.CompiledCode, baseFr *frame, args, late []object.Object) (
 	fnReturn object.Object, relay *jumpRelay, err error) {
@@ -55,16 +83,7 @@ func (pr *Process) runCompiledCode(
 	if code.FnSignature != nil {
 		// find split between positional and optional arguments
 		// compiler already verified that optional arguments all come after positional
-		optIndex := -1
-		for i := len(args) - 1; i > -1; i-- {
-			switch args[i].(type) {
-			case *object.NameValue:
-				optIndex = i
-			default:
-				break
-			}
-		}
-
+		optIndex := findOptionalIndex(args)
 		if optIndex == -1 {
 			args, err = reformArgumentsBySignature(args, nil, code.FnSignature)
 		} else {
