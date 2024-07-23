@@ -40,10 +40,10 @@ const (
 	printParseNodes               = false
 	printParsedVarNames           = false
 
-	printCompiledInstructions = false
-	printCompiledConstants    = false
+	printCompiledInstructions = true
+	printCompiledConstants    = true
 
-	printVmResultEscaped   = true
+	printVmResultEscaped   = false
 	printVmResultGoEscaped = false
 	printVmResultRaw       = false
 )

@@ -1325,7 +1325,7 @@ func TestAssignmentStatementScopes(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0),
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpClosure, 1, 1),
+				opcode.Make(opcode.OpFunction, 1, 1, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -2003,7 +2003,7 @@ func TestClosures(t *testing.T) {
 				},
 				[]opcode.Instructions{ // fn(a) ...
 					opcode.Make(opcode.OpGetLocal, 0), // fn(b)
-					opcode.Make(opcode.OpClosure, 0, 1),
+					opcode.Make(opcode.OpFunction, 0, 1, 0),
 					opcode.Make(opcode.OpReturnValue),
 				},
 			},
@@ -2032,14 +2032,14 @@ func TestClosures(t *testing.T) {
 					opcode.Make(opcode.OpReturnValue),
 				},
 				[]opcode.Instructions{ // fn(b) ....
-					opcode.Make(opcode.OpGetFree, 0),    // a
-					opcode.Make(opcode.OpGetLocal, 0),   // b
-					opcode.Make(opcode.OpClosure, 0, 2), // fn(c) ...
+					opcode.Make(opcode.OpGetFree, 0),        // a
+					opcode.Make(opcode.OpGetLocal, 0),       // b
+					opcode.Make(opcode.OpFunction, 0, 2, 0), // fn(c) ...
 					opcode.Make(opcode.OpReturnValue),
 				},
 				[]opcode.Instructions{ // fn(a) ...
-					opcode.Make(opcode.OpGetLocal, 0),   // a
-					opcode.Make(opcode.OpClosure, 1, 1), // fn(b) ...
+					opcode.Make(opcode.OpGetLocal, 0),       // a
+					opcode.Make(opcode.OpFunction, 1, 1, 0), // fn(b) ...
 					opcode.Make(opcode.OpReturnValue),
 				},
 			},
@@ -2092,7 +2092,7 @@ func TestClosures(t *testing.T) {
 					opcode.Make(opcode.OpGetFree, 0),
 					opcode.Make(opcode.OpGetFree, 1),
 					opcode.Make(opcode.OpGetLocal, 0),
-					opcode.Make(opcode.OpClosure, 4, 3),
+					opcode.Make(opcode.OpFunction, 4, 3, 0),
 
 					opcode.Make(opcode.OpReturnValue),
 				},
@@ -2102,7 +2102,7 @@ func TestClosures(t *testing.T) {
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetFree, 0),
 					opcode.Make(opcode.OpGetLocal, 0),
-					opcode.Make(opcode.OpClosure, 5, 2),
+					opcode.Make(opcode.OpFunction, 5, 2, 0),
 
 					opcode.Make(opcode.OpReturnValue),
 				},
@@ -2112,7 +2112,7 @@ func TestClosures(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0), // val global = 55
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 0), // global
-				opcode.Make(opcode.OpClosure, 6, 1),
+				opcode.Make(opcode.OpFunction, 6, 1, 0),
 
 				opcode.Make(opcode.OpPop),
 			},
@@ -2142,8 +2142,8 @@ func TestClosures(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0), // var x = ...
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpClosure, 2, 1), // fn() { x ^ 2 }
-				opcode.Make(opcode.OpSetGlobal, 1),  // val chk = ...
+				opcode.Make(opcode.OpFunction, 2, 1, 0), // fn() { x ^ 2 }
+				opcode.Make(opcode.OpSetGlobal, 1),      // val chk = ...
 
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpConstant, 3),  // 21
@@ -2247,7 +2247,7 @@ func TestRecursion(t *testing.T) {
 				object.EmptyList,
 				[]opcode.Instructions{ // mapping function
 					opcode.Make(opcode.OpGetLocal, 0),
-					opcode.Make(opcode.OpClosure, 5, 1),
+					opcode.Make(opcode.OpFunction, 5, 1, 0),
 					opcode.Make(opcode.OpSetLocal, 2),
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 1), // arr

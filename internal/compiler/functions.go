@@ -107,7 +107,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 
 	ins = nil
 	if len(freeSymbols) != 0 || defaultCount != 0 {
-		// a closure or has optional parameter defaults that aren't set yet
+		// a closure or has optional parameter defaults that are to be determined at run-time
 		ins, err = c.instructionsForSymbols(node, freeSymbols)
 		if err != nil {
 			return
@@ -116,7 +116,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 		ins = append(ins, opcode.Make(opcode.OpFunction, fnIndex, len(freeSymbols), defaultCount)...)
 
 	} else {
-		// not a closure and has any optional parameter defaults already set
+		// not a closure and has all optional parameter defaults already determined
 		ins = opcode.Make(opcode.OpConstant, fnIndex)
 	}
 
@@ -126,7 +126,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 func (c *Compiler) instructionsForSymbols(node ast.Node, symbols []symbol.Symbol) (ins opcode.Instructions, err error) {
 	var temp opcode.Instructions
 	for _, sym := range symbols {
-		// add opcodes to push "free" values onto the stack so they can be picked up when the VM hits OpClosure
+		// add opcodes to push "free" values onto the stack so they can be picked up when the VM hits OpFunction
 		temp, err = c.makeOpGetInstructions(node, sym, 0)
 		if err != nil {
 			return
@@ -139,6 +139,10 @@ func (c *Compiler) instructionsForSymbols(node ast.Node, symbols []symbol.Symbol
 func (c *Compiler) compileFunctionNodeParameters(
 	node *ast.FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.Instructions, defaultCount int, err error) {
+
+	// external names not registered in a symbol table
+	// check for duplicates to prevent confusion and chaos
+	var externalNames []string
 
 	isOptionalParameterNode := func(node ast.Node) bool {
 		switch p := node.(type) {
@@ -208,6 +212,15 @@ func (c *Compiler) compileFunctionNodeParameters(
 			defaultInsTotal = append(defaultInsTotal, name...)
 			defaultInsTotal = append(defaultInsTotal, defaultIns...)
 			defaultCount++
+		}
+
+		// check for duplicate external names (not registered in symbol tables)
+		if param.ExternalName != "" {
+			if str.IsInSlice(param.ExternalName, externalNames) {
+				err = fmt.Errorf("Duplicate external name declared for optional parameters (%s)", str.ReformatInput(param.ExternalName))
+				return
+			}
+			externalNames = append(externalNames, param.ExternalName)
 		}
 	}
 
@@ -401,13 +414,18 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 		return
 	}
 
+	var externalNames []string
+
 	var bslc []byte
 	opt := false
 	for _, arg := range node.Args {
+		externalName := ""
+
 		if assign, ok := arg.(*ast.AssignmentNode); ok {
 			// optional argument
+			externalName = assign.Identifiers[0].TokenRepresentation()
 			name := &ast.StringNode{
-				Token: assign.Token, Values: []string{assign.Identifiers[0].TokenRepresentation()}}
+				Token: assign.Token, Values: []string{externalName}}
 			bslc, err = c.compileNode(name, true)
 			if err != nil {
 				return
@@ -451,6 +469,15 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 		}
 
 		ins = append(ins, bslc...)
+
+		// check for duplicate external names
+		if externalName != "" {
+			if str.IsInSlice(externalName, externalNames) {
+				err = fmt.Errorf("Duplicate of optional argument (%s)", str.ReformatInput(externalName))
+				return
+			}
+			externalNames = append(externalNames, externalName)
+		}
 	}
 
 	// NOTE: putting function to call onto stack after arguments and will be popped first

@@ -1,13 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... - 0.16.8
+2024-07-23 - 0.17.0
 - added optional parameters to compiled functions (not to be confused with parameter expansion, which is still positional)
 - changed how parameters/arguments are dealt with for compiled functions
-- changed OpClosure to OpFunction, with an another operand to indicate a count for defaults not yet built
+- changed OpClosure to OpFunction, with another operand to indicate a count for default values to be determined at run-time
 - updated lexer to allow number continuation on next line (see website for syntax)
 - added PreBuilder interface to ast, for times when a node can be converted directly to an Object, instead of making more instructions for the VM; added PreBuild() method to some node types
-
 
 2024-07-18 - 0.16.7
 - updated impure module to require declaration as impure (use module*)

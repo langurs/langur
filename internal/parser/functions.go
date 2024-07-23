@@ -120,7 +120,11 @@ func (p *Parser) parseParameter(level int) ast.Node {
 			}
 			aliasTok = p.tok
 			p.advanceToken()
-			alias = p.parseIdentifier()
+			var ok bool
+			alias, ok = p.parseWord()
+			if !ok {
+				p.addError("Error parsing alias for parameter")
+			}
 		}
 		if p.tok.Type == token.ASSIGN {
 			if level != 0 {

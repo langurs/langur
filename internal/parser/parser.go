@@ -120,7 +120,7 @@ func (p *Parser) setParseFunctionMaps() {
 		token.DURATION:  p.parseDuration,
 		token.STRING:    p.parseString,
 		token.LBRACKET:  p.parseList,
-		token.LBRACE:    p.parseLBrace,
+		token.LBRACE:    p.parseLBraceExpression,
 
 		token.NONE: p.parseNone,
 		token.NOT:  p.parsePrefixExpression,
@@ -148,13 +148,13 @@ func (p *Parser) setParseFunctionMaps() {
 		token.APPEND:      p.parseInfixExpression,
 		token.PLUS:        p.parseInfixExpression,
 		token.MINUS:       p.parseInfixExpression,
-		token.ASTERISK:       p.parseInfixExpression,
-		token.SLASH:      p.parseInfixExpression,
+		token.ASTERISK:    p.parseInfixExpression,
+		token.SLASH:       p.parseInfixExpression,
 		token.BACKSLASH:   p.parseInfixExpression,
 		token.DOUBLESLASH: p.parseInfixExpression,
 		token.REMAINDER:   p.parseInfixExpression,
 		token.MODULUS:     p.parseInfixExpression,
-		token.POWER:    p.parseInfixExpression,
+		token.POWER:       p.parseInfixExpression,
 		token.ROOT:        p.parseInfixExpression,
 
 		// token.NOT as infix for not in/not of; checked elsewhere that only used as such for infix (normally prefix)

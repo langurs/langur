@@ -7,6 +7,7 @@ import (
 	"langur/ast"
 	"langur/common"
 	"langur/lexer"
+	"langur/regexp"
 	"langur/str"
 	"langur/token"
 	"strings"
@@ -71,8 +72,9 @@ func (p *Parser) parseContinuedExpression(leftExp ast.Node, prec precedence) ast
 }
 
 func (p *Parser) parseIdentifier() ast.Node {
+	tt := p.tok.Type
 	identifier, ok := p.parseWord()
-	if !ok {
+	if !ok || tt != token.IDENT {
 		p.addError("Expected identifier")
 		p.advanceToken()
 		return identifier
@@ -84,8 +86,10 @@ func (p *Parser) parseIdentifier() ast.Node {
 	return identifier
 }
 
+var identifierRegex = regexp.MustCompile(common.IdentifierRegexString)
+
 func (p *Parser) parseWord() (*ast.IdentNode, bool) {
-	if p.tok.Type != token.IDENT {
+	if !identifierRegex.MatchString(p.tok.Literal) {
 		return nil, false
 	}
 
@@ -230,7 +234,11 @@ func (p *Parser) parseBlock() ast.Node {
 	return ast.ListToBlock(statements)
 }
 
-func (p *Parser) parseLBrace() ast.Node {
+func (p *Parser) parseLBraceExpression() ast.Node {
+	return p.parseLBrace(false)
+}
+
+func (p *Parser) parseLBrace(stmtContext bool) ast.Node {
 	tok := p.tok
 	p.advanceToken() // past left brace {
 
@@ -274,6 +282,11 @@ func (p *Parser) parseLBrace() ast.Node {
 		p.advanceToken()
 		statements, _ = p.parseStatements([]token.Type{token.RBRACE}, first, false, true)
 	}
+
+	// FIXME:
+	// if !stmtContext {
+	// 	p.addError("Unexpected scope block in expression context")
+	// }
 
 	block := &ast.BlockNode{Token: tok, Statements: statements}
 	block.HasScope = true
@@ -531,7 +544,8 @@ func (p *Parser) parseExpressionList(
 			p.addError("Expected expression in list, not free delimiter")
 		}
 
-		if forFunctionCall && p.tok.Type == token.IDENT &&
+		if forFunctionCall &&
+			identifierRegex.MatchString(p.tok.Literal) &&
 			p.peekTok.Type == token.ASSIGN {
 			// for optional argument
 			// externalname = value

@@ -156,6 +156,8 @@ type BuiltIn struct {
 	// Fn an interface{} here and type assertion in the process package to avoid an import cycle error
 	Fn interface{}
 
+	// TODO:
+	// FnSignature   *Signature
 	Name          string
 	Description   string
 	ParamMin      int

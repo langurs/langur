@@ -59,6 +59,7 @@ func (lex *Lexer) readNumber() (
 				_, newlineCount, err = lex.skipWhiteSpace()
 				if newlineCount != 1 {
 					err = fmt.Errorf("Expected 1 newline after underscore for number continuation")
+					break
 				}
 				includesNewline = true
 				if lex.cp != '_' || !cpoint.IsWordTokenChar(lex.peekCp) {

@@ -5188,7 +5188,7 @@ func TestOptionalParameters(t *testing.T) {
 			expectedType: object.NUMBER_OBJ,
 		},
 
-		// with external name different than internal name
+		// with external name different than internal name (b as d)
 		{
 			input: `
 		val mult = fn(a, b as d=12, c=4) { a * b + c }	# internally use b
@@ -5207,8 +5207,8 @@ func TestOptionalParameters(t *testing.T) {
 		},
 		{ // ... and external name same as a keyword
 			input: `
-		val mult = fn(a, b as len=12, c=4) { a * b + c }	# internally use b
-		mult(4, len=10)										# called with len=...
+		val mult = fn(a, b as for=12, c=4) { a * b + c }	# internally use b
+		mult(4, for=10)										# called with for=...
 		`,
 			expected:     44,
 			expectedType: object.NUMBER_OBJ,
@@ -5228,6 +5228,36 @@ func TestOptionalParameters(t *testing.T) {
 		mult(4)
 		`,
 			expected:     88,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// with a free variable in setting the optional parameter default
+		{
+			input: `
+		val x = 2
+		val mult = fn(a, b=12, c=x) { a * b - c }
+		mult(4)
+		`,
+			expected:     46,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val x = 2
+		val mult = fn(a, b=12, c=x) { a * b - c + x }
+		mult(4)
+		`,
+			expected:     48,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+		val x = 2
+		val y = 3
+		val mult = fn(a, b=12, c=x) { a * b - c + y}
+		mult(4)
+		`,
+			expected:     49,
 			expectedType: object.NUMBER_OBJ,
 		},
 
@@ -5302,6 +5332,23 @@ func TestOptionalParameters(t *testing.T) {
 		add([4, 7]..., b=100)
 		`,
 			expected:     111,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// optional parameters and a closure (both using OpFunction)
+		{
+			input: `
+		val pre = 123
+		val add = fn(alist, b=12) {
+			var sum = pre	# closure on value
+			for i in alist {
+				sum += i
+			}
+			sum += b
+		}
+		add([4, 7], b=100)
+		`,
+			expected:     234,
 			expectedType: object.NUMBER_OBJ,
 		},
 	}

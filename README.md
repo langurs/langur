@@ -1,4 +1,4 @@
-# langur 0.16
+# langur 0.17
 
 [Langur](https://langurlang.org) is an open-source imperative/functional scripting language written in Go.
 
@@ -14,7 +14,7 @@ The revision history is in a separate file.
 
 ## requirements
 
-I've compiled langur on Linux, using LiteIDE with Go 1.21. I've also compiled it on Windows using LiteIDE.
+I've compiled langur on Linux, using LiteIDE with Go 1.22. I've also compiled it on Windows using LiteIDE.
 
 See installation instructions on the langurlang.org website.
 
