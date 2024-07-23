@@ -140,6 +140,12 @@ func (c *Compiler) compileFunctionNodeParameters(
 	node *ast.FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.Instructions, defaultCount int, err error) {
 
+	// to set parameter defaults that are determined at run-time that may include variables (not closure "free" variables)
+	c.symbolTable.FreezeDefineFree = true
+	defer func() {
+		c.symbolTable.FreezeDefineFree = false
+	}()
+
 	// external names not registered in a symbol table
 	// check for duplicates to prevent confusion and chaos
 	var externalNames []string

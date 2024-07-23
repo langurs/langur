@@ -38,10 +38,11 @@ type SymbolTable struct {
 	DefinitionCount int
 	IsNonScope      bool // a placeholder for a non-scoped VM frame
 
-	FreeSymbols []Symbol // free symbols for closures
-	IsFunction  bool
+	FreeSymbols      []Symbol // free symbols for closures
+	FreezeDefineFree bool     // when setting optional parameter defaults
+	IsFunction       bool
 
-	Modes      *modes.CompileModes
+	Modes         *modes.CompileModes
 	ImpureEffects []string
 }
 
@@ -152,12 +153,10 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 		// not found in current symbol table; check outer symbol table
 		sym, level, ok = st.Outer.resolveSymbol(name, fromLevel+1)
 
-		if ok {
-			if st.IsFunction {
-				// resolves from beyond function border
-				// define a "free" variable for this scope
-				sym = st.defineFree(sym)
-			}
+		if ok && st.IsFunction && !st.FreezeDefineFree {
+			// resolves from beyond function border
+			// define a "free" variable for this scope
+			sym = st.defineFree(sym)
 		}
 	}
 

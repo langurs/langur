@@ -5231,7 +5231,8 @@ func TestOptionalParameters(t *testing.T) {
 			expectedType: object.NUMBER_OBJ,
 		},
 
-		// with a free variable in setting the optional parameter default
+		// with a "free" variable in setting the optional parameter default
+		// shouldn't treat as a free variable (closure) if only part of parameter default
 		{
 			input: `
 		val x = 2
