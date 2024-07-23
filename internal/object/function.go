@@ -153,35 +153,31 @@ func (cf *CompiledCode) ReplString() string {
 // BUILT-IN FUNCTIONS
 
 type BuiltIn struct {
-	// Fn an interface{} here and type assertion in the process package to avoid an import cycle error
-	Fn interface{}
+	// Fn an interface{} here and type assertion in the vm/process package to avoid an import cycle error
+	Fn          interface{}
+	FnSignature *Signature
 
-	// TODO:
-	// FnSignature   *Signature
-	Name          string
-	Description   string
-	ParamMin      int
-	ParamMax      int
-	ImpureEffects bool
+	// TODO: deprecated for function signature
+	ParamMin int
+	ParamMax int
 }
 
 func (b *BuiltIn) Copy() Object {
 	return &BuiltIn{
-		Fn:            b.Fn,
-		Name:          b.Name,
-		Description:   b.Description,
-		ParamMin:      b.ParamMin,
-		ParamMax:      b.ParamMax,
-		ImpureEffects: b.ImpureEffects,
+		Fn:          b.Fn,
+		FnSignature: b.FnSignature.Copy(),
+
+		ParamMin: b.ParamMin,
+		ParamMax: b.ParamMax,
 	}
 }
 
 func (b *BuiltIn) FullName() string {
-	return b.Name
+	return b.FnSignature.Name
 }
 
 func (b *BuiltIn) HasImpureEffects() bool {
-	return b.ImpureEffects
+	return b.FnSignature.ImpureEffects
 }
 
 func (l *BuiltIn) Equal(b2 Object) bool {
@@ -200,11 +196,11 @@ func (b *BuiltIn) TypeString() string {
 }
 
 func (b *BuiltIn) IsTruthy() bool {
-	return !b.ImpureEffects
+	return !b.FnSignature.ImpureEffects
 }
 
 func (b *BuiltIn) String() string {
-	if b.Name[0] == '_' {
+	if b.FnSignature.Name[0] == '_' {
 		// internal function names only start with underscore
 		// likely won't happen, but shouldn't
 		return INTERNAL_OBJECT_ONLY
@@ -213,7 +209,7 @@ func (b *BuiltIn) String() string {
 	var out bytes.Buffer
 
 	out.WriteRune('(')
-	if b.ImpureEffects {
+	if b.FnSignature.ImpureEffects {
 		out.WriteString("impure ")
 	}
 	out.WriteString("builtin) " + b.FullName())
@@ -223,7 +219,7 @@ func (b *BuiltIn) String() string {
 func (b *BuiltIn) ReplString() string {
 	var out bytes.Buffer
 
-	if b.ImpureEffects {
+	if b.FnSignature.ImpureEffects {
 		out.WriteString("Impure ")
 	}
 	out.WriteString(common.BuiltInTypeName)

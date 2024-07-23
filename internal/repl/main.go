@@ -148,15 +148,15 @@ func Start(in io.Reader, out io.Writer) {
 			var keys []string
 			for _, k := range process.BuiltIns {
 				// leave out internal built-ins
-				if k.Name[0] != '_' {
-					keys = append(keys, k.Name)
+				if k.FnSignature.Name[0] != '_' {
+					keys = append(keys, k.FnSignature.Name)
 				}
 			}
 			sort.Strings(keys)
 			fmt.Fprintf(out, "%d Built-in Functions\n", len(keys))
 			for _, k := range keys {
 				bi := process.GetBuiltInByName(k)
-				fmt.Fprintf(out, " %s: %s\n", bi.Name, strings.Replace(bi.Description, "\n", "\n\t", -1))
+				fmt.Fprintf(out, " %s: %s\n", bi.FnSignature.Name, strings.Replace(bi.FnSignature.Description, "\n", "\n\t", -1))
 			}
 			continue
 		}

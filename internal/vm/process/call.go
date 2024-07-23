@@ -107,13 +107,13 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, args []object.Object) (
 	defer func() {
 		if pr.Modes.GoPanicToLangurException {
 			if p := recover(); p != nil {
-				err = object.NewErrorFromAnything(p, "panic:"+bi.Name)
+				err = object.NewErrorFromAnything(p, "panic:"+bi.FullName())
 			}
 		}
 	}()
 
 	if BuiltInArgCountMismatch(bi, len(args)) {
-		return nil, object.NewError(object.ERR_ARGUMENTS, bi.Name,
+		return nil, object.NewError(object.ERR_ARGUMENTS, bi.FullName(),
 			fmt.Sprintf("Argument/parameter count mismatch; expected=%s, received=%d",
 				object.ParamExpectedString(bi), len(args)))
 	}
