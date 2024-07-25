@@ -36,7 +36,7 @@ const (
 
 	printLexTokens = false
 
-	printParseTokenRepresentation = false
+	printParseTokenRepresentation = true
 	printParseNodes               = false
 	printParsedVarNames           = false
 

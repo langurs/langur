@@ -17,11 +17,10 @@ func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 	defer p.popContext()
 
 	switch p.tok.Type {
-	case token.RBRACE:
-		stmt = p.parseLBrace()
-		stmt = &ast.ExpressionStatementNode{
-			Token:      stmt.TokenInfo(),
-			Expression: stmt}
+	case token.LBRACE:
+		p.pushContext(context_statement_block)
+		defer p.popContext()
+		stmt = p.parseExpressionStatement(nil)
 
 	case token.CATCH:
 		// A catch in langur is neither an expression nor a statement (is part of an expression).

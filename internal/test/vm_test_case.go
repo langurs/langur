@@ -24,26 +24,26 @@ type vmTestCase struct {
 func runVmTests(t *testing.T, tests []vmTestCase, printTestFirst, testPrintSpeed bool) {
 	t.Helper()
 
-	for _, tt := range tests {
-		result := oneResult(t, tt.input, printTestFirst, testPrintSpeed)
-		testExpectedObject(t, tt.input, tt.expected, tt.expectedType, result)
+	for i, tt := range tests {
+		result := oneResult(t, i, tt.input, printTestFirst, testPrintSpeed)
+		testExpectedObject(t, i, tt.input, tt.expected, tt.expectedType, result)
 	}
 }
 
-func oneResult(t *testing.T, input string, printTestFirst, testPrintSpeed bool) object.Object {
+func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrintSpeed bool) object.Object {
 	if printTestFirst {
-		fmt.Printf("Test: %q\n", input)
+		fmt.Printf("Test %d: %q\n", testno, input)
 	}
 
 	program := parse(t, input)
 
 	comp, err := compiler.New(nil)
 	if err != nil {
-		t.Fatalf("(%q) compiler error on New: %s", input, err)
+		t.Fatalf("Test %d: (%q) compiler error on New: %s", testno, input, err)
 	}
 	err = comp.Compile(program, false)
 	if err != nil {
-		t.Fatalf("(%q)\ncompiler error: %s", input, err)
+		t.Fatalf("Test %d: (%q)\ncompiler error: %s", testno, input, err)
 	}
 
 	machine := vm.New(comp.ByteCode(), nil)
@@ -56,12 +56,12 @@ func oneResult(t *testing.T, input string, printTestFirst, testPrintSpeed bool) 
 
 	err = machine.Run()
 	if err != nil {
-		t.Fatalf("(%q)\nvm error: %s", input, err)
+		t.Fatalf("Test %d: (%q)\nvm error: %s", testno, input, err)
 	}
 
 	if testPrintSpeed {
 		end = time.Now().UnixNano()
-		fmt.Printf("VM Test Time in Microseconds (Nanoseconds): %d (%d)\n", (end-start)/1000, end-start)
+		fmt.Printf("Test %d: VM Test Time in Microseconds (Nanoseconds): %d (%d)\n", testno, (end-start)/1000, end-start)
 	}
 
 	return machine.LastValue()
@@ -99,6 +99,7 @@ func checkParseErrors(t *testing.T, p *parser.Parser, input string) {
 
 func testExpectedObject(
 	t *testing.T,
+	testno int,
 	input string,
 	expected interface{},
 	expectedType object.ObjectType,
@@ -113,53 +114,53 @@ func testExpectedObject(
 			// might be a Go string to represent a langur decimal floating point number
 			err := testNumberObject(expected.(string), actual)
 			if err != nil {
-				t.Errorf("(%q) testNumberObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testNumberObject failed: %s", testno, input, err)
 			}
 
 		case int:
 			err := testNumberObject(str.IntToStr(expected.(int), 10), actual)
 			if err != nil {
-				t.Errorf("(%q) testNumberObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testNumberObject failed: %s", testno, input, err)
 			}
 
 		default:
-			t.Fatalf("(%q) testExpectedObject failed for object.NUMBER_OBJ: no case for %T", input, expected)
+			t.Fatalf("Test %d: (%q) testExpectedObject failed for object.NUMBER_OBJ: no case for %T", testno, input, expected)
 		}
 
 	case object.BOOLEAN_OBJ:
 		err := testBooleanObject(expected.(bool), actual)
 		if err != nil {
-			t.Errorf("(%q) testBooleanObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testBooleanObject failed: %s", testno, input, err)
 		}
 
 	case object.NULL_OBJ:
 		err := testNullObject(actual)
 		if err != nil {
-			t.Errorf("(%q) testNullObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testNullObject failed: %s", testno, input, err)
 		}
 
 	case object.STRING_OBJ:
 		err := testStringObject(expected.(string), actual)
 		if err != nil {
-			t.Errorf("(%q) testStringObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testStringObject failed: %s", testno, input, err)
 		}
 
 	case object.DATETIME_OBJ:
 		err := testDateTimeObject(expected.(string), actual)
 		if err != nil {
-			t.Errorf("(%q) testDateTimeObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testDateTimeObject failed: %s", testno, input, err)
 		}
 
 	case object.DURATION_OBJ:
 		err := testDurationObject(expected.(string), actual)
 		if err != nil {
-			t.Errorf("(%q) testDurationObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testDurationObject failed: %s", testno, input, err)
 		}
 
 	case object.RANGE_OBJ:
 		err := testRangeObject(expected.([]int64), actual)
 		if err != nil {
-			t.Errorf("(%q) testRangeObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testRangeObject failed: %s", testno, input, err)
 		}
 
 	case object.LIST_OBJ:
@@ -167,51 +168,51 @@ func testExpectedObject(
 		if ok {
 			err := testListOfIntObject(intList, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfIntObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfIntObject failed: %s", testno, input, err)
 			}
 
 		} else if strArr, ok := expected.([]string); ok {
 			err := testListOfStringObject(strArr, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfStringObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfStringObject failed: %s", testno, input, err)
 			}
 
 		} else if intList, ok := expected.([][]int); ok {
 			err := testListOfListOfIntegerObject(intList, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfListOfIntegerObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfListOfIntegerObject failed: %s", testno, input, err)
 			}
 
 		} else if rngList, ok := expected.([][]int64); ok {
 			err := testListOfRangeObject(rngList, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfRangeObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfRangeObject failed: %s", testno, input, err)
 			}
 
 		} else if rngList2, ok := expected.([][][]int64); ok {
 			err := testListOfListsOfRangeObject(rngList2, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfListsOfRangeObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfListsOfRangeObject failed: %s", testno, input, err)
 			}
 
 		} else if rngList, ok := expected.([][]string); ok {
 			err := testListOfListOfStringsObject(rngList, actual)
 			if err != nil {
-				t.Errorf("(%q) testListOfListOfStringsObject failed: %s", input, err)
+				t.Errorf("Test %d: (%q) testListOfListOfStringsObject failed: %s", testno, input, err)
 			}
 
 		} else {
-			t.Errorf("(%q) no test method found for expected %T", input, expected)
+			t.Errorf("Test %d: (%q) no test method found for expected %T", testno, input, expected)
 		}
 
 	case object.HASH_OBJ:
 		err := testHashObject(expected.([][]object.Object), actual)
 		if err != nil {
-			t.Errorf("(%q) testHashObject failed: %s", input, err)
+			t.Errorf("Test %d: (%q) testHashObject failed: %s", testno, input, err)
 		}
 
 	default:
-		t.Errorf("(%q) unknown for expected type, received=%v", input, expectedType)
+		t.Errorf("Test %d: (%q) unknown for expected type, received=%v", testno, input, expectedType)
 	}
 }
 

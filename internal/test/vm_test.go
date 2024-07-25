@@ -911,11 +911,12 @@ func TestShortCircuitingOperations(t *testing.T) {
 		{`val x = "abcd yoyo"; len(x) >= 7 and x[7] == 'o'`, true, object.BOOLEAN_OBJ},  // not sc
 		{`val x = "abcd yoyo"; len(x) >= 7 and x[7] == 'y'`, false, object.BOOLEAN_OBJ}, // not sc
 
-		{`var y = 7; true or { y = 14 }; y`, "7", object.NUMBER_OBJ},   // sc
-		{`var y = 7; true and { y = 14 }; y`, "14", object.NUMBER_OBJ}, // not sc
+		// The following tests commented out as no longer valid, with scope blocks limited to statement context (0.17.2).
+		// {`var y = 7; true or { y = 14 }; y`, "7", object.NUMBER_OBJ},   // sc
+		// {`var y = 7; true and { y = 14 }; y`, "14", object.NUMBER_OBJ}, // not sc
 
-		{"var x = 7; [1, 2, 3][3; { x = 14 }]; x", "7", object.NUMBER_OBJ},  // sc
-		{"var x = 7; [1, 2, 3][4; { x = 14 }]; x", "14", object.NUMBER_OBJ}, // not sc
+		// {"var x = 7; [1, 2, 3][3; { x = 14 }]; x", "7", object.NUMBER_OBJ},  // sc
+		// {"var x = 7; [1, 2, 3][4; { x = 14 }]; x", "14", object.NUMBER_OBJ}, // not sc
 
 		{`null and? true`, nil, object.NULL_OBJ},     // sc
 		{`null or? true`, nil, object.NULL_OBJ},      // sc
@@ -6748,7 +6749,7 @@ func TestExecT(t *testing.T) {
 	if system.Type == system.WINDOWS {
 		testStr = `execT("dir")`
 	}
-	result := oneResult(t, testStr, false, false)
+	result := oneResult(t, 1, testStr, false, false)
 
 	s, ok := result.(*object.String)
 	if !ok {
@@ -6949,7 +6950,7 @@ func TestRe2(t *testing.T) {
 func TestSubMatchesHashList(t *testing.T) {
 	str := `submatchesH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " abcd: ")`
 	expect := [][][]object.Object{}
-	result := oneResult(t, str, false, false)
+	result := oneResult(t, 1, str, false, false)
 	err := testListOfHashesObject(expect, result)
 	if err != nil {
 		t.Errorf("testListOfHashesObject failed: %s", err)
@@ -6963,7 +6964,7 @@ func TestSubMatchesHashList(t *testing.T) {
 		{object.NewString("key"), object.NewString("abcd")},
 		{object.NewString("value"), object.NewString("peaceInJerusalem")},
 	}}
-	result = oneResult(t, str, false, false)
+	result = oneResult(t, -1, str, false, false)
 	err = testListOfHashesObject(expect, result)
 	if err != nil {
 		t.Errorf("testListOfHashesObject failed: %s", err)
@@ -6986,7 +6987,7 @@ func TestSubMatchesHashList(t *testing.T) {
 			{object.NewString("value"), object.NewString("youdontknow")},
 		},
 	}
-	result = oneResult(t, str, false, false)
+	result = oneResult(t, 1, str, false, false)
 	err = testListOfHashesObject(expect, result)
 	if err != nil {
 		t.Errorf("testListOfHashesObject failed: %s", err)
@@ -8570,14 +8571,14 @@ func TestTryCatch(t *testing.T) {
 
 		{
 			input: `
-				val x = {
+				val x = fn() {
 					123 / 0
 					catch { if _err["cat"] == "math" { 890 } else { 456 } }
 					159
 					val y = 789
 					78 / 0
 					catch { y }
-				}
+				}()
 				x - 89 + 77
 				`,
 			expected:     "777",

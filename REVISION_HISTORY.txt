@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.17.2
+- limited scope blocks to statement context
+
+
 2024-07-25 - 0.17.1
 - clean up code regarding arguments/parameters that are positional or by name
 - removed several fields from object.BuiltIn; using object.Signature for most

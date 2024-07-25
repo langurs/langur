@@ -107,7 +107,6 @@ func ExpressionContinuationExpected(tt Type) bool {
 		// false if...
 		EOF,
 		COLON, SEMICOLON, COMMA,
-		LBRACE,
 		RPAREN, RBRACE, RBRACKET,
 		EXPANSION:
 

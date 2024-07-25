@@ -5,8 +5,8 @@ package parser
 type context int
 
 const (
-	context_expression context = iota
-	context_statement
+	context_statement context = iota
+	context_statement_block
 	context_switch_test
 )
 
@@ -22,5 +22,5 @@ func (p *Parser) peekContext() context {
 	if len(p.contexts) != 0 {
 		return p.contexts[len(p.contexts)-1]
 	}
-	return context_expression
+	return context_statement
 }

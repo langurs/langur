@@ -285,9 +285,8 @@ func (p *Parser) parseLBrace() ast.Node {
 	block := &ast.BlockNode{Token: tok, Statements: statements}
 	block.HasScope = true
 
-	if p.peekContext() != context_statement {
+	if p.peekContext() != context_statement_block {
 		p.addError("Unexpected scope block in expression context")
-		return nil
 	}
 
 	return block
