@@ -1222,7 +1222,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []opcode.Instructions{
 				opcode.Make(opcode.OpConstant, 1), // compiled function literal
-				opcode.Make(opcode.OpCall, 0),
+				opcode.Make(opcode.OpCall, 0, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1241,7 +1241,7 @@ func TestFunctionCalls(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0),
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpCall, 0),
+				opcode.Make(opcode.OpCall, 0, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1264,7 +1264,7 @@ func TestFunctionCalls(t *testing.T) {
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpConstant, 1),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpCall, 1),
+				opcode.Make(opcode.OpCall, 1, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1297,7 +1297,7 @@ func TestFunctionCalls(t *testing.T) {
 				opcode.Make(opcode.OpConstant, 2),
 				opcode.Make(opcode.OpConstant, 3),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpCall, 3),
+				opcode.Make(opcode.OpCall, 3, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1449,7 +1449,7 @@ func TestAssignmentStatementScopes(t *testing.T) {
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 0),    // _Decouple_
 					opcode.Make(opcode.OpConstant, 1),    // _len
-					opcode.Make(opcode.OpCall, 1),        // len(_Decouple_)
+					opcode.Make(opcode.OpCall, 1, 0),     // len(_Decouple_)
 					opcode.Make(opcode.OpConstant, 2),    // 2
 					opcode.Make(opcode.OpLessThan, 0, 0), // len(_Decouple_) < 2
 					opcode.Make(opcode.OpJumpIfNotTruthy, 16),
@@ -1551,7 +1551,7 @@ func TestForLoop(t *testing.T) {
 
 					opcode.Make(opcode.OpGetLocal, 0), // _LoopOver_
 					opcode.Make(opcode.OpConstant, 2), // _len(
-					opcode.Make(opcode.OpCall, 1),     // _len(_LoopOver_)
+					opcode.Make(opcode.OpCall, 1, 0),  // _len(_LoopOver_)
 					opcode.Make(opcode.OpSetLocal, 1), // _LoopLimit_ = len(_LoopOver_)
 					opcode.Make(opcode.OpPop),
 
@@ -1896,7 +1896,7 @@ func TestBuiltIns(t *testing.T) {
 			expectedInstructions: []opcode.Instructions{
 				opcode.Make(opcode.OpConstant, 1),
 				opcode.Make(opcode.OpConstant, 0), // len
-				opcode.Make(opcode.OpCall, 1),
+				opcode.Make(opcode.OpCall, 1, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1908,7 +1908,7 @@ func TestBuiltIns(t *testing.T) {
 				[]opcode.Instructions{
 					opcode.Make(opcode.OpConstant, 1),
 					opcode.Make(opcode.OpConstant, 0), // len
-					opcode.Make(opcode.OpCall, 1),
+					opcode.Make(opcode.OpCall, 1, 0),
 					opcode.Make(opcode.OpReturnValue),
 				},
 			},
@@ -1925,7 +1925,7 @@ func TestBuiltIns(t *testing.T) {
 					opcode.Make(opcode.OpConstant, 1), // 1
 					opcode.Make(opcode.OpList, 1),
 					opcode.Make(opcode.OpConstant, 0), // len
-					opcode.Make(opcode.OpCall, 1),
+					opcode.Make(opcode.OpCall, 1, 0),
 					opcode.Make(opcode.OpReturnValue),
 				},
 			},
@@ -1941,7 +1941,7 @@ func TestBuiltIns(t *testing.T) {
 				opcode.Make(opcode.OpConstant, 1), // 7
 				opcode.Make(opcode.OpList, 1),
 				opcode.Make(opcode.OpConstant, 0), // len
-				opcode.Make(opcode.OpCall, 1),
+				opcode.Make(opcode.OpCall, 1, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -1976,7 +1976,7 @@ func TestCallingCompiledFromBuiltIns(t *testing.T) {
 				opcode.Make(opcode.OpConstant, 5),
 				opcode.Make(opcode.OpList, 3),
 				opcode.Make(opcode.OpConstant, 2), // map
-				opcode.Make(opcode.OpCall, 2),
+				opcode.Make(opcode.OpCall, 2, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -2150,7 +2150,7 @@ func TestClosures(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0), // x = 21
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 1),
-				opcode.Make(opcode.OpCall, 0),
+				opcode.Make(opcode.OpCall, 0, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -2172,13 +2172,13 @@ func TestRecursion(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0),       // x
 					opcode.Make(opcode.OpConstant, 0),       // 1
 					opcode.Make(opcode.OpGreaterThan, 0, 0), // x > 1
-					opcode.Make(opcode.OpJumpIfNotTruthy, 17),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 18),
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpSubtract),    // x - 1
 					opcode.Make(opcode.OpGetSelf),     // factorial
-					opcode.Make(opcode.OpCall, 1),     // factorial(x - 1)
+					opcode.Make(opcode.OpCall, 1, 0),  // factorial(x - 1)
 					opcode.Make(opcode.OpMultiply),    // x * factorial(x - 1)
 					opcode.Make(opcode.OpJump, 3),
 					opcode.Make(opcode.OpConstant, 0), // 1
@@ -2192,7 +2192,7 @@ func TestRecursion(t *testing.T) {
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpConstant, 2),
 				opcode.Make(opcode.OpGetGlobal, 0),
-				opcode.Make(opcode.OpCall, 1),
+				opcode.Make(opcode.OpCall, 1, 0),
 				opcode.Make(opcode.OpPop),
 			},
 		},
@@ -2223,25 +2223,25 @@ func TestRecursion(t *testing.T) {
 				[]opcode.Instructions{ // iter function
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
 					opcode.Make(opcode.OpConstant, 0), // len(...
-					opcode.Make(opcode.OpCall, 1),     // len(remaining)
+					opcode.Make(opcode.OpCall, 1, 0),  // len(remaining)
 					opcode.Make(opcode.OpConstant, 1), // 0
 					opcode.Make(opcode.OpEqual, 0, 0), // len(remaining) == 0
 					opcode.Make(opcode.OpJumpIfNotTruthy, 7),
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
-					opcode.Make(opcode.OpJump, 28),
+					opcode.Make(opcode.OpJump, 33),
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
 					opcode.Make(opcode.OpConstant, 2), // rest(
-					opcode.Make(opcode.OpCall, 1),     // rest(remaining)
+					opcode.Make(opcode.OpCall, 1, 0),  // rest(remaining)
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
 					opcode.Make(opcode.OpConstant, 4), // first(
-					opcode.Make(opcode.OpCall, 1),     // first(remaining)
+					opcode.Make(opcode.OpCall, 1, 0),  // first(remaining)
 					opcode.Make(opcode.OpGetFree, 0),  // fn
-					opcode.Make(opcode.OpCall, 1),     // fn(first(remaining))
+					opcode.Make(opcode.OpCall, 1, 0),  // fn(first(remaining))
 					opcode.Make(opcode.OpConstant, 3), // more(
-					opcode.Make(opcode.OpCall, 2),     // more(accumulated, fn(first(remaining)))
+					opcode.Make(opcode.OpCall, 2, 0),  // more(accumulated, fn(first(remaining)))
 					opcode.Make(opcode.OpGetSelf),     // iter
-					opcode.Make(opcode.OpCall, 2),     // iter(rest(remaining), more(accumulated, fn(first(remaining))))
+					opcode.Make(opcode.OpCall, 2, 0),  // iter(rest(remaining), more(accumulated, fn(first(remaining))))
 					opcode.Make(opcode.OpReturnValue),
 				},
 				object.EmptyList,
@@ -2253,7 +2253,7 @@ func TestRecursion(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 1), // arr
 					opcode.Make(opcode.OpConstant, 6), // empty list
 					opcode.Make(opcode.OpGetLocal, 2), // iter
-					opcode.Make(opcode.OpCall, 2),     // iter(...)
+					opcode.Make(opcode.OpCall, 2, 0),  // iter(...)
 					opcode.Make(opcode.OpReturnValue),
 				},
 				2,
@@ -2276,7 +2276,7 @@ func TestRecursion(t *testing.T) {
 				opcode.Make(opcode.OpConstant, 12), // 4
 				opcode.Make(opcode.OpList, 4),      // [1, 2, 3, 4]
 				opcode.Make(opcode.OpGetGlobal, 0), // mapping(...
-				opcode.Make(opcode.OpCall, 2),      // mapping(fn(x) { x * 2 }, [1, 2, 3, 4])
+				opcode.Make(opcode.OpCall, 2, 0),   // mapping(fn(x) { x * 2 }, [1, 2, 3, 4])
 				opcode.Make(opcode.OpSetGlobal, 1), // doubled = ...
 				opcode.Make(opcode.OpPop),
 			},

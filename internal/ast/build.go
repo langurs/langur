@@ -222,8 +222,8 @@ func MakeFunctionFromOperator(op token.Token, left, right Node) (
 	}
 
 	fn = &FunctionNode{
-		Token:      op,
-		Parameters: params,
+		Token:                op,
+		PositionalParameters: params,
 		Body: &BlockNode{
 			Token: op,
 			Statements: []Node{
@@ -336,9 +336,9 @@ func MakeDecouplingAssignment(
 						Test: &InfixExpressionNode{
 							Token: assign.Token,
 							Left: &CallNode{
-								Token:    assign.Token,
-								Function: NewBuiltInNode(assign.Token, "_len", true),
-								Args:     []Node{tempCompositeResultVarNode},
+								Token:          assign.Token,
+								Function:       NewBuiltInNode(assign.Token, "_len", true),
+								PositionalArgs: []Node{tempCompositeResultVarNode},
 							},
 							Operator: assign.Token.NewTokenCopyPosInfo(token.LESS_THAN, "(<)"),
 							Right:    MakeNumberFromInt(assign.Token, minValues),
@@ -384,9 +384,9 @@ func MakeAssignmentIndexValueStatement(assignTo Node, left Node, start int, syst
 				Operator: assignTo.TokenInfo().NewTokenCopyPosInfo(token.RANGE, "(..)"),
 				Left:     index,
 				Right: &CallNode{
-					Token:    assignTo.TokenInfo(),
-					Function: NewBuiltInNode(assignTo.TokenInfo(), "_len", true),
-					Args:     []Node{left},
+					Token:          assignTo.TokenInfo(),
+					Function:       NewBuiltInNode(assignTo.TokenInfo(), "_len", true),
+					PositionalArgs: []Node{left},
 				},
 			}
 		default:
@@ -412,4 +412,36 @@ func MakeNumberFromInt(tok token.Token, i int) *NumberNode {
 
 func MakeNumberFromString(tok token.Token, s string) *NumberNode {
 	return &NumberNode{Token: tok, Base: 10, Value: s}
+}
+
+const bynameArgsMustFollowPositionalArgs = true
+
+func SplitArgumentSliceToPositionalAndByName(args []Node) (
+	positional, byname []Node, err error) {
+
+	for _, arg := range args {
+		bynameArg := false
+		switch a := arg.(type) {
+		case *LineDeclarationNode:
+			switch a.Assignment.(type) {
+			case *AssignmentNode:
+				bynameArg = true
+			}
+
+		case *AssignmentNode:
+			bynameArg = true
+		}
+
+		if bynameArg {
+			byname = append(byname, arg)
+
+		} else if bynameArgsMustFollowPositionalArgs && len(byname) != 0 {
+			err = fmt.Errorf("Positional arguments must precede arguments by name")
+			return
+
+		} else {
+			positional = append(positional, arg)
+		}
+	}
+	return
 }

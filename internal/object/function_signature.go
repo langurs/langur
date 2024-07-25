@@ -67,14 +67,14 @@ func (s *Signature) Copy() *Signature {
 		Name:              s.Name,
 		Description:       s.Description,
 		ImpureEffects:     s.ImpureEffects,
-		ParamPositional:   copyParamList(s.ParamPositional),
-		ParamByName:       copyParamList(s.ParamByName),
+		ParamPositional:   CopyParamList(s.ParamPositional),
+		ParamByName:       CopyParamList(s.ParamByName),
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
 	}
 }
 
-func copyParamList(pl []Parameter) []Parameter {
+func CopyParamList(pl []Parameter) []Parameter {
 	if pl == nil {
 		return nil
 	}

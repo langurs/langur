@@ -43,7 +43,8 @@ func (pr *Process) newFrame(
 			fr.locals = make([]object.Object, code.LocalBindingsCount)
 			fr.locals = replaceNilInObjectSlice(fr.locals)
 		}
-		copy(fr.locals, args) // parameters as first locals
+		// parameters as first locals
+		copy(fr.locals, args)
 	}
 
 	pr.currentFrame = fr

@@ -234,11 +234,9 @@ func (p *Parser) parseBlock() ast.Node {
 	return ast.ListToBlock(statements)
 }
 
-func (p *Parser) parseLBraceExpression() ast.Node {
-	return p.parseLBrace(false)
-}
-
-func (p *Parser) parseLBrace(stmtContext bool) ast.Node {
+// left brace
+// don't know what it is yet: scope block or hash
+func (p *Parser) parseLBrace() ast.Node {
 	tok := p.tok
 	p.advanceToken() // past left brace {
 
@@ -283,13 +281,14 @@ func (p *Parser) parseLBrace(stmtContext bool) ast.Node {
 		statements, _ = p.parseStatements([]token.Type{token.RBRACE}, first, false, true)
 	}
 
-	// FIXME:
-	// if !stmtContext {
-	// 	p.addError("Unexpected scope block in expression context")
-	// }
-
+	// have scope block
 	block := &ast.BlockNode{Token: tok, Statements: statements}
 	block.HasScope = true
+
+	if p.peekContext() != context_statement {
+		p.addError("Unexpected scope block in expression context")
+		return nil
+	}
 
 	return block
 }
@@ -461,7 +460,7 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 		if rightIsType && expr.Operator.Type == token.FORWARD {
 			// change to call node (call on type, such as 123 -> string)
 			return &ast.CallNode{Token: expr.Token,
-				Function: expr.Right, Args: []ast.Node{expr.Left}}
+				Function: expr.Right, PositionalArgs: []ast.Node{expr.Left}}
 		}
 	}
 

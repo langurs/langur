@@ -195,10 +195,12 @@ var definitions = map[OpCode]*Definition{
 	OpTryCatch: {Name: "TryCatch", OperandWidths: []int{OperandWidth_Constant, OperandWidth_Constant, OperandWidth_Constant}},
 	OpThrow:    {Name: "Throw"},
 
-	OpCall:              {Name: "Call", OperandWidths: []int{1}},
-	OpCallWithExpansion: {Name: "CallWithExpansion", OperandWidths: []int{1}},
-	OpReturnValue:       {Name: "ReturnValue"},
-	OpNameValue:         {Name: "NameValue"},
+	// operands: positionalCount, bynameCount
+	OpCall:              {Name: "Call", OperandWidths: []int{1, 1}},
+	OpCallWithExpansion: {Name: "CallWithExpansion", OperandWidths: []int{1, 1}},
+
+	OpReturnValue: {Name: "ReturnValue"},
+	OpNameValue:   {Name: "NameValue"},
 
 	OpSetGlobal:             {Name: "SetGlobal", OperandWidths: []int{2}},
 	OpGetGlobal:             {Name: "GetGlobal", OperandWidths: []int{2}},

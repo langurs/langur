@@ -70,9 +70,9 @@ func convertForInOfNodeToForNode(node *ForInOfNode) (Node, error) {
 	loopOverConversion := MakeAssignmentStatement(
 		loopOverVar,
 		&CallNode{
-			Token:    node.Token,
-			Function: NewBuiltInNode(node.Token, "_values", true),
-			Args:     []Node{loopOverVar}},
+			Token:          node.Token,
+			Function:       NewBuiltInNode(node.Token, "_values", true),
+			PositionalArgs: []Node{loopOverVar}},
 		true,
 	)
 
@@ -86,15 +86,15 @@ func convertForInOfNodeToForNode(node *ForInOfNode) (Node, error) {
 	// calculate limit once
 	limitVar := NewVariableNode(node.Token, "_LoopLimit_", true)
 	limit := &CallNode{
-		Token:    node.Token,
-		Function: NewBuiltInNode(node.Token, "_len", true),
-		Args:     []Node{loopOverVar},
+		Token:          node.Token,
+		Function:       NewBuiltInNode(node.Token, "_len", true),
+		PositionalArgs: []Node{loopOverVar},
 	}
 	if node.Of {
 		limit = &CallNode{
-			Token:    node.Token,
-			Function: NewBuiltInNode(node.Token, "_limit", true),
-			Args:     []Node{loopOverVar},
+			Token:          node.Token,
+			Function:       NewBuiltInNode(node.Token, "_limit", true),
+			PositionalArgs: []Node{loopOverVar},
 		}
 	}
 	limitDecl := MakeDeclarationAssignmentStatement(limitVar, limit, true, false)
@@ -229,9 +229,9 @@ func buildForOfOverPotentialHash(node *ForInOfNode) (Node, error) {
 		TestsAndActions: []TestDo{
 			{ // if is hash
 				Test: &CallNode{
-					Token:    node.Token,
-					Function: NewBuiltInNode(node.Token, "_is_hash", true),
-					Args:     []Node{node.Over},
+					Token:          node.Token,
+					Function:       NewBuiltInNode(node.Token, "_is_hash", true),
+					PositionalArgs: []Node{node.Over},
 				},
 				Do: &BlockNode{Token: node.Token, Statements: []Node{hashKeysForNode}},
 			},
@@ -259,9 +259,9 @@ func buildForOfOverHash(node *ForInOfNode) (Node, error) {
 	inKeys := node.Copy().(*ForInOfNode)
 	inKeys.Of = false
 	inKeys.Over = &CallNode{
-		Token:    node.Token,
-		Function: NewBuiltInNode(node.Token, "_keys", true),
-		Args:     []Node{inKeys.Over},
+		Token:          node.Token,
+		Function:       NewBuiltInNode(node.Token, "_keys", true),
+		PositionalArgs: []Node{inKeys.Over},
 	}
 	var hashKeysForNode Node
 	hashKeysForNode, err = convertForInOfNodeToForNode(inKeys)

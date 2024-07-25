@@ -58,7 +58,7 @@ func (p *Parser) parseFunction() ast.Node {
 			return p.finishSelfReferenceCall()
 		}
 
-		lit.Parameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
+		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
 
 	} else if p.tok.Type == token.COLON {
 		// no parameters
@@ -67,7 +67,7 @@ func (p *Parser) parseFunction() ast.Node {
 
 	} else {
 		// fn .x, .y: ...
-		lit.Parameters = p.parseFunctionParameters([]token.Type{token.COLON})
+		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON})
 	}
 
 	if longForm {
@@ -88,9 +88,20 @@ func (p *Parser) parseFunction() ast.Node {
 	return lit
 }
 
-func (p *Parser) parseFunctionParameters(until []token.Type) (params []ast.Node) {
+func (p *Parser) parseFunctionParameters(until []token.Type) (
+	positional, byname []ast.Node) {
+
 	for !token.InTypeSlice(p.tok.Type, until) {
-		params = append(params, p.parseParameter(0))
+		param, isByName := p.parseParameter(0)
+
+		if isByName {
+			byname = append(byname, param)
+		} else {
+			if len(byname) != 0 {
+				p.addError("Cannot have positional parameter after parameter by name")
+			}
+			positional = append(positional, param)
+		}
 
 		if p.tok.Type == token.COMMA {
 			p.advanceToken()
@@ -105,16 +116,17 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (params []ast.Node)
 		p.advanceToken()
 	}
 
-	return params
+	return
 }
 
-func (p *Parser) parseParameter(level int) ast.Node {
-	var ident, value, alias ast.Node
+func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
+	var value, alias ast.Node
 	var aliasTok token.Token
 
 	parseIdentAliasAndAssignment := func() {
-		ident = p.parseIdentifier()
+		param = p.parseIdentifier()
 		if p.tok.Type == token.AS {
+			isByName = true
 			if level != 0 {
 				p.addError("Unexpected alias on parameter expansion")
 			}
@@ -127,15 +139,16 @@ func (p *Parser) parseParameter(level int) ast.Node {
 			}
 		}
 		if p.tok.Type == token.ASSIGN {
+			isByName = true
 			if level != 0 {
 				p.addError("Unexpected assignment on parameter expansion")
 			}
 			p.advanceToken()
 			value = p.parseExpression(precedence_LOWEST)
 			if alias != nil {
-				ident = &ast.InfixExpressionNode{
-					Token:    ident.TokenInfo(),
-					Left:     ident,
+				param = &ast.InfixExpressionNode{
+					Token:    param.TokenInfo(),
+					Left:     param,
 					Operator: aliasTok,
 					Right:    alias,
 				}
@@ -147,41 +160,45 @@ func (p *Parser) parseParameter(level int) ast.Node {
 	case token.IDENT:
 		parseIdentAliasAndAssignment()
 		if value != nil {
-			return ast.MakeAssignmentExpression(ident, value, false)
+			param = ast.MakeAssignmentExpression(param, value, false)
+			return
 		}
 		if alias != nil {
 			p.addError("Expected assignment after alias in parameter")
 		}
-		return ident
+		return
 
 	case token.VAR:
 		mutable := true
 		p.advanceToken()
 		parseIdentAliasAndAssignment()
 		if value != nil {
-			return ast.MakeDeclarationAssignmentExpression(ident, value, false, mutable)
+			param = ast.MakeDeclarationAssignmentExpression(param, value, false, mutable)
+			return
 		}
 		if alias != nil {
 			p.addError("Expected assignment after alias in parameter")
 		}
-		return &ast.LineDeclarationNode{
-			Token:      ident.TokenInfo(),
+		param = &ast.LineDeclarationNode{
+			Token:      param.TokenInfo(),
 			Mutable:    mutable,
-			Assignment: ident,
+			Assignment: param,
 		}
+		return
 
 	case token.EXPANSION:
 		if level > 0 {
 			p.addError("Error parsing parameters")
 			p.advanceToken()
-			return nil
+			return
 		}
-		return p.parseExpansion(level)
+		param = p.parseExpansion(level)
+		return
 
 	default:
 		p.addError(fmt.Sprintf("Invalid parameter type %s", token.TypeDescription(p.tok.Type)))
 	}
-	return nil
+	return
 }
 
 func (p *Parser) parseExpansion(level int) ast.Node {
@@ -198,7 +215,7 @@ func (p *Parser) parseExpansion(level int) ast.Node {
 		}
 		p.advanceToken()
 	}
-	continuation := p.parseParameter(level + 1)
+	continuation, _ := p.parseParameter(level + 1)
 
 	return &ast.ExpansionNode{
 		Token:        exp,
@@ -291,8 +308,15 @@ func (p *Parser) parsePossibleUnboundedCall(ident ast.Node) (ast.Node, bool) {
 	if p.tok.CpDiff != 0 && token.MayStartFunctionArg(p.tok.Type) {
 		if !p.likelyInfixPosition() {
 			expr := &ast.CallNode{Token: p.tok, Function: ident}
-			expr.Args, _ = p.parseExpressionList(
+			args, _ := p.parseExpressionList(
 				token.EndUnboundedArgumentList, token.COMMA, true, false, true)
+
+			var err error
+			expr.PositionalArgs, expr.ByNameArgs, err = ast.SplitArgumentSliceToPositionalAndByName(args)
+			if err != nil {
+				p.addError("Error determining positional arguments and by name arguments: " + err.Error())
+			}
+
 			return expr, true
 		}
 	}
@@ -312,9 +336,15 @@ func (p *Parser) parseParenthesizedCallExpression(fn ast.Node) ast.Node {
 
 	expr := &ast.CallNode{Token: p.tok, Function: fn}
 	p.advanceToken() // past the opening parenthesis
-	expr.Args, _ = p.parseExpressionList(
+	args, _ := p.parseExpressionList(
 		[]token.Type{token.RPAREN}, token.COMMA, true, true, false)
 	// passes closing parenthesis
+
+	var err error
+	expr.PositionalArgs, expr.ByNameArgs, err = ast.SplitArgumentSliceToPositionalAndByName(args)
+	if err != nil {
+		p.addError("Error determining positional arguments and by name arguments: " + err.Error())
+	}
 
 	return expr
 }

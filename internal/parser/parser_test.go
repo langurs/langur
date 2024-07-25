@@ -958,13 +958,13 @@ func TestParsingCallExpression(t *testing.T) {
 		return
 	}
 
-	if len(exp.Args) != 3 {
-		t.Fatalf("wrong number of args; received=%d", len(exp.Args))
+	if len(exp.PositionalArgs) != 3 {
+		t.Fatalf("wrong number of args; received=%d", len(exp.PositionalArgs))
 	}
 
-	testLiteralExpression(t, exp.Args[0], 1)
-	testInfixExpression(t, exp.Args[1], 2, token.ASTERISK, 3)
-	testInfixExpression(t, exp.Args[2], 4, token.PLUS, 5)
+	testLiteralExpression(t, exp.PositionalArgs[0], 1)
+	testInfixExpression(t, exp.PositionalArgs[1], 2, token.ASTERISK, 3)
+	testInfixExpression(t, exp.PositionalArgs[2], 4, token.PLUS, 5)
 }
 
 func TestParsingCallExpressionParameters(t *testing.T) {
@@ -1014,15 +1014,15 @@ func TestParsingCallExpressionParameters(t *testing.T) {
 			return
 		}
 
-		if len(exp.Args) != len(tt.expectedArgs) {
+		if len(exp.PositionalArgs) != len(tt.expectedArgs) {
 			t.Fatalf("wrong number of arguments. want=%d, got=%d",
-				len(tt.expectedArgs), len(exp.Args))
+				len(tt.expectedArgs), len(exp.PositionalArgs))
 		}
 
 		for i, arg := range tt.expectedArgs {
-			if exp.Args[i].TokenRepresentation() != arg {
+			if exp.PositionalArgs[i].TokenRepresentation() != arg {
 				t.Errorf("argument %d wrong. want=%q, got=%q", i,
-					arg, exp.Args[i].TokenRepresentation())
+					arg, exp.PositionalArgs[i].TokenRepresentation())
 			}
 		}
 	}
@@ -1059,12 +1059,12 @@ func TestParsingFunctionLiteral(t *testing.T) {
 		t.Fatalf("stmt.Expression not an *ast.FunctionNode; received=%T", stmt.Expression)
 	}
 
-	if len(function.Parameters) != 2 {
-		t.Fatalf("parameter count not 2; received=%d", len(function.Parameters))
+	if len(function.PositionalParameters) != 2 {
+		t.Fatalf("positional parameter count not 2; received=%d", len(function.PositionalParameters))
 	}
 
-	testLiteralExpression(t, function.Parameters[0], "x")
-	testLiteralExpression(t, function.Parameters[1], "y")
+	testLiteralExpression(t, function.PositionalParameters[0], "x")
+	testLiteralExpression(t, function.PositionalParameters[1], "y")
 
 	if len(function.Body.(*ast.BlockNode).Statements) != 1 {
 		t.Fatalf("function.Body.(*ast.BlockNode).Statements != 1; received=%d", len(function.Body.(*ast.BlockNode).Statements))
@@ -1109,12 +1109,12 @@ func TestParsingFunctionLiteralParameters(t *testing.T) {
 		stmt := program.Statements[0].(*ast.ExpressionStatementNode)
 		function := stmt.Expression.(*ast.FunctionNode)
 
-		if len(function.Parameters) != len(tt.expectedParams) {
-			t.Errorf("parameter len not as expected; expected=%d; received=%d", len(tt.expectedParams), len(function.Parameters))
+		if len(function.PositionalParameters) != len(tt.expectedParams) {
+			t.Errorf("parameter len not as expected; expected=%d; received=%d", len(tt.expectedParams), len(function.PositionalParameters))
 
 		} else {
 			for i, ident := range tt.expectedParams {
-				testLiteralExpression(t, function.Parameters[i], ident)
+				testLiteralExpression(t, function.PositionalParameters[i], ident)
 			}
 		}
 	}

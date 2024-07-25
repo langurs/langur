@@ -9,52 +9,43 @@ import (
 )
 
 // call from VM (opcodes)
-func (pr *Process) executeFunctionCall(fr *frame, argCount int, argExpansion bool) (
+func (pr *Process) executeFunctionCall(fr *frame,
+	positionalCount, bynameCount int, argExpansion bool) (
 	fnReturn object.Object, err error) {
 
 	// having put function to call onto stack after arguments, must pop it first
 	fn := pr.pop()
-	args := pr.popMultiple(argCount)
+	byname := pr.popMultiple(bynameCount)
+	positional := pr.popMultiple(positionalCount)
 
 	if argExpansion {
-		// TODO: CLEAN UP THIS MESS
-		optIndex := findOptionalIndex(args)
-		if optIndex == -1 {
-			switch pre := args[len(args)-1].(type) {
-			case *object.List:
-				args = append(args[:len(args)-1], pre.Elements...)
+		switch pre := positional[len(positional)-1].(type) {
+		case *object.List:
+			positional = append(positional[:len(positional)-1], pre.Elements...)
 
-			default:
-				return nil, fmt.Errorf("Expected list for argument expansion")
-			}
-
-		} else {
-			switch pre := args[optIndex-1].(type) {
-			case *object.List:
-				optionals := object.CopySlice(args[optIndex:])
-				args = append(args[:optIndex-1], pre.Elements...)
-				args = append(args, optionals...)
-
-			default:
-				return nil, fmt.Errorf("Expected list for argument expansion")
-			}
+		default:
+			return nil, fmt.Errorf("Expected list for argument expansion")
 		}
 	}
 
 	switch fn := fn.(type) {
 	case *object.CompiledCode:
-		if !fn.HasImpureEffects() && object.SliceHasImpureEffects(args...) {
-			return nil, fmt.Errorf("Cannot pass function with impure effects as argument to function not declared as having impure effects")
+		if !fn.HasImpureEffects() &&
+			(object.SliceHasImpureEffects(positional...) ||
+				object.SliceHasImpureEffects(byname...)) {
+
+			return nil, fmt.Errorf("Cannot pass value with impure effects as argument to function not declared as having impure effects")
 		}
 
-		fnReturn, _, err = pr.runCompiledCode(fn, fr, args, nil)
+		fnReturn, _, err = pr.runCompiledCode(fn, fr, positional, byname, nil)
 
 	case *object.BuiltIn:
-		if object.SliceHasImpureEffects(args...) {
-			return nil, fmt.Errorf("Cannot pass impure functions as arguments to built-in functions")
+		if object.SliceHasImpureEffects(positional...) ||
+			object.SliceHasImpureEffects(byname...) {
+			return nil, fmt.Errorf("Cannot pass impure values as arguments to built-in functions")
 		}
 
-		fnReturn, err = pr.callBuiltIn(fn, args)
+		fnReturn, err = pr.callBuiltIn(fn, positional, byname)
 
 	default:
 		return nil, fmt.Errorf("Call operation on non-function (%s)", fn.TypeString())
@@ -63,32 +54,14 @@ func (pr *Process) executeFunctionCall(fr *frame, argCount int, argExpansion boo
 	return fnReturn, err
 }
 
-func findOptionalIndex(args []object.Object) int {
-	optIndex := -1
-	for i := len(args) - 1; i > -1; i-- {
-		switch args[i].(type) {
-		case *object.NameValue:
-			optIndex = i
-		default:
-			break
-		}
-	}
-	return optIndex
-}
-
 func (pr *Process) runCompiledCode(
-	code *object.CompiledCode, baseFr *frame, args, late []object.Object) (
+	code *object.CompiledCode, baseFr *frame,
+	positional, byname, late []object.Object) (
 	fnReturn object.Object, relay *jumpRelay, err error) {
 
+	var args []object.Object
 	if code.FnSignature != nil {
-		// find split between positional and optional arguments
-		// compiler already verified that optional arguments all come after positional
-		optIndex := findOptionalIndex(args)
-		if optIndex == -1 {
-			args, err = reformArgumentsBySignature(args, nil, code.FnSignature)
-		} else {
-			args, err = reformArgumentsBySignature(args[:optIndex], args[optIndex:], code.FnSignature)
-		}
+		args, err = reformArgumentsBySignature(positional, byname, code.FnSignature)
 		if err != nil {
 			return
 		}
@@ -101,7 +74,7 @@ func (pr *Process) runCompiledCode(
 	return
 }
 
-func (pr *Process) callBuiltIn(bi *object.BuiltIn, args []object.Object) (
+func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.Object) (
 	result object.Object, err error) {
 
 	defer func() {
@@ -112,14 +85,19 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, args []object.Object) (
 		}
 	}()
 
-	if BuiltInArgCountMismatch(bi, len(args)) {
+	if BuiltInArgCountMismatch(bi, len(positional)) {
 		return nil, object.NewError(object.ERR_ARGUMENTS, bi.FullName(),
-			fmt.Sprintf("Argument/parameter count mismatch; expected=%s, received=%d",
-				object.ParamExpectedString(bi), len(args)))
+			fmt.Sprintf("Positional argument/parameter count mismatch; expected=%s, received=%d",
+				object.ParamExpectedString(bi), len(positional)))
+	}
+
+	// TODO: change how parameters are dealt with for built-in functions
+	if len(byname) != 0 {
+		return nil, object.NewError(object.ERR_ARGUMENTS, bi.FullName(), "Passed invalid argument(s) by name to built-in function")
 	}
 
 	// type assertion required on interface{} here
-	result = bi.Fn.(BuiltInFunction)(pr, args...)
+	result = bi.Fn.(BuiltInFunction)(pr, positional...)
 	if result.Type() == object.ERROR_OBJ {
 		return nil, result.(*object.Error)
 	} else {
@@ -136,16 +114,18 @@ func BuiltInArgCountMismatch(bi *object.BuiltIn, count int) bool {
 
 // callback from built-in functions
 func (pr *Process) call(fn object.Object,
-	args ...object.Object) (
+	positional ...object.Object) (
 
 	object.Object, error) {
 
+	// TODO: callback with parameters by name
+
 	switch fn := fn.(type) {
 	case *object.BuiltIn:
-		return pr.callBuiltIn(fn, args)
+		return pr.callBuiltIn(fn, positional, nil)
 
 	case *object.CompiledCode:
-		result, _, err := pr.runCompiledCode(fn, pr.currentFrame, args, nil)
+		result, _, err := pr.runCompiledCode(fn, pr.currentFrame, positional, nil, nil)
 		return result, err
 	}
 
@@ -162,16 +142,16 @@ func reformArgumentsBySignature(
 		return
 	}
 
-	// check positional argument counts
+	// check positional argument counts after expansion/compression
 	if len(positional) != len(sig.ParamPositional) {
 		err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
-			fmt.Sprintf("Positional Argument/Parameter Count Mismatch, expected=%s, received=%d",
+			fmt.Sprintf("Positional argument/parameter count mismatch, expected=%s, received=%d",
 				sig.MinMaxString(), len(positional)))
 		return
 	}
 
 	if byname == nil && sig.ParamByName == nil {
-		// no optional arguments passed and no optional parameters
+		// no arguments passed by name and none expected
 		args = positional
 		return
 	}
@@ -182,8 +162,8 @@ func reformArgumentsBySignature(
 	// ---- now to work on optional parameters ----
 	argPtr := len(positional)
 
-	// check / pick up optional parameter values in order listed in signature
-	// order relevant for compiled functions, as they will be picked up in the same order
+	// check / pick up parameter by name values in order listed in signature
+	// order relevant internally, as they will be picked up in the same order
 	for _, param := range sig.ParamByName {
 		found := false
 		for i := range byname {
@@ -196,7 +176,14 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
-			// no argument found for this optional parameter; use default
+			// no argument found for this parameter by name
+			if param.DefaultValue == nil {
+				// no default set; treat as required by name
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+					fmt.Sprintf("Required parameter by name (%s) not received", str.ReformatInput(param.ExternalName)))
+				return
+			}
+			// optional parameter without argument; use default
 			args[argPtr] = param.DefaultValue
 		}
 		argPtr++
@@ -213,7 +200,7 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
-			err = fmt.Errorf("Invalid optional argument passed (%s)", str.ReformatInput(nv.Name))
+			err = fmt.Errorf("Invalid optional argument (%s) passed", str.ReformatInput(nv.Name))
 			return
 		}
 	}

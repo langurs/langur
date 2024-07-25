@@ -2928,12 +2928,11 @@ func TestStringInterpolations(t *testing.T) {
 		{`val x = [1, 2, 3]; "abc {{x}} yo"`, "abc [1, 2, 3] yo", object.STRING_OBJ},
 
 		// test nesting marks within interpolation...
-		{`val x = 123; "abc {{{x}}} yo"`, "abc 123 yo", object.STRING_OBJ},
-		{`val x = 123; val y = 17; "abc {{ ({x + y}) }} yo"`, "abc 140 yo", object.STRING_OBJ},
+		{`val x = 123; val y = 17; "abc {{ (x + y) }} yo"`, "abc 140 yo", object.STRING_OBJ},
 		{`val x = [7, 14, 21]; "abc {{x[2]}} yo"`, "abc 14 yo", object.STRING_OBJ},
 
 		// nesting marks with interpolated string enclosing marks
-		// The following looks confusing, but shows that that the lexer is ...
+		// The following looks confusing, but shows that the lexer is ...
 		// ... reading tokens directly in the interpolated section, since ...
 		// ... the }} inside the string inside the interpolation is ...
 		// ... not taken to be a closing mark of any kind.
@@ -5361,40 +5360,40 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input:    `fn() { }(1);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=0, received=1 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=0, received=1 ()`,
 		},
 		{
 			input:    `fn(a) { }();`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=1, received=0 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=1, received=0 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(1);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=1 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=2, received=1 ()`,
 		},
 
 		// with argument expansion
 		{
 			input:    `fn(a, b) { }([1, 2, 3]...);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=3 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=2, received=3 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(7, [1, 2, 3]...);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=4 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=2, received=4 ()`,
 		},
 		{
 			input:    `fn(a, b) { }(7, []...);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2, received=1 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=2, received=1 ()`,
 		},
 
 		// with parameter expansion
 		{
 			input:    `fn(a, ...[1..] b) { }(1);`,
 			expected: `Parameter expansion min (1) not met (0)`,
-			//`args: Argument/Parameter Count Mismatch, expected=2..-1, received=1 (fn)`,
+			//`args: argument/parameter count mismatch, expected=2..-1, received=1 (fn)`,
 		},
 		{
 			input:    `fn(a, c, ... b) { }(1);`,
-			expected: `args: Positional Argument/Parameter Count Mismatch, expected=2..-1, received=1 ()`,
+			expected: `args: Positional argument/parameter count mismatch, expected=2..-1, received=1 ()`,
 		},
 	}
 

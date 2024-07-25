@@ -85,7 +85,12 @@ func NodeContainsFirstScopeLevelSomething(node Node, level int, ofTypes []Node) 
 		return NodeContainsFirstScopeLevelSomething(n.Setting, level, ofTypes)
 
 	case *CallNode:
-		for _, arg := range n.Args {
+		for _, arg := range n.PositionalArgs {
+			if NodeContainsFirstScopeLevelSomething(arg, level, ofTypes) {
+				return true
+			}
+		}
+		for _, arg := range n.ByNameArgs {
 			if NodeContainsFirstScopeLevelSomething(arg, level, ofTypes) {
 				return true
 			}

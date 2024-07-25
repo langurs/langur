@@ -231,7 +231,7 @@ func (c *Compiler) compileModifierInsForCustomFn(node ast.Node, m []string) (
 		return
 	}
 	ins = append(ins, customFn...)
-	ins = append(ins, opcode.Make(opcode.OpCall, 1)...)
+	ins = append(ins, opcode.Make(opcode.OpCall, 1, 0)...)
 
 	return
 }

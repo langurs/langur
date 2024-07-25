@@ -58,12 +58,12 @@ func (pr *Process) executeTryCatch(fr *frame, tryIndex, catchIndex, elseIndex in
 
 	tryCode := pr.constants[tryIndex].(*object.CompiledCode)
 
-	fnReturn, relay, err = pr.runCompiledCode(tryCode, fr, nil, nil)
+	fnReturn, relay, err = pr.runCompiledCode(tryCode, fr, nil, nil, nil)
 	if err == nil {
 		if elseIndex != 0 {
 			// else block used on catch to run only when there is no exception
 			elseCode := pr.constants[elseIndex].(*object.CompiledCode)
-			fnReturn, relay, err = pr.runCompiledCode(elseCode, fr, nil, nil)
+			fnReturn, relay, err = pr.runCompiledCode(elseCode, fr, nil, nil, nil)
 		}
 
 	} else {
@@ -76,7 +76,7 @@ func (pr *Process) executeTryCatch(fr *frame, tryIndex, catchIndex, elseIndex in
 		// ... so we pass the exception hash to be pushed onto the stack of the catch frame (errObj.Contents)
 
 		fnReturn, relay, err =
-			pr.runCompiledCode(catchCode, fr, nil, []object.Object{errObj.Contents})
+			pr.runCompiledCode(catchCode, fr, nil, nil, []object.Object{errObj.Contents})
 	}
 
 	return
@@ -110,7 +110,7 @@ func (pr *Process) pushFunction(fr *frame, constIndex, freeCount, optionalsCount
 	}
 
 	if optionalsCount != 0 {
-		// for any optional parameters that weren't set at compile-time
+		// for any optional parameter defaults that weren't set at compile-time
 		// name/value pairs
 		optionals := pr.popMultiple(optionalsCount * 2)
 

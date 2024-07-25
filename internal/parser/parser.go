@@ -120,7 +120,7 @@ func (p *Parser) setParseFunctionMaps() {
 		token.DURATION:  p.parseDuration,
 		token.STRING:    p.parseString,
 		token.LBRACKET:  p.parseList,
-		token.LBRACE:    p.parseLBraceExpression,
+		token.LBRACE:    p.parseLBrace,
 
 		token.NONE: p.parseNone,
 		token.NOT:  p.parsePrefixExpression,

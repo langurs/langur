@@ -14,6 +14,14 @@ type NameValue struct {
 	Value Object
 }
 
+func (nv *NameValue) HasImpureEffects() bool {
+	d, ok := nv.Value.(IDefilable)
+	if ok {
+		return d.HasImpureEffects()
+	}
+	return false
+}
+
 func NewNameValue(name, value Object) (*NameValue, error) {
 	var use string
 	switch n := name.(type) {
@@ -31,14 +39,6 @@ func (nv *NameValue) Copy() Object {
 		Value: nv.Value.Copy(),
 	}
 }
-
-// func CopyNameValueSlice(slc []*NameValue) []*NameValue {
-// 	nv2 := []*NameValue{}
-// 	for _, nv := range slc {
-// 		nv2 = append(nv2, nv.Copy().(*NameValue))
-// 	}
-// 	return nv2
-// }
 
 func (nv *NameValue) Equal(o2 Object) bool {
 	switch nv2 := o2.(type) {

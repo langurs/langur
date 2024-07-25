@@ -73,7 +73,7 @@ func (cf *CompiledCode) IsFunction() bool {
 }
 
 func (cf *CompiledCode) HasImpureEffects() bool {
-	// TODO(?): check
+	// TODO(?): check compiled code?
 	if cf.FnSignature == nil {
 		return false
 	}

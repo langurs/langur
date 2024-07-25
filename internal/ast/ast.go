@@ -52,7 +52,7 @@ func copyOrNil(node Node) Node {
 	return node.Copy()
 }
 
-func copyNodeSlice(nodes []Node) []Node {
+func CopyNodeSlice(nodes []Node) []Node {
 	copiedNodes := []Node{}
 	for _, n := range nodes {
 		copiedNodes = append(copiedNodes, copyOrNil(n))

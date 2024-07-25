@@ -23,7 +23,7 @@ type Program struct {
 }
 
 func (p *Program) Copy() Node {
-	return &Program{Token: p.Token.Copy(), Statements: copyNodeSlice(p.Statements)}
+	return &Program{Token: p.Token.Copy(), Statements: CopyNodeSlice(p.Statements)}
 }
 
 func (p *Program) String() string {
@@ -278,8 +278,8 @@ func (a *AssignmentNode) expressionNode() {}
 func (a *AssignmentNode) Copy() Node {
 	return &AssignmentNode{
 		Token:            a.Token.Copy(),
-		Identifiers:      copyNodeSlice(a.Identifiers),
-		Values:           copyNodeSlice(a.Values),
+		Identifiers:      CopyNodeSlice(a.Identifiers),
+		Values:           CopyNodeSlice(a.Values),
 		SystemAssignment: a.SystemAssignment,
 	}
 }
@@ -391,18 +391,20 @@ func (es *ExpressionStatementNode) TokenInfo() token.Token {
 
 // FUNCTION CALLS
 type CallNode struct {
-	Token    token.Token
-	Function Node // Identifier or Function Literal
-	Args     []Node
+	Token          token.Token
+	Function       Node // Identifier or Function Literal
+	PositionalArgs []Node
+	ByNameArgs     []Node
 }
 
 func (fc *CallNode) expressionNode() {}
 
 func (fc *CallNode) Copy() Node {
 	return &CallNode{
-		Token:    fc.Token.Copy(),
-		Function: copyOrNil(fc.Function),
-		Args:     copyNodeSlice(fc.Args),
+		Token:          fc.Token.Copy(),
+		Function:       copyOrNil(fc.Function),
+		PositionalArgs: CopyNodeSlice(fc.PositionalArgs),
+		ByNameArgs:     CopyNodeSlice(fc.ByNameArgs),
 	}
 }
 
@@ -411,9 +413,18 @@ func (fc *CallNode) TokenRepresentation() string {
 
 	out.WriteString(tokenRepOrNil(fc.Function) + "(")
 
-	for i, a := range fc.Args {
+	for i, a := range fc.PositionalArgs {
 		out.WriteString(tokenRepOrNil(a))
-		if i < len(fc.Args)-1 {
+		if i < len(fc.PositionalArgs)-1 {
+			out.WriteString(", ")
+		}
+	}
+	if len(fc.PositionalArgs) != 0 && len(fc.ByNameArgs) != 0 {
+		out.WriteString(", ")
+	}
+	for i, a := range fc.ByNameArgs {
+		out.WriteString(tokenRepOrNil(a))
+		if i < len(fc.ByNameArgs)-1 {
 			out.WriteString(", ")
 		}
 	}
@@ -422,15 +433,25 @@ func (fc *CallNode) TokenRepresentation() string {
 
 	return out.String()
 }
+
 func (fc *CallNode) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("Call ")
 	out.WriteString(stringOrNil(fc.Function) + "(")
 
-	for i, a := range fc.Args {
+	for i, a := range fc.PositionalArgs {
 		out.WriteString(stringOrNil(a))
-		if i < len(fc.Args)-1 {
+		if i < len(fc.PositionalArgs)-1 {
+			out.WriteString(", ")
+		}
+	}
+	if len(fc.PositionalArgs) != 0 && len(fc.ByNameArgs) != 0 {
+		out.WriteString(", ")
+	}
+	for i, a := range fc.ByNameArgs {
+		out.WriteString(stringOrNil(a))
+		if i < len(fc.ByNameArgs)-1 {
 			out.WriteString(", ")
 		}
 	}
@@ -446,30 +467,35 @@ func (fc *CallNode) TokenInfo() token.Token {
 
 // UNCOMPILED FUNCTIONS
 type FunctionNode struct {
-	Token         token.Token
-	ReturnType    Node // nil for no explicit return type
-	Name          string
-	Parameters    []Node
-	Body          Node
-	ImpureEffects bool
+	Token                token.Token
+	ReturnType           Node // nil for no explicit return type
+	Name                 string
+	PositionalParameters []Node
+	ByNameParameters     []Node
+	Body                 Node
+	ImpureEffects        bool
 }
 
 func (f *FunctionNode) expressionNode() {}
 
 func (f *FunctionNode) Copy() Node {
 	return &FunctionNode{
-		Token:         f.Token.Copy(),
-		ReturnType:    copyOrNil(f.ReturnType),
-		Name:          f.Name,
-		Parameters:    copyNodeSlice(f.Parameters),
-		Body:          copyOrNil(f.Body),
-		ImpureEffects: f.ImpureEffects,
+		Token:                f.Token.Copy(),
+		ReturnType:           copyOrNil(f.ReturnType),
+		Name:                 f.Name,
+		PositionalParameters: CopyNodeSlice(f.PositionalParameters),
+		ByNameParameters:     CopyNodeSlice(f.ByNameParameters),
+		Body:                 copyOrNil(f.Body),
+		ImpureEffects:        f.ImpureEffects,
 	}
 }
 
 func (f *FunctionNode) TokenRepresentation() string {
 	params := []string{}
-	for _, p := range f.Parameters {
+	for _, p := range f.PositionalParameters {
+		params = append(params, tokenRepOrNil(p))
+	}
+	for _, p := range f.ByNameParameters {
 		params = append(params, tokenRepOrNil(p))
 	}
 
@@ -493,10 +519,15 @@ func (f *FunctionNode) TokenRepresentation() string {
 
 	return sb.String()
 }
+
 func (f *FunctionNode) String() string {
-	params := []string{}
-	for _, p := range f.Parameters {
-		params = append(params, stringOrNil(p))
+	positional := []string{}
+	for _, p := range f.PositionalParameters {
+		positional = append(positional, stringOrNil(p))
+	}
+	byname := []string{}
+	for _, p := range f.ByNameParameters {
+		byname = append(byname, stringOrNil(p))
 	}
 
 	var sb strings.Builder
@@ -508,7 +539,20 @@ func (f *FunctionNode) String() string {
 	if f.Name != "" {
 		sb.WriteString(f.Name + " ")
 	}
-	sb.WriteString(strings.Join(params, ", ") + ") ")
+
+	if len(positional) != 0 {
+		sb.WriteString("Positional: ")
+	}
+	sb.WriteString(strings.Join(positional, ", "))
+	if len(positional) != 0 && len(byname) != 0 {
+		sb.WriteString(", ")
+	}
+	if len(byname) != 0 {
+		sb.WriteString("ByName: ")
+	}
+	sb.WriteString(strings.Join(byname, ", "))
+
+	sb.WriteString(") ")
 
 	if f.ReturnType != nil {
 		sb.WriteString(f.ReturnType.String())
@@ -730,9 +774,9 @@ func (n *ForNode) Copy() Node {
 	return &ForNode{
 		Token:         n.Token.Copy(),
 		LoopValueInit: copyOrNil(n.LoopValueInit),
-		Init:          copyNodeSlice(n.Init),
+		Init:          CopyNodeSlice(n.Init),
 		Test:          copyOrNil(n.Test),
-		Increment:     copyNodeSlice(n.Increment),
+		Increment:     CopyNodeSlice(n.Increment),
 		Body:          copyOrNil(n.Body),
 	}
 }
@@ -1051,7 +1095,7 @@ func (s *StringNode) Copy() Node {
 	return &StringNode{
 		Token:          s.Token.Copy(),
 		Values:         s.Values,
-		Interpolations: copyNodeSlice(s.Interpolations),
+		Interpolations: CopyNodeSlice(s.Interpolations),
 	}
 }
 
@@ -1382,7 +1426,7 @@ func (a *ListNode) expressionNode() {}
 func (a *ListNode) Copy() Node {
 	return &ListNode{
 		Token:    a.Token.Copy(),
-		Elements: copyNodeSlice(a.Elements),
+		Elements: CopyNodeSlice(a.Elements),
 	}
 }
 
@@ -1637,7 +1681,7 @@ func (b *BlockNode) expressionNode() {}
 func (b *BlockNode) Copy() Node {
 	return &BlockNode{
 		Token:      b.Token.Copy(),
-		Statements: copyNodeSlice(b.Statements),
+		Statements: CopyNodeSlice(b.Statements),
 		HasScope:   b.HasScope,
 	}
 }
@@ -1791,8 +1835,8 @@ type CaseDo struct {
 }
 
 func (cd *CaseDo) Copy() *CaseDo {
-	return &CaseDo{MatchConditions: copyNodeSlice(cd.MatchConditions),
-		OtherConditions: copyNodeSlice(cd.OtherConditions),
+	return &CaseDo{MatchConditions: CopyNodeSlice(cd.MatchConditions),
+		OtherConditions: CopyNodeSlice(cd.OtherConditions),
 		Do:              copyOrNil(cd.Do), MatchLogicalOp: cd.MatchLogicalOp}
 }
 

@@ -77,7 +77,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			constIndex := int(opcode.ReadUInt16(ins[ip+1:]))
 			ip += 2
 			codeObj := pr.constants[constIndex].(*object.CompiledCode)
-			fnReturn, relay, err = pr.runCompiledCode(codeObj, fr, nil, nil)
+			fnReturn, relay, err = pr.runCompiledCode(codeObj, fr, nil, nil, nil)
 
 		case opcode.OpFunction:
 			constIndex := int(opcode.ReadUInt16(ins[ip+1:]))
@@ -494,19 +494,21 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 
 		case opcode.OpCall:
-			argCount := int(ins[ip+1])
-			ip += 1
+			positionalCount := int(ins[ip+1])
+			bynameCount := int(ins[ip+2])
+			ip += 2
 
-			result, err = pr.executeFunctionCall(fr, argCount, false)
+			result, err = pr.executeFunctionCall(fr, positionalCount, bynameCount, false)
 			if err == nil {
 				err = pr.push(result)
 			}
 
 		case opcode.OpCallWithExpansion:
-			argCount := int(ins[ip+1])
-			ip += 1
+			positionalCount := int(ins[ip+1])
+			bynameCount := int(ins[ip+2])
+			ip += 2
 
-			result, err = pr.executeFunctionCall(fr, argCount, true)
+			result, err = pr.executeFunctionCall(fr, positionalCount, bynameCount, true)
 			if err == nil {
 				err = pr.push(result)
 			}

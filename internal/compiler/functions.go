@@ -47,7 +47,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 
 	switch sig.Name {
 	case "_main":
-		if len(node.Parameters) != 0 {
+		if len(node.PositionalParameters) != 0 || len(node.ByNameParameters) != 0 {
 			err = makeErr(node, "Function _main() cannot have parameters")
 			return
 		}
@@ -140,62 +140,21 @@ func (c *Compiler) compileFunctionNodeParameters(
 	node *ast.FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.Instructions, defaultCount int, err error) {
 
-	// to set parameter defaults that are determined at run-time that may include variables (not closure "free" variables)
+	// to set optional parameter defaults that are determined at run-time ...
+	// ... that may include variables (not closure "free" variables)
+	previousFreezeDefineFree := c.symbolTable.FreezeDefineFree
 	c.symbolTable.FreezeDefineFree = true
 	defer func() {
-		c.symbolTable.FreezeDefineFree = false
+		c.symbolTable.FreezeDefineFree = previousFreezeDefineFree
 	}()
 
-	// external names not registered in a symbol table
-	// check for duplicates to prevent confusion and chaos
-	var externalNames []string
+	var param object.Parameter
 
-	isOptionalParameterNode := func(node ast.Node) bool {
-		switch p := node.(type) {
-		case *ast.LineDeclarationNode:
-			switch p.Assignment.(type) {
-			case *ast.AssignmentNode:
-				return true
-			}
+	for i, p := range node.PositionalParameters {
+		lastPositional := i == len(node.PositionalParameters)-1
 
-		case *ast.AssignmentNode:
-			return true
-		}
-		return false
-	}
-
-	optionalsStartIdx := -1
-	for i, p := range node.Parameters {
-		if isOptionalParameterNode(p) {
-			optionalsStartIdx = i
-			break
-		}
-	}
-
-	for i, p := range node.Parameters {
-		var param object.Parameter
-
-		positional := !isOptionalParameterNode(p)
-		if positional && optionalsStartIdx != -1 && i > optionalsStartIdx {
-			// a positional parameter declared after optional parameters
-			err = makeErr(node, "Cannot declare positional parameter after optional parameter")
-			return
-		}
-
-		// need to know if on last positional
-		// parameter expansion only allowed on last positional
-		lastPositional := false
-		if positional {
-			if len(node.Parameters) == 1 ||
-				optionalsStartIdx != -1 && i == optionalsStartIdx-1 ||
-				i == len(node.Parameters)-1 {
-				lastPositional = true
-			}
-		}
-
-		var defaultIns opcode.Instructions
-		expansionMin, expansionMax := 0, 0
-		param, defaultIns, expansionMin, expansionMax, err =
+		var expansionMin, expansionMax int
+		param, _, expansionMin, expansionMax, err =
 			c.compileParameter(p, i+1, lastPositional)
 
 		if err != nil {
@@ -207,11 +166,21 @@ func (c *Compiler) compileFunctionNodeParameters(
 			sig.ParamExpansionMax = expansionMax
 		}
 
-		if positional {
-			sig.ParamPositional = append(sig.ParamPositional, param)
-		} else {
-			sig.ParamByName = append(sig.ParamByName, param)
+		sig.ParamPositional = append(sig.ParamPositional, param)
+	}
+
+	// External names are not registered in a symbol table.
+	// check for duplicates to prevent confusion and chaos
+	var externalNames []string
+
+	for i, p := range node.ByNameParameters {
+		var defaultIns opcode.Instructions
+		param, defaultIns, _, _, err = c.compileParameter(p, i+1, false)
+		if err != nil {
+			return
 		}
+
+		sig.ParamByName = append(sig.ParamByName, param)
 
 		if len(defaultIns) != 0 {
 			name := c.constantIns(object.NewString(param.ExternalName))
@@ -223,7 +192,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 		// check for duplicate external names (not registered in symbol tables)
 		if param.ExternalName != "" {
 			if str.IsInSlice(param.ExternalName, externalNames) {
-				err = fmt.Errorf("Duplicate external name declared for optional parameters (%s)", str.ReformatInput(param.ExternalName))
+				err = makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for parameters by name", str.ReformatInput(param.ExternalName)))
 				return
 			}
 			externalNames = append(externalNames, param.ExternalName)
@@ -253,7 +222,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 			system = assign.System
 
 		case *ast.AssignmentNode:
-			param, defaultIns, err = c.assessOptionalParameter(assign)
+			param, defaultIns, err = c.assessParameterByName(assign)
 			if err != nil {
 				err = makeErr(node, err.Error())
 				return
@@ -267,7 +236,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 		param.Mutable = p.Mutable
 
 	case *ast.AssignmentNode:
-		param, defaultIns, err = c.assessOptionalParameter(p)
+		param, defaultIns, err = c.assessParameterByName(p)
 		if err != nil {
 			err = makeErr(node, err.Error())
 			return
@@ -348,11 +317,16 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 	return
 }
 
-func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (
+func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 	param object.Parameter, defaultIns opcode.Instructions, err error) {
 
-	if len(assign.Identifiers) != 1 || len(assign.Values) != 1 {
-		err = makeErr(assign, "Expected 1 identifier and 1 value for optional parameter assignment")
+	// optional by name or required by name?
+	requiredByName := assign.Values == nil
+
+	if len(assign.Identifiers) != 1 ||
+		(!requiredByName && len(assign.Values) != 1) {
+
+		err = makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
 		return
 	}
 
@@ -367,23 +341,27 @@ func (c *Compiler) assessOptionalParameter(assign *ast.AssignmentNode) (
 			param.InternalName = expr.Left.(*ast.IdentNode).Name
 			param.ExternalName = expr.Right.(*ast.IdentNode).Name
 		} else {
-			err = makeErr(assign, "Expected identifier or identifier/alias for optional parameter")
+			err = makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
 		}
 
 	default:
-		err = makeErr(assign, "Expected identifier or identifier/alias for optional parameter")
+		err = makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
 		return
 	}
 
-	// attempt to build default value now (if possible)
-	defaultIns, param.DefaultValue, err = c.compileOrPreBuildNode(assign.Values[0], false)
-	if err != nil {
-		err = makeErr(assign, fmt.Sprintf("Failure to compile default value for parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
-		return
-	}
-	if param.DefaultValue == nil {
-		// set to no value for now
-		param.DefaultValue = object.NONE
+	if !requiredByName {
+		// attempt to build default value now (if possible)
+		defaultIns, param.DefaultValue, err = c.compileOrPreBuildNode(assign.Values[0], false)
+		if err != nil {
+			err = makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
+			return
+		}
+		if param.DefaultValue == nil {
+			// default failed to evaluate at compile-time
+			// set to no value for now to indicate an optional parameter, not a "required by name" parameter
+			// instructions to be evaluated at run-time
+			param.DefaultValue = object.NONE
+		}
 	}
 
 	return
@@ -420,15 +398,37 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 		return
 	}
 
+	var bslc []byte
+
+	for _, arg := range node.PositionalArgs {
+		if hasExpansion {
+			// already set hasExpansion and have another positional argument
+			err = makeErr(arg, fmt.Sprintf("Argument expansion only possible on last positional argument"))
+			return
+		}
+
+		switch post := arg.(type) {
+		case *ast.PostfixExpressionNode:
+			if post.Operator.Type == token.EXPANSION {
+				arg = post.Left
+				hasExpansion = true
+			}
+		}
+
+		bslc, err = c.compileNode(arg, true)
+		if err != nil {
+			return
+		}
+
+		ins = append(ins, bslc...)
+	}
+
 	var externalNames []string
 
-	var bslc []byte
-	opt := false
-	for _, arg := range node.Args {
+	for _, arg := range node.ByNameArgs {
 		externalName := ""
 
 		if assign, ok := arg.(*ast.AssignmentNode); ok {
-			// optional argument
 			externalName = assign.Identifiers[0].TokenRepresentation()
 			name := &ast.StringNode{
 				Token: assign.Token, Values: []string{externalName}}
@@ -446,43 +446,21 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 			bslc = append(bslc, value...)
 			bslc = append(bslc, opcode.Make(opcode.OpNameValue)...)
 
-			opt = true
+			ins = append(ins, bslc...)
 
-		} else if opt {
-			err = makeErr(arg, "Cannot have positional argument after optional argument")
-			return
+			// check for duplicate external names
+			if externalName != "" {
+				if str.IsInSlice(externalName, externalNames) {
+					err = makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))
+					return
+				}
+				externalNames = append(externalNames, externalName)
+			}
 
 		} else {
-			// positional argument
-			if hasExpansion {
-				// already set hasExpansion and have another positional argument
-				err = fmt.Errorf("Argument expansion only possible on last positional argument")
-				return
-			}
-
-			switch post := arg.(type) {
-			case *ast.PostfixExpressionNode:
-				if post.Operator.Type == token.EXPANSION {
-					arg = post.Left
-					hasExpansion = true
-				}
-			}
-
-			bslc, err = c.compileNode(arg, true)
-			if err != nil {
-				return
-			}
-		}
-
-		ins = append(ins, bslc...)
-
-		// check for duplicate external names
-		if externalName != "" {
-			if str.IsInSlice(externalName, externalNames) {
-				err = fmt.Errorf("Duplicate of optional argument (%s)", str.ReformatInput(externalName))
-				return
-			}
-			externalNames = append(externalNames, externalName)
+			// not an assignment node
+			err = makeErr(arg, fmt.Sprintf("Expected assignment node for argument by name (%s)", str.ReformatInput(externalName)))
+			return
 		}
 	}
 
@@ -490,9 +468,9 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 	ins = append(ins, fn...)
 
 	if hasExpansion {
-		ins = append(ins, opcode.Make(opcode.OpCallWithExpansion, len(node.Args))...)
+		ins = append(ins, opcode.Make(opcode.OpCallWithExpansion, len(node.PositionalArgs), len(node.ByNameArgs))...)
 	} else {
-		ins = append(ins, opcode.Make(opcode.OpCall, len(node.Args))...)
+		ins = append(ins, opcode.Make(opcode.OpCall, len(node.PositionalArgs), len(node.ByNameArgs))...)
 	}
 	return
 }
