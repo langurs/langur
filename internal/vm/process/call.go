@@ -163,7 +163,7 @@ func reformArgumentsBySignature(
 	argPtr := len(positional)
 
 	// check / pick up parameter by name values in order listed in signature
-	// order relevant internally, as they will be picked up in the same order
+	// order relevant to compiled function code, as they will be picked up in order
 	for _, param := range sig.ParamByName {
 		found := false
 		for i := range byname {
@@ -176,15 +176,12 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
-			// no argument found for this parameter by name
-			if param.DefaultValue == nil {
-				// no default set; treat as required by name
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
-					fmt.Sprintf("Required parameter by name (%s) not received", str.ReformatInput(param.ExternalName)))
-				return
-			}
 			// optional parameter without argument; use default
 			args[argPtr] = param.DefaultValue
+
+			// NOTE: at present, not checking for nil default
+			// using nil default for built-ins to check if passed a value
+			// might change later
 		}
 		argPtr++
 	}

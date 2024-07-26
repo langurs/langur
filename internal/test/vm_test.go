@@ -911,12 +911,11 @@ func TestShortCircuitingOperations(t *testing.T) {
 		{`val x = "abcd yoyo"; len(x) >= 7 and x[7] == 'o'`, true, object.BOOLEAN_OBJ},  // not sc
 		{`val x = "abcd yoyo"; len(x) >= 7 and x[7] == 'y'`, false, object.BOOLEAN_OBJ}, // not sc
 
-		// The following tests commented out as no longer valid, with scope blocks limited to statement context (0.17.2).
-		// {`var y = 7; true or { y = 14 }; y`, "7", object.NUMBER_OBJ},   // sc
-		// {`var y = 7; true and { y = 14 }; y`, "14", object.NUMBER_OBJ}, // not sc
+		{`var y = 7; true or { y = 14 }; y`, "7", object.NUMBER_OBJ},   // sc
+		{`var y = 7; true and { y = 14 }; y`, "14", object.NUMBER_OBJ}, // not sc
 
-		// {"var x = 7; [1, 2, 3][3; { x = 14 }]; x", "7", object.NUMBER_OBJ},  // sc
-		// {"var x = 7; [1, 2, 3][4; { x = 14 }]; x", "14", object.NUMBER_OBJ}, // not sc
+		{"var x = 7; [1, 2, 3][3; { x = 14 }]; x", "7", object.NUMBER_OBJ},  // sc
+		{"var x = 7; [1, 2, 3][4; { x = 14 }]; x", "14", object.NUMBER_OBJ}, // not sc
 
 		{`null and? true`, nil, object.NULL_OBJ},     // sc
 		{`null or? true`, nil, object.NULL_OBJ},      // sc

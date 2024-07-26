@@ -6,8 +6,9 @@ type context int
 
 const (
 	context_statement context = iota
-	context_statement_block
-	context_switch_test
+	context_unknown_block
+	context_expression
+	context_expression_switch_test
 )
 
 func (p *Parser) pushContext(c context) {

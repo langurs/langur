@@ -107,7 +107,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (
 			p.advanceToken()
 
 		} else if !token.InTypeSlice(p.tok.Type, until) {
-			p.addError("Expected comma or closing parenthis on parameter list")
+			p.addError("Expected comma or closing parenthesis on parameter list")
 			break
 		}
 	}
@@ -192,7 +192,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			p.advanceToken()
 			return
 		}
-		param = p.parseExpansion(level)
+		param = p.parseParameterExpansion(level)
 		return
 
 	default:
@@ -201,7 +201,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 	return
 }
 
-func (p *Parser) parseExpansion(level int) ast.Node {
+func (p *Parser) parseParameterExpansion(level int) ast.Node {
 	exp := p.tok
 	p.advanceToken() // past ... expansion token
 

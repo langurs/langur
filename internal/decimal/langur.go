@@ -1,12 +1,11 @@
 // langur/decimal/langur.go
 
 // methods added to shopspring/decimal for langur
-// see also langur/decimal/langur_zeroes.go
+// see also langur_zeroes.go and langur_math.go
 
 package decimal
 
 import (
-	"langur/modes"
 	"strconv"
 	"strings"
 	"unicode"
@@ -86,6 +85,7 @@ func (d Decimal) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
 	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
 	scale, scaleExp int,
+	roundingMode RoundingMode,
 	decimalPoint rune) string {
 
 	parts := d.StringParts()
@@ -131,7 +131,7 @@ func (d Decimal) ScientificNotation(
 		p1p2 = RequireFromString(p1p2).
 			RoundByMode(int32(scale),
 				scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
-				modes.RoundingMode).
+				roundingMode).
 			string(false)
 
 	} else {

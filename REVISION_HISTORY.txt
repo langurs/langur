@@ -2,7 +2,10 @@ langur revision history
 https://langurlang.org
 
 ... - 0.17.2
-- limited scope blocks to statement context
+- fixed parsing bug with left brace being taken as the end of an expression
+- added RoundingMode type to decimal package
+- fixed setting current rounding mode (made safe for concurrency)
+- updated vm to not use nil default as indicator for hypothetical "required by name" parameter
 
 
 2024-07-25 - 0.17.1

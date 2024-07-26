@@ -285,9 +285,10 @@ func (p *Parser) parseLBrace() ast.Node {
 	block := &ast.BlockNode{Token: tok, Statements: statements}
 	block.HasScope = true
 
-	if p.peekContext() != context_statement_block {
-		p.addError("Unexpected scope block in expression context")
-	}
+	// FIXME: ? limit scope blocks to expression context
+	// if p.peekContext() != context_unknown_block {
+	// 	p.addError("Unexpected scope block in expression context")
+	// }
 
 	return block
 }
@@ -447,7 +448,7 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 	}
 
 	if !token.AllowNilRightExpression(p.tok.Type) ||
-		p.tok.Type == token.LBRACE && p.peekContext() != context_switch_test {
+		p.tok.Type == token.LBRACE && p.peekContext() != context_expression_switch_test {
 		// context check to not confuse right operand { (such as beginning a hash)...
 		// ... with { after switch test
 

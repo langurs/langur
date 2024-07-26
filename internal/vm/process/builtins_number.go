@@ -434,11 +434,12 @@ func bi_round(pr *Process, args ...object.Object) object.Object {
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
 		}
-		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, mode)
+
+		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode(mode))
 
 	} else {
 		// round by current mode
-		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode)
+		num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, pr.Modes.Rounding)
 	}
 
 	if err != nil {

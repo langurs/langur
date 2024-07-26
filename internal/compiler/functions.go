@@ -437,7 +437,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 				return
 			}
 
-			// compiling to name/value object (internally used for optional parameter)
+			// compiling to name/value object (internally used for argument by name)
 			var value opcode.Instructions
 			value, err = c.compileNode(assign.Values[0], true)
 			if err != nil {
@@ -448,7 +448,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 
 			ins = append(ins, bslc...)
 
-			// check for duplicate external names
+			// check for duplicate external (argument) names
 			if externalName != "" {
 				if str.IsInSlice(externalName, externalNames) {
 					err = makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))

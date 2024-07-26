@@ -5,7 +5,6 @@ package process
 import (
 	"fmt"
 	"langur/format"
-	"langur/modes"
 	"langur/object"
 	"langur/regex"
 	"langur/str"
@@ -110,7 +109,9 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result, err = orig.RoundByMode(m, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode)
+		result, err = orig.RoundByMode(m,
+			addTrailingZeroes, trimTrailingZeroes,
+			pr.Modes.Rounding)
 
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)
@@ -168,10 +169,12 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
+		roundingMode := pr.Modes.Rounding
+
 		result, err = object.ToBaseString(
 			original, uppercase, requireSign, true,
 			addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding,
-			intMin, fracRound, b, padIntWith, decimalPoint)
+			intMin, fracRound, b, roundingMode, padIntWith, decimalPoint)
 
 	case format.FORMAT_SCIENTIFIC_NOTATION:
 		things := pr.popMultiple(9)
@@ -219,7 +222,12 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 			return
 		}
 
-		result = object.NewString(orig.ScientificNotation(uppercase, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, sc, scExp, decimalPoint))
+		roundingMode := pr.Modes.Rounding
+
+		result = object.NewString(orig.ScientificNotation(
+			uppercase, requireSign, requireExpSign, rescale,
+			scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
+			sc, scExp, roundingMode, decimalPoint))
 
 	case format.FORMAT_CODE_POINT:
 		rSlc, err := object.CodePointsToFlatRuneSlice(pr.pop())

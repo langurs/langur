@@ -32,7 +32,7 @@ var ModeNames = map[string]ModeNumber{
 const Default_DivisionMaxScale = 33
 const Default_ConsoleTextMode = true
 const Default_NewFilePerm os.FileMode = 0664 // in langur, 8x664
-const Default_Rounding = Round_halfAwayFromZero
+const Default_Rounding = RoundHalfAwayFromZero
 const Default_NowIncludesNano = false
 
 var DefaultSubLexString = map[ModeNumber]string{
@@ -53,7 +53,7 @@ type VmModes struct {
 	GoPanicToLangurException bool
 	ConsoleTextMode          bool
 	DivisionMaxScale         int
-	Rounding                 int
+	Rounding                 RoundingMode
 	NowIncludesNano          bool
 }
 

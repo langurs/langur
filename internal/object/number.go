@@ -18,7 +18,7 @@ type decType = dec.Decimal
 
 const maxDivisionMaxScaleMode int = math.MaxInt32 - 2
 
-// TODO: make safe way to change across goroutines or langur processes
+// FIXME: make safe way to change across goroutines or langur processes
 func SetDivisionMaxScaleMode(p int) error {
 	// This is the number of digits after the decimal point.
 	// I don't suppose this is the same as "precision" (total number of digits).
@@ -277,11 +277,17 @@ func NumberFromStringBase(s string, base int) (*Number, error) {
 func (n *Number) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
 	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
-	scale, scaleExp int, decimalPoint rune) string {
+	scale, scaleExp int,
+	roundingMode modes.RoundingMode,
+	decimalPoint rune) string {
+
+	rMode := modes.LangurRoundingModeToDecimalRoundingMode(roundingMode)
 
 	// convert to decimal to use already developed method
 	return n.UseDecimal().decimal.ScientificNotation(
-		capitalize, requireSign, requireExpSign, rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes, scale, scaleExp, decimalPoint)
+		capitalize, requireSign, requireExpSign, rescale,
+		scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
+		scale, scaleExp, rMode, decimalPoint)
 }
 
 func ToNumber(obj Object, base int) (*Number, bool) {
@@ -379,6 +385,7 @@ func ToBaseString(
 	uppercase, requireSign, signCountsForPadding,
 	addFractionalZeroes, trimFractionalZeroes, fractionalAffectsIntegerPadding bool,
 	integerMin, fracRound, base int,
+	roundingMode modes.RoundingMode,
 	padIntWith, decimalPoint rune) (
 	*String, error) {
 
@@ -391,7 +398,9 @@ func ToBaseString(
 	switch numObj := original.(type) {
 	case *Number:
 		// NOTE: base 10 rounding; would not be suficient if fractionals possible on other bases
-		n, err := numObj.RoundByMode(fracRound, addFractionalZeroes, trimFractionalZeroes, modes.RoundingMode)
+		n, err := numObj.RoundByMode(
+			fracRound, addFractionalZeroes, trimFractionalZeroes, roundingMode)
+
 		if err != nil {
 			return nil, err
 		}

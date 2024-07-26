@@ -22,11 +22,14 @@ var early = []binding{
 	{"_rev", &ast.StringNode{Values: []string{bytecode.LangurRev}}},
 
 	{modes.RoundHashName, &ast.HashNode{Pairs: []ast.KeyValuePair{
-		{Key: &ast.StringNode{Values: []string{modes.RoundHashModeNames[modes.Round_halfAwayFromZero]}},
-			Value: &ast.NumberNode{Value: str.IntToStr(modes.Round_halfAwayFromZero, 10)}},
-		{Key: &ast.StringNode{Values: []string{modes.RoundHashModeNames[modes.Round_halfEven]}},
-			Value: &ast.NumberNode{Value: str.IntToStr(modes.Round_halfEven, 10)}},
+		makeRoundModeKeyValuePair(modes.RoundHalfAwayFromZero),
+		makeRoundModeKeyValuePair(modes.RoundHalfEven),
 	}}},
+}
+
+func makeRoundModeKeyValuePair(mode modes.RoundingMode) ast.KeyValuePair {
+	return ast.KeyValuePair{Key: &ast.StringNode{Values: []string{modes.RoundHashModeNames[mode]}},
+		Value: &ast.NumberNode{Value: str.IntToStr(int(mode), 10)}}
 }
 
 // must coordinate late-binding ID's with the VM, but the order is automatically coordinated

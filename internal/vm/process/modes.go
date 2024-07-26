@@ -22,6 +22,7 @@ func (pr *Process) setMode(code int, setting object.Object) error {
 			return fmt.Errorf("Integer %d for mode division max scale out of range", i)
 		}
 		pr.Modes.DivisionMaxScale = i
+
 		// FIXME: not safe for concurrency
 		return object.SetDivisionMaxScaleMode(i)
 
@@ -30,14 +31,14 @@ func (pr *Process) setMode(code int, setting object.Object) error {
 		if !ok {
 			return fmt.Errorf("Expected rounding mode (from %s hash), not %s", modes.RoundHashName, setting.TypeString())
 		}
+		rMode := modes.RoundingMode(i)
+
 		// ensure it's in the enumeration
-		_, ok = modes.RoundHashModeNames[i]
+		_, ok = modes.RoundHashModeNames[rMode]
 		if !ok {
 			return fmt.Errorf("Unknown rounding mode")
 		}
-		pr.Modes.Rounding = i
-		// FIXME: not safe for concurrency
-		modes.RoundingMode = i
+		pr.Modes.Rounding = rMode
 
 	case modes.MODE_CONSOLE_TEXT_MODE:
 		b, ok := setting.(*object.Boolean)

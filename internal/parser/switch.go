@@ -58,7 +58,7 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 
 	} else {
 		// push context to differentiate between starting a hash literal after an infix operator, and the end of test expression list
-		p.pushContext(context_switch_test)
+		p.pushContext(context_expression_switch_test)
 
 		exprs, _ = p.parseExpressionList([]token.Type{token.LBRACE}, token.COMMA, false, true, false)
 		// now past the opening left brace {

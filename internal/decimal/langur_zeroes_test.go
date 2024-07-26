@@ -3,7 +3,6 @@
 package decimal
 
 import (
-	"langur/modes"
 	"testing"
 )
 
@@ -189,11 +188,9 @@ func TestRoundByMode(t *testing.T) {
 		{"311", -4, true, false, "0"},
 	}
 
-	mode := modes.RoundingMode
-
 	for _, tt := range tests {
 		d1 := RequireFromString(tt.d1)
-		result := d1.RoundByMode(tt.max, tt.add, tt.trim, mode).StringWithTrailingZeros()
+		result := d1.RoundByMode(tt.max, tt.add, tt.trim, RoundingMode_Default).StringWithTrailingZeros()
 
 		if result != tt.result {
 			t.Errorf("RoundByMode(%d, %t) Value Failed: expected=%s, received=%s", tt.max, tt.trim, tt.result, result)
