@@ -24,8 +24,16 @@ type Node interface {
 	Copy() Node
 }
 
-type PreBuilder interface {
-	PreBuild() (object.Object, bool)
+type Evaluator interface {
+	Evaluate() (object.Object, bool)
+}
+
+func TryEvaluate(node Node) (object.Object, bool) {
+	n, ok := node.(Evaluator)
+	if ok {
+		return n.Evaluate()
+	}
+	return nil, false
 }
 
 // simply marks it as a statement node (no action)

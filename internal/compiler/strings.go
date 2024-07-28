@@ -23,7 +23,7 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 			return
 		}
 
-		dt, ok := node.PreBuild()
+		dt, ok := node.Evaluate()
 		if ok {
 			ins = c.constantIns(dt)
 			return
@@ -41,7 +41,7 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 }
 
 func (c *Compiler) compileDurationNode(node *ast.DurationNode) (ins opcode.Instructions, err error) {
-	dur, ok := node.PreBuild()
+	dur, ok := node.Evaluate()
 	if ok {
 		ins = c.constantIns(dur)
 		return

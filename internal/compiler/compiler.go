@@ -199,12 +199,12 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 	return
 }
 
-func (c *Compiler) compileOrPreBuildNode(node ast.Node, popAtEndOfExpression bool) (
+func (c *Compiler) compileOrEvaluateNode(node ast.Node, popAtEndOfExpression bool) (
 	ins opcode.Instructions, obj object.Object, err error) {
 
-	pre, ok := node.(ast.PreBuilder)
+	pre, ok := node.(ast.Evaluator)
 	if ok {
-		obj, ok = pre.PreBuild()
+		obj, ok = pre.Evaluate()
 		if ok {
 			return
 		}

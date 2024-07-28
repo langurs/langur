@@ -1,12 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... - 0.17.2
+2024-07-28 - 0.17.2
 - fixed parsing bug with left brace being taken as the end of an expression
 - added RoundingMode type to decimal package
 - fixed setting current rounding mode (made safe for concurrency)
 - updated vm to not use nil default as indicator for hypothetical "required by name" parameter
-
+- renamed ast.PreBuilder interface as ast.Evaluator
 
 2024-07-25 - 0.17.1
 - clean up code regarding arguments/parameters that are positional or by name

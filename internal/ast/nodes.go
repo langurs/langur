@@ -997,14 +997,14 @@ type BooleanNode struct {
 	Value bool
 }
 
-func (b *BooleanNode) PreBuild() (object.Object, bool) {
-	return object.NativeBoolToObject(b.Value), true
-}
-
 func (b *BooleanNode) expressionNode() {}
 
 func (b *BooleanNode) Copy() Node {
 	return &BooleanNode{Token: b.Token.Copy(), Value: b.Value}
+}
+
+func (b *BooleanNode) Evaluate() (object.Object, bool) {
+	return object.NativeBoolToObject(b.Value), true
 }
 
 func (b *BooleanNode) TokenRepresentation() string {
@@ -1023,14 +1023,14 @@ type NullNode struct {
 	Token token.Token
 }
 
-func (n *NullNode) PreBuild() (object.Object, bool) {
-	return object.NativeBoolToObject(false), true
-}
-
 func (n *NullNode) expressionNode() {}
 
 func (n *NullNode) Copy() Node {
 	return &NullNode{Token: n.Token.Copy()}
+}
+
+func (n *NullNode) Evaluate() (object.Object, bool) {
+	return object.NativeBoolToObject(false), true
 }
 
 func (n *NullNode) TokenRepresentation() string {
@@ -1082,13 +1082,6 @@ type StringNode struct {
 	Interpolations []Node
 }
 
-func (s *StringNode) PreBuild() (object.Object, bool) {
-	if len(s.Interpolations) == 0 {
-		return object.NewString(s.Values[0]), true
-	}
-	return nil, false
-}
-
 func (s *StringNode) expressionNode() {}
 
 func (s *StringNode) Copy() Node {
@@ -1097,6 +1090,13 @@ func (s *StringNode) Copy() Node {
 		Values:         s.Values,
 		Interpolations: CopyNodeSlice(s.Interpolations),
 	}
+}
+
+func (s *StringNode) Evaluate() (object.Object, bool) {
+	if len(s.Interpolations) == 0 {
+		return object.NewString(s.Values[0]), true
+	}
+	return nil, false
 }
 
 func (s *StringNode) TokenRepresentation() string {
@@ -1209,7 +1209,17 @@ type RegexNode struct {
 	RegexType regex.RegexType
 }
 
-func (r *RegexNode) PreBuild() (object.Object, bool) {
+func (r *RegexNode) expressionNode() {}
+
+func (r *RegexNode) Copy() Node {
+	return &RegexNode{
+		Token:     r.Token.Copy(),
+		Pattern:   copyOrNil(r.Pattern),
+		RegexType: r.RegexType,
+	}
+}
+
+func (r *RegexNode) Evaluate() (object.Object, bool) {
 	var re *object.Regex
 
 	patternNode, ok := r.Pattern.(*StringNode)
@@ -1225,16 +1235,6 @@ func (r *RegexNode) PreBuild() (object.Object, bool) {
 	}
 
 	return re, ok
-}
-
-func (r *RegexNode) expressionNode() {}
-
-func (r *RegexNode) Copy() Node {
-	return &RegexNode{
-		Token:     r.Token.Copy(),
-		Pattern:   copyOrNil(r.Pattern),
-		RegexType: r.RegexType,
-	}
 }
 
 func (r *RegexNode) TokenRepresentation() string {
@@ -1272,7 +1272,16 @@ type DateTimeNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
-func (d *DateTimeNode) PreBuild() (object.Object, bool) {
+func (dt *DateTimeNode) expressionNode() {}
+
+func (dt *DateTimeNode) Copy() Node {
+	return &DateTimeNode{
+		Token:   dt.Token.Copy(),
+		Pattern: dt.Pattern,
+	}
+}
+
+func (d *DateTimeNode) Evaluate() (object.Object, bool) {
 	var dt *object.DateTime
 
 	patternNode, ok := d.Pattern.(*StringNode)
@@ -1293,15 +1302,6 @@ func (d *DateTimeNode) PreBuild() (object.Object, bool) {
 	return dt, ok
 }
 
-func (dt *DateTimeNode) expressionNode() {}
-
-func (dt *DateTimeNode) Copy() Node {
-	return &DateTimeNode{
-		Token:   dt.Token.Copy(),
-		Pattern: dt.Pattern,
-	}
-}
-
 func (dt *DateTimeNode) TokenRepresentation() string {
 	return common.DateTimeTokenLiteral + "/" + tokenRepOrNil(dt.Pattern) + "/"
 }
@@ -1320,7 +1320,16 @@ type DurationNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
-func (d *DurationNode) PreBuild() (object.Object, bool) {
+func (d *DurationNode) expressionNode() {}
+
+func (d *DurationNode) Copy() Node {
+	return &DurationNode{
+		Token:   d.Token.Copy(),
+		Pattern: d.Pattern,
+	}
+}
+
+func (d *DurationNode) Evaluate() (object.Object, bool) {
 	var dur *object.Duration
 
 	patternNode, ok := d.Pattern.(*StringNode)
@@ -1333,15 +1342,6 @@ func (d *DurationNode) PreBuild() (object.Object, bool) {
 		}
 	}
 	return dur, ok
-}
-
-func (d *DurationNode) expressionNode() {}
-
-func (d *DurationNode) Copy() Node {
-	return &DurationNode{
-		Token:   d.Token.Copy(),
-		Pattern: d.Pattern,
-	}
 }
 
 func (d *DurationNode) TokenRepresentation() string {
@@ -1363,16 +1363,16 @@ type NumberNode struct {
 	Base  int
 }
 
-func (n *NumberNode) PreBuild() (object.Object, bool) {
-	number, err := object.NumberFromStringBase(n.Value, n.Base)
-	ok := err == nil
-	return number, ok
-}
-
 func (n *NumberNode) expressionNode() {}
 
 func (n *NumberNode) Copy() Node {
 	return &NumberNode{Token: n.Token.Copy(), Value: n.Value, Base: n.Base}
+}
+
+func (n *NumberNode) Evaluate() (object.Object, bool) {
+	number, err := object.NumberFromStringBase(n.Value, n.Base)
+	ok := err == nil
+	return number, ok
 }
 
 func (n *NumberNode) TokenRepresentation() string {
@@ -1657,6 +1657,19 @@ func (ie *InfixExpressionNode) Copy() Node {
 		Token: ie.Token.Copy(),
 		Left:  copyOrNil(ie.Left), Operator: ie.Operator, Right: copyOrNil(ie.Right)}
 }
+
+// func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
+// 	left, ok := TryEvaluate(ie.Left)
+// 	if ok {
+// 		right, ok := TryEvaluate(ie.Right)
+// 		if ok {
+// 			obj, err := object.BinaryOperation(ie.Operator, left, right, 0)
+// 			ok = err == nil
+// 			return obj, ok
+// 		}
+// 	}
+// 	return nil, false
+// }
 
 func (ie *InfixExpressionNode) TokenRepresentation() string {
 	return "(" + tokenRepOrNil(ie.Left) + " " + ie.Operator.Literal + " " + tokenRepOrNil(ie.Right) + ")"
