@@ -3,7 +3,6 @@
 package bytecode
 
 import (
-	"langur/common"
 	"langur/object"
 )
 
@@ -22,5 +21,4 @@ type ByteCode struct {
 
 	// for tracing errors back to source
 	Source string
-	Where  []*common.Where
 }

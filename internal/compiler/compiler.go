@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"langur/ast"
 	"langur/bytecode"
-	"langur/common"
 	"langur/modes"
 	"langur/object"
 	"langur/opcode"
 	"langur/symbol"
+	"langur/trace"
 )
 
 func bug(fnName, s string) {
@@ -30,10 +30,10 @@ func makeWarning(node ast.Node, err string) error {
 }
 
 type Compiler struct {
-	instructions opcode.Instructions
+	opcode.InsPackage
 
-	// for tracing errors in the VM
-	where  []*common.Where
+	// for tracing errors back to source code
+	where  []*trace.Where
 	source string
 
 	constants   []object.Object
@@ -63,15 +63,13 @@ type Compiler struct {
 func (c *Compiler) ByteCode() *bytecode.ByteCode {
 	return &bytecode.ByteCode{
 		StartCode: &object.CompiledCode{
-			Instructions:       c.instructions,
+			InsPackage:         c.InsPackage,
 			LocalBindingsCount: c.symbolTable.DefinitionCount,
 		},
 
 		Constants: c.constants,
 		Late:      c.lateIDsUsed,
-
-		Source: c.source,
-		Where:  c.where,
+		Source:    c.source,
 	}
 }
 
@@ -83,10 +81,10 @@ func New(source string, m *modes.CompileModes) (compiler *Compiler, err error) {
 	}()
 
 	compiler = &Compiler{
-		instructions: opcode.Instructions{},
-		constants:    []object.Object{},
-		lateIDs:      late,
-		source:       source,
+		InsPackage: opcode.InsPackage{},
+		constants:  []object.Object{},
+		lateIDs:    late,
+		source:     source,
 	}
 	if m == nil {
 		compiler.Modes = modes.NewCompileModes()
@@ -125,10 +123,10 @@ func (c *Compiler) Compile(node *ast.Program, doAllBindings bool) (err error) {
 	if err != nil {
 		return
 	}
-	c.instructions = append(c.instructions, ins...)
+	c.InsPackage.Instructions = append(c.InsPackage.Instructions, ins...)
 
 	ins, err = c.compileProgram(node, true)
-	c.instructions = append(c.instructions, ins...)
+	c.InsPackage.Instructions = append(c.InsPackage.Instructions, ins...)
 
 	if err == nil {
 		err = c.checkStatementCounts()
@@ -146,7 +144,7 @@ func (c *Compiler) CompileAnother(node *ast.Program) (err error) {
 		}
 	}()
 
-	c.instructions, err = c.compileProgram(node, true)
+	c.InsPackage.Instructions, err = c.compileProgram(node, true)
 
 	if err == nil {
 		err = c.checkStatementCounts()

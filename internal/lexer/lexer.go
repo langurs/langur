@@ -4,11 +4,11 @@ package lexer
 
 import (
 	"fmt"
-	"langur/common"
 	"langur/cpoint"
 	"langur/modes"
 	"langur/str"
 	"langur/token"
+	"langur/trace"
 )
 
 // NOTE: Each branch of the lexer is responsible for advancing the code point position.
@@ -108,7 +108,7 @@ func (lex *Lexer) queueImpliedSemicolon() {
 func impliedSemicolon(line, linePosition int) token.Token {
 	return token.Token{
 		Type: token.SEMICOLON, Literal: IMPLIED_EXPRESSION_TERMINATOR_LITERAL,
-		Where: common.NewWhere(line, linePosition),
+		Where: trace.NewWhere(line, linePosition),
 	}
 }
 
@@ -228,7 +228,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 
 	tok.Type = token.INVALID
 	tok.Code = token.CODE_DEFAULT
-	tok.Where = common.NewWhere(lex.line, lex.cpLinePosition)
+	tok.Where = trace.NewWhere(lex.line, lex.cpLinePosition)
 
 	if lex.EOF {
 		// end of file

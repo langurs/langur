@@ -23,6 +23,7 @@ func IsCompiledFunction(obj Object) bool {
 // -1 used to indicate no maximum
 const NotCallable = -2
 
+// DEPRECATED
 func ParamExpectedString(obj Object) string {
 	min, max := ParamMin(obj), ParamMax(obj)
 	if min == NotCallable {
@@ -32,6 +33,7 @@ func ParamExpectedString(obj Object) string {
 }
 
 // minimum, including parameter expansion
+// DEPRECATED
 func ParamMin(obj Object) int {
 	switch fn := obj.(type) {
 	case *CompiledCode:
@@ -47,6 +49,7 @@ func ParamMin(obj Object) int {
 }
 
 // maximum, including parameter expansion
+// DEPRECATED
 func ParamMax(obj Object) int {
 	switch fn := obj.(type) {
 	case *CompiledCode:
@@ -63,7 +66,7 @@ func ParamMax(obj Object) int {
 
 type CompiledCode struct {
 	FnSignature        *Signature
-	Instructions       opcode.Instructions
+	InsPackage         opcode.InsPackage
 	LocalBindingsCount int      // including parameters
 	Free               []Object // "free" variables for closures
 }
@@ -83,7 +86,7 @@ func (cf *CompiledCode) HasImpureEffects() bool {
 func (cf *CompiledCode) Copy() Object {
 	return &CompiledCode{
 		FnSignature:        cf.FnSignature.Copy(),
-		Instructions:       cf.Instructions.Copy(),
+		InsPackage:         cf.InsPackage.Copy(),
 		LocalBindingsCount: cf.LocalBindingsCount,
 		Free:               CopyRefSlice(cf.Free),
 	}
@@ -145,7 +148,7 @@ func (cf *CompiledCode) ReplString() string {
 	}
 	out.WriteString("\nInstructions\n")
 
-	out.WriteString(cf.Instructions.String())
+	out.WriteString(cf.InsPackage.Instructions.String())
 
 	return out.String()
 }

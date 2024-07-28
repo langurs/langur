@@ -21,7 +21,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 	}
 
 	// for repeated use
-	ins := fr.code.Instructions
+	ins := fr.code.InsPackage.Instructions
 
 	// to reset the stack on exit
 	// not used directly; using a Go slice

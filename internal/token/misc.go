@@ -5,7 +5,7 @@ package token
 import (
 	"bytes"
 	"fmt"
-	"langur/common"
+	"langur/trace"
 )
 
 type Token struct {
@@ -26,7 +26,7 @@ type Token struct {
 	Attachments []interface{}
 
 	// for error reporting
-	Where common.Where
+	Where trace.Where
 	// DEPRECATED
 	// Line         int
 	// LinePosition int
@@ -95,7 +95,7 @@ const (
 func New(line, linePosition int) Token {
 	var tok Token
 	tok.Type = INVALID
-	tok.Where = common.NewWhere(line, linePosition)
+	tok.Where = trace.NewWhere(line, linePosition)
 	tok.Code = CODE_DEFAULT
 	tok.Attachments = nil
 	return tok

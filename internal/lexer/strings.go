@@ -5,10 +5,10 @@ package lexer
 import (
 	"bytes"
 	"fmt"
-	"langur/common"
 	"langur/cpoint"
 	"langur/str"
 	"langur/token"
+	"langur/trace"
 	"strings"
 )
 
@@ -52,13 +52,13 @@ func (lex *Lexer) readFreeWordList(tok *token.Token) (err error) {
 			lex.queueToken(
 				token.Token{
 					Literal: s, Type: token.STRING,
-					Where: common.NewWhere(tok.Where.Line, tok.Where.LinePosition),
+					Where: trace.NewWhere(tok.Where.Line, tok.Where.LinePosition),
 				})
 
 			if i < len(strs)-1 {
 				lex.queueToken(
 					token.Token{Literal: "(,)", Type: token.COMMA,
-						Where: common.NewWhere(tok.Where.Line, tok.Where.LinePosition),
+						Where: trace.NewWhere(tok.Where.Line, tok.Where.LinePosition),
 					})
 			}
 		}

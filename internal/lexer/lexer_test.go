@@ -3,10 +3,10 @@
 package lexer
 
 import (
-	"langur/common"
 	"langur/cpoint"
 	"langur/str"
 	"langur/token"
+	"langur/trace"
 	"testing"
 )
 
@@ -765,10 +765,10 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 		{`"s1""s2"`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.STRING,
-					Where: common.NewWhere(1, 1),
+					Where: trace.NewWhere(1, 1),
 				},
 				&token.Token{Literal: "s2", Type: token.STRING,
-					Where: common.NewWhere(1, 5),
+					Where: trace.NewWhere(1, 5),
 				},
 			},
 		},
@@ -776,7 +776,7 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 		{` s1`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Where: common.NewWhere(1, 2),
+					Where: trace.NewWhere(1, 2),
 				},
 			},
 		},
@@ -784,10 +784,10 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 		{`s1 s2`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Where: common.NewWhere(1, 1),
+					Where: trace.NewWhere(1, 1),
 				},
 				&token.Token{Literal: "s2", Type: token.IDENT,
-					Where: common.NewWhere(1, 4),
+					Where: trace.NewWhere(1, 4),
 				},
 			},
 		},
@@ -796,13 +796,13 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 s2`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Where: common.NewWhere(1, 1),
+					Where: trace.NewWhere(1, 1),
 				},
 				&token.Token{Type: token.SEMICOLON, Literal: IMPLIED_EXPRESSION_TERMINATOR_LITERAL,
-					Where: common.NewWhere(1, 3),
+					Where: trace.NewWhere(1, 3),
 				},
 				&token.Token{Literal: "s2", Type: token.IDENT,
-					Where:           common.NewWhere(2, 1),
+					Where:           trace.NewWhere(2, 1),
 					NewLinePrecedes: true,
 				},
 			},

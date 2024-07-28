@@ -100,7 +100,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 
 	compiledFn := &object.CompiledCode{
 		FnSignature:        sig,
-		Instructions:       body,
+		InsPackage:         opcode.InsPackage{Instructions: body},
 		LocalBindingsCount: localsCount,
 	}
 	fnIndex := c.addConstant(compiledFn)

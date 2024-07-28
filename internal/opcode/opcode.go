@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"langur/trace"
 )
 
 func bug(fnName, s string) {
@@ -45,6 +46,18 @@ func (ins Instructions) Copy() Instructions {
 	newIns := make(Instructions, len(ins))
 	copy(newIns, ins)
 	return newIns
+}
+
+type InsPackage struct {
+	Instructions Instructions
+	Where        []*trace.Where
+}
+
+func (ip InsPackage) Copy() InsPackage {
+	return InsPackage{
+		Instructions: ip.Instructions.Copy(),
+		Where:        trace.CopyWhereRefSlice(ip.Where),
+	}
 }
 
 type OpCode = byte

@@ -47,7 +47,7 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 func (c *Compiler) wrapInstructions(ins opcode.Instructions) int {
 	// NOTE: Call this before c.popVariableScope().
 	compiled := &object.CompiledCode{
-		Instructions:       ins,
+		InsPackage:         opcode.InsPackage{Instructions: ins},
 		LocalBindingsCount: c.symbolTable.DefinitionCount,
 	}
 	return c.addConstant(compiled)

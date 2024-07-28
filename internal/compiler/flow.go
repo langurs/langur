@@ -392,23 +392,23 @@ func (c *Compiler) fixJumps(
 			index := opcode.ReadUInt16(piece[1:])
 
 			// OpExecute not used for a function, so we know the CompiledCode is not a function...
-			c.constants[index].(*object.CompiledCode).Instructions = c.fixJumps(
-				c.constants[index].(*object.CompiledCode).Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
+			c.constants[index].(*object.CompiledCode).InsPackage.Instructions = c.fixJumps(
+				c.constants[index].(*object.CompiledCode).InsPackage.Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
 
 		case opcode.OpTryCatch:
 			tryIndex := opcode.ReadUInt16(piece[1:])
 			catchIndex := opcode.ReadUInt16(piece[3:])
 			elseIndex := opcode.ReadUInt16(piece[5:])
 
-			c.constants[tryIndex].(*object.CompiledCode).Instructions = c.fixJumps(
-				c.constants[tryIndex].(*object.CompiledCode).Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
+			c.constants[tryIndex].(*object.CompiledCode).InsPackage.Instructions = c.fixJumps(
+				c.constants[tryIndex].(*object.CompiledCode).InsPackage.Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
 
-			c.constants[catchIndex].(*object.CompiledCode).Instructions = c.fixJumps(
-				c.constants[catchIndex].(*object.CompiledCode).Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
+			c.constants[catchIndex].(*object.CompiledCode).InsPackage.Instructions = c.fixJumps(
+				c.constants[catchIndex].(*object.CompiledCode).InsPackage.Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
 
 			if elseIndex != 0 {
-				c.constants[elseIndex].(*object.CompiledCode).Instructions = c.fixJumps(
-					c.constants[elseIndex].(*object.CompiledCode).Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
+				c.constants[elseIndex].(*object.CompiledCode).InsPackage.Instructions = c.fixJumps(
+					c.constants[elseIndex].(*object.CompiledCode).InsPackage.Instructions, conditionalJumps, lookForOperandCode, decrementCnt, jumpLocal, jumpNonLocal, frameLevel+1)
 			}
 		}
 
@@ -428,7 +428,7 @@ func (c *Compiler) compileTryCatch(node *ast.TryCatchNode) (ins opcode.Instructi
 	if err != nil {
 		return
 	}
-	tryIndex := c.addConstant(&object.CompiledCode{Instructions: try})
+	tryIndex := c.addConstant(&object.CompiledCode{InsPackage: opcode.InsPackage{Instructions: try}})
 
 	// push scope for the catch frame, including the exception variable
 	c.pushVariableScope()

@@ -74,7 +74,7 @@ func runCompilerTests(
 
 		byteCode := compiler.ByteCode()
 
-		err = testInstructions(tt.expectedInstructions, byteCode.StartCode.Instructions)
+		err = testInstructions(tt.expectedInstructions, byteCode.StartCode.InsPackage.Instructions)
 		if err != nil {
 			t.Fatalf("(%q) testInstructions failed: %s", tt.input, err)
 		}
@@ -144,7 +144,7 @@ func testConstants(
 			if !ok {
 				return fmt.Errorf("Constant %d not *object.CompiledCode, received %T", i, actual[i])
 			}
-			err := testInstructions(constant, fn.Instructions)
+			err := testInstructions(constant, fn.InsPackage.Instructions)
 			if err != nil {
 				return fmt.Errorf("Constant %d testInstructions failed: %s", i, err)
 			}
