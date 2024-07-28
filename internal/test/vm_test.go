@@ -4881,7 +4881,7 @@ func TestIntRangeExpressions(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(nil)
+		comp, err := compiler.New(tt.input, nil)
 		if err != nil {
 			t.Fatalf("(%q) compiler error on New: %s", tt.input, err)
 		}
@@ -5400,7 +5400,7 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(nil)
+		comp, err := compiler.New(tt.input, nil)
 		if err != nil {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}

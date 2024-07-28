@@ -5,6 +5,7 @@ package token
 import (
 	"bytes"
 	"fmt"
+	"langur/common"
 )
 
 type Token struct {
@@ -25,8 +26,10 @@ type Token struct {
 	Attachments []interface{}
 
 	// for error reporting
-	Line         int
-	LinePosition int
+	Where common.Where
+	// DEPRECATED
+	// Line         int
+	// LinePosition int
 
 	NewLinePrecedes              bool
 	CpDiff                       int  // number of code points from previous token
@@ -41,8 +44,7 @@ func (tok Token) Copy() Token {
 		Type:            tok.Type,
 		Literal:         tok.Literal,
 		Code:            tok.Code,
-		Line:            tok.Line,
-		LinePosition:    tok.LinePosition,
+		Where:           tok.Where.Copy(),
 		NewLinePrecedes: tok.NewLinePrecedes,
 		CpDiff:          tok.CpDiff,
 
@@ -67,8 +69,7 @@ func (tok Token) NewTokenCopyPosInfo(typ Type, literal string) Token {
 		Type:    typ,
 		Literal: literal,
 
-		Line:            tok.Line,
-		LinePosition:    tok.LinePosition,
+		Where:           tok.Where.Copy(),
 		NewLinePrecedes: tok.NewLinePrecedes,
 		CpDiff:          tok.CpDiff,
 	}
@@ -94,8 +95,7 @@ const (
 func New(line, linePosition int) Token {
 	var tok Token
 	tok.Type = INVALID
-	tok.Line = line
-	tok.LinePosition = linePosition
+	tok.Where = common.NewWhere(line, linePosition)
 	tok.Code = CODE_DEFAULT
 	tok.Attachments = nil
 	return tok
@@ -149,7 +149,9 @@ func TypeDescription(tt Type) string {
 func (t Token) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("[%d %d", t.Line, t.LinePosition))
+	out.WriteRune('[')
+	out.WriteString(t.Where.String())
+
 	// if t.CpDiff > 0 {
 	out.WriteString(fmt.Sprintf(" %d", t.CpDiff))
 	// }

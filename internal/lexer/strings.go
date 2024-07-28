@@ -5,6 +5,7 @@ package lexer
 import (
 	"bytes"
 	"fmt"
+	"langur/common"
 	"langur/cpoint"
 	"langur/str"
 	"langur/token"
@@ -48,9 +49,17 @@ func (lex *Lexer) readFreeWordList(tok *token.Token) (err error) {
 
 		// the rest of the tokens to be queued up
 		for i, s := range strs {
-			lex.queueToken(token.Token{Literal: s, Type: token.STRING, Line: tok.Line, LinePosition: tok.LinePosition})
+			lex.queueToken(
+				token.Token{
+					Literal: s, Type: token.STRING,
+					Where: common.NewWhere(tok.Where.Line, tok.Where.LinePosition),
+				})
+
 			if i < len(strs)-1 {
-				lex.queueToken(token.Token{Literal: "(,)", Type: token.COMMA, Line: tok.Line, LinePosition: tok.LinePosition})
+				lex.queueToken(
+					token.Token{Literal: "(,)", Type: token.COMMA,
+						Where: common.NewWhere(tok.Where.Line, tok.Where.LinePosition),
+					})
 			}
 		}
 		lex.queueToken(token.Token{Literal: "(])", Type: token.RBRACKET})
@@ -528,7 +537,7 @@ func (lex *Lexer) readStringLiteral(
 		pieces = append(pieces, piece.String())
 	}
 
-	if !str.Balanced(lex.input[position:lex.bytePosition]) {
+	if !str.Balanced(lex.Source[position:lex.bytePosition]) {
 		errs = append(errs, fmt.Errorf("String literal contains unbalanced code points, such as LTR/RTL opening markers without matching closing markers"))
 	}
 
@@ -673,7 +682,7 @@ func (lex *Lexer) readInterpolatedSection(
 	until := []token.Type{token.COLON, token.RBRACE}
 
 	literal, tokens, err = lexFrom(
-		lex.input[lex.bytePosition:], lex.fileName, lex.line, lex.cpPosition, lex.cpLinePosition, until, lex.Modes)
+		lex.Source[lex.bytePosition:], lex.fileName, lex.line, lex.cpPosition, lex.cpLinePosition, until, lex.Modes)
 
 	tokCnt := len(tokens)
 	if tokCnt == 0 {

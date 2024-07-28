@@ -80,7 +80,7 @@ func (lex *Lexer) readWord() (tl string, err error) {
 		lex.advanceCodePoint()
 	}
 
-	tl = lex.input[position:lex.bytePosition]
+	tl = lex.Source[position:lex.bytePosition]
 	return
 }
 

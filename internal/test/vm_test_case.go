@@ -37,7 +37,7 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 
 	program := parse(t, input)
 
-	comp, err := compiler.New(nil)
+	comp, err := compiler.New(input, nil)
 	if err != nil {
 		t.Fatalf("Test %d: (%q) compiler error on New: %s", testno, input, err)
 	}

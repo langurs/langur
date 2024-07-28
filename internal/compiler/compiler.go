@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"langur/ast"
 	"langur/bytecode"
+	"langur/common"
 	"langur/modes"
 	"langur/object"
 	"langur/opcode"
@@ -21,7 +22,7 @@ func makeErr(node ast.Node, err string) error {
 		return fmt.Errorf("%s", err)
 	}
 	tok := node.TokenInfo()
-	return fmt.Errorf("[%d, %d] %s", tok.Line, tok.LinePosition, err)
+	return fmt.Errorf("[%s] %s", tok.Where.String(), err)
 }
 
 func makeWarning(node ast.Node, err string) error {
@@ -30,12 +31,17 @@ func makeWarning(node ast.Node, err string) error {
 
 type Compiler struct {
 	instructions opcode.Instructions
-	constants    []object.Object
-	symbolTable  *symbol.SymbolTable
-	lateIDs      []string
-	lateIDsUsed  []string
-	lastNode     ast.Node
-	Modes        *modes.CompileModes
+
+	// for tracing errors in the VM
+	where  []*common.Where
+	source string
+
+	constants   []object.Object
+	symbolTable *symbol.SymbolTable
+	lateIDs     []string
+	lateIDsUsed []string
+	lastNode    ast.Node
+	Modes       *modes.CompileModes
 
 	// compile once and reuse...
 	noValueIns opcode.Instructions
@@ -60,12 +66,16 @@ func (c *Compiler) ByteCode() *bytecode.ByteCode {
 			Instructions:       c.instructions,
 			LocalBindingsCount: c.symbolTable.DefinitionCount,
 		},
+
 		Constants: c.constants,
 		Late:      c.lateIDsUsed,
+
+		Source: c.source,
+		Where:  c.where,
 	}
 }
 
-func New(m *modes.CompileModes) (compiler *Compiler, err error) {
+func New(source string, m *modes.CompileModes) (compiler *Compiler, err error) {
 	defer func() {
 		if panik := recover(); panik != nil {
 			err = object.PanicToError(panik)
@@ -76,6 +86,7 @@ func New(m *modes.CompileModes) (compiler *Compiler, err error) {
 		instructions: opcode.Instructions{},
 		constants:    []object.Object{},
 		lateIDs:      late,
+		source:       source,
 	}
 	if m == nil {
 		compiler.Modes = modes.NewCompileModes()
@@ -88,9 +99,9 @@ func New(m *modes.CompileModes) (compiler *Compiler, err error) {
 	return
 }
 
-func NewWithState(s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes) (
+func NewWithState(source string, s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes) (
 	compiler *Compiler, err error) {
-	compiler, err = New(m)
+	compiler, err = New(source, m)
 	compiler.symbolTable = s
 	compiler.constants = constants
 	return

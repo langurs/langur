@@ -193,7 +193,7 @@ func (p *Parser) parseCombinationAssignment(left ast.Node) ast.Node {
 
 func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node) {
 	cnt := 0
-	line := p.tok.Line
+	line := p.tok.Where.Line
 	includesExpansion := false
 
 	parseIdent := func() ast.Node {
@@ -246,7 +246,7 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 	if cnt == 0 {
 		p.addError("Expected identifier(s) in list (cannot be all no-op)")
 	}
-	if p.tok.Line != line {
+	if p.tok.Where.Line != line {
 		p.addError("Unexpected new line(s) in identifier list")
 	}
 

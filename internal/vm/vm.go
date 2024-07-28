@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"langur/args"
 	"langur/bytecode"
+	"langur/common"
 	"langur/modes"
 	"langur/object"
 	"langur/vm/process"
@@ -21,12 +22,18 @@ func bug(fnName, s string) {
 type VM struct {
 	process *process.Process
 	late    []string
+
+	// for tracing errors back to source
+	source string
+	where  []*common.Where
 }
 
 func New(byteCode *bytecode.ByteCode, m *modes.VmModes) *VM {
 	vm := &VM{
 		process: process.New(byteCode.Constants, byteCode.StartCode, m),
 		late:    byteCode.Late,
+		source:  byteCode.Source,
+		where:   byteCode.Where,
 	}
 
 	// set default modes

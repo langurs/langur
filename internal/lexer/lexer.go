@@ -4,6 +4,7 @@ package lexer
 
 import (
 	"fmt"
+	"langur/common"
 	"langur/cpoint"
 	"langur/modes"
 	"langur/str"
@@ -22,8 +23,8 @@ const (
 )
 
 type Lexer struct {
-	// The Lexer currently works with UTF-8 only.
-	input string // input source code string
+	// This Lexer works with UTF-8 only.
+	Source string // input source code string
 
 	bytePosition int  // current byte position (not code point) in source code string
 	peekPosition int  // next byte position to start reading at (might be more than 1 byte ahead to read UTF-8)
@@ -42,10 +43,11 @@ type Lexer struct {
 	// Looking back...
 	previousToken token.Token
 
+	fileName   string
+	cpPosition int // code point position (total)
+
 	// added to each token for error reporting
-	fileName       string
 	line           int
-	cpPosition     int // code point position (total)
 	cpLinePosition int // code point position on the line
 
 	Modes *modes.CompileModes
@@ -62,7 +64,7 @@ func New(input, fileName string, m *modes.CompileModes) (lex *Lexer, err error) 
 		m = modes.NewCompileModes()
 	}
 
-	lex = &Lexer{input: input,
+	lex = &Lexer{Source: input,
 		fileName:       fileName,
 		line:           INIT_LINE,
 		cpLinePosition: -1,
@@ -106,7 +108,8 @@ func (lex *Lexer) queueImpliedSemicolon() {
 func impliedSemicolon(line, linePosition int) token.Token {
 	return token.Token{
 		Type: token.SEMICOLON, Literal: IMPLIED_EXPRESSION_TERMINATOR_LITERAL,
-		Line: line, LinePosition: linePosition}
+		Where: common.NewWhere(line, linePosition),
+	}
 }
 
 func lexFrom(
@@ -162,7 +165,7 @@ func lexFrom(
 		err = fmt.Errorf(errStr)
 	}
 
-	literal = lex.input[:lex.bytePosition]
+	literal = lex.Source[:lex.bytePosition]
 	return
 }
 
@@ -225,8 +228,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 
 	tok.Type = token.INVALID
 	tok.Code = token.CODE_DEFAULT
-	tok.Line = lex.line
-	tok.LinePosition = lex.cpLinePosition
+	tok.Where = common.NewWhere(lex.line, lex.cpLinePosition)
 
 	if lex.EOF {
 		// end of file
@@ -504,8 +506,8 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 			// Queue this token to pick up it up next time so we can add our implied expression terminator here.
 			lex.queueToken(tok)
 			tok = impliedSemicolon(
-				lex.previousToken.Line,
-				lex.previousToken.LinePosition+len(lex.previousToken.Literal),
+				lex.previousToken.Where.Line,
+				lex.previousToken.Where.LinePosition+len(lex.previousToken.Literal),
 			)
 		}
 	}
@@ -627,7 +629,7 @@ func (lex *Lexer) skipComments() (newlineCount int, err error) {
 		}
 	}
 
-	if err == nil && !str.Balanced(lex.input[position:lex.bytePosition]) {
+	if err == nil && !str.Balanced(lex.Source[position:lex.bytePosition]) {
 		err = fmt.Errorf("Comment contains unbalanced code points, such as LTR/RTL opening markers without matching closing markers")
 	}
 
@@ -662,7 +664,7 @@ func (lex *Lexer) advanceCodePoint() {
 	}
 
 	// read in the next code point (peek ahead)
-	lex.peekCp, lex.peekCpWidth, err = cpoint.Decode(&lex.input, lex.peekPosition)
+	lex.peekCp, lex.peekCpWidth, err = cpoint.Decode(&lex.Source, lex.peekPosition)
 	lex.peekEOF = cpoint.IsEOF(err)
 
 	if lex.cp == '\r' {

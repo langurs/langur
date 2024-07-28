@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.17.3
+- added source code string and positional slice (parallel to opcodes) for tracing errors to source (but not yet implemented in compiler)
+
+
 2024-07-28 - 0.17.2
 - fixed parsing bug with left brace being taken as the end of an expression
 - added RoundingMode type to decimal package

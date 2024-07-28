@@ -166,7 +166,7 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
-func repl(text string, out io.Writer, firstRun bool) {
+func repl(source string, out io.Writer, firstRun bool) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
 	var program *ast.Program
@@ -177,7 +177,7 @@ func repl(text string, out io.Writer, firstRun bool) {
 
 	if printLexTokens {
 		// print lexical tokens
-		lex, err = lexer.New(text, "RLPL", compileModes)
+		lex, err = lexer.New(source, "RLPL", compileModes)
 		if err == nil {
 			io.WriteString(out, "Tokens\n")
 			for tok, err := lex.NextToken(); tok.Type != token.EOF; tok, err = lex.NextToken() {
@@ -190,7 +190,7 @@ func repl(text string, out io.Writer, firstRun bool) {
 		}
 	}
 
-	lex, err = lexer.New(text, "REPL", compileModes)
+	lex, err = lexer.New(source, "REPL", compileModes)
 	if err != nil {
 		fmt.Fprintf(out, err.Error())
 		return
@@ -243,7 +243,7 @@ func repl(text string, out io.Writer, firstRun bool) {
 	if printCompiledInstructions || printCompiledConstants ||
 		printVmResultRaw || printVmResultEscaped || printVmResultGoEscaped {
 
-		comp, err = compiler.NewWithState(symbolTable, constants, compileModes)
+		comp, err = compiler.NewWithState(source, symbolTable, constants, compileModes)
 		if err != nil {
 			io.WriteString(out, fmt.Sprintf("Compile Error: %s", err.Error()))
 		}

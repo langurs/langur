@@ -19,7 +19,7 @@ func bug(fnName, s string) {
 }
 
 func (p *Parser) addError(err string) {
-	p.Errs = append(p.Errs, fmt.Errorf("[%d, %d] %s", p.tok.Line, p.tok.LinePosition, err))
+	p.Errs = append(p.Errs, fmt.Errorf("[%s] %s", p.tok.Where.String(), err))
 }
 
 type (

@@ -3,7 +3,7 @@
 package lexer
 
 import (
-	// "fmt"
+	"langur/common"
 	"langur/cpoint"
 	"langur/str"
 	"langur/token"
@@ -765,25 +765,30 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 		{`"s1""s2"`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.STRING,
-					Line: 1, LinePosition: 1},
+					Where: common.NewWhere(1, 1),
+				},
 				&token.Token{Literal: "s2", Type: token.STRING,
-					Line: 1, LinePosition: 5},
+					Where: common.NewWhere(1, 5),
+				},
 			},
 		},
 
 		{` s1`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Line: 1, LinePosition: 2},
+					Where: common.NewWhere(1, 2),
+				},
 			},
 		},
 
 		{`s1 s2`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Line: 1, LinePosition: 1},
+					Where: common.NewWhere(1, 1),
+				},
 				&token.Token{Literal: "s2", Type: token.IDENT,
-					Line: 1, LinePosition: 4},
+					Where: common.NewWhere(1, 4),
+				},
 			},
 		},
 
@@ -791,11 +796,15 @@ func TestTokenSequencingLineReporting(t *testing.T) {
 s2`,
 			[]*token.Token{
 				&token.Token{Literal: "s1", Type: token.IDENT,
-					Line: 1, LinePosition: 1},
+					Where: common.NewWhere(1, 1),
+				},
 				&token.Token{Type: token.SEMICOLON, Literal: IMPLIED_EXPRESSION_TERMINATOR_LITERAL,
-					Line: 1, LinePosition: 3},
+					Where: common.NewWhere(1, 3),
+				},
 				&token.Token{Literal: "s2", Type: token.IDENT,
-					Line: 2, LinePosition: 1, NewLinePrecedes: true},
+					Where:           common.NewWhere(2, 1),
+					NewLinePrecedes: true,
+				},
 			},
 		},
 	}
@@ -824,10 +833,10 @@ s2`,
 				t.Errorf("(%q) token code expected=%d, received=%d", tt.input, expectToken.Code, tok.Code)
 			}
 
-			if expectToken.Line != tok.Line || expectToken.LinePosition != tok.LinePosition {
+			if expectToken.Where.Line != tok.Where.Line || expectToken.Where.LinePosition != tok.Where.LinePosition {
 				t.Errorf("(%q) token line/position expected=%d/%d, received=%d/%d",
-					tt.input, expectToken.Line, expectToken.LinePosition,
-					tok.Line, tok.LinePosition)
+					tt.input, expectToken.Where.Line, expectToken.Where.LinePosition,
+					tok.Where.Line, tok.Where.LinePosition)
 			}
 
 			if expectToken.NewLinePrecedes != tok.NewLinePrecedes {
