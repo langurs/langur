@@ -1663,7 +1663,7 @@ func (ie *InfixExpressionNode) Copy() Node {
 // 	if ok {
 // 		right, ok := TryEvaluate(ie.Right)
 // 		if ok {
-// 			obj, err := object.BinaryOperation(ie.Operator, left, right, 0)
+// 			obj, err := object.BinaryOperation(ie.Operator, left, right, ie.Operator.Code)
 // 			ok = err == nil
 // 			return obj, ok
 // 		}

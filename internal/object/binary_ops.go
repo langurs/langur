@@ -66,6 +66,28 @@ func ShortCircuitingOperation(op opcode.OpCode, left Object, code int) (
 	return NONE, false
 }
 
+// to use from ast.InfixExpressionNode.Evaluate()
+func BinaryOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
+	switch op {
+	case opcode.OpLogicalAnd, opcode.OpLogicalNAnd,
+		opcode.OpLogicalOr, opcode.OpLogicalNOr,
+		opcode.OpLogicalXor, opcode.OpLogicalNXor:
+
+		return BinaryLogicalOperation(op, left, right, code)
+
+	case opcode.OpEqual, opcode.OpNotEqual,
+		opcode.OpGreaterThan, opcode.OpGreaterThanOrEqual,
+		opcode.OpLessThan, opcode.OpLessThanOrEqual,
+		opcode.OpDivisibleBy, opcode.OpNotDivisibleBy,
+		opcode.OpIn, opcode.OpOf:
+
+		return BinaryComparison(op, left, right, code)
+
+	default:
+		return BinaryNonLogicalOperation(op, left, right, code)
+	}
+}
+
 func BinaryLogicalOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
 	dbComp := isDatabaseOperation(code)
 	if dbComp {
@@ -100,8 +122,9 @@ func BinaryLogicalOperation(op opcode.OpCode, left, right Object, code int) (Obj
 	return NativeBoolToObject(b), err
 }
 
-func BinaryOperation(op opcode.OpCode, left, right Object, code int) (result Object, err error) {
-	// not a "logical" operation ...
+// not a "logical" operation ...
+// did not say "illogical" :D
+func BinaryNonLogicalOperation(op opcode.OpCode, left, right Object, code int) (result Object, err error) {
 	dbComp := false
 
 	defer func() {
@@ -214,8 +237,8 @@ func BinaryOperation(op opcode.OpCode, left, right Object, code int) (result Obj
 	return result, nil
 }
 
+// already checked that err != nil
 func AsMathError(err error, source string) error {
-	// already checked that err != nil
 	msg := err.Error()
 	return NewError(ERR_MATH, source, msg)
 }

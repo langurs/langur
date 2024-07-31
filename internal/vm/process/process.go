@@ -35,7 +35,11 @@ type jumpRelay struct {
 	Value object.Object
 }
 
-func New(constants []object.Object, startCode *object.CompiledCode, m *modes.VmModes) *Process {
+func New(
+	constants []object.Object,
+	startCode *object.CompiledCode,
+	m *modes.VmModes) *Process {
+
 	pr := &Process{
 		constants: constants,
 	}
@@ -89,7 +93,7 @@ func (pr *Process) throw(fr *frame, what object.Object) error {
 	src, err := errObj.Contents.GetValue(object.ERR_HASHKEY_SOURCE)
 	if err != nil {
 		err = fmt.Errorf("Error retrieving Error Object Source: %s", err.Error())
-		bug("vm.throw", err.Error())
+		bug("Process.throw", err.Error())
 		return err
 	}
 	if src.String() == "" {
@@ -101,7 +105,7 @@ func (pr *Process) throw(fr *frame, what object.Object) error {
 	return errObj
 }
 
-func (pr *Process) pushFunction(fr *frame, constIndex, freeCount, optionalsCount int) error {
+func (pr *Process) pushFunction(constIndex, freeCount, optionalsCount int) error {
 	constant := pr.constants[constIndex]
 	compiledFn, ok := constant.(*object.CompiledCode)
 	if !ok {

@@ -85,7 +85,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// optionalsCount for optional default instructions (optional defaults that weren't pre-built)
 			optionalsCount := int(ins[ip+4])
 			ip += 4
-			err = pr.pushFunction(fr, constIndex, freeCount, optionalsCount)
+			err = pr.pushFunction(constIndex, freeCount, optionalsCount)
 
 		case opcode.OpSetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
@@ -231,7 +231,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.BinaryOperation(op, left, right, 0)
+			result, err = object.BinaryNonLogicalOperation(op, left, right, 0)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -243,7 +243,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.BinaryOperation(op, left, right, code)
+			result, err = object.BinaryNonLogicalOperation(op, left, right, code)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -322,7 +322,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				result, err = pr.call(right, left)
 
 			} else {
-				result, err = object.BinaryOperation(op, left, right, 0)
+				result, err = object.BinaryNonLogicalOperation(op, left, right, 0)
 			}
 
 			if err == nil {
