@@ -10,7 +10,6 @@ import (
 	"langur/object"
 	"langur/opcode"
 	"langur/symbol"
-	"langur/trace"
 )
 
 func bug(fnName, s string) {
@@ -30,11 +29,8 @@ func makeWarning(node ast.Node, err string) error {
 }
 
 type Compiler struct {
-	opcode.InsPackage
-
-	// for tracing errors back to source code
-	where  []*trace.Where
-	source string
+	InsPackage opcode.InsPackage
+	source     string
 
 	constants   []object.Object
 	symbolTable *symbol.SymbolTable

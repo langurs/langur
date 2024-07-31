@@ -71,7 +71,7 @@ func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 	// check min scale and remove extra zeroes at same time
 	ds := d.string(true)
 
-	// 0.13 bug fix
+	// langur 0.13 bug fix
 	if withDivMax && minScale > DivisionPrecision {
 		minScale = DivisionPrecision
 	}

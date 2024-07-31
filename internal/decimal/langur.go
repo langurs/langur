@@ -85,7 +85,7 @@ func (d Decimal) ScientificNotation(
 	capitalize, requireSign, requireExpSign,
 	rescale, scaleAddTrailingZeroes, scaleTrimTrailingZeroes bool,
 	scale, scaleExp int,
-	roundingMode RoundingMode,
+	rounding RoundingMode,
 	decimalPoint rune) string {
 
 	parts := d.StringParts()
@@ -131,7 +131,7 @@ func (d Decimal) ScientificNotation(
 		p1p2 = RequireFromString(p1p2).
 			RoundByMode(int32(scale),
 				scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
-				roundingMode).
+				rounding).
 			string(false)
 
 	} else {
