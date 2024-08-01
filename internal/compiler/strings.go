@@ -13,13 +13,13 @@ import (
 func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instructions, err error) {
 	patternNode, ok := node.Pattern.(*ast.StringNode)
 	if !ok {
-		return nil, makeErr(node, fmt.Sprintf("Expected String Node within DateTime Node"))
+		return nil, c.makeErr(node, fmt.Sprintf("Expected String Node within DateTime Node"))
 	}
 	s := patternNode.Values[0]
 
 	if len(patternNode.Interpolations) == 0 {
 		if !object.IsValidDateTimeString(s, true) {
-			err = makeErr(node, "Invalid date-time literal string")
+			err = c.makeErr(node, "Invalid date-time literal string")
 			return
 		}
 
@@ -49,7 +49,7 @@ func (c *Compiler) compileDurationNode(node *ast.DurationNode) (ins opcode.Instr
 
 	patternNode, ok := node.Pattern.(*ast.StringNode)
 	if !ok {
-		return nil, makeErr(node, fmt.Sprintf("Expected String Node within Duration Node"))
+		return nil, c.makeErr(node, fmt.Sprintf("Expected String Node within Duration Node"))
 	}
 
 	// built at run-time (contains interpolations)
@@ -65,7 +65,7 @@ func (c *Compiler) compileDurationNode(node *ast.DurationNode) (ins opcode.Instr
 func (c *Compiler) compileRegexNode(node *ast.RegexNode) (ins opcode.Instructions, err error) {
 	patternNode, ok := node.Pattern.(*ast.StringNode)
 	if !ok {
-		return nil, makeErr(node, fmt.Sprintf("Expected String Node within Regex Node"))
+		return nil, c.makeErr(node, fmt.Sprintf("Expected String Node within Regex Node"))
 	}
 
 	var code int
@@ -74,7 +74,7 @@ func (c *Compiler) compileRegexNode(node *ast.RegexNode) (ins opcode.Instruction
 
 	} else {
 		bug("compileRegexNode", "Unknown regex type")
-		return nil, makeErr(node, fmt.Sprintf("Unknown regex type"))
+		return nil, c.makeErr(node, fmt.Sprintf("Unknown regex type"))
 	}
 
 	if len(patternNode.Interpolations) == 0 {
@@ -131,7 +131,7 @@ func (c *Compiler) compileString(
 				interp, ok := node.Interpolations[i].(*ast.InterpolatedNode)
 				if !ok {
 					bug("compileStringNode", fmt.Sprintf("Expected interpolation node for value %d", i))
-					err = makeErr(interp, fmt.Sprintf("Expected interpolation node for value %d", i))
+					err = c.makeErr(interp, fmt.Sprintf("Expected interpolation node for value %d", i))
 					return
 				}
 
@@ -140,7 +140,7 @@ func (c *Compiler) compileString(
 					// check that regex types match
 					re, ok := interp.Value.(*ast.RegexNode)
 					if ok && re.RegexType != regexType {
-						err = makeErr(interp, fmt.Sprintf("Interpolated regex type value (%s) does not match regex literal type (%s)", re.RegexType.String(), regexType.String()))
+						err = c.makeErr(interp, fmt.Sprintf("Interpolated regex type value (%s) does not match regex literal type (%s)", re.RegexType.String(), regexType.String()))
 						return
 					}
 				}

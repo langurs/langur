@@ -110,7 +110,7 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 	case token.MINUS:
 		ins = append(b, opcode.Make(opcode.OpNumericNegation)...)
 	default:
-		err = makeErr(node, fmt.Sprintf("Unknown prefix operator %s", token.TypeDescription(node.Operator.Type)))
+		err = c.makeErr(node, fmt.Sprintf("Unknown prefix operator %s", token.TypeDescription(node.Operator.Type)))
 	}
 
 	return
@@ -125,7 +125,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 	// may not work and play well with database operation but so far not mixed
 	op, negated, ok := InfixTokenToOpCode(node.Operator)
 	if !ok {
-		err = makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
+		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
 		return
 	}
 
@@ -248,7 +248,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return either()
 
 	default:
-		err = makeErr(node, fmt.Sprintf("unknown operator (%s)", token.TypeDescription(node.Operator.Type)))
+		err = c.makeErr(node, fmt.Sprintf("unknown operator (%s)", token.TypeDescription(node.Operator.Type)))
 	}
 
 	return

@@ -12,7 +12,7 @@ import (
 
 func (c *Compiler) compileIdentifierNode(node *ast.IdentNode) (ins opcode.Instructions, err error) {
 	if node.Type != nil {
-		return nil, makeErr(node, "This revision of langur not able to accept explicit variable type")
+		return nil, c.makeErr(node, "This revision of langur not able to accept explicit variable type")
 	}
 
 	bi := process.GetBuiltInByName(node.Name)
@@ -53,7 +53,7 @@ func (c *Compiler) makeOpGetInstructions(node ast.Node, sym symbol.Symbol, level
 	case symbol.SelfScope:
 		return c.compileSelfRef(node)
 	}
-	err = makeErr(node, fmt.Sprintf("Attempt to create OpGet instructions on %s for scope %s not accounted for", sym.Name, sym.Scope))
+	err = c.makeErr(node, fmt.Sprintf("Attempt to create OpGet instructions on %s for scope %s not accounted for", sym.Name, sym.Scope))
 	bug("makeOpGetInstructions", err.Error())
 	return nil, err
 }
@@ -61,7 +61,7 @@ func (c *Compiler) makeOpGetInstructions(node ast.Node, sym symbol.Symbol, level
 func (c *Compiler) resolveAndGetInstructions(node ast.Node, name string) (ins opcode.Instructions, err error) {
 	sym, level, ok := c.symbolTable.Resolve(name)
 	if !ok {
-		err = makeErr(node, fmt.Sprintf("Could not resolve variable in scope: %s", name))
+		err = c.makeErr(node, fmt.Sprintf("Could not resolve variable in scope: %s", name))
 		return
 	}
 	return c.makeOpGetInstructions(node, sym, level)

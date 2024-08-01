@@ -3,8 +3,8 @@ https://langurlang.org
 
 ... - 0.17.3
 - changed token.Line and token.LinePosition to use a struct trace.Where
-- added source code string for tracing errors to source (but not yet implemented)
-- changed object.CompiledCode to use opcode.InsPackage to include meta-data (but not yet implemented)
+- added source code string for tracing errors to source in parser and compiler
+- changed object.CompiledCode to use opcode.InsPackage to include meta-data (but not yet implemented in VM)
 - moved infix token to opcode conversion outside of compiler.compileInfixExpression()
 
 

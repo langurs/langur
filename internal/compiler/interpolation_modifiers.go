@@ -138,7 +138,7 @@ func (c *Compiler) compileInterpolationModifierIns(
 		return c.compileModifierInsForDateTime(node, m)
 
 	} else {
-		err = makeErr(node, fmt.Sprintf("Unknown/invalid interpolation modifier (%s)", mod))
+		err = c.makeErr(node, fmt.Sprintf("Unknown/invalid interpolation modifier (%s)", mod))
 	}
 
 	return
@@ -152,7 +152,7 @@ func (c *Compiler) compileModifierInsForAlignment(node ast.Node, m []string) (
 	var align *object.Number
 	align, err = object.NumberFromString(subMatchByName("align", m, names))
 	if err != nil {
-		err = makeErr(node, "Error processing code point alignment number for interpolation modifier")
+		err = c.makeErr(node, "Error processing code point alignment number for interpolation modifier")
 		return
 	}
 
@@ -180,7 +180,7 @@ func (c *Compiler) compileModifierInsForLimit(node ast.Node, m []string) (
 	var limit *object.Number
 	limit, err = object.NumberFromString(subMatchByName("limit", m, names))
 	if err != nil {
-		err = makeErr(node, "Error processing limit number for interpolation modifier")
+		err = c.makeErr(node, "Error processing limit number for interpolation modifier")
 		return
 	}
 
@@ -203,7 +203,7 @@ func (c *Compiler) compileModifierInsForLimitGraphemes(node ast.Node, m []string
 	var limit *object.Number
 	limit, err = object.NumberFromString(subMatchByName("limit", m, names))
 	if err != nil {
-		err = makeErr(node, "Error processing grapheme limit number for interpolation modifier")
+		err = c.makeErr(node, "Error processing grapheme limit number for interpolation modifier")
 		return
 	}
 
@@ -227,7 +227,7 @@ func (c *Compiler) compileModifierInsForCustomFn(node ast.Node, m []string) (
 	var customFn opcode.Instructions
 	customFn, err = c.resolveAndGetInstructions(node, subMatchByName("fn", m, names))
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing custom function retrieval for interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing custom function retrieval for interpolation modifier: %s", err))
 		return
 	}
 	ins = append(ins, customFn...)
@@ -249,7 +249,7 @@ func (c *Compiler) compileModifierInsForTruncate(node ast.Node, m []string) (
 		max, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing truncate maximum digits for interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing truncate maximum digits for interpolation modifier: %s", err))
 		return
 	}
 
@@ -290,7 +290,7 @@ func (c *Compiler) compileModifierInsForRounding(node ast.Node, m []string) (
 		max, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing rounding maximum digits for interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing rounding maximum digits for interpolation modifier: %s", err))
 		return
 	}
 
@@ -334,7 +334,7 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	var base *object.Number
 	base, err = object.NumberFromString(b)
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing base for interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing base for interpolation modifier: %s", err))
 		return
 	}
 
@@ -348,12 +348,12 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 	if mm == "" {
 		mm = "1"
 	} else if mm == "0" {
-		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: integer cannot be 0 (maybe you meant 1?)"))
+		err = c.makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: integer cannot be 0 (maybe you meant 1?)"))
 		return
 	}
 	integer, err = object.NumberFromString(mm)
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: %s", err))
 		return
 	}
 
@@ -363,13 +363,13 @@ func (c *Compiler) compileModifierInsForFixedNotation(node ast.Node, m []string)
 
 	} else {
 		if b != "10" {
-			err = makeErr(node, "Fractional only valid with base 10")
+			err = c.makeErr(node, "Fractional only valid with base 10")
 			return
 		}
 
 		frac, err = object.NumberFromString(mm)
 		if err != nil {
-			err = makeErr(node, fmt.Sprintf("Error processing fractional for fixed point interpolation modifier: %s", err))
+			err = c.makeErr(node, fmt.Sprintf("Error processing fractional for fixed point interpolation modifier: %s", err))
 			return
 		}
 	}
@@ -444,7 +444,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		scale, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing scale for e-notation interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing scale for e-notation interpolation modifier: %s", err))
 		return
 	}
 
@@ -462,7 +462,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		scaleExp, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Error processing exponent scale for e-notation interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing exponent scale for e-notation interpolation modifier: %s", err))
 		return
 	}
 
@@ -531,7 +531,7 @@ func (c *Compiler) compileModifierInsForDateTime(node ast.Node, m []string) (
 		var fmtStringVar opcode.Instructions
 		fmtStringVar, err = c.resolveAndGetInstructions(node, dtvar)
 		if err != nil {
-			err = makeErr(node, fmt.Sprintf("Error processing variable retrieval for date-time interpolation modifier: %s", err))
+			err = c.makeErr(node, fmt.Sprintf("Error processing variable retrieval for date-time interpolation modifier: %s", err))
 			return
 		}
 		ins = append(ins, fmtStringVar...)

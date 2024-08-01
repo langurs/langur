@@ -16,16 +16,23 @@ func bug(fnName, s string) {
 	panic("Compiler Bug: " + s)
 }
 
-func makeErr(node ast.Node, err string) error {
-	if node == nil {
-		return fmt.Errorf("%s", err)
-	}
+const includeTracing = true
+
+func (c *Compiler) makeErr(node ast.Node, err string) error {
 	tok := node.TokenInfo()
-	return fmt.Errorf("[%s] %s", tok.Where.String(), err)
+	tracing := ""
+	if includeTracing {
+		tracing = fmt.Sprintf("\n\n%s", tok.Where.Trace(c.source))
+	}
+
+	if node == nil {
+		return fmt.Errorf("%s%s", err, tracing)
+	}
+	return fmt.Errorf("[%s] %s%s", tok.Where.String(), err, tracing)
 }
 
-func makeWarning(node ast.Node, err string) error {
-	return makeErr(node, "warning: "+err)
+func (c *Compiler) makeWarning(node ast.Node, err string) error {
+	return c.makeErr(node, "warning: "+err)
 }
 
 type Compiler struct {
@@ -186,7 +193,7 @@ func sameConstant(obj1, obj2 object.Object) bool {
 
 func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, err error) {
 	if c.symbolTable.Outer != nil {
-		err = makeErr(node, "Current implementation can only set modes in global context")
+		err = c.makeErr(node, "Current implementation can only set modes in global context")
 		return
 		// The idea is that modes will have scope like variables. ...
 		// ... Therefore, if set, they have to be reset when exiting scope.
@@ -197,7 +204,7 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 	}
 	code, ok := modes.ModeNames[node.Name]
 	if !ok {
-		err = makeErr(node, fmt.Sprintf("Unknown mode setting %s", node.Name))
+		err = c.makeErr(node, fmt.Sprintf("Unknown mode setting %s", node.Name))
 		return
 	}
 	ins = append(ins, opcode.Make(opcode.OpMode, code)...)
@@ -312,7 +319,7 @@ func (c *Compiler) compileNode(node ast.Node, popAtEndOfExpression bool) (ins op
 		ins, err = c.compileNoneNode(node)
 
 	case nil:
-		err = makeErr(c.lastNode, "Nil node")
+		err = c.makeErr(c.lastNode, "Nil node")
 		// bug("compileNode", "Nil node")
 		return
 
@@ -320,10 +327,10 @@ func (c *Compiler) compileNode(node ast.Node, popAtEndOfExpression bool) (ins op
 		//bug(fmt.Sprintf("Node type %T not accounted for", node))
 		exprNode, ok := c.lastNode.(*ast.ExpressionStatementNode)
 		if ok {
-			err = makeErr(node, fmt.Sprintf("Node type %T not accounted for in this context (possible parsing error or compiler incomplete; last node type %T)", node, exprNode.Expression))
+			err = c.makeErr(node, fmt.Sprintf("Node type %T not accounted for in this context (possible parsing error or compiler incomplete; last node type %T)", node, exprNode.Expression))
 			// bug("compileNode", fmt.Sprintf("Node type %T not accounted for (parsing error or compiler incomplete; last node type %T)", node, exprNode.Expression))
 		} else {
-			err = makeErr(node, fmt.Sprintf("Node type %T not accounted for in this context (possible parsing error or compiler incomplete; last node type %T)", node, c.lastNode))
+			err = c.makeErr(node, fmt.Sprintf("Node type %T not accounted for in this context (possible parsing error or compiler incomplete; last node type %T)", node, c.lastNode))
 			// bug("compileNode", fmt.Sprintf("Node type %T not accounted for (parsing error or compiler incomplete; last node type %T)", node, c.lastNode))
 		}
 		return

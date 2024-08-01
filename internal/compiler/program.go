@@ -24,7 +24,7 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 		case *ast.ModuleNode:
 			if i == 0 {
 				if n.Name != "" {
-					err = makeErr(node, "No name expected on module")
+					err = c.makeErr(node, "No name expected on module")
 					return
 				}
 
@@ -35,13 +35,13 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 
 			} else {
 				// not first node; an error
-				err = makeErr(node, "Module must be first part of code to compile as module")
+				err = c.makeErr(node, "Module must be first part of code to compile as module")
 				return
 			}
 
 		case *ast.ImportNode:
 			if importsDone {
-				err = makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
+				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
 				return
 			}
 			bSlc, err = c.compileNode(s, true)
@@ -78,20 +78,20 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 		switch node := s.(type) {
 		case *ast.ImportNode:
 			if importsDone {
-				err = makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", moduleorder))
+				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", moduleorder))
 				return
 			}
 			imports = append(imports, node)
 
 		case *ast.ModeNode:
 			if modesDone {
-				err = makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", moduleorder))
+				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", moduleorder))
 				return
 			}
 			importsDone = true
 
 			if str.IsInSlice(node.Name, modeNames) {
-				err = makeErr(node, fmt.Sprintf("Repeat of mode setting for %s", node.Name))
+				err = c.makeErr(node, fmt.Sprintf("Repeat of mode setting for %s", node.Name))
 				return
 			}
 			modes = append(modes, node)
@@ -100,7 +100,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 		case *ast.ExpressionStatementNode:
 			decl, ok := node.Expression.(*ast.LineDeclarationNode)
 			if !ok {
-				err = makeErr(node, "Expected declarations only; cannot use other expressions in module context")
+				err = c.makeErr(node, "Expected declarations only; cannot use other expressions in module context")
 				return
 			}
 			importsDone = true
@@ -116,7 +116,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 			declarations = append(declarations, flatten...)
 
 		default:
-			err = makeErr(node, fmt.Sprintf("Expected imports/modes/declarations, not %T", node))
+			err = c.makeErr(node, fmt.Sprintf("Expected imports/modes/declarations, not %T", node))
 			return
 		}
 	}
@@ -140,7 +140,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 	}
 
 	// last of all, compile declarations
-	declarations, err = fixModuleDeclarations(declarations)
+	declarations, err = c.fixModuleDeclarations(declarations)
 	if err != nil {
 		return
 	}
@@ -161,13 +161,13 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 	}
 
 	if c.impureEffects && !c.moduleDeclaredImpureEffects {
-		err = makeErr(nodes[0], "Module contains impure effects and is not declared impure; use module* (with asterisk)")
+		err = c.makeErr(nodes[0], "Module contains impure effects and is not declared impure; use module* (with asterisk)")
 	}
 
 	return
 }
 
-func fixModuleDeclarations(declarations []*ast.LineDeclarationNode) (
+func (c *Compiler) fixModuleDeclarations(declarations []*ast.LineDeclarationNode) (
 	decl []*ast.LineDeclarationNode, err error) {
 
 	L := len(declarations)
@@ -178,7 +178,7 @@ func fixModuleDeclarations(declarations []*ast.LineDeclarationNode) (
 			// disallow module var declarations for now
 			// Within a function, the variables would be closures.
 			// Since we can't mutate them anyway, allowing mutable declarations is confusing.
-			return nil, makeErr(declarations[i], "Cannot use var declarations in module context")
+			return nil, c.makeErr(declarations[i], "Cannot use var declarations in module context")
 		}
 
 		// fix function declarations that won't pass as system functions
@@ -194,11 +194,11 @@ func fixModuleDeclarations(declarations []*ast.LineDeclarationNode) (
 
 						// verify not mutable and is a function
 						if declarations[i].Mutable {
-							return decl, makeErr(declarations[i], fmt.Sprintf("%s must be immutable declaration", id.Name))
+							return decl, c.makeErr(declarations[i], fmt.Sprintf("%s must be immutable declaration", id.Name))
 						}
 						_, isFunction := a.Values[0].(*ast.FunctionNode)
 						if !isFunction {
-							return decl, makeErr(declarations[i], fmt.Sprintf("%s must be a function", id.Name))
+							return decl, c.makeErr(declarations[i], fmt.Sprintf("%s must be a function", id.Name))
 						}
 					}
 				}

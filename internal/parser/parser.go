@@ -18,8 +18,14 @@ func bug(fnName, s string) {
 	panic("Parser bug: " + s)
 }
 
+const includeTracing = true
+
 func (p *Parser) addError(err string) {
-	p.Errs = append(p.Errs, fmt.Errorf("[%s] %s", p.tok.Where.String(), err))
+	if includeTracing {
+		p.Errs = append(p.Errs, fmt.Errorf("[%s] %s\n\n%s", p.tok.Where.String(), err, p.tok.Where.Trace(p.lex.Source)))
+	} else {
+		p.Errs = append(p.Errs, fmt.Errorf("[%s] %s", p.tok.Where.String(), err))
+	}
 }
 
 type (

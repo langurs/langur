@@ -18,11 +18,11 @@ func init() {
 
 func (c *Compiler) checkStatementCounts() (err error) {
 	if c.breakStmtCount != 0 {
-		err = makeErr(nil, fmt.Sprintf(`%d "break" statement(s) not accounted for`, c.breakStmtCount))
+		err = c.makeErr(nil, fmt.Sprintf(`%d "break" statement(s) not accounted for`, c.breakStmtCount))
 	} else if c.nextStmtCount != 0 {
-		err = makeErr(nil, fmt.Sprintf(`%d "next" statement(s) not accounted for`, c.nextStmtCount))
+		err = c.makeErr(nil, fmt.Sprintf(`%d "next" statement(s) not accounted for`, c.nextStmtCount))
 	} else if c.fallthroughStmtCount != 0 {
-		err = makeErr(nil, fmt.Sprintf(`%d "fallthrough" statement(s) not accounted for`, c.fallthroughStmtCount))
+		err = c.makeErr(nil, fmt.Sprintf(`%d "fallthrough" statement(s) not accounted for`, c.fallthroughStmtCount))
 	}
 	return
 }
@@ -122,7 +122,7 @@ func (c *Compiler) compileBreak(node *ast.BreakNode) (ins opcode.Instructions, e
 	c.breakStmtCount++
 
 	if len(c.loopVarStack) < 1 {
-		return nil, makeErr(node, "Break declared outside of loop")
+		return nil, c.makeErr(node, "Break declared outside of loop")
 	}
 
 	if node.Value == nil {
@@ -210,10 +210,10 @@ func (c *Compiler) compileIfExpression(node *ast.IfNode) (ins opcode.Instruction
 				// Houston, we have a bug.
 				if node.IsSwitchExpr {
 					bug("compileIfExpression", "Default not last part of switch expression")
-					err = makeErr(node, "Default not last part of switch expression")
+					err = c.makeErr(node, "Default not last part of switch expression")
 				} else {
 					bug("compileIfExpression", "Else not last part of if/else expression")
-					err = makeErr(node, "Else not last part of if/else expression")
+					err = c.makeErr(node, "Else not last part of if/else expression")
 				}
 				return
 			}
@@ -291,7 +291,7 @@ func (c *Compiler) compileIfExpression(node *ast.IfNode) (ins opcode.Instruction
 			if compiledTests[i].st != nil {
 				// If we allowed declarations within case statements, they would have to be included...
 				// ...in scope wrapping, making it impossible to set a jump for fallthrough.
-				err = makeErr(node, "Cannot use declarations in case statement of switch expression")
+				err = c.makeErr(node, "Cannot use declarations in case statement of switch expression")
 				return
 			}
 

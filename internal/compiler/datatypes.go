@@ -24,7 +24,7 @@ func (c *Compiler) compileNullNode(node *ast.NullNode) (ins opcode.Instructions,
 func (c *Compiler) compileNoneNode(node *ast.NoneNode) (ins opcode.Instructions, err error) {
 	if node.Token.Literal == "_" {
 		// must be interpreted by context
-		err = makeErr(c.lastNode, "Underscore no-op literal not dealt with in this context")
+		err = c.makeErr(c.lastNode, "Underscore no-op literal not dealt with in this context")
 		return
 	}
 	// no-op by keyword...
@@ -36,7 +36,7 @@ func (c *Compiler) compileNumberNode(node *ast.NumberNode) (ins opcode.Instructi
 	if c.Modes.WarnOnIntegerLiteralsStartingWithZero {
 		if node.Token.Type == token.INT && len(node.Value) > 1 &&
 			node.Token.Code == token.CODE_DEFAULT && node.Value[0] == '0' {
-			err = makeWarning(node, "Integer literal starting with zero (might be confused for a base 8 number (as used in other languages)")
+			err = c.makeWarning(node, "Integer literal starting with zero (might be confused for a base 8 number (as used in other languages)")
 			return
 		}
 	}

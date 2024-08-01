@@ -36,7 +36,7 @@ func (w Where) Trace(source string) string {
 		// using 1-based indexing
 		line := lines[w.Line-1]
 		space := strings.Repeat(" ", w.LinePosition-1)
-		return line + "\n" + space + "^"
+		return line + "\n" + space + "^" + "\n"
 	}
 
 	return ""

@@ -25,7 +25,7 @@ func (c *Compiler) makeOpSetInstructions(node ast.Node, sym symbol.Symbol, level
 		}
 
 	} else {
-		err = makeErr(node, fmt.Sprintf("Attempt to create OpSet instructions on %s for scope %s", sym.Name, sym.Scope))
+		err = c.makeErr(node, fmt.Sprintf("Attempt to create OpSet instructions on %s for scope %s", sym.Name, sym.Scope))
 	}
 	return
 }
@@ -43,7 +43,7 @@ func (c *Compiler) makeOpSetIndexInstructions(node ast.Node, sym symbol.Symbol, 
 	if sym.Scope == symbol.GlobalScope {
 		temp, err = opcode.MakeWithErrTest(opcode.OpSetGlobalIndexedValue, sym.Index)
 		if err != nil {
-			err = makeErr(node, err.Error())
+			err = c.makeErr(node, err.Error())
 			return
 		}
 		ins = append(ins, temp...)
@@ -52,21 +52,21 @@ func (c *Compiler) makeOpSetIndexInstructions(node ast.Node, sym symbol.Symbol, 
 		if level == 0 {
 			temp, err = opcode.MakeWithErrTest(opcode.OpSetLocalIndexedValue, sym.Index)
 			if err != nil {
-				err = makeErr(node, err.Error())
+				err = c.makeErr(node, err.Error())
 				return
 			}
 			ins = append(ins, temp...)
 		} else {
 			temp, err = opcode.MakeWithErrTest(opcode.OpSetNonLocalIndexedValue, sym.Index, level)
 			if err != nil {
-				err = makeErr(node, err.Error())
+				err = c.makeErr(node, err.Error())
 				return
 			}
 			ins = append(ins, temp...)
 		}
 
 	} else {
-		err = makeErr(node, fmt.Sprintf("Attempt to create OpSet Indexed instructions on %s for scope %s", sym.Name, sym.Scope))
+		err = c.makeErr(node, fmt.Sprintf("Attempt to create OpSet Indexed instructions on %s for scope %s", sym.Name, sym.Scope))
 	}
 	return
 }
@@ -79,7 +79,7 @@ func (c *Compiler) compileDeclarationAndAssignments(
 	if !ok {
 		// parser failed
 		bug("compileDeclarationAndAssignments", "Expected *ast.AssignmentNode in *ast.LineDeclarationNode")
-		err = makeErr(assign, "Expected assignment in declaration")
+		err = c.makeErr(assign, "Expected assignment in declaration")
 		return
 	}
 
@@ -104,13 +104,13 @@ func (c *Compiler) compileDeclarationAndAssignments(
 			var sym symbol.Symbol
 			sym, err = c.symbolTable.DefineVariable(variable.Name, decl.Mutable, variable.System)
 			if err != nil {
-				err = makeErr(assign, err.Error())
+				err = c.makeErr(assign, err.Error())
 				return
 			}
 
 			temp, err = c.makeOpSetInstructions(assign, sym, 0)
 			if err != nil {
-				err = makeErr(assign, err.Error())
+				err = c.makeErr(assign, err.Error())
 				return
 			}
 			ins = append(ins, temp...)
@@ -160,23 +160,23 @@ func (c *Compiler) compileAssignment(node *ast.AssignmentNode) (ins opcode.Instr
 				index = n.Index
 
 			default:
-				err = makeErr(node, fmt.Sprintf("Invalid type for assignment identifier: %T", n))
+				err = c.makeErr(node, fmt.Sprintf("Invalid type for assignment identifier: %T", n))
 				return
 			}
 
 			name := variable.Name
 			sym, cnt, ok := c.symbolTable.Resolve(name)
 			if !ok {
-				err = makeErr(node, fmt.Sprintf("Unable to resolve variable %s for assignment", name))
+				err = c.makeErr(node, fmt.Sprintf("Unable to resolve variable %s for assignment", name))
 				return
 			}
 
 			if !sym.Mutable && !node.SystemAssignment {
 				if variable.System {
-					err = makeErr(node, fmt.Sprintf("Cannot assign to system variable %s (not mutable by user)", name))
+					err = c.makeErr(node, fmt.Sprintf("Cannot assign to system variable %s (not mutable by user)", name))
 					return
 				} else {
-					err = makeErr(node, fmt.Sprintf("Cannot assign to immutable %s (use var instead of val to make mutable declaration)", name))
+					err = c.makeErr(node, fmt.Sprintf("Cannot assign to immutable %s (use var instead of val to make mutable declaration)", name))
 					return
 				}
 			}
@@ -239,7 +239,7 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 		case *ast.IdentNode:
 			_, err = c.symbolTable.DefineVariable(id.Name, mutable, id.System)
 			if err != nil {
-				err = makeErr(node, err.Error())
+				err = c.makeErr(node, err.Error())
 				return
 			}
 
@@ -253,18 +253,18 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 
 		case *ast.ExpansionNode:
 			if i < len(node.Identifiers)-1 {
-				err = makeErr(node, "Expansion possible on last variable of decoupling assignment only")
+				err = c.makeErr(node, "Expansion possible on last variable of decoupling assignment only")
 				return
 			}
 			variable, ok := id.Continuation.(*ast.IdentNode)
 			if !ok {
-				err = makeErr(node, "Expansion expected variable on decoupling assignment")
+				err = c.makeErr(node, "Expansion expected variable on decoupling assignment")
 				return
 			}
 
 			_, err = c.symbolTable.DefineVariable(variable.Name, mutable, variable.System)
 			if err != nil {
-				err = makeErr(node, err.Error())
+				err = c.makeErr(node, err.Error())
 				return
 			}
 
@@ -279,7 +279,7 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 			setNonResultsNodes = append(setNonResultsNodes, ast.MakeAssignmentStatement(variable, ast.NoValue, true))
 
 		default:
-			err = makeErr(node, fmt.Sprintf("Invalid type for declaration assignment identifier: %T", id))
+			err = c.makeErr(node, fmt.Sprintf("Invalid type for declaration assignment identifier: %T", id))
 			return
 		}
 	}
@@ -324,7 +324,7 @@ func (c *Compiler) compileDecouplingAssignment(node *ast.AssignmentNode) (
 
 		case *ast.ExpansionNode:
 			if i < len(node.Identifiers)-1 {
-				err = makeErr(node, "Expansion possible on last variable of decoupling assignment only")
+				err = c.makeErr(node, "Expansion possible on last variable of decoupling assignment only")
 				return
 			}
 			expansionMin, expansionMax = implicitDecouplingExpansionMin, -1
@@ -338,7 +338,7 @@ func (c *Compiler) compileDecouplingAssignment(node *ast.AssignmentNode) (
 				setResultsNodes = append(setResultsNodes, temp)
 
 			default:
-				err = makeErr(node, "Expansion expected variable on decoupling assignment")
+				err = c.makeErr(node, "Expansion expected variable on decoupling assignment")
 				return
 			}
 

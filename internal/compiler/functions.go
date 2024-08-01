@@ -17,13 +17,13 @@ func decodeInt(node ast.Node) (int, error) {
 	case *ast.NumberNode:
 		return n.DecodeInt()
 	default:
-		return 0, makeErr(node, "Expected integers only")
+		return 0, fmt.Errorf("Expected integers only")
 	}
 }
 
 func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instructions, err error) {
 	if node.ReturnType != nil {
-		return nil, makeErr(node, "This revision of langur not able to compile explicit return type")
+		return nil, c.makeErr(node, "This revision of langur not able to compile explicit return type")
 	}
 
 	c.pushVariableScope() // pop scope in deferred function below
@@ -48,7 +48,7 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 	switch sig.Name {
 	case "_main":
 		if len(node.PositionalParameters) != 0 || len(node.ByNameParameters) != 0 {
-			err = makeErr(node, "Function _main() cannot have parameters")
+			err = c.makeErr(node, "Function _main() cannot have parameters")
 			return
 		}
 
@@ -91,9 +91,9 @@ func (c *Compiler) compileFunctionNode(node *ast.FunctionNode) (ins opcode.Instr
 
 	if sig.ImpureEffects && !node.ImpureEffects {
 		if node.Name == "" {
-			err = makeErr(node, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
+			err = c.makeErr(node, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
 		} else {
-			err = makeErr(node, fmt.Sprintf("Impure function (%s) not declared as impure; use a * to declare impurity, such as fn*() { }", str.ReformatInput(node.Name)))
+			err = c.makeErr(node, fmt.Sprintf("Impure function (%s) not declared as impure; use a * to declare impurity, such as fn*() { }", str.ReformatInput(node.Name)))
 		}
 		return
 	}
@@ -192,7 +192,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 		// check for duplicate external names (not registered in symbol tables)
 		if param.ExternalName != "" {
 			if str.IsInSlice(param.ExternalName, externalNames) {
-				err = makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for parameters by name", str.ReformatInput(param.ExternalName)))
+				err = c.makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for parameters by name", str.ReformatInput(param.ExternalName)))
 				return
 			}
 			externalNames = append(externalNames, param.ExternalName)
@@ -224,13 +224,13 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 		case *ast.AssignmentNode:
 			param, defaultIns, err = c.assessParameterByName(assign)
 			if err != nil {
-				err = makeErr(node, err.Error())
+				err = c.makeErr(node, err.Error())
 				return
 			}
 			system = assign.SystemAssignment
 
 		default:
-			err = makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
+			err = c.makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
 			return
 		}
 		param.Mutable = p.Mutable
@@ -238,14 +238,14 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 	case *ast.AssignmentNode:
 		param, defaultIns, err = c.assessParameterByName(p)
 		if err != nil {
-			err = makeErr(node, err.Error())
+			err = c.makeErr(node, err.Error())
 			return
 		}
 		system = p.SystemAssignment
 
 	case *ast.ExpansionNode:
 		if !lastPositional {
-			err = makeErr(node, "Parameter expansion only allowed on last positional parameter")
+			err = c.makeErr(node, "Parameter expansion only allowed on last positional parameter")
 			return
 		}
 
@@ -274,17 +274,17 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 				}
 
 			default:
-				err = makeErr(node, "Invalid expression for limits on parameter expansion")
+				err = c.makeErr(node, "Invalid expression for limits on parameter expansion")
 			}
 
 		default:
-			err = makeErr(node, fmt.Sprintf("Invalid limit type on parameter expansion (%T)", lim))
+			err = c.makeErr(node, fmt.Sprintf("Invalid limit type on parameter expansion (%T)", lim))
 		}
 		if err == nil &&
 			(paramExpansionMin < 0 || paramExpansionMax < -1 || paramExpansionMax == 0 ||
 				(paramExpansionMin > paramExpansionMax && paramExpansionMax != -1)) {
 
-			err = makeErr(node, "Invalid limits on parameter expansion")
+			err = c.makeErr(node, "Invalid limits on parameter expansion")
 		}
 		if err != nil {
 			return
@@ -295,12 +295,12 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 			param.InternalName = continuation.Name
 			system = continuation.System
 		default:
-			err = makeErr(node, "Invalid parameter expansion; expected variable name only")
+			err = c.makeErr(node, "Invalid parameter expansion; expected variable name only")
 			return
 		}
 
 	default:
-		err = makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
+		err = c.makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
 		return
 	}
 
@@ -311,7 +311,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 
 	_, err = c.symbolTable.DefineVariable(param.InternalName, param.Mutable, system)
 	if err != nil {
-		err = makeErr(node, fmt.Sprintf("Parameter %d definition error: %s", pnum, err.Error()))
+		err = c.makeErr(node, fmt.Sprintf("Parameter %d definition error: %s", pnum, err.Error()))
 	}
 
 	return
@@ -326,7 +326,7 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 	if len(assign.Identifiers) != 1 ||
 		(!requiredByName && len(assign.Values) != 1) {
 
-		err = makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
+		err = c.makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
 		return
 	}
 
@@ -341,11 +341,11 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 			param.InternalName = expr.Left.(*ast.IdentNode).Name
 			param.ExternalName = expr.Right.(*ast.IdentNode).Name
 		} else {
-			err = makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
+			err = c.makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
 		}
 
 	default:
-		err = makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
+		err = c.makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
 		return
 	}
 
@@ -353,7 +353,7 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 		// attempt to build default value now (if possible)
 		defaultIns, param.DefaultValue, err = c.compileOrEvaluateNode(assign.Values[0], false)
 		if err != nil {
-			err = makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
+			err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
 			return
 		}
 		if param.DefaultValue == nil {
@@ -369,14 +369,14 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 
 func (c *Compiler) compileSelfRef(node ast.Node) (opcode.Instructions, error) {
 	if c.symbolTable.Outer == nil {
-		return nil, makeErr(node, "Cannot use self token in global scope")
+		return nil, c.makeErr(node, "Cannot use self token in global scope")
 	}
 	return opcode.MakeWithErrTest(opcode.OpGetSelf)
 }
 
 func (c *Compiler) compileReturnNode(node *ast.ReturnNode) (ins opcode.Instructions, err error) {
 	if c.functionLevel == 0 {
-		err = makeErr(node, "Cannot use return outside of function")
+		err = c.makeErr(node, "Cannot use return outside of function")
 		return
 	}
 	ins, err = c.compileNode(node.ReturnValue, true)
@@ -403,7 +403,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 	for _, arg := range node.PositionalArgs {
 		if hasExpansion {
 			// already set hasExpansion and have another positional argument
-			err = makeErr(arg, fmt.Sprintf("Argument expansion only possible on last positional argument"))
+			err = c.makeErr(arg, fmt.Sprintf("Argument expansion only possible on last positional argument"))
 			return
 		}
 
@@ -451,7 +451,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 			// check for duplicate external (argument) names
 			if externalName != "" {
 				if str.IsInSlice(externalName, externalNames) {
-					err = makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))
+					err = c.makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))
 					return
 				}
 				externalNames = append(externalNames, externalName)
@@ -459,7 +459,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 
 		} else {
 			// not an assignment node
-			err = makeErr(arg, fmt.Sprintf("Expected assignment node for argument by name (%s)", str.ReformatInput(externalName)))
+			err = c.makeErr(arg, fmt.Sprintf("Expected assignment node for argument by name (%s)", str.ReformatInput(externalName)))
 			return
 		}
 	}
