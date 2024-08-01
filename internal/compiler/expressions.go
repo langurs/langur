@@ -133,8 +133,13 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 	code := ocCodeFromAstCode(node.Operator.Code)
 	isDatabaseOperation := 0 != node.Operator.Code&token.CODE_DB_OPERATOR
 
-	// NOTE: isNegatedOperation: in present form, may not work and play well with database operation but so far not mixed
-	isNegatedOperation := token.NegatedLiteral(node.Operator.Literal)
+	// NOTE: negated in present form, ...
+	// may not work and play well with database operation but so far not mixed
+	op, negated, ok := InfixTokenToOpCode(node.Operator)
+	if !ok {
+		err = makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
+		return
+	}
 
 	left, err = c.compileNode(node.Left, true)
 	if err != nil {
@@ -151,34 +156,34 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		}
 	}
 
-	plain := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	plain := func() (ins opcode.Instructions, err error) {
 		ins = append(left, right...)
 		ins = append(ins, opcode.Make(op)...)
-		if isNegatedOperation {
+		if negated {
 			ins = append(ins, opcode.Make(opcode.OpLogicalNegation, 0)...)
 		}
 		return ins, nil
 	}
 
-	plainWithCode := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	plainWithCode := func() (ins opcode.Instructions, err error) {
 		ins = append(left, right...)
 		ins = append(ins, opcode.Make(op, code)...)
-		if isNegatedOperation {
+		if negated {
 			ins = append(ins, opcode.Make(opcode.OpLogicalNegation, 0)...)
 		}
 		return ins, nil
 	}
 
-	nonShortCircuiting := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	nonShortCircuiting := func() (ins opcode.Instructions, err error) {
 		ins = append(left, right...)
 		ins = append(ins, opcode.Make(op, code, 0)...)
-		if isNegatedOperation {
+		if negated {
 			ins = append(ins, opcode.Make(opcode.OpLogicalNegation, 0)...)
 		}
 		return ins, nil
 	}
 
-	shortCircuiting := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	shortCircuiting := func() (ins opcode.Instructions, err error) {
 		evalWithRight := opcode.Make(op, code, 0)
 
 		// len(right)+len(evalWithRight) == opcodes to jump if left gives the answer
@@ -188,23 +193,23 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		ins = append(ins, right...)
 		ins = append(ins, evalWithRight...)
 
-		if isNegatedOperation {
+		if negated {
 			ins = append(ins, opcode.Make(opcode.OpLogicalNegation, 0)...)
 		}
 
 		return ins, nil
 	}
 
-	either := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	either := func() (ins opcode.Instructions, err error) {
 		// either: for operations that could have short-circuiting
 		// but only when used as "database" (null propagating) operators
 		if isDatabaseOperation {
-			return shortCircuiting(op)
+			return shortCircuiting()
 		}
-		return nonShortCircuiting(op)
+		return nonShortCircuiting()
 	}
 
-	withTypeCode := func(op opcode.OpCode) (ins opcode.Instructions, err error) {
+	withTypeCode := func() (ins opcode.Instructions, err error) {
 		tcode := 0 // 0 indicates requirement for right operand
 		ins = left
 
@@ -216,7 +221,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 
 		ins = append(ins, opcode.Make(op, tcode)...)
 
-		if isNegatedOperation {
+		if negated {
 			ins = append(ins, opcode.Make(opcode.OpLogicalNegation, 0)...)
 		}
 
@@ -225,75 +230,117 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 
 	switch node.Operator.Type {
 	case token.APPEND:
-		return plainWithCode(opcode.OpAppend)
-	case token.RANGE:
-		return plain(opcode.OpRange)
-	case token.PLUS:
-		return plain(opcode.OpAdd)
-	case token.MINUS:
-		return plain(opcode.OpSubtract)
-	case token.ASTERISK:
-		return plain(opcode.OpMultiply)
-	case token.SLASH:
-		return plain(opcode.OpDivide)
-	case token.BACKSLASH:
-		return plain(opcode.OpTruncateDivide)
-	case token.DOUBLESLASH:
-		return plain(opcode.OpFloorDivide)
-	case token.REMAINDER:
-		return plain(opcode.OpRemainder)
-	case token.MODULUS:
-		return plain(opcode.OpModulus)
-	case token.POWER:
-		return plain(opcode.OpPower)
-	case token.ROOT:
-		return plain(opcode.OpRoot)
-
-	case token.EQUAL:
-		return either(opcode.OpEqual)
-	case token.NOT_EQUAL:
-		return either(opcode.OpNotEqual)
-	case token.GREATER_THAN:
-		return either(opcode.OpGreaterThan)
-	case token.GT_OR_EQUAL:
-		return either(opcode.OpGreaterThanOrEqual)
-	case token.LESS_THAN:
-		return either(opcode.OpLessThan)
-	case token.LT_OR_EQUAL:
-		return either(opcode.OpLessThanOrEqual)
-
-	case token.FORWARD:
-		return plain(opcode.OpForward)
-
-	case token.DIVISIBLE_BY:
-		return either(opcode.OpDivisibleBy)
-	case token.NOT_DIVISIBLE_BY:
-		return either(opcode.OpNotDivisibleBy)
-
-	case token.AND:
-		return shortCircuiting(opcode.OpLogicalAnd)
-	case token.OR:
-		return shortCircuiting(opcode.OpLogicalOr)
-
-	case token.NAND:
-		return shortCircuiting(opcode.OpLogicalNAnd)
-	case token.NOR:
-		return shortCircuiting(opcode.OpLogicalNOr)
-
-	case token.XOR:
-		return either(opcode.OpLogicalXor)
-	case token.NXOR:
-		return either(opcode.OpLogicalNXor)
+		return plainWithCode()
 
 	case token.IS:
-		return withTypeCode(opcode.OpIs)
-	case token.IN:
-		return plain(opcode.OpIn)
-	case token.OF:
-		return plain(opcode.OpOf)
+		return withTypeCode()
+
+	case token.RANGE,
+		token.PLUS, token.MINUS,
+		token.ASTERISK, token.SLASH,
+		token.BACKSLASH, token.DOUBLESLASH,
+		token.REMAINDER, token.MODULUS,
+		token.POWER, token.ROOT,
+		token.FORWARD,
+		token.IN, token.OF:
+
+		return plain()
+
+	case token.AND, token.OR,
+		token.NAND, token.NOR:
+
+		return shortCircuiting()
+
+	case token.EQUAL, token.NOT_EQUAL,
+		token.GREATER_THAN, token.GT_OR_EQUAL,
+		token.LESS_THAN, token.LT_OR_EQUAL,
+		token.DIVISIBLE_BY, token.NOT_DIVISIBLE_BY,
+		token.XOR, token.NXOR:
+
+		return either()
 
 	default:
 		err = makeErr(node, fmt.Sprintf("unknown operator (%s)", token.TypeDescription(node.Operator.Type)))
+	}
+
+	return
+}
+
+func InfixTokenToOpCode(tok token.Token) (op opcode.OpCode, negated, ok bool) {
+	ok = true
+	negated = token.NegatedLiteral(tok.Literal)
+
+	switch tok.Type {
+	case token.APPEND:
+		op = opcode.OpAppend
+	case token.RANGE:
+		op = opcode.OpRange
+	case token.PLUS:
+		op = opcode.OpAdd
+	case token.MINUS:
+		op = opcode.OpSubtract
+	case token.ASTERISK:
+		op = opcode.OpMultiply
+	case token.SLASH:
+		op = opcode.OpDivide
+	case token.BACKSLASH:
+		op = opcode.OpTruncateDivide
+	case token.DOUBLESLASH:
+		op = opcode.OpFloorDivide
+	case token.REMAINDER:
+		op = opcode.OpRemainder
+	case token.MODULUS:
+		op = opcode.OpModulus
+	case token.POWER:
+		op = opcode.OpPower
+	case token.ROOT:
+		op = opcode.OpRoot
+
+	case token.EQUAL:
+		op = opcode.OpEqual
+	case token.NOT_EQUAL:
+		op = opcode.OpNotEqual
+	case token.GREATER_THAN:
+		op = opcode.OpGreaterThan
+	case token.GT_OR_EQUAL:
+		op = opcode.OpGreaterThanOrEqual
+	case token.LESS_THAN:
+		op = opcode.OpLessThan
+	case token.LT_OR_EQUAL:
+		op = opcode.OpLessThanOrEqual
+
+	case token.FORWARD:
+		op = opcode.OpForward
+
+	case token.DIVISIBLE_BY:
+		op = opcode.OpDivisibleBy
+	case token.NOT_DIVISIBLE_BY:
+		op = opcode.OpNotDivisibleBy
+
+	case token.AND:
+		op = opcode.OpLogicalAnd
+	case token.OR:
+		op = opcode.OpLogicalOr
+
+	case token.NAND:
+		op = opcode.OpLogicalNAnd
+	case token.NOR:
+		op = opcode.OpLogicalNOr
+
+	case token.XOR:
+		op = opcode.OpLogicalXor
+	case token.NXOR:
+		op = opcode.OpLogicalNXor
+
+	case token.IS:
+		op = opcode.OpIs
+	case token.IN:
+		op = opcode.OpIn
+	case token.OF:
+		op = opcode.OpOf
+
+	default:
+		ok = false
 	}
 
 	return
