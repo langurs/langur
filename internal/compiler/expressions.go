@@ -102,7 +102,7 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 		return
 	}
 
-	code := ocCodeFromAstCode(node.Operator.Code)
+	code, _, _ := ocCodeFromAstCode(node.Operator.Code)
 
 	switch node.Operator.Type {
 	case token.NOT:
@@ -116,22 +116,10 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 	return
 }
 
-func ocCodeFromAstCode(code int) int {
-	c := 0
-	if 0 != code&token.CODE_DB_OPERATOR {
-		c = opcode.OC_Database_Op
-	}
-	if 0 != code&token.CODE_COMBINATION_ASSIGNMENT_OPERATOR {
-		c |= opcode.OC_Combination_Op
-	}
-	return c
-}
-
 func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins opcode.Instructions, err error) {
 	var left, right []byte
 
-	code := ocCodeFromAstCode(node.Operator.Code)
-	isDatabaseOperation := 0 != node.Operator.Code&token.CODE_DB_OPERATOR
+	code, isDatabaseOperation, _ := ocCodeFromAstCode(node.Operator.Code)
 
 	// NOTE: negated in present form, ...
 	// may not work and play well with database operation but so far not mixed
@@ -343,5 +331,17 @@ func InfixTokenToOpCode(tok token.Token) (op opcode.OpCode, negated, ok bool) {
 		ok = false
 	}
 
+	return
+}
+
+func ocCodeFromAstCode(code int) (c int, isDataBaseOp, isComboOp bool) {
+	if 0 != code&token.CODE_DB_OPERATOR {
+		c = opcode.OC_Database_Op
+		isDataBaseOp = true
+	}
+	if 0 != code&token.CODE_COMBINATION_ASSIGNMENT_OPERATOR {
+		c |= opcode.OC_Combination_Op
+		isComboOp = true
+	}
 	return
 }
