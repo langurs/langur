@@ -4,6 +4,7 @@ package opcode
 
 import (
 	"fmt"
+	"langur/token"
 )
 
 func bug(fnName, s string) {
@@ -262,7 +263,7 @@ func Lookup(op OpCode) (*Definition, error) {
 	return def, nil
 }
 
-func isIndexedGetSetOpCode(op OpCode) bool {
+func IsIndexedGetSetOpCode(op OpCode) bool {
 	switch op {
 	case OpGetGlobal, OpGetLocal, OpGetNonLocal,
 		OpSetGlobal, OpSetLocal, OpSetNonLocal,
@@ -271,4 +272,96 @@ func isIndexedGetSetOpCode(op OpCode) bool {
 		return true
 	}
 	return false
+}
+
+func InfixTokenToOpCode(tok token.Token) (op OpCode, negated, ok bool) {
+	ok = true
+	negated = token.NegatedLiteral(tok.Literal)
+
+	switch tok.Type {
+	case token.APPEND:
+		op = OpAppend
+	case token.RANGE:
+		op = OpRange
+	case token.PLUS:
+		op = OpAdd
+	case token.MINUS:
+		op = OpSubtract
+	case token.ASTERISK:
+		op = OpMultiply
+	case token.SLASH:
+		op = OpDivide
+	case token.BACKSLASH:
+		op = OpTruncateDivide
+	case token.DOUBLESLASH:
+		op = OpFloorDivide
+	case token.REMAINDER:
+		op = OpRemainder
+	case token.MODULUS:
+		op = OpModulus
+	case token.POWER:
+		op = OpPower
+	case token.ROOT:
+		op = OpRoot
+
+	case token.EQUAL:
+		op = OpEqual
+	case token.NOT_EQUAL:
+		op = OpNotEqual
+	case token.GREATER_THAN:
+		op = OpGreaterThan
+	case token.GT_OR_EQUAL:
+		op = OpGreaterThanOrEqual
+	case token.LESS_THAN:
+		op = OpLessThan
+	case token.LT_OR_EQUAL:
+		op = OpLessThanOrEqual
+
+	case token.FORWARD:
+		op = OpForward
+
+	case token.DIVISIBLE_BY:
+		op = OpDivisibleBy
+	case token.NOT_DIVISIBLE_BY:
+		op = OpNotDivisibleBy
+
+	case token.AND:
+		op = OpLogicalAnd
+	case token.OR:
+		op = OpLogicalOr
+
+	case token.NAND:
+		op = OpLogicalNAnd
+	case token.NOR:
+		op = OpLogicalNOr
+
+	case token.XOR:
+		op = OpLogicalXor
+	case token.NXOR:
+		op = OpLogicalNXor
+
+	case token.IS:
+		op = OpIs
+	case token.IN:
+		op = OpIn
+	case token.OF:
+		op = OpOf
+
+	default:
+		ok = false
+	}
+
+	return
+}
+
+func TokenCodeToOcCode(code int) (c int, isDataBaseOp, isComboOp bool) {
+	if 0 != code&token.CODE_DB_OPERATOR {
+		c = OC_Database_Op
+		isDataBaseOp = true
+	}
+	if 0 != code&token.CODE_COMBINATION_ASSIGNMENT_OPERATOR {
+		c |= OC_Combination_Op
+		isComboOp = true
+	}
+	return
 }

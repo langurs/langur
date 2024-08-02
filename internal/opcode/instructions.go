@@ -92,7 +92,7 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 		switch w {
 		case 1:
 			if o > max1byteop {
-				if isIndexedGetSetOpCode(op) && i == 0 {
+				if IsIndexedGetSetOpCode(op) && i == 0 {
 					err = fmt.Errorf("%s index out of range (more than %d local variables)", DisplayName(op, false), max2byteop)
 					return
 				}
@@ -104,7 +104,7 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 
 		case 2:
 			if o > max2byteop {
-				if isIndexedGetSetOpCode(op) && i == 0 {
+				if IsIndexedGetSetOpCode(op) && i == 0 {
 					err = fmt.Errorf("%s index out of range (more than %d global variables)", DisplayName(op, false), max2byteop)
 					return
 				}

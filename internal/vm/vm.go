@@ -21,16 +21,12 @@ func bug(fnName, s string) {
 type VM struct {
 	process *process.Process
 	late    []string
-
-	// for tracing errors back to source
-	source string
 }
 
 func New(byteCode *bytecode.ByteCode, m *modes.VmModes) *VM {
 	vm := &VM{
 		process: process.New(byteCode.Constants, byteCode.StartCode, m),
 		late:    byteCode.Late,
-		source:  byteCode.Source,
 	}
 
 	// set default modes
@@ -65,8 +61,8 @@ func (vm *VM) gatherLateBindings() (late []object.Object, err error) {
 		return nil, nil
 	}
 
-	// langur, langurArgs, script, scriptArgs, err := OsArgsToArgs()
-	_, _, script, scriptArgs, err := args.OsArgsToArgs()
+	// langur, langurArgs, file, fileArgs, err := OsArgsToArgs()
+	_, _, file, fileArgs, err := args.OsArgsToArgs()
 	if err != nil {
 		return nil, err
 	}
@@ -84,13 +80,13 @@ func (vm *VM) gatherLateBindings() (late []object.Object, err error) {
 		case "_args":
 			// script arguments, not compiler/VM arguments
 			args := &object.List{}
-			for _, s := range scriptArgs {
+			for _, s := range fileArgs {
 				args.Elements = append(args.Elements, object.NewString(s))
 			}
 			late = append(late, args)
 
-		case "_script":
-			late = append(late, object.NewString(script))
+		case "_file":
+			late = append(late, object.NewString(file))
 
 		default:
 			bug("vm.Run", "Unknown late binding "+v)

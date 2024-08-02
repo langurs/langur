@@ -454,7 +454,7 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 
 		expr.Right = p.parseExpression(getInfixPrecedence(expr.Operator.Type))
 
-		rightTypeCode := ast.NodeToTypeCode(expr.Right)
+		rightTypeCode := ast.NodeToLangurTypeCode(expr.Right)
 		rightIsType := rightTypeCode != 0
 
 		if rightIsType && expr.Operator.Type == token.FORWARD {

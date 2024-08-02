@@ -102,7 +102,7 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 		return
 	}
 
-	code, _, _ := ocCodeFromAstCode(node.Operator.Code)
+	code, _, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
 
 	switch node.Operator.Type {
 	case token.NOT:
@@ -119,11 +119,11 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins opcode.Instructions, err error) {
 	var left, right []byte
 
-	code, isDatabaseOperation, _ := ocCodeFromAstCode(node.Operator.Code)
+	code, isDatabaseOperation, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
 
 	// NOTE: negated in present form, ...
 	// may not work and play well with database operation but so far not mixed
-	op, negated, ok := InfixTokenToOpCode(node.Operator)
+	op, negated, ok := opcode.InfixTokenToOpCode(node.Operator)
 	if !ok {
 		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
 		return
@@ -134,7 +134,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return
 	}
 
-	rightTypeCode := ast.NodeToTypeCode(node.Right)
+	rightTypeCode := ast.NodeToLangurTypeCode(node.Right)
 	rightIsType := rightTypeCode != 0
 
 	if !rightIsType || node.Operator.Type != token.IS {
@@ -216,34 +216,35 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return ins, nil
 	}
 
-	switch node.Operator.Type {
-	case token.APPEND:
+	switch op {
+	case opcode.OpAppend:
 		return plainWithCode()
 
-	case token.IS:
+	case opcode.OpIs:
 		return withTypeCode()
 
-	case token.RANGE,
-		token.PLUS, token.MINUS,
-		token.ASTERISK, token.SLASH,
-		token.BACKSLASH, token.DOUBLESLASH,
-		token.REMAINDER, token.MODULUS,
-		token.POWER, token.ROOT,
-		token.FORWARD,
-		token.IN, token.OF:
+	case opcode.OpRange,
+		opcode.OpAdd, opcode.OpSubtract,
+		opcode.OpMultiply, opcode.OpDivide,
+		opcode.OpTruncateDivide, opcode.OpFloorDivide,
+		opcode.OpRemainder, opcode.OpModulus,
+		opcode.OpPower, opcode.OpRoot,
+		opcode.OpForward,
+		opcode.OpIn, opcode.OpOf:
 
 		return plain()
 
-	case token.AND, token.OR,
-		token.NAND, token.NOR:
+	case opcode.OpLogicalAnd, opcode.OpLogicalNAnd,
+		opcode.OpLogicalOr, opcode.OpLogicalNOr:
 
 		return shortCircuiting()
 
-	case token.EQUAL, token.NOT_EQUAL,
-		token.GREATER_THAN, token.GT_OR_EQUAL,
-		token.LESS_THAN, token.LT_OR_EQUAL,
-		token.DIVISIBLE_BY, token.NOT_DIVISIBLE_BY,
-		token.XOR, token.NXOR:
+	case opcode.OpEqual, opcode.OpNotEqual,
+		opcode.OpGreaterThan, opcode.OpGreaterThanOrEqual,
+		opcode.OpLessThan, opcode.OpLessThanOrEqual,
+		opcode.OpDivisibleBy, opcode.OpNotDivisibleBy,
+
+		opcode.OpLogicalXor, opcode.OpLogicalNXor:
 
 		return either()
 
@@ -251,97 +252,5 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		err = c.makeErr(node, fmt.Sprintf("unknown operator (%s)", token.TypeDescription(node.Operator.Type)))
 	}
 
-	return
-}
-
-func InfixTokenToOpCode(tok token.Token) (op opcode.OpCode, negated, ok bool) {
-	ok = true
-	negated = token.NegatedLiteral(tok.Literal)
-
-	switch tok.Type {
-	case token.APPEND:
-		op = opcode.OpAppend
-	case token.RANGE:
-		op = opcode.OpRange
-	case token.PLUS:
-		op = opcode.OpAdd
-	case token.MINUS:
-		op = opcode.OpSubtract
-	case token.ASTERISK:
-		op = opcode.OpMultiply
-	case token.SLASH:
-		op = opcode.OpDivide
-	case token.BACKSLASH:
-		op = opcode.OpTruncateDivide
-	case token.DOUBLESLASH:
-		op = opcode.OpFloorDivide
-	case token.REMAINDER:
-		op = opcode.OpRemainder
-	case token.MODULUS:
-		op = opcode.OpModulus
-	case token.POWER:
-		op = opcode.OpPower
-	case token.ROOT:
-		op = opcode.OpRoot
-
-	case token.EQUAL:
-		op = opcode.OpEqual
-	case token.NOT_EQUAL:
-		op = opcode.OpNotEqual
-	case token.GREATER_THAN:
-		op = opcode.OpGreaterThan
-	case token.GT_OR_EQUAL:
-		op = opcode.OpGreaterThanOrEqual
-	case token.LESS_THAN:
-		op = opcode.OpLessThan
-	case token.LT_OR_EQUAL:
-		op = opcode.OpLessThanOrEqual
-
-	case token.FORWARD:
-		op = opcode.OpForward
-
-	case token.DIVISIBLE_BY:
-		op = opcode.OpDivisibleBy
-	case token.NOT_DIVISIBLE_BY:
-		op = opcode.OpNotDivisibleBy
-
-	case token.AND:
-		op = opcode.OpLogicalAnd
-	case token.OR:
-		op = opcode.OpLogicalOr
-
-	case token.NAND:
-		op = opcode.OpLogicalNAnd
-	case token.NOR:
-		op = opcode.OpLogicalNOr
-
-	case token.XOR:
-		op = opcode.OpLogicalXor
-	case token.NXOR:
-		op = opcode.OpLogicalNXor
-
-	case token.IS:
-		op = opcode.OpIs
-	case token.IN:
-		op = opcode.OpIn
-	case token.OF:
-		op = opcode.OpOf
-
-	default:
-		ok = false
-	}
-
-	return
-}
-
-func ocCodeFromAstCode(code int) (c int, isDataBaseOp, isComboOp bool) {
-	if 0 != code&token.CODE_DB_OPERATOR {
-		c = opcode.OC_Database_Op
-		isDataBaseOp = true
-	}
-	if 0 != code&token.CODE_COMBINATION_ASSIGNMENT_OPERATOR {
-		c |= opcode.OC_Combination_Op
-		isComboOp = true
-	}
 	return
 }

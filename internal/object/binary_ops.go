@@ -88,6 +88,7 @@ func BinaryOperation(op opcode.OpCode, left, right Object, code int) (Object, er
 	}
 }
 
+// NOTE: If adding or removing codes here, also update BinaryOperation().
 func BinaryLogicalOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
 	dbComp := isDatabaseOperation(code)
 	if dbComp {
@@ -128,9 +129,12 @@ func BinaryNonLogicalOperation(op opcode.OpCode, left, right Object, code int) (
 	dbComp := false
 
 	defer func() {
-		if panik := recover(); panik != nil {
-			err = PanicToError(panik)
-			if left.Type() == NUMBER_OBJ && right.Type() == NUMBER_OBJ {
+		if p := recover(); p != nil {
+			err = PanicToError(p)
+			switch op {
+			case opcode.OpRange, opcode.OpForward, opcode.OpAppend:
+				// as you were...
+			default:
 				err = AsMathError(err, "")
 			}
 		}
@@ -243,6 +247,7 @@ func AsMathError(err error, source string) error {
 	return NewError(ERR_MATH, source, msg)
 }
 
+// NOTE: If adding or removing codes here, also update BinaryOperation().
 func BinaryComparison(
 	op opcode.OpCode, left, right Object,
 	code int) (

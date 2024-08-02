@@ -46,8 +46,8 @@ func main() {
 	var compile_modes *modes.CompileModes = nil
 	var vm_modes *modes.VmModes = nil
 
-	// langur, langurArgs, scriptFile, scriptArgs, err := args.OsArgsToArgs()
-	_, langurArgs, scriptFile, _, err := args.OsArgsToArgs()
+	// langur, langurArgs, file, fileArgs, err := args.OsArgsToArgs()
+	_, langurArgs, file, _, err := args.OsArgsToArgs()
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Println(err)
@@ -70,7 +70,7 @@ func main() {
 		os.Exit(system.GetExitStatus("help"))
 	}
 
-	if scriptFile == "" {
+	if file == "" {
 		fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
 		fmt.Println(use)
 		os.Exit(system.GetExitStatus("noscript"))
@@ -78,13 +78,13 @@ func main() {
 
 	scriptString := ""
 	if compile_modes.ExecuteScriptStringInsteadOfFile {
-		scriptString, scriptFile = scriptFile, "-e"
+		scriptString, file = file, "-e"
 
 	} else {
-		b, err := ioutil.ReadFile(scriptFile)
+		b, err := ioutil.ReadFile(file)
 		if err != nil {
 			if printErrors {
-				s := str.Limit(scriptFile, 100, "...")
+				s := str.Limit(file, 100, "...")
 				fmt.Print("langur: ")
 				fmt.Printf("error reading from file (%s): %s\n", s, err.Error())
 			}
@@ -95,7 +95,7 @@ func main() {
 
 	// Note: must check the parser and compiler for errors
 	// Most lexer errors are passed to the parser, so they don't have to be checked here.
-	lex, err := lexer.New(scriptString, scriptFile, compile_modes)
+	lex, err := lexer.New(scriptString, file, compile_modes)
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Println("lexer error: " + err.Error())

@@ -4881,7 +4881,7 @@ func TestIntRangeExpressions(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(tt.input, nil)
+		comp, err := compiler.New(nil)
 		if err != nil {
 			t.Fatalf("(%q) compiler error on New: %s", tt.input, err)
 		}
@@ -5400,7 +5400,7 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(tt.input, nil)
+		comp, err := compiler.New(nil)
 		if err != nil {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}
@@ -8749,14 +8749,14 @@ func TestLateBinding(t *testing.T) {
 			expectedType: object.LIST_OBJ,
 		},
 		{
-			input:        `_script`,
+			input:        `_file`,
 			expected:     "",
 			expectedType: object.STRING_OBJ,
 		},
 
 		// ordering with late bindings
 		{
-			input:        `_script ~ string(_args)`,
+			input:        `_file ~ string(_args)`,
 			expected:     "[]",
 			expectedType: object.STRING_OBJ,
 		},

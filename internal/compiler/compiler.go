@@ -16,19 +16,12 @@ func bug(fnName, s string) {
 	panic("Compiler Bug: " + s)
 }
 
-const includeTracing = true
-
 func (c *Compiler) makeErr(node ast.Node, err string) error {
 	tok := node.TokenInfo()
-	tracing := ""
-	if includeTracing {
-		tracing = fmt.Sprintf("\n\n%s", tok.Where.Trace(c.source))
-	}
-
 	if node == nil {
-		return fmt.Errorf("%s%s", err, tracing)
+		return fmt.Errorf("%s", err)
 	}
-	return fmt.Errorf("[%s] %s%s", tok.Where.String(), err, tracing)
+	return fmt.Errorf("[%s] %s", tok.Where.String(), err)
 }
 
 func (c *Compiler) makeWarning(node ast.Node, err string) error {
@@ -37,7 +30,6 @@ func (c *Compiler) makeWarning(node ast.Node, err string) error {
 
 type Compiler struct {
 	InsPackage opcode.InsPackage
-	source     string
 
 	constants   []object.Object
 	symbolTable *symbol.SymbolTable
@@ -72,11 +64,10 @@ func (c *Compiler) ByteCode() *bytecode.ByteCode {
 
 		Constants: c.constants,
 		Late:      c.lateIDsUsed,
-		Source:    c.source,
 	}
 }
 
-func New(source string, m *modes.CompileModes) (compiler *Compiler, err error) {
+func New(m *modes.CompileModes) (compiler *Compiler, err error) {
 	defer func() {
 		if panik := recover(); panik != nil {
 			err = object.PanicToError(panik)
@@ -87,7 +78,6 @@ func New(source string, m *modes.CompileModes) (compiler *Compiler, err error) {
 		InsPackage: opcode.InsPackage{},
 		constants:  []object.Object{},
 		lateIDs:    late,
-		source:     source,
 	}
 	if m == nil {
 		compiler.Modes = modes.NewCompileModes()
@@ -100,9 +90,9 @@ func New(source string, m *modes.CompileModes) (compiler *Compiler, err error) {
 	return
 }
 
-func NewWithState(source string, s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes) (
+func NewWithState(s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes) (
 	compiler *Compiler, err error) {
-	compiler, err = New(source, m)
+	compiler, err = New(m)
 	compiler.symbolTable = s
 	compiler.constants = constants
 	return

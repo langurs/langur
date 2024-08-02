@@ -243,7 +243,7 @@ func repl(source string, out io.Writer, firstRun bool) {
 	if printCompiledInstructions || printCompiledConstants ||
 		printVmResultRaw || printVmResultEscaped || printVmResultGoEscaped {
 
-		comp, err = compiler.NewWithState(source, symbolTable, constants, compileModes)
+		comp, err = compiler.NewWithState(symbolTable, constants, compileModes)
 		if err != nil {
 			io.WriteString(out, fmt.Sprintf("Compile Error: %s", err.Error()))
 		}
@@ -260,7 +260,7 @@ func repl(source string, out io.Writer, firstRun bool) {
 		byteCode = comp.ByteCode()
 		if printCompiledInstructions {
 			fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
-				InstructionsString(byteCode.StartCode.Instructions, byteCode.Constants))
+				InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
 		}
 		if printCompiledConstants {
 			fmt.Fprintf(out, "ByteCode Constants\n")

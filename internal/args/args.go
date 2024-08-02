@@ -7,40 +7,40 @@ import (
 	"os"
 )
 
-// NOTE: script may be file name/path or a script to execute (using the -e option)
+// NOTE: file may be file name/path or code to execute (using the -e option)
 func OsArgsToArgs() (
-	langur string, langurArgs []string, script string, scriptArgs []string, err error) {
+	langur string, langurArgs []string, file string, fileArgs []string, err error) {
 
 	if len(os.Args) > 0 {
 		langur = os.Args[0]
 
-		// args before script name go to langur / after the script name go to the script
+		// args before filename go to langur / after the filename go to the script
 
 		var optionMarker byte = '-'
 		if system.OnWindows {
 			optionMarker = '/'
 		}
 
-		scriptArgAt := -1
+		fileArgAt := -1
 		for i := 1; i < len(os.Args); i++ {
-			// anything starting with an option marker preceding script name taken as compiler argument
+			// anything starting with an option marker preceding filename taken as compiler argument
 			if os.Args[i][0] != optionMarker {
-				scriptArgAt = i
+				fileArgAt = i
 				break
 			}
 		}
 
 		if len(os.Args) > 1 {
-			if scriptArgAt == -1 {
-				// no script name passed
+			if fileArgAt == -1 {
+				// no filename passed
 				langurArgs = os.Args[1:]
 
 			} else {
-				script = os.Args[scriptArgAt]
-				langurArgs = os.Args[1:scriptArgAt]
+				file = os.Args[fileArgAt]
+				langurArgs = os.Args[1:fileArgAt]
 
-				if len(os.Args) > scriptArgAt+1 {
-					scriptArgs = os.Args[scriptArgAt+1:]
+				if len(os.Args) > fileArgAt+1 {
+					fileArgs = os.Args[fileArgAt+1:]
 				}
 			}
 		}
@@ -56,12 +56,12 @@ func GetArgsDescription() string {
 }
 
 var WindowsArgsDescription = `
- Script arguments are available inside a script via the _args variable (a list of strings).
+ File arguments are available inside a script via the _args variable (a list of strings).
 
  Command line options are as follows.
   /c           test parse and compile; do not execute
 
-  /e "script"  execute command-line script instead of file
+  /e "code"    execute command-line code instead of file
 
   /?           print command-line options
 
@@ -81,12 +81,12 @@ var WindowsArgsDescription = `
 `
 
 var LinuxArgsDescription = `
- Script arguments are available inside a script via the _args variable (a list of strings).
+ File arguments are available inside a script via the _args variable (a list of strings).
 
  Command line options are as follows.
   -c           test parse and compile; do not execute
 
-  -e "script"  execute command-line script instead of file
+  -e "code"    execute command-line code instead of file
 
   --help       print command-line options
 

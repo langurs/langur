@@ -33,7 +33,7 @@ func makeRoundModeKeyValuePair(mode modes.RoundingMode) ast.KeyValuePair {
 }
 
 // must coordinate late-binding ID's with the VM, but the order is automatically coordinated
-var late = []string{"_env", "_args", "_script"}
+var late = []string{"_env", "_args", "_file"}
 
 func (c *Compiler) generateBindings(
 	early []binding, late []string, varNamesParsed []string, doAllBindings bool) (

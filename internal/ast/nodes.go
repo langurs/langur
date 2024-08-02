@@ -653,7 +653,8 @@ func NewBuiltInNode(tok token.Token, name string, sys bool) *IdentNode {
 	return &IdentNode{Token: tok, Name: name, System: sys}
 }
 
-func NodeToTypeCode(node Node) int {
+// returns langur Object type code as defined in object package, or 0 if not found
+func NodeToLangurTypeCode(node Node) int {
 	switch id := node.(type) {
 	case *IdentNode:
 		code, ok := object.TypeNameToType[id.Name]

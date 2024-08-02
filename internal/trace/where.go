@@ -60,6 +60,9 @@ func FindLocation(wSlc WhereSlice, from int) Where {
 				return *(wSlc[i])
 			}
 		}
+
+	} else if len(wSlc) > 0 && wSlc[0] != nil {
+		return *(wSlc[0])
 	}
 	return NewWhere(0, 0)
 }

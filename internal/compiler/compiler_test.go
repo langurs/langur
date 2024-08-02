@@ -63,7 +63,7 @@ func runCompilerTests(
 
 		program := parse(t, tt.input)
 
-		compiler, err := New(tt.input, nil)
+		compiler, err := New(nil)
 		if err != nil {
 			t.Fatalf("compiler error on New: %s", err)
 		}

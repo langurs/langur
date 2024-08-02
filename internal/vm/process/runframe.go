@@ -8,10 +8,11 @@ import (
 	"langur/opcode"
 )
 
+// The fnReturn propogates langur return values out of frames and is handled by executeFunctionCall().
 func (pr *Process) RunFrame(fr *frame, late []object.Object) (
-	fnReturn object.Object, relay *jumpRelay, err error) {
-
-	// The fnReturn propogates langur return values out of frames and is handled by executeFunctionCall().
+	fnReturn object.Object,
+	relay *jumpRelay,
+	err error) {
 
 	var result object.Object
 	retainLastValue := false
