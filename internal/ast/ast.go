@@ -22,18 +22,7 @@ type Node interface {
 	TokenRepresentation() string
 	String() string
 	Copy() Node
-}
-
-type Evaluator interface {
 	Evaluate() (object.Object, bool)
-}
-
-func TryEvaluate(node Node) (object.Object, bool) {
-	n, ok := node.(Evaluator)
-	if ok {
-		return n.Evaluate()
-	}
-	return nil, false
 }
 
 // simply marks it as a statement node (no action)

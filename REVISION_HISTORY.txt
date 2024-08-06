@@ -4,6 +4,7 @@ https://langurlang.org
 ... - 0.17.4
 - fixed potential bug in compiler adding pop opcodes when not appropriate
 - replaced compiler.compileNode parameter popAtEndOfExpression with function compiler.compileNodeWithPopIfExprStmt
+- removed ast.Evaluator interface and added Evaluate() to ast.Node interface
 
 
 2024-08-02 - 0.17.3

@@ -26,6 +26,10 @@ func (p *Program) Copy() Node {
 	return &Program{Token: p.Token.Copy(), Statements: CopyNodeSlice(p.Statements)}
 }
 
+func (p *Program) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (p *Program) String() string {
 	var out bytes.Buffer
 
@@ -64,6 +68,10 @@ func (m *ModuleNode) statementNode() {}
 
 func (m *ModuleNode) Copy() Node {
 	return m
+}
+
+func (m *ModuleNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (m *ModuleNode) TokenRepresentation() string {
@@ -133,6 +141,10 @@ func (i *ImportNode) Copy() Node {
 	}
 }
 
+func (i *ImportNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (i *ImportNode) TokenRepresentation() string {
 	var out bytes.Buffer
 	out.WriteString("import ")
@@ -199,6 +211,10 @@ func (r *ReturnNode) Copy() Node {
 	return &ReturnNode{Token: r.Token.Copy(), ReturnValue: copyOrNil(r.ReturnValue)}
 }
 
+func (r *ReturnNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (r *ReturnNode) TokenRepresentation() string {
 	return "return " + tokenRepOrNil(r.ReturnValue)
 }
@@ -234,6 +250,10 @@ func (d *LineDeclarationNode) Copy() Node {
 		Assignment: copyOrNil(d.Assignment),
 		Mutable:    d.Mutable,
 	}
+}
+
+func (d *LineDeclarationNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (d *LineDeclarationNode) TokenRepresentation() string {
@@ -282,6 +302,10 @@ func (a *AssignmentNode) Copy() Node {
 		Values:           CopyNodeSlice(a.Values),
 		SystemAssignment: a.SystemAssignment,
 	}
+}
+
+func (a *AssignmentNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (a *AssignmentNode) TokenRepresentation() string {
@@ -370,6 +394,10 @@ func (es *ExpressionStatementNode) Copy() Node {
 		Token: es.Token.Copy(), Expression: copyOrNil(es.Expression)}
 }
 
+func (es *ExpressionStatementNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (es *ExpressionStatementNode) TokenRepresentation() string {
 	return tokenRepOrNil(es.Expression)
 }
@@ -407,6 +435,10 @@ func (fc *CallNode) Copy() Node {
 		PositionalArgs: CopyNodeSlice(fc.PositionalArgs),
 		ByNameArgs:     CopyNodeSlice(fc.ByNameArgs),
 	}
+}
+
+func (fc *CallNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (fc *CallNode) TokenRepresentation() string {
@@ -489,6 +521,10 @@ func (f *FunctionNode) Copy() Node {
 		Body:                 copyOrNil(f.Body),
 		ImpureEffects:        f.ImpureEffects,
 	}
+}
+
+func (f *FunctionNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (f *FunctionNode) TokenRepresentation() string {
@@ -586,6 +622,10 @@ func (pe *ExpansionNode) Copy() Node {
 	}
 }
 
+func (pe *ExpansionNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (pe *ExpansionNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -630,6 +670,10 @@ func (s *SelfNode) expressionNode() {}
 
 func (s *SelfNode) Copy() Node {
 	return &SelfNode{Token: s.Token.Copy()}
+}
+
+func (s *SelfNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (s *SelfNode) TokenRepresentation() string {
@@ -685,6 +729,10 @@ func (i *IdentNode) Copy() Node {
 	}
 }
 
+func (i *IdentNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (i *IdentNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -735,6 +783,10 @@ func (m *ModeNode) Copy() Node {
 	}
 }
 
+func (m *ModeNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (m *ModeNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -781,6 +833,10 @@ func (n *ForNode) Copy() Node {
 		Increment:     CopyNodeSlice(n.Increment),
 		Body:          copyOrNil(n.Body),
 	}
+}
+
+func (n *ForNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (n *ForNode) TokenRepresentation() string {
@@ -886,6 +942,10 @@ func (n *ForInOfNode) Copy() Node {
 	}
 }
 
+func (n *ForInOfNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (n *ForInOfNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -946,6 +1006,10 @@ func (n *BreakNode) Copy() Node {
 	}
 }
 
+func (n *BreakNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (n *BreakNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -981,6 +1045,10 @@ func (n *NextNode) statementNode() {}
 
 func (n *NextNode) Copy() Node {
 	return &NextNode{Token: n.Token.Copy()}
+}
+
+func (n *NextNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (n *NextNode) TokenRepresentation() string {
@@ -1063,6 +1131,10 @@ func (no *NoneNode) expressionNode() {}
 
 func (no *NoneNode) Copy() Node {
 	return &NoneNode{Token: no.Token.Copy()}
+}
+
+func (no *NoneNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (no *NoneNode) TokenRepresentation() string {
@@ -1175,6 +1247,10 @@ func (i *InterpolatedNode) Copy() Node {
 	}
 }
 
+func (i *InterpolatedNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (i *InterpolatedNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -1228,10 +1304,10 @@ func (r *RegexNode) Evaluate() (object.Object, bool) {
 	if ok {
 		ok = len(patternNode.Interpolations) == 0
 		if ok {
-			re2, err := object.NewRegex(patternNode.Values[0], r.RegexType)
+			reggie, err := object.NewRegex(patternNode.Values[0], r.RegexType)
 			ok = err != nil
 			if ok {
-				re = re2.(*object.Regex)
+				re = reggie.(*object.Regex)
 			}
 		}
 	}
@@ -1432,6 +1508,10 @@ func (a *ListNode) Copy() Node {
 	}
 }
 
+func (a *ListNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (a *ListNode) TokenRepresentation() string {
 	elements := []string{}
 
@@ -1469,6 +1549,10 @@ func (i *IndexNode) Copy() Node {
 	return &IndexNode{
 		Token: i.Token.Copy(),
 		Left:  copyOrNil(i.Left), Index: copyOrNil(i.Index), Alternate: copyOrNil(i.Alternate)}
+}
+
+func (i *IndexNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (i *IndexNode) TokenRepresentation() string {
@@ -1527,6 +1611,10 @@ func (d *HashNode) Copy() Node {
 	return &HashNode{Token: d.Token.Copy(), Pairs: pairs}
 }
 
+func (d *HashNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (d *HashNode) TokenRepresentation() string {
 	if len(d.Pairs) == 0 {
 		return "{:}"
@@ -1569,6 +1657,10 @@ func (pe *PrefixExpressionNode) Copy() Node {
 		Operator: pe.Operator,
 		Right:    copyOrNil(pe.Right),
 	}
+}
+
+func (pe *PrefixExpressionNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (pe *PrefixExpressionNode) TokenRepresentation() string {
@@ -1619,6 +1711,10 @@ func (pe *PostfixExpressionNode) Copy() Node {
 	}
 }
 
+func (pe *PostfixExpressionNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (pe *PostfixExpressionNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -1658,6 +1754,10 @@ func (ie *InfixExpressionNode) Copy() Node {
 	return &InfixExpressionNode{
 		Token: ie.Token.Copy(),
 		Left:  copyOrNil(ie.Left), Operator: ie.Operator, Right: copyOrNil(ie.Right)}
+}
+
+func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 // func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
@@ -1700,6 +1800,10 @@ func (b *BlockNode) Copy() Node {
 		Statements: CopyNodeSlice(b.Statements),
 		HasScope:   b.HasScope,
 	}
+}
+
+func (b *BlockNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (b *BlockNode) TokenRepresentation() string {
@@ -1791,6 +1895,10 @@ func (i *IfNode) Copy() Node {
 		TestsAndActions: taSlc,
 		IsSwitchExpr:    i.IsSwitchExpr,
 	}
+}
+
+func (i *IfNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (i *IfNode) TokenRepresentation() string {
@@ -1894,6 +2002,10 @@ func (g *SwitchNode) Copy() Node {
 		Expressions:      eSlc,
 		DefaultLogicalOp: g.DefaultLogicalOp,
 	}
+}
+
+func (g *SwitchNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (g *SwitchNode) TokenRepresentation() string {
@@ -2055,6 +2167,10 @@ func (f *FallThroughNode) Copy() Node {
 	return &FallThroughNode{Token: f.Token.Copy()}
 }
 
+func (f *FallThroughNode) Evaluate() (object.Object, bool) {
+	return nil, false
+}
+
 func (f *FallThroughNode) TokenRepresentation() string {
 	return "fallthrough"
 }
@@ -2085,6 +2201,10 @@ func (t *TryCatchNode) Copy() Node {
 		Catch:        copyOrNil(t.Catch),
 		Else:         copyOrNil(t.Else),
 	}
+}
+
+func (t *TryCatchNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (t *TryCatchNode) TokenRepresentation() string {
@@ -2144,6 +2264,10 @@ func (t *ThrowNode) statementNode() {}
 
 func (t *ThrowNode) Copy() Node {
 	return &ThrowNode{Token: t.Token.Copy()}
+}
+
+func (t *ThrowNode) Evaluate() (object.Object, bool) {
+	return nil, false
 }
 
 func (t *ThrowNode) TokenRepresentation() string { return "throw " + tokenRepOrNil(t.Exception) }

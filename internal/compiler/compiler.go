@@ -204,14 +204,12 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 func (c *Compiler) compileOrEvaluateNode(node ast.Node) (
 	ins opcode.Instructions, obj object.Object, err error) {
 
-	pre, ok := node.(ast.Evaluator)
+	var ok bool
+	obj, ok = node.Evaluate()
 	if ok {
-		obj, ok = pre.Evaluate()
-		if ok {
-			return
-		}
-		obj = nil
+		return
 	}
+	obj = nil
 
 	ins, err = c.compileNode(node)
 	return
