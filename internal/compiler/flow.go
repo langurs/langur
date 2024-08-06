@@ -51,7 +51,7 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 
 	for _, each := range node.Init {
 		var i []byte
-		i, err = c.compileNode(each, true)
+		i, err = c.compileNodeWithPopIfExprStmt(each)
 		if err != nil {
 			return
 		}
@@ -59,7 +59,7 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 	}
 
 	var loopValueInit opcode.Instructions
-	loopValueInit, err = c.compileNode(node.LoopValueInit, true)
+	loopValueInit, err = c.compileNodeWithPopIfExprStmt(node.LoopValueInit)
 	if err != nil {
 		return
 	}
@@ -73,20 +73,20 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 	}()
 
 	if node.Test != nil {
-		test, err = c.compileNode(node.Test, false)
+		test, err = c.compileNode(node.Test)
 		if err != nil {
 			return
 		}
 	}
 
-	body, err = c.compileNode(node.Body, true)
+	body, err = c.compileNodeWithPopIfExprStmt(node.Body)
 	if err != nil {
 		return
 	}
 
 	for _, each := range node.Increment {
 		var i []byte
-		i, err = c.compileNode(each, true)
+		i, err = c.compileNodeWithPopIfExprStmt(each)
 		if err != nil {
 			return
 		}
@@ -112,7 +112,7 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 
 	// append loop value to very end; vm will push onto stack before exiting frame
 	var loopValue opcode.Instructions
-	loopValue, err = c.compileNode(c.loopVarStack[len(c.loopVarStack)-1], false)
+	loopValue, err = c.compileNode(c.loopVarStack[len(c.loopVarStack)-1])
 	if err != nil {
 		return
 	}
@@ -130,12 +130,12 @@ func (c *Compiler) compileBreak(node *ast.BreakNode) (ins opcode.Instructions, e
 
 	if node.Value == nil {
 		// break with current for loop value
-		ins, err = c.compileNode(c.loopVarStack[len(c.loopVarStack)-1], false)
+		ins, err = c.compileNode(c.loopVarStack[len(c.loopVarStack)-1])
 
 	} else {
 		// break with specified value
 		// FIXME: redundancy when embedded in scope (no need to set variable)
-		ins, err = c.compileNode(ast.MakeAssignmentExpression(c.loopVarStack[len(c.loopVarStack)-1], node.Value, false), false)
+		ins, err = c.compileNode(ast.MakeAssignmentExpression(c.loopVarStack[len(c.loopVarStack)-1], node.Value, false))
 	}
 
 	ins = append(ins, opcode.Make(opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_Break)...)
@@ -225,12 +225,12 @@ func (c *Compiler) compileIfExpression(node *ast.IfNode) (ins opcode.Instruction
 			if ast.NodeContainsFirstScopeLevelDeclaration(ta.Test) {
 				// push and pop and save symbol table; wrap test/action together later
 				c.pushVariableScope()
-				compiledTests[i].ins, err = c.compileNode(ta.Test, false)
+				compiledTests[i].ins, err = c.compileNode(ta.Test)
 				compiledTests[i].st = c.symbolTable // save table for re-use
 				c.popVariableScope()
 			} else {
 				// no scope on test
-				compiledTests[i].ins, err = c.compileNode(ta.Test, false)
+				compiledTests[i].ins, err = c.compileNode(ta.Test)
 			}
 			if err != nil {
 				return
@@ -426,7 +426,7 @@ func (c *Compiler) compileTryCatch(node *ast.TryCatchNode) (ins opcode.Instructi
 
 	// The try frame doesn't have scope, but catch and else frames do.
 	c.pushNonScope()
-	try, err = c.compileNode(node.Try, false)
+	try, err = c.compileNode(node.Try)
 	c.popVariableScope()
 	if err != nil {
 		return
@@ -439,16 +439,16 @@ func (c *Compiler) compileTryCatch(node *ast.TryCatchNode) (ins opcode.Instructi
 
 	var setException opcode.Instructions
 	if node.ExceptionVar != nil {
-		setException, err = c.compileNode(
+		setException, err = c.compileNodeWithPopIfExprStmt(
 			ast.MakeDeclarationAssignmentStatement(node.ExceptionVar, nil, true, false),
-			true)
+		)
 
 		if err != nil {
 			return
 		}
 	}
 
-	catch, err = c.compileNode(node.Catch, false)
+	catch, err = c.compileNode(node.Catch)
 	if err != nil {
 		return
 	}
@@ -463,7 +463,7 @@ func (c *Compiler) compileTryCatch(node *ast.TryCatchNode) (ins opcode.Instructi
 		c.popVariableScope()
 		c.pushVariableScope()
 
-		tcelse, err = c.compileNode(node.Else, false)
+		tcelse, err = c.compileNode(node.Else)
 		elseIndex = c.wrapInstructions(tcelse)
 		if elseIndex == 0 {
 			bug("compileTryCatch", "elseIndex 0 (0 used as indicator for no else section)")
@@ -475,7 +475,7 @@ func (c *Compiler) compileTryCatch(node *ast.TryCatchNode) (ins opcode.Instructi
 }
 
 func (c *Compiler) compileThrow(node *ast.ThrowNode) (ins opcode.Instructions, err error) {
-	ins, err = c.compileNode(node.Exception, false)
+	ins, err = c.compileNode(node.Exception)
 	if err != nil {
 		return
 	}

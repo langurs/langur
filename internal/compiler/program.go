@@ -44,7 +44,7 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
 				return
 			}
-			bSlc, err = c.compileNode(s, true)
+			bSlc, err = c.compileNodeWithPopIfExprStmt(s)
 			if err != nil {
 				return
 			}
@@ -53,7 +53,7 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 		default:
 			// not a module or import node
 			importsDone = true
-			bSlc, err = c.compileNode(s, true)
+			bSlc, err = c.compileNodeWithPopIfExprStmt(s)
 			if err != nil {
 				return
 			}
@@ -124,7 +124,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 
 	// first compile import statements
 	for _, importstmt := range imports {
-		bytes, err = c.compileNode(importstmt, true)
+		bytes, err = c.compileNodeWithPopIfExprStmt(importstmt)
 		if err != nil {
 			return
 		}
@@ -133,7 +133,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 
 	// then compile mode statements
 	for _, mode := range modes {
-		bytes, err = c.compileNode(mode, true)
+		bytes, err = c.compileNodeWithPopIfExprStmt(mode)
 		if err != nil {
 			return
 		}
@@ -146,7 +146,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 		return
 	}
 	for _, decl := range declarations {
-		bytes, err = c.compileNode(decl, true)
+		bytes, err = c.compileNodeWithPopIfExprStmt(decl)
 		if err != nil {
 			return
 		}
@@ -154,7 +154,7 @@ func (c *Compiler) compileModule(nodes []ast.Node, execute bool) (
 	}
 
 	if execute {
-		bytes, err = c.compileNode(ast.ExecuteMain, true)
+		bytes, err = c.compileNodeWithPopIfExprStmt(ast.ExecuteMain)
 		if err != nil {
 			return
 		}

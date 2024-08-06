@@ -46,9 +46,9 @@ func (c *Compiler) generateBindings(
 	for _, v := range early {
 		// only add if used
 		if doAllBindings || str.IsInSlice(v.name, varNamesParsed) {
-			temp, err = c.compileNode(
+			temp, err = c.compileNodeWithPopIfExprStmt(
 				ast.MakeDeclarationAssignmentStatement(ast.NewVariableNode(token.Token{}, v.name, true), v.value, true, false),
-				true)
+			)
 
 			if err != nil {
 				return
@@ -63,10 +63,10 @@ func (c *Compiler) generateBindings(
 		if doAllBindings || str.IsInSlice(late[i], varNamesParsed) {
 			c.lateIDsUsed = append([]string{late[i]}, c.lateIDsUsed...)
 
-			temp, err = c.compileNode(
+			temp, err = c.compileNodeWithPopIfExprStmt(
 				ast.MakeDeclarationAssignmentStatement(
 					ast.NewVariableNode(token.Token{}, late[i], true), nil, true, false),
-				true)
+			)
 
 			if err != nil {
 				return

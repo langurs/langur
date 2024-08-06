@@ -86,7 +86,7 @@ func New(m *modes.CompileModes) (compiler *Compiler, err error) {
 	}
 	compiler.symbolTable = symbol.NewSymbolTable(nil, compiler.Modes)
 
-	compiler.noValueIns, err = compiler.compileNode(ast.NoValue, false)
+	compiler.noValueIns, err = compiler.compileNode(ast.NoValue)
 	return
 }
 
@@ -188,7 +188,7 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 		// The idea is that modes will have scope like variables. ...
 		// ... Therefore, if set, they have to be reset when exiting scope.
 	}
-	ins, err = c.compileNode(node.Setting, false)
+	ins, err = c.compileNode(node.Setting)
 	if err != nil {
 		return
 	}
@@ -201,7 +201,7 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 	return
 }
 
-func (c *Compiler) compileOrEvaluateNode(node ast.Node, popAtEndOfExpression bool) (
+func (c *Compiler) compileOrEvaluateNode(node ast.Node) (
 	ins opcode.Instructions, obj object.Object, err error) {
 
 	pre, ok := node.(ast.Evaluator)
@@ -213,25 +213,26 @@ func (c *Compiler) compileOrEvaluateNode(node ast.Node, popAtEndOfExpression boo
 		obj = nil
 	}
 
-	ins, err = c.compileNode(node, popAtEndOfExpression)
+	ins, err = c.compileNode(node)
 	return
 }
 
-func addPop(ins opcode.Instructions) opcode.Instructions {
-	return append(ins, opcode.Make(opcode.OpPop)...)
+func (c *Compiler) compileNodeWithPopIfExprStmt(node ast.Node) (ins opcode.Instructions, err error) {
+	_, isExprStmt := node.(*ast.ExpressionStatementNode)
+	ins, err = c.compileNode(node)
+	if isExprStmt {
+		ins = append(ins, opcode.Make(opcode.OpPop)...)
+	}
+	return
 }
 
-func (c *Compiler) compileNode(node ast.Node, popAtEndOfExpression bool) (ins opcode.Instructions, err error) {
+func (c *Compiler) compileNode(node ast.Node) (ins opcode.Instructions, err error) {
 	switch node := node.(type) {
 	case *ast.BlockNode:
 		ins, err = c.compileBlock(node, true)
 
 	case *ast.ExpressionStatementNode:
-		ins, err = c.compileNode(node.Expression, false)
-
-		if popAtEndOfExpression {
-			ins = append(ins, opcode.Make(opcode.OpPop)...)
-		}
+		ins, err = c.compileNode(node.Expression)
 
 	case *ast.PrefixExpressionNode:
 		ins, err = c.compilePrefixExpression(node)

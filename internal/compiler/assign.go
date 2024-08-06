@@ -35,7 +35,7 @@ func (c *Compiler) makeOpSetIndexInstructions(node ast.Node, sym symbol.Symbol, 
 
 	var temp opcode.Instructions
 
-	ins, err = c.compileNode(index, false)
+	ins, err = c.compileNode(index)
 	if err != nil {
 		return
 	}
@@ -88,7 +88,7 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		var temp opcode.Instructions
 		// push values in reverse order
 		for i := len(assign.Values) - 1; i > -1; i-- {
-			temp, err = c.compileNode(assign.Values[i], false)
+			temp, err = c.compileNode(assign.Values[i])
 			if err != nil {
 				return
 			}
@@ -139,7 +139,7 @@ func (c *Compiler) compileAssignment(node *ast.AssignmentNode) (ins opcode.Instr
 		// push values in reverse order
 		var temp opcode.Instructions
 		for i := len(node.Values) - 1; i > -1; i-- {
-			temp, err = c.compileNode(node.Values[i], false)
+			temp, err = c.compileNode(node.Values[i])
 			if err != nil {
 				return
 			}
@@ -288,7 +288,7 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 		setResultsNodes, setNonResultsNodes, expansionMin, expansionMax)
 
 	if err == nil {
-		ins, err = c.compileNode(temp, false)
+		ins, err = c.compileNode(temp)
 	}
 	return
 }
@@ -351,7 +351,7 @@ func (c *Compiler) compileDecouplingAssignment(node *ast.AssignmentNode) (
 		setResultsNodes, nil, expansionMin, expansionMax)
 
 	if err == nil {
-		ins, err = c.compileNode(temp, false)
+		ins, err = c.compileNode(temp)
 	}
 	return
 }

@@ -145,7 +145,7 @@ func (c *Compiler) compileString(
 					}
 				}
 
-				interpolation, err := c.compileNode(interp.Value, false)
+				interpolation, err := c.compileNode(interp.Value)
 				if err != nil {
 					return ins, err
 				}

@@ -14,14 +14,14 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 	var b []byte
 
 	// Get "left" node
-	b, err = c.compileNode(node.Left, false)
+	b, err = c.compileNode(node.Left)
 	if err != nil {
 		return
 	}
 	ins = append(ins, b...)
 
 	// Get the index
-	b, err = c.compileNode(node.Index, false)
+	b, err = c.compileNode(node.Index)
 	if err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 	} else {
 		// alternate for an invalid index
 		var alt opcode.Instructions
-		alt, err = c.compileNode(node.Alternate, false)
+		alt, err = c.compileNode(node.Alternate)
 		if err != nil {
 			return
 		}
@@ -80,10 +80,10 @@ func (c *Compiler) compileBlock(node *ast.BlockNode, noValueIfEmpty bool) (
 	} else {
 		for i, s := range node.Statements {
 			if i < len(node.Statements)-1 {
-				bslc, err = c.compileNode(s, true)
+				bslc, err = c.compileNodeWithPopIfExprStmt(s)
 			} else {
 				// last node in Block; not to pop on last node of Block
-				bslc, err = c.compileNode(s, false)
+				bslc, err = c.compileNode(s)
 			}
 			ins = append(ins, bslc...)
 
@@ -97,7 +97,7 @@ func (c *Compiler) compileBlock(node *ast.BlockNode, noValueIfEmpty bool) (
 
 func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins opcode.Instructions, err error) {
 	var b []byte
-	b, err = c.compileNode(node.Right, false)
+	b, err = c.compileNode(node.Right)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return
 	}
 
-	left, err = c.compileNode(node.Left, false)
+	left, err = c.compileNode(node.Left)
 	if err != nil {
 		return
 	}
@@ -138,7 +138,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 	rightIsType := rightTypeCode != 0
 
 	if !rightIsType || node.Operator.Type != token.IS {
-		right, err = c.compileNode(node.Right, false)
+		right, err = c.compileNode(node.Right)
 		if err != nil {
 			return
 		}
