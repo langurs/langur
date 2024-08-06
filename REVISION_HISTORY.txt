@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.17.4
+- fixed potential bug in compiler adding pop opcodes when not appropriate
+
+
 2024-08-02 - 0.17.3
 - changed token.Line and token.LinePosition to use a struct trace.Where
 - changed object.CompiledCode to use opcode.InsPackage to include meta-data (but not yet implemented)
