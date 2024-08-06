@@ -60,7 +60,7 @@ func (c *Compiler) compileListNode(node *ast.ListNode) (ins opcode.Instructions,
 			b = c.constantIns(object.NONE)
 
 		} else {
-			b, err = c.compileNode(e, true)
+			b, err = c.compileNode(e, false)
 			if err != nil {
 				return
 			}
@@ -80,13 +80,13 @@ func (c *Compiler) compileHashNode(node *ast.HashNode) (ins opcode.Instructions,
 
 	var b []byte
 	for _, kv := range node.Pairs {
-		b, err = c.compileNode(kv.Key, true)
+		b, err = c.compileNode(kv.Key, false)
 		if err != nil {
 			return
 		}
 		ins = append(ins, b...)
 
-		b, err = c.compileNode(kv.Value, true)
+		b, err = c.compileNode(kv.Value, false)
 		if err != nil {
 			return
 		}

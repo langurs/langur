@@ -51,6 +51,7 @@ func (c *Compiler) compileProgram(node *ast.Program, executeModule bool) (
 			ins = append(ins, bSlc...)
 
 		default:
+			// not a module or import node
 			importsDone = true
 			bSlc, err = c.compileNode(s, true)
 			if err != nil {

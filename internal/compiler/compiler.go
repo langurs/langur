@@ -217,13 +217,17 @@ func (c *Compiler) compileOrEvaluateNode(node ast.Node, popAtEndOfExpression boo
 	return
 }
 
+func addPop(ins opcode.Instructions) opcode.Instructions {
+	return append(ins, opcode.Make(opcode.OpPop)...)
+}
+
 func (c *Compiler) compileNode(node ast.Node, popAtEndOfExpression bool) (ins opcode.Instructions, err error) {
 	switch node := node.(type) {
 	case *ast.BlockNode:
 		ins, err = c.compileBlock(node, true)
 
 	case *ast.ExpressionStatementNode:
-		ins, err = c.compileNode(node.Expression, true)
+		ins, err = c.compileNode(node.Expression, false)
 
 		if popAtEndOfExpression {
 			ins = append(ins, opcode.Make(opcode.OpPop)...)

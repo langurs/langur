@@ -36,7 +36,7 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 		c.popVariableScope()
 	}()
 
-	// The 4 sections are...
+	// The sections are...
 	// 1. init
 	// 2. test
 	//	(conditionally jump out)
@@ -73,7 +73,7 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 	}()
 
 	if node.Test != nil {
-		test, err = c.compileNode(node.Test, true)
+		test, err = c.compileNode(node.Test, false)
 		if err != nil {
 			return
 		}
@@ -93,21 +93,24 @@ func (c *Compiler) compileFor(node *ast.ForNode) (ins opcode.Instructions, err e
 		increment = append(increment, i...)
 	}
 
+	// fix jumps for next and break, replacing placeholders
 	body = c.fixJumps(body, false, opcode.OC_PlaceHolder_Next, &c.nextStmtCount, len(body), 0, 0)
 	body = c.fixJumps(body, false, opcode.OC_PlaceHolder_Break, &c.breakStmtCount, len(body)+len(increment)+opcode.OP_JUMP_LEN, 0, 0)
 
 	if len(test) > 0 {
-		test = append(test, opcode.Make(opcode.OpJumpIfNotTruthy, len(body)+len(increment)+opcode.OP_JUMP_LEN)...)
+		test = append(test,
+			opcode.Make(opcode.OpJumpIfNotTruthy,
+				len(body)+len(increment)+opcode.OP_JUMP_LEN)...)
 	}
 	// after increment, jump back to start of test section (or body if there is no test)
-	increment = append(increment, opcode.Make(opcode.OpJumpBack, len(test)+len(body)+len(increment))...)
+	jumpback := opcode.Make(opcode.OpJumpBack, len(test)+len(body)+len(increment))
 
 	ins = append(init, test...)
 	ins = append(ins, body...)
 	ins = append(ins, increment...)
+	ins = append(ins, jumpback...)
 
 	// append loop value to very end; vm will push onto stack before exiting frame
-	// FIXME: ? do another way
 	var loopValue opcode.Instructions
 	loopValue, err = c.compileNode(c.loopVarStack[len(c.loopVarStack)-1], false)
 	if err != nil {

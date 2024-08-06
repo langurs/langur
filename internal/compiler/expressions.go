@@ -14,14 +14,14 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 	var b []byte
 
 	// Get "left" node
-	b, err = c.compileNode(node.Left, true)
+	b, err = c.compileNode(node.Left, false)
 	if err != nil {
 		return
 	}
 	ins = append(ins, b...)
 
 	// Get the index
-	b, err = c.compileNode(node.Index, true)
+	b, err = c.compileNode(node.Index, false)
 	if err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 	} else {
 		// alternate for an invalid index
 		var alt opcode.Instructions
-		alt, err = c.compileNode(node.Alternate, true)
+		alt, err = c.compileNode(node.Alternate, false)
 		if err != nil {
 			return
 		}
@@ -97,7 +97,7 @@ func (c *Compiler) compileBlock(node *ast.BlockNode, noValueIfEmpty bool) (
 
 func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins opcode.Instructions, err error) {
 	var b []byte
-	b, err = c.compileNode(node.Right, true)
+	b, err = c.compileNode(node.Right, false)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 		return
 	}
 
-	left, err = c.compileNode(node.Left, true)
+	left, err = c.compileNode(node.Left, false)
 	if err != nil {
 		return
 	}
@@ -138,7 +138,7 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 	rightIsType := rightTypeCode != 0
 
 	if !rightIsType || node.Operator.Type != token.IS {
-		right, err = c.compileNode(node.Right, true)
+		right, err = c.compileNode(node.Right, false)
 		if err != nil {
 			return
 		}

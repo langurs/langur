@@ -379,7 +379,7 @@ func (c *Compiler) compileReturnNode(node *ast.ReturnNode) (ins opcode.Instructi
 		err = c.makeErr(node, "Cannot use return outside of function")
 		return
 	}
-	ins, err = c.compileNode(node.ReturnValue, true)
+	ins, err = c.compileNode(node.ReturnValue, false)
 	if err != nil {
 		return
 	}
@@ -393,7 +393,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 	// Compiling the function first ...
 	// ... but we add it to the instructions after the arguments.
 	var fn opcode.Instructions
-	fn, err = c.compileNode(node.Function, true)
+	fn, err = c.compileNode(node.Function, false)
 	if err != nil {
 		return
 	}
@@ -415,7 +415,7 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 			}
 		}
 
-		bslc, err = c.compileNode(arg, true)
+		bslc, err = c.compileNode(arg, false)
 		if err != nil {
 			return
 		}
@@ -432,14 +432,14 @@ func (c *Compiler) compileCallNode(node *ast.CallNode) (ins opcode.Instructions,
 			externalName = assign.Identifiers[0].TokenRepresentation()
 			name := &ast.StringNode{
 				Token: assign.Token, Values: []string{externalName}}
-			bslc, err = c.compileNode(name, true)
+			bslc, err = c.compileNode(name, false)
 			if err != nil {
 				return
 			}
 
 			// compiling to name/value object (internally used for argument by name)
 			var value opcode.Instructions
-			value, err = c.compileNode(assign.Values[0], true)
+			value, err = c.compileNode(assign.Values[0], false)
 			if err != nil {
 				return
 			}

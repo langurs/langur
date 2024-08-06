@@ -366,7 +366,8 @@ type ExpressionStatementNode struct {
 func (es *ExpressionStatementNode) statementNode() {}
 
 func (es *ExpressionStatementNode) Copy() Node {
-	return &ExpressionStatementNode{Token: es.Token.Copy(), Expression: copyOrNil(es.Expression)}
+	return &ExpressionStatementNode{
+		Token: es.Token.Copy(), Expression: copyOrNil(es.Expression)}
 }
 
 func (es *ExpressionStatementNode) TokenRepresentation() string {
