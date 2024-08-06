@@ -201,20 +201,6 @@ func (c *Compiler) compileVmMode(node *ast.ModeNode) (ins opcode.Instructions, e
 	return
 }
 
-func (c *Compiler) compileOrEvaluateNode(node ast.Node) (
-	ins opcode.Instructions, obj object.Object, err error) {
-
-	var ok bool
-	obj, ok = node.Evaluate()
-	if ok {
-		return
-	}
-	obj = nil
-
-	ins, err = c.compileNode(node)
-	return
-}
-
 func (c *Compiler) compileNodeWithPopIfExprStmt(node ast.Node) (ins opcode.Instructions, err error) {
 	_, isExprStmt := node.(*ast.ExpressionStatementNode)
 	ins, err = c.compileNode(node)

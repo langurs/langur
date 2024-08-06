@@ -351,7 +351,12 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 
 	if !requiredByName {
 		// attempt to build default value now (if possible)
-		defaultIns, param.DefaultValue, err = c.compileOrEvaluateNode(assign.Values[0])
+		var ok bool
+		param.DefaultValue, ok = assign.Values[0].Evaluate()
+		if !ok {
+			param.DefaultValue = nil
+			defaultIns, err = c.compileNode(assign.Values[0])
+		}
 		if err != nil {
 			err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
 			return
