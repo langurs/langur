@@ -9,202 +9,228 @@ import (
 // filter, count
 
 // return all values (as list or hash) returning true from passed regex or function
-func bi_filter(pr *Process, args ...object.Object) object.Object {
-	const fnName = "filter"
+var bi_filter = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "filter",
+		Description: "returns list (or hash) of values verified by given function or regex, or an empty list or hash if there are no matches",
 
-	var isRegex bool
-	var re *object.Regex
-	var fn, over object.Object
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "filter"
 
-	if len(args) == 1 {
-		over = args[0]
-	} else {
-		over = args[1]
-		if object.IsCallable(args[0]) {
-			fn = args[0]
+		var isRegex bool
+		var re *object.Regex
+		var fn, over object.Object
+
+		if len(args) == 1 {
+			over = args[0]
 		} else {
-			var ok bool
-			re, ok = args[0].(*object.Regex)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
-			}
-			isRegex = true
-		}
-	}
-
-	var result object.Object
-	var err error
-
-	switch arg := over.(type) {
-	case *object.List:
-		newArr := &object.List{}
-		if isRegex {
-			for _, v := range arg.Elements {
-				result, err = object.RegexMatchingOrError(re, v)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			over = args[1]
+			if object.IsCallable(args[0]) {
+				fn = args[0]
+			} else {
+				var ok bool
+				re, ok = args[0].(*object.Regex)
+				if !ok {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
 				}
-				if result == object.TRUE {
-					newArr.Elements = append(newArr.Elements, v)
-				}
-			}
-
-		} else if fn != nil {
-			for _, v := range arg.Elements {
-				result, err = pr.call(fn, v)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-				}
-				if result == object.TRUE {
-					newArr.Elements = append(newArr.Elements, v)
-				}
-			}
-
-		} else {
-			for _, v := range arg.Elements {
-				if v.IsTruthy() {
-					newArr.Elements = append(newArr.Elements, v)
-				}
-			}
-		}
-		return newArr
-
-	case *object.Hash:
-		elements := make([]object.Object, 0, len(arg.Pairs)*2)
-		if isRegex {
-			for _, kv := range arg.Pairs {
-				result, err = object.RegexMatchingOrError(re, kv.Value)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-				}
-				if result == object.TRUE {
-					elements = append(elements, kv.Key, kv.Value)
-				}
-			}
-
-		} else if fn != nil {
-			for _, kv := range arg.Pairs {
-				result, err = pr.call(fn, kv.Value)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-				}
-				if result == object.TRUE {
-					elements = append(elements, kv.Key, kv.Value)
-				}
-			}
-
-		} else {
-			for _, kv := range arg.Pairs {
-				if kv.Value.IsTruthy() {
-					elements = append(elements, kv.Key, kv.Value)
-				}
+				isRegex = true
 			}
 		}
 
-		hash, err := object.NewHashFromSlice(elements, false)
-		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-		}
-		return hash
-	}
+		var result object.Object
+		var err error
 
-	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+		switch arg := over.(type) {
+		case *object.List:
+			newArr := &object.List{}
+			if isRegex {
+				for _, v := range arg.Elements {
+					result, err = object.RegexMatchingOrError(re, v)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						newArr.Elements = append(newArr.Elements, v)
+					}
+				}
+
+			} else if fn != nil {
+				for _, v := range arg.Elements {
+					result, err = pr.callback(fn, v)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						newArr.Elements = append(newArr.Elements, v)
+					}
+				}
+
+			} else {
+				for _, v := range arg.Elements {
+					if v.IsTruthy() {
+						newArr.Elements = append(newArr.Elements, v)
+					}
+				}
+			}
+			return newArr
+
+		case *object.Hash:
+			elements := make([]object.Object, 0, len(arg.Pairs)*2)
+			if isRegex {
+				for _, kv := range arg.Pairs {
+					result, err = object.RegexMatchingOrError(re, kv.Value)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						elements = append(elements, kv.Key, kv.Value)
+					}
+				}
+
+			} else if fn != nil {
+				for _, kv := range arg.Pairs {
+					result, err = pr.callback(fn, kv.Value)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						elements = append(elements, kv.Key, kv.Value)
+					}
+				}
+
+			} else {
+				for _, kv := range arg.Pairs {
+					if kv.Value.IsTruthy() {
+						elements = append(elements, kv.Key, kv.Value)
+					}
+				}
+			}
+
+			hash, err := object.NewHashFromSlice(elements, false)
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+			return hash
+		}
+
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+	},
 }
 
 // like filter(), but returning a count instead
-func bi_count(pr *Process, args ...object.Object) object.Object {
-	const fnName = "count"
+var bi_count = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "count",
+		Description: "returns count of values verified by given function or regex",
 
-	var isRegex bool
-	var re *object.Regex
-	var fn, over object.Object
-	var count int64
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "count"
 
-	if len(args) == 1 {
-		over = args[0]
-	} else {
-		over = args[1]
-		if object.IsCallable(args[0]) {
-			fn = args[0]
+		var isRegex bool
+		var re *object.Regex
+		var fn, over object.Object
+		var count int64
+
+		if len(args) == 1 {
+			over = args[0]
 		} else {
-			var ok bool
-			re, ok = args[0].(*object.Regex)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
-			}
-			isRegex = true
-		}
-	}
-
-	var result object.Object
-	var err error
-
-	switch arg := over.(type) {
-	case *object.List:
-		if isRegex {
-			for _, v := range arg.Elements {
-				result, err = object.RegexMatchingOrError(re, v)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			over = args[1]
+			if object.IsCallable(args[0]) {
+				fn = args[0]
+			} else {
+				var ok bool
+				re, ok = args[0].(*object.Regex)
+				if !ok {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
 				}
-				if result == object.TRUE {
-					count++
-				}
-			}
-
-		} else if fn != nil {
-			for _, v := range arg.Elements {
-				result, err = pr.call(fn, v)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-				}
-				if result == object.TRUE {
-					count++
-				}
-			}
-
-		} else {
-			for _, v := range arg.Elements {
-				if v.IsTruthy() {
-					count++
-				}
+				isRegex = true
 			}
 		}
 
-	case *object.Hash:
-		if isRegex {
-			for _, kv := range arg.Pairs {
-				result, err = object.RegexMatchingOrError(re, kv.Value)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		var result object.Object
+		var err error
+
+		switch arg := over.(type) {
+		case *object.List:
+			if isRegex {
+				for _, v := range arg.Elements {
+					result, err = object.RegexMatchingOrError(re, v)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						count++
+					}
 				}
-				if result == object.TRUE {
-					count++
+
+			} else if fn != nil {
+				for _, v := range arg.Elements {
+					result, err = pr.callback(fn, v)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						count++
+					}
+				}
+
+			} else {
+				for _, v := range arg.Elements {
+					if v.IsTruthy() {
+						count++
+					}
 				}
 			}
 
-		} else if fn != nil {
-			for _, kv := range arg.Pairs {
-				result, err = pr.call(fn, kv.Value)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		case *object.Hash:
+			if isRegex {
+				for _, kv := range arg.Pairs {
+					result, err = object.RegexMatchingOrError(re, kv.Value)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						count++
+					}
 				}
-				if result == object.TRUE {
-					count++
+
+			} else if fn != nil {
+				for _, kv := range arg.Pairs {
+					result, err = pr.callback(fn, kv.Value)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					if result == object.TRUE {
+						count++
+					}
+				}
+
+			} else {
+				for _, kv := range arg.Pairs {
+					if kv.Value.IsTruthy() {
+						count++
+					}
 				}
 			}
 
-		} else {
-			for _, kv := range arg.Pairs {
-				if kv.Value.IsTruthy() {
-					count++
-				}
-			}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
 		}
 
-	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
-	}
-
-	return object.NumberFromInt64(count)
+		return object.NumberFromInt64(count)
+	},
 }

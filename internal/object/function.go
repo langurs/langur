@@ -23,43 +23,26 @@ func IsCompiledFunction(obj Object) bool {
 // -1 used to indicate no maximum
 const NotCallable = -2
 
-// DEPRECATED
-func ParamExpectedString(obj Object) string {
-	min, max := ParamMin(obj), ParamMax(obj)
-	if min == NotCallable {
-		return "N/A"
-	}
-	return fmt.Sprintf("%d..%d", min, max)
-}
-
-// minimum, including parameter expansion
-// DEPRECATED
-func ParamMin(obj Object) int {
+func ParamMax(obj Object) int {
 	switch fn := obj.(type) {
-	case *CompiledCode:
-		if fn.FnSignature == nil {
-			return 0
-		}
-		return fn.FnSignature.Min()
-
 	case *BuiltIn:
-		return fn.ParamMin
+		return fn.FnSignature.Max()
+	case *CompiledCode:
+		if fn.IsFunction() {
+			return fn.FnSignature.Max()
+		}
 	}
 	return NotCallable
 }
 
-// maximum, including parameter expansion
-// DEPRECATED
-func ParamMax(obj Object) int {
+func ParamMin(obj Object) int {
 	switch fn := obj.(type) {
-	case *CompiledCode:
-		if fn.FnSignature == nil {
-			return 0
-		}
-		return fn.FnSignature.Max()
-
 	case *BuiltIn:
-		return fn.ParamMax
+		return fn.FnSignature.Min()
+	case *CompiledCode:
+		if fn.IsFunction() {
+			return fn.FnSignature.Min()
+		}
 	}
 	return NotCallable
 }
@@ -135,7 +118,7 @@ func (cf *CompiledCode) ReplString() string {
 	}
 
 	if len(cf.FnSignature.ParamPositional) != 0 {
-		out.WriteString(fmt.Sprintf("; Positional Parameters: %d..%d", ParamMin(cf), ParamMax(cf)))
+		out.WriteString(fmt.Sprintf("; Positional Parameters: %s", cf.FnSignature.MinMaxString()))
 	}
 	if len(cf.FnSignature.ParamByName) != 0 {
 		out.WriteString(fmt.Sprintf("; Parameters By Name: %d", len(cf.FnSignature.ParamByName)))
@@ -159,19 +142,12 @@ type BuiltIn struct {
 	// Fn an interface{} here and type assertion in the vm/process package to avoid an import cycle error
 	Fn          interface{}
 	FnSignature *Signature
-
-	// TODO: deprecated for function signature
-	ParamMin int
-	ParamMax int
 }
 
 func (b *BuiltIn) Copy() Object {
 	return &BuiltIn{
 		Fn:          b.Fn,
 		FnSignature: b.FnSignature.Copy(),
-
-		ParamMin: b.ParamMin,
-		ParamMax: b.ParamMax,
 	}
 }
 
@@ -203,6 +179,7 @@ func (b *BuiltIn) IsTruthy() bool {
 }
 
 func (b *BuiltIn) String() string {
+	// TODO: UPDATE
 	if b.FnSignature.Name[0] == '_' {
 		// internal function names only start with underscore
 		// likely won't happen, but shouldn't

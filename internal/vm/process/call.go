@@ -54,6 +54,25 @@ func (pr *Process) executeFunctionCall(fr *frame,
 	return fnReturn, err
 }
 
+// callback from built-in functions
+func (pr *Process) callback(
+	fn object.Object,
+	positional ...object.Object) (
+
+	object.Object, error) {
+
+	switch fn := fn.(type) {
+	case *object.BuiltIn:
+		return pr.callBuiltIn(fn, positional, nil)
+
+	case *object.CompiledCode:
+		result, _, err := pr.runCompiledCode(fn, pr.currentFrame, positional, nil, nil)
+		return result, err
+	}
+
+	return nil, fmt.Errorf("Not a callable object (%s)", fn.TypeString())
+}
+
 func (pr *Process) runCompiledCode(
 	code *object.CompiledCode, baseFr *frame,
 	positional, byname, late []object.Object) (
@@ -85,51 +104,24 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 		}
 	}()
 
-	if BuiltInArgCountMismatch(bi, len(positional)) {
-		return nil, object.NewError(object.ERR_ARGUMENTS, bi.FullName(),
-			fmt.Sprintf("Positional argument/parameter count mismatch; expected=%s, received=%d",
-				object.ParamExpectedString(bi), len(positional)))
-	}
+	var args []object.Object
+	if bi.FnSignature != nil {
+		args, err = reformArgumentsBySignature(positional, byname, bi.FnSignature)
+		if err != nil {
+			return
+		}
 
-	// TODO: change how parameters are dealt with for built-in functions
-	if len(byname) != 0 {
-		return nil, object.NewError(object.ERR_ARGUMENTS, bi.FullName(), "Passed invalid argument(s) by name to built-in function")
+	} else {
+		args = append(positional, byname...)
 	}
 
 	// type assertion required on interface{} here
-	result = bi.Fn.(BuiltInFunction)(pr, positional...)
+	result = bi.Fn.(BuiltInFunction)(pr, args...)
 	if result.Type() == object.ERROR_OBJ {
 		return nil, result.(*object.Error)
 	} else {
 		return result, nil
 	}
-}
-
-func BuiltInArgCountMismatch(bi *object.BuiltIn, count int) bool {
-	if count < bi.ParamMin || bi.ParamMax != -1 && count > bi.ParamMax {
-		return true
-	}
-	return false
-}
-
-// callback from built-in functions
-func (pr *Process) call(fn object.Object,
-	positional ...object.Object) (
-
-	object.Object, error) {
-
-	// TODO: callback with parameters by name
-
-	switch fn := fn.(type) {
-	case *object.BuiltIn:
-		return pr.callBuiltIn(fn, positional, nil)
-
-	case *object.CompiledCode:
-		result, _, err := pr.runCompiledCode(fn, pr.currentFrame, positional, nil, nil)
-		return result, err
-	}
-
-	return nil, fmt.Errorf("Not a callable object (%s)", fn.TypeString())
 }
 
 func reformArgumentsBySignature(
@@ -156,14 +148,14 @@ func reformArgumentsBySignature(
 		return
 	}
 
+	// ---- now to work on parameters by name ----
 	args = make([]object.Object, len(positional)+len(sig.ParamByName))
 	copy(args, positional)
 
-	// ---- now to work on optional parameters ----
 	argPtr := len(positional)
 
 	// check / pick up parameter by name values in order listed in signature
-	// order relevant to compiled function code, as they will be picked up in order
+	// order relevant, as they will be picked up in order by the function
 	for _, param := range sig.ParamByName {
 		found := false
 		for i := range byname {
@@ -176,12 +168,18 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
+			if param.Required {
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+					fmt.Sprintf("Required parameter by name (%s) not passed", param.ExternalName))
+				return
+			}
+
 			// optional parameter without argument; use default
 			args[argPtr] = param.DefaultValue
 
-			// NOTE: at present, not checking for nil default
-			// using nil default for built-ins to check if passed a value
-			// might change later
+			// NOTE: nil default okay for built-ins
+			// Use nil default for built-ins to check if passed a value.
+			// Compiled functions will have to use another means.
 		}
 		argPtr++
 	}
@@ -206,25 +204,26 @@ func reformArgumentsBySignature(
 }
 
 // may convert last positional arguments in a function call into a list
-func parameterCompression(sig *object.Signature, args []object.Object) (
+func parameterCompression(sig *object.Signature, positional []object.Object) (
 	params []object.Object, err error) {
 
-	params = args
+	params = positional
 	if sig.ParamExpansionMax != 0 || sig.ParamExpansionMin != 0 {
 		var last []object.Object
-		diff := len(args) - len(sig.ParamPositional) + 1
-		if diff > 0 && len(args) != 0 {
+		diff := len(positional) - len(sig.ParamPositional) + 1
+		if diff > 0 && len(positional) != 0 {
+			// parameter compression required
 			// must copy before use in append following
-			last = object.CopyRefSlice(args[len(sig.ParamPositional)-1:])
-			params = append(args[:len(sig.ParamPositional)-1], &object.List{Elements: last})
+			last = object.CopyRefSlice(positional[len(sig.ParamPositional)-1:])
+			params = append(positional[:len(sig.ParamPositional)-1], &object.List{Elements: last})
 
 			if sig.ParamExpansionMax != -1 && len(last) > sig.ParamExpansionMax {
 				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last))
 			}
 
 		} else if diff == 0 && sig.ParamExpansionMin == 0 {
-			// not a required parameter; since it's missing, add an empty list
-			params = append(args, &object.List{})
+			// received 0 and none required; since it's missing, add an empty list
+			params = append(positional, &object.List{})
 		}
 
 		if len(last) < sig.ParamExpansionMin {

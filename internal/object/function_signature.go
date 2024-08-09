@@ -14,9 +14,9 @@ type Signature struct {
 	Description       string
 	ImpureEffects     bool
 	ParamPositional   []Parameter
-	ParamByName       []Parameter
 	ParamExpansionMin int
 	ParamExpansionMax int
+	ParamByName       []Parameter
 }
 
 func (s *Signature) SetParamDefault(name string, defaultValue Object) error {
@@ -68,9 +68,9 @@ func (s *Signature) Copy() *Signature {
 		Description:       s.Description,
 		ImpureEffects:     s.ImpureEffects,
 		ParamPositional:   CopyParamList(s.ParamPositional),
-		ParamByName:       CopyParamList(s.ParamByName),
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
+		ParamByName:       CopyParamList(s.ParamByName),
 	}
 }
 
@@ -139,8 +139,11 @@ type Parameter struct {
 	ExternalName string // API / call name for optional parameter
 	Mutable      bool
 
-	// default for optional parameter
+	// default value for optional parameter; sometimes determined at compile-time, sometimes at run-time when function is defined
 	DefaultValue Object
+
+	// for required by name parameter; not used with positional parameters, as they're always required
+	Required bool
 }
 
 func (p Parameter) Copy() Parameter {
@@ -149,6 +152,7 @@ func (p Parameter) Copy() Parameter {
 		ExternalName: p.ExternalName,
 		Mutable:      p.Mutable,
 		DefaultValue: CopyOrNil(p.DefaultValue),
+		Required:     p.Required,
 	}
 }
 
@@ -159,10 +163,31 @@ func (p Parameter) String() string {
 		sb.WriteString("var ")
 	}
 
-	sb.WriteString(p.InternalName)
-	if p.InternalName != p.ExternalName && p.ExternalName != "" {
+	if p.Required {
+		// required by name
+		if p.InternalName == "" {
+			// required by name parameter on built-in function
+			sb.WriteString(p.ExternalName)
+		} else {
+			// required by name parameter on compiled function
+			sb.WriteString(p.InternalName)
+		}
 		sb.WriteString(" as ")
 		sb.WriteString(p.ExternalName)
+
+	} else {
+		if p.InternalName == "" {
+			// built-in function parameter
+			sb.WriteString(p.ExternalName)
+
+		} else {
+			// compiled function parameter
+			sb.WriteString(p.InternalName)
+			if p.InternalName != p.ExternalName && p.ExternalName != "" {
+				sb.WriteString(" as ")
+				sb.WriteString(p.ExternalName)
+			}
+		}
 	}
 
 	if p.DefaultValue != nil {

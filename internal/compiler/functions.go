@@ -321,10 +321,10 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 	param object.Parameter, defaultIns opcode.Instructions, err error) {
 
 	// optional by name or required by name?
-	requiredByName := assign.Values == nil
+	param.Required = assign.Values == nil
 
 	if len(assign.Identifiers) != 1 ||
-		(!requiredByName && len(assign.Values) != 1) {
+		(!param.Required && len(assign.Values) != 1) {
 
 		err = c.makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
 		return
@@ -349,7 +349,7 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 		return
 	}
 
-	if !requiredByName {
+	if !param.Required {
 		// attempt to build default value now (if possible)
 		var ok bool
 		param.DefaultValue, ok = assign.Values[0].Evaluate()

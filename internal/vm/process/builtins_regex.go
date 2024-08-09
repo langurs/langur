@@ -14,362 +14,505 @@ import (
 // matches, submatches, indices, subindices
 // split, splitd
 
-// returns Boolean object
-func bi_matching(pr *Process, args ...object.Object) object.Object {
-	const fnName = "matching"
+var bi_matching = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "matching",
+		Description: "matching(regex, anything); accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
 
-	var check *object.String
-	var ok bool
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "matching"
 
-	re, isRegex := args[0].(*object.Regex)
-	if !isRegex {
-		check, ok = args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
-		}
-	}
-	s := object.ToString(args[1])
+		var check *object.String
+		var ok bool
 
-	if isRegex {
-		success, err := object.RegexMatching(re, s.String())
-		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-		}
-		return success
-	}
-
-	return object.NativeBoolToObject(strings.Contains(s.String(), check.String()))
-}
-
-// returns match string, or null or 3rd argument (alternate)
-func bi_match(pr *Process, args ...object.Object) object.Object {
-	const fnName = "match"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	result, err := object.RegexMatchOnce(re, s.String())
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	if result == object.NONE && len(args) > 2 {
-		// no match
-		// return alternate value
-		return args[2]
-	}
-	return result
-}
-
-// progressive matching
-// returns list of matches or empty list for no match
-func bi_matches(pr *Process, args ...object.Object) object.Object {
-	const fnName = "matches"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	cnt := -1 // -1 == infinite (practically)
-	if len(args) > 2 {
-		var err error
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-		}
-		cnt, err = count.ToInt()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-		}
-	}
-
-	arr, err := object.RegexMatchProgressive(re, s.String(), cnt)
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return arr
-}
-
-// returns single list of submatches or empty list for no match
-func bi_submatch(pr *Process, args ...object.Object) object.Object {
-	const fnName = "submatch"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	result, err := object.RegexSubMatches(re, s.String())
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-// returns single hash of submatches or empty hash for no match
-func bi_submatchH(pr *Process, args ...object.Object) object.Object {
-	const fnName = "submatchH"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	result, err := object.RegexSubMatchesHash(re, s.String())
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-// returns list of lists of submatches or empty list for no match
-func bi_submatches(pr *Process, args ...object.Object) object.Object {
-	const fnName = "submatches"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	cnt := -1
-	if len(args) > 2 {
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-		}
-		var err error
-		cnt, err = count.ToInt()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-		}
-	}
-
-	result, err := object.RegexProgressiveSubMatches(re, s.String(), cnt)
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-// returns list of hashes of submatches or empty list for no match
-func bi_submatchesH(pr *Process, args ...object.Object) object.Object {
-	const fnName = "submatchesH"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	cnt := -1
-	if len(args) > 2 {
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-		}
-		var err error
-		cnt, err = count.ToInt()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-		}
-	}
-
-	result, err := object.RegexProgressiveSubMatchesHashList(re, s.String(), cnt)
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-// for both regex and plain string delimiters
-func bi_split(pr *Process, args ...object.Object) object.Object {
-	const fnName = "split"
-
-	// default delimiter as ZLS
-	var delim, s string
-	var countEach int
-	var isRegex, isCountEach bool
-	var re *object.Regex
-
-	if len(args) == 1 {
-		// 1 argument, split into single code point strings
-		s = args[0].String()
-
-	} else {
-		// check for regex/string/integer count to split by
-		switch args[0].(type) {
-		case *object.Regex:
-			re, isRegex = args[0].(*object.Regex)
-		case *object.String:
-			delim = args[0].String()
-		case *object.Number:
-			countEach, isCountEach = object.NumberToInt(args[0])
-			if !isCountEach {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
+		re, isRegex := args[0].(*object.Regex)
+		if !isRegex {
+			check, ok = args[0].(*object.String)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
 			}
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
 		}
-		s = args[1].String()
-	}
+		s := object.ToString(args[1])
 
-	max := -1
-	if len(args) > 2 {
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+		if isRegex {
+			success, err := object.RegexMatching(re, s.String())
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+			return success
 		}
-		var err error
-		max, err = count.ToInt()
+
+		return object.NativeBoolToObject(strings.Contains(s.String(), check.String()))
+	},
+}
+
+var bi_match = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "match",
+		Description: "match(regex, anything, alternate); accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "match"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		result, err := object.RegexMatchOnce(re, s.String())
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-	}
+		if result == object.NONE && len(args) > 2 {
+			// no match
+			// return alternate value
+			return args[2]
+		}
+		return result
+	},
+}
 
-	if isRegex {
-		result, err := object.RegexSplit(re, s, max)
+var bi_matches = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "matches",
+		Description: "matches(regex, anything, max); accepts compiled regex and returns list of progressive matches (empty list if no matches); max optional (defaults to -1 meaning infinite)",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "matches"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		cnt := -1 // -1 == infinite (practically)
+		if len(args) > 2 {
+			var err error
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			cnt, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
+		}
+
+		arr, err := object.RegexMatchProgressive(re, s.String(), cnt)
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+		return arr
+	},
+}
+
+var bi_submatch = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "submatch",
+		Description: "submatch(regex, anything); returns list of submatches (empty list if not a match)",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "submatch"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		result, err := object.RegexSubMatches(re, s.String())
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
+	},
+}
 
-	} else if isCountEach {
-		sSlc, err := str.SplitByNumber(s, countEach, max)
+var bi_submatchH = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "submatchH",
+		Description: "submatchH(regex, anything); returns hash of submatches (empty hash if not a match)",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "submatchH"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		result, err := object.RegexSubMatchesHash(re, s.String())
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-		return object.StringSliceToList(sSlc)
-
-	} else {
-		return object.StringSliceToList(strings.SplitN(s, delim, max))
-	}
+		return result
+	},
 }
 
-func bi_index(pr *Process, args ...object.Object) object.Object {
-	const fnName = "index"
+var bi_submatches = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "submatches",
+		Description: "submatches(regex, anything, max); returns list of lists of progressive submatches (empty list if not a match); max optional (defaults to -1 meaning infinite)",
 
-	var sub *object.String
-	var ok bool
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "submatches"
 
-	re, isRegex := args[0].(*object.Regex)
-	if !isRegex {
-		sub, ok = args[0].(*object.String)
+		re, ok := args[0].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
 		}
-	}
-	s := object.ToString(args[1])
+		s := object.ToString(args[1])
 
-	var result object.Object
-	var err error
+		cnt := -1
+		if len(args) > 2 {
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			var err error
+			cnt, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
+		}
 
-	if isRegex {
-		result, err = object.RegexIndex(re, s.String())
-	} else {
-		result, err = object.StringIndex(sub.String(), s.String())
-	}
-
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	if result == object.NONE && len(args) > 2 {
-		// no match
-		// return alternate value
-		return args[2]
-	}
-	return result
+		result, err := object.RegexProgressiveSubMatches(re, s.String(), cnt)
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+		return result
+	},
 }
 
-func bi_indices(pr *Process, args ...object.Object) object.Object {
-	const fnName = "indices"
+var bi_submatchesH = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "submatchesH",
+		Description: "submatchesH(regex, anything, max); returns list of hashes of progressive whole match and submatches (empty list if not a match); max optional (defaults to -1 meaning infinite)",
 
-	var sub *object.String
-	var ok bool
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "submatchesH"
 
-	re, isRegex := args[0].(*object.Regex)
-	if !isRegex {
-		sub, ok = args[0].(*object.String)
+		re, ok := args[0].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
 		}
-	}
-	s := object.ToString(args[1])
+		s := object.ToString(args[1])
 
-	cnt := -1
-	if len(args) > 2 {
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+		cnt := -1
+		if len(args) > 2 {
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			var err error
+			cnt, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
 		}
+
+		result, err := object.RegexProgressiveSubMatchesHashList(re, s.String(), cnt)
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+		return result
+	},
+}
+
+var bi_split = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "split",
+		Description: "split(delim, anything, max); accepts regex or string delimiter and splits string into a list of strings; max optional",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "split"
+
+		// default delimiter as ZLS
+		var delim, s string
+		var countEach int
+		var isRegex, isCountEach bool
+		var re *object.Regex
+
+		if len(args) == 1 {
+			// 1 argument, split into single code point strings
+			s = args[0].String()
+
+		} else {
+			// check for regex/string/integer count to split by
+			switch args[0].(type) {
+			case *object.Regex:
+				re, isRegex = args[0].(*object.Regex)
+			case *object.String:
+				delim = args[0].String()
+			case *object.Number:
+				countEach, isCountEach = object.NumberToInt(args[0])
+				if !isCountEach {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
+				}
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
+			}
+			s = args[1].String()
+		}
+
+		max := -1
+		if len(args) > 2 {
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			var err error
+			max, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+		}
+
+		if isRegex {
+			result, err := object.RegexSplit(re, s, max)
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+			return result
+
+		} else if isCountEach {
+			sSlc, err := str.SplitByNumber(s, countEach, max)
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+			return object.StringSliceToList(sSlc)
+
+		} else {
+			return object.StringSliceToList(strings.SplitN(s, delim, max))
+		}
+	},
+}
+
+var bi_index = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "index",
+		Description: "index(regex, anything, alternate); accepts regex and returns code point range for match, or returns null or alternate value (optional) for no match",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "index"
+
+		var sub *object.String
+		var ok bool
+
+		re, isRegex := args[0].(*object.Regex)
+		if !isRegex {
+			sub, ok = args[0].(*object.String)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+			}
+		}
+		s := object.ToString(args[1])
+
+		var result object.Object
 		var err error
-		cnt, err = count.ToInt()
+
+		if isRegex {
+			result, err = object.RegexIndex(re, s.String())
+		} else {
+			result, err = object.StringIndex(sub.String(), s.String())
+		}
+
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-	}
-
-	var result object.Object
-	var err error
-
-	if isRegex {
-		result, err = object.RegexProgressiveIndices(re, s.String(), cnt)
-	} else {
-		result, err = object.StringProgressiveIndices(sub.String(), s.String(), cnt)
-	}
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-func bi_subindex(pr *Process, args ...object.Object) object.Object {
-	const fnName = "subindex"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	result, err := object.RegexSubMatchesIndices(re, s.String())
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
-}
-
-func bi_subindices(pr *Process, args ...object.Object) object.Object {
-	const fnName = "subindices"
-
-	re, ok := args[0].(*object.Regex)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
-	}
-	s := object.ToString(args[1])
-
-	cnt := -1
-	if len(args) > 2 {
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+		if result == object.NONE && len(args) > 2 {
+			// no match
+			// return alternate value
+			return args[2]
 		}
+		return result
+	},
+}
+
+var bi_indices = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "indices",
+		Description: `indices(regex, anything, max); accepts regex and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match; max optional`,
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "indices"
+
+		var sub *object.String
+		var ok bool
+
+		re, isRegex := args[0].(*object.Regex)
+		if !isRegex {
+			sub, ok = args[0].(*object.String)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+			}
+		}
+		s := object.ToString(args[1])
+
+		cnt := -1
+		if len(args) > 2 {
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			var err error
+			cnt, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+		}
+
+		var result object.Object
 		var err error
-		cnt, err = count.ToInt()
+
+		if isRegex {
+			result, err = object.RegexProgressiveIndices(re, s.String(), cnt)
+		} else {
+			result, err = object.StringProgressiveIndices(sub.String(), s.String(), cnt)
+		}
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-	}
+		return result
+	},
+}
 
-	result, err := object.RegexProgressiveSubMatchesIndices(re, s.String(), cnt)
-	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-	}
-	return result
+var bi_subindex = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "subindex",
+		Description: `subindex(regex, anything); accepts regex and returns list of code point ranges for submatches, or empty list for no match`,
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "subindex"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		result, err := object.RegexSubMatchesIndices(re, s.String())
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+		return result
+	},
+}
+
+var bi_subindices = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "subindices",
+		Description: `subindices(regex, anything, max); accepts regex and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match; max optional`,
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "subindices"
+
+		re, ok := args[0].(*object.Regex)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+		}
+		s := object.ToString(args[1])
+
+		cnt := -1
+		if len(args) > 2 {
+			count, ok := args[2].(*object.Number)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			}
+			var err error
+			cnt, err = count.ToInt()
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+		}
+
+		result, err := object.RegexProgressiveSubMatchesIndices(re, s.String(), cnt)
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+		return result
+	},
 }

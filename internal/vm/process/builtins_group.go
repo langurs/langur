@@ -8,121 +8,159 @@ import (
 
 // group, groupby, groupbyH
 
-func bi_group(pr *Process, args ...object.Object) object.Object {
-	const fnName = "group"
+var bi_group = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "group",
+		Description: "group(by, list); groups list elements into list of lists as specified by first argument",
 
-	var integer int
-	var fn, over object.Object
-	var ok bool
-	useTruthiness := false
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "group"
 
-	if len(args) == 2 {
-		switch arg1 := args[0].(type) {
-		case *object.Number:
-			integer, ok = object.NumberToInt(arg1)
-			if !ok || integer == 0 {
+		var integer int
+		var fn, over object.Object
+		var ok bool
+		useTruthiness := false
+
+		if len(args) == 2 {
+			switch arg1 := args[0].(type) {
+			case *object.Number:
+				integer, ok = object.NumberToInt(arg1)
+				if !ok || integer == 0 {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for first argument")
+				}
+			case *object.CompiledCode, *object.BuiltIn:
+				fn = arg1
+			default:
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for first argument")
 			}
-		case *object.CompiledCode, *object.BuiltIn:
-			fn = arg1
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for first argument")
-		}
-		over = args[1]
+			over = args[1]
 
-	} else {
-		over = args[0]
-		useTruthiness = true
-	}
-
-	switch arg2 := over.(type) {
-	case *object.List:
-		if fn != nil || useTruthiness {
-			return groupByFunctionOrTruthiness(fnName, pr, fn, false, arg2)
+		} else {
+			over = args[0]
+			useTruthiness = true
 		}
 
-		// group by integer
-		groupArr := &object.List{}
-		start := 0
+		switch arg2 := over.(type) {
+		case *object.List:
+			if fn != nil || useTruthiness {
+				return groupByFunctionOrTruthiness(fnName, pr, fn, false, arg2)
+			}
 
-		if integer < 0 {
-			// negative integer; "start from right" by changing where we start from the left
-			integer = -integer
-			start = len(arg2.Elements) % integer
-			if start != 0 {
-				// not evenly divided
+			// group by integer
+			groupArr := &object.List{}
+			start := 0
+
+			if integer < 0 {
+				// negative integer; "start from right" by changing where we start from the left
+				integer = -integer
+				start = len(arg2.Elements) % integer
+				if start != 0 {
+					// not evenly divided
+					groupArr.Elements = append(groupArr.Elements,
+						&object.List{Elements: object.CopySlice(arg2.Elements[:start])})
+				}
+			}
+
+			for i := start; i < len(arg2.Elements); i += integer {
+				end := i + integer
+				if end > len(arg2.Elements) {
+					end = len(arg2.Elements)
+				}
 				groupArr.Elements = append(groupArr.Elements,
-					&object.List{Elements: object.CopySlice(arg2.Elements[:start])})
+					&object.List{Elements: object.CopySlice(arg2.Elements[i:end])})
 			}
-		}
+			return groupArr
 
-		for i := start; i < len(arg2.Elements); i += integer {
-			end := i + integer
-			if end > len(arg2.Elements) {
-				end = len(arg2.Elements)
-			}
-			groupArr.Elements = append(groupArr.Elements,
-				&object.List{Elements: object.CopySlice(arg2.Elements[i:end])})
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or string for second argument")
 		}
-		return groupArr
-
-	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or string for second argument")
-	}
+	},
 }
 
-func bi_groupby(pr *Process, args ...object.Object) object.Object {
-	const fnName = "groupby"
+var bi_groupby = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "groupby",
+		Description: "groupby(by, list); groups list elements into list of lists of lists as specified by first argument, including the values used to determine grouping",
 
-	var fn, over object.Object
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "groupby"
 
-	if len(args) == 2 {
-		switch arg1 := args[0].(type) {
-		case *object.CompiledCode, *object.BuiltIn:
-			fn = arg1
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+		var fn, over object.Object
+
+		if len(args) == 2 {
+			switch arg1 := args[0].(type) {
+			case *object.CompiledCode, *object.BuiltIn:
+				fn = arg1
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+			}
+			over = args[1]
+
+		} else {
+			over = args[0]
 		}
-		over = args[1]
 
-	} else {
-		over = args[0]
-	}
+		switch arg2 := over.(type) {
+		case *object.List:
+			return groupByFunctionOrTruthiness(fnName, pr, fn, true, arg2)
 
-	switch arg2 := over.(type) {
-	case *object.List:
-		return groupByFunctionOrTruthiness(fnName, pr, fn, true, arg2)
-
-	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for second argument")
-	}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for second argument")
+		}
+	},
 }
 
-func bi_groupbyH(pr *Process, args ...object.Object) object.Object {
-	const fnName = "groupbyH"
+var bi_groupbyH = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "groupbyH",
+		Description: "groupbyH(by, list); groups list elements into hash as specified by first argument, using the values used to determine grouping as keys",
 
-	var fn, over object.Object
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "groupbyH"
 
-	if len(args) == 2 {
-		switch arg1 := args[0].(type) {
-		case *object.CompiledCode, *object.BuiltIn:
-			fn = arg1
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+		var fn, over object.Object
+
+		if len(args) == 2 {
+			switch arg1 := args[0].(type) {
+			case *object.CompiledCode, *object.BuiltIn:
+				fn = arg1
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+			}
+			over = args[1]
+
+		} else {
+			over = args[0]
 		}
-		over = args[1]
 
-	} else {
-		over = args[0]
-	}
+		switch arg2 := over.(type) {
+		case *object.List:
+			return groupByIntoHash(fnName, pr, fn, arg2)
 
-	switch arg2 := over.(type) {
-	case *object.List:
-		return groupByIntoHash(fnName, pr, fn, arg2)
-
-	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for second argument")
-	}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for second argument")
+		}
+	},
 }
 
 func groupByFunctionOrTruthiness(
@@ -155,7 +193,7 @@ func groupByFunctionOrTruthiness(
 			}
 
 		} else {
-			key, err = pr.call(fn, obj)
+			key, err = pr.callback(fn, obj)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -216,7 +254,7 @@ func groupByIntoHash(
 		if fn == nil {
 			key = obj
 		} else {
-			key, err = pr.call(fn, obj)
+			key, err = pr.callback(fn, obj)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}

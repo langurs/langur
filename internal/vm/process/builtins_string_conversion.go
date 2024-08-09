@@ -13,54 +13,76 @@ import (
 // s2b, b2s
 // s2n
 
-func bi_s2b(pr *Process, args ...object.Object) object.Object {
-	// langur string to UTF-8 bytes
-	const fnName = "s2b"
+var bi_s2b = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "s2b",
+		Description: "returns list of UTF-8 bytes from a langur string",
 
-	s, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-	}
-	bytes := s.ByteSlc()
-	arr := &object.List{Elements: make([]object.Object, len(bytes))}
-	for i, b := range bytes {
-		arr.Elements[i] = object.NumberFromInt(int(b))
-	}
-	return arr
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// langur string to UTF-8 bytes
+		const fnName = "s2b"
+
+		s, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+		}
+		bytes := s.ByteSlc()
+		arr := &object.List{Elements: make([]object.Object, len(bytes))}
+		for i, b := range bytes {
+			arr.Elements[i] = object.NumberFromInt(int(b))
+		}
+		return arr
+	},
 }
 
-func bi_b2s(pr *Process, args ...object.Object) object.Object {
-	// UTF-8 bytes to langur string
-	const fnName = "b2s"
+var bi_b2s = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "b2s",
+		Description: "converts a byte or list of UTF-8 bytes to a langur string",
 
-	switch arg := args[0].(type) {
-	case *object.Number:
-		b, err := arg.ToByte()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-		}
-		return utf8bytesToString(fnName, []byte{b})
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// UTF-8 bytes to langur string
+		const fnName = "b2s"
 
-	case *object.List:
-		bSlc := make([]byte, len(arg.Elements))
-		for i, v := range arg.Elements {
-			var b byte
-			var err error
-
-			switch v := v.(type) {
-			case *object.Number:
-				b, err = v.ToByte()
-				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-				}
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+		switch arg := args[0].(type) {
+		case *object.Number:
+			b, err := arg.ToByte()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
-			bSlc[i] = b
+			return utf8bytesToString(fnName, []byte{b})
+
+		case *object.List:
+			bSlc := make([]byte, len(arg.Elements))
+			for i, v := range arg.Elements {
+				var b byte
+				var err error
+
+				switch v := v.(type) {
+				case *object.Number:
+					b, err = v.ToByte()
+					if err != nil {
+						return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+					}
+				default:
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+				}
+				bSlc[i] = b
+			}
+			return utf8bytesToString(fnName, bSlc)
 		}
-		return utf8bytesToString(fnName, bSlc)
-	}
-	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+	},
 }
 
 func utf8bytesToString(fnName string, bSlc []byte) object.Object {
@@ -75,71 +97,106 @@ func utf8bytesToString(fnName string, bSlc []byte) object.Object {
 	return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid UTF-8 byte sequence")
 }
 
-func bi_cp2s(pr *Process, args ...object.Object) object.Object {
-	// code point(s) to string
-	const fnName = "cp2s"
+var bi_cp2s = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "cp2s",
+		Description: "converts a code point (integer) or list of code points to a string",
 
-	rSlc, err := object.CodePointsToFlatRuneSlice(args[0])
-	if err != nil {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-	}
-	s, err := object.NewStringFromParts(rSlc)
-	if err == nil {
-		return s
-	}
-	return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-}
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// code point(s) to string
+		const fnName = "cp2s"
 
-func bi_s2cp(pr *Process, args ...object.Object) object.Object {
-	// string to code point(s): indexes string and returns code point or list of code points
-	const fnName = "s2cp"
-
-	s, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-	}
-	var result object.Object
-	var err error
-	// s2cp(string, index, alternate)
-	if len(args) > 2 {
-		result, err = s.Index(args[1], false)
+		rSlc, err := object.CodePointsToFlatRuneSlice(args[0])
 		if err != nil {
-			return args[2]
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
-	} else if len(args) > 1 {
-		result, err = s.Index(args[1], false)
-	} else {
-		result, err = s.Index(nil, false)
-	}
-	if err != nil {
+		s, err := object.NewStringFromParts(rSlc)
+		if err == nil {
+			return s
+		}
 		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-	}
-	return result
+	},
 }
 
-func bi_s2gc(pr *Process, args ...object.Object) object.Object {
-	// string to grapheme clusters
-	const fnName = "s2gc"
+var bi_s2cp = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "s2cp",
+		Description: "s2cp(string, index, alternate); indexes a string to a code point or a list of code points",
 
-	s, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-	}
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// string to code point(s): indexes string and returns code point or list of code points
+		const fnName = "s2cp"
 
-	var clusters []object.Object
-
-	graphemes := str.Graphemes(s.String())
-	for _, gr := range graphemes {
-		if len(gr) == 1 {
-			// 1 code point
-			clusters = append(clusters, object.NumberFromInt(int(gr[0])))
-		} else {
-			// a cluster; make a list
-			clusters = append(clusters, &object.List{Elements: runeSlcToObjects(gr)})
+		s, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
 		}
-	}
+		var result object.Object
+		var err error
+		// s2cp(string, index, alternate)
+		if len(args) > 2 {
+			result, err = s.Index(args[1], false)
+			if err != nil {
+				return args[2]
+			}
+		} else if len(args) > 1 {
+			result, err = s.Index(args[1], false)
+		} else {
+			result, err = s.Index(nil, false)
+		}
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		}
+		return result
+	},
+}
 
-	return &object.List{Elements: clusters}
+var bi_s2gc = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "s2gc",
+		Description: "s2gc(string); converts string to grapheme clusters list",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// string to grapheme clusters
+		const fnName = "s2gc"
+
+		s, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+		}
+
+		var clusters []object.Object
+
+		graphemes := str.Graphemes(s.String())
+		for _, gr := range graphemes {
+			if len(gr) == 1 {
+				// 1 code point
+				clusters = append(clusters, object.NumberFromInt(int(gr[0])))
+			} else {
+				// a cluster; make a list
+				clusters = append(clusters, &object.List{Elements: runeSlcToObjects(gr)})
+			}
+		}
+
+		return &object.List{Elements: clusters}
+	},
 }
 
 func runeSlcToObjects(rSlc []rune) []object.Object {
@@ -150,72 +207,96 @@ func runeSlcToObjects(rSlc []rune) []object.Object {
 	return list
 }
 
-func bi_s2s(pr *Process, args ...object.Object) object.Object {
-	// string to string: indexes string and returns string
-	const fnName = "s2s"
+var bi_s2s = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "s2s",
+		Description: "s2s(string, index, alternate); indexes a string to a string",
 
-	s, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-	}
-	var result object.Object
-	var err error
-	// s2s(string, index, alternate)
-	if len(args) > 2 {
-		result, err = s.Index(args[1], true)
-		if err != nil {
-			return args[2]
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: 3,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// string to string: indexes string and returns string
+		const fnName = "s2s"
+
+		s, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
 		}
-	} else if len(args) > 1 {
-		result, err = s.Index(args[1], true)
-	} else {
-		result, err = s.Index(nil, true)
-	}
-	if err != nil {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-	}
-	return result
+		var result object.Object
+		var err error
+		// s2s(string, index, alternate)
+		if len(args) > 2 {
+			result, err = s.Index(args[1], true)
+			if err != nil {
+				return args[2]
+			}
+		} else if len(args) > 1 {
+			result, err = s.Index(args[1], true)
+		} else {
+			result, err = s.Index(nil, true)
+		}
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		}
+		return result
+	},
 }
 
-func bi_s2n(pr *Process, args ...object.Object) object.Object {
-	// langur string or code point to numbers (interpreted from base 36)
-	const fnName = "s2n"
+var bi_s2n = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "s2n",
+		Description: "returns list of numbers from a langur string, interpreting 0-9, A-Z, and a-z as base 36 numbers",
 
-	var rSlc []rune
-	var one bool
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// langur string or code point to numbers (interpreted from base 36)
+		const fnName = "s2n"
 
-	switch arg := args[0].(type) {
-	case *object.String:
-		rSlc = arg.RuneSlc()
+		var rSlc []rune
+		var one bool
 
-	case *object.Number:
-		cp, err := arg.ToRune()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid code point")
+		switch arg := args[0].(type) {
+		case *object.String:
+			rSlc = arg.RuneSlc()
+
+		case *object.Number:
+			cp, err := arg.ToRune()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid code point")
+			}
+			rSlc = []rune{cp}
+			one = true
+
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for first argument")
 		}
-		rSlc = []rune{cp}
-		one = true
 
-	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for first argument")
-	}
-
-	if one {
-		n, err := cpoint.Base36ToNumber(rSlc[0])
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		if one {
+			n, err := cpoint.Base36ToNumber(rSlc[0])
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
+			return object.NumberFromInt(n)
 		}
-		return object.NumberFromInt(n)
-	}
 
-	elements := make([]object.Object, len(rSlc))
-	for i, cp := range rSlc {
-		n, err := cpoint.Base36ToNumber(cp)
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		elements := make([]object.Object, len(rSlc))
+		for i, cp := range rSlc {
+			n, err := cpoint.Base36ToNumber(cp)
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
+			elements[i] = object.NumberFromInt(n)
 		}
-		elements[i] = object.NumberFromInt(n)
-	}
 
-	return &object.List{Elements: elements}
+		return &object.List{Elements: elements}
+	},
 }

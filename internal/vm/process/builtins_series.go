@@ -8,13 +8,39 @@ import (
 
 // series, pseries
 
-func bi_series(pr *Process, args ...object.Object) object.Object {
-	return series(pr, "series", args, false)
+var bi_series = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "series",
+		Description: "series(range, increment); generates a list of numbers from a range and increment (optional, defaults to 1 or -1)",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		return series(pr, "series", args, false)
+	},
 }
 
-func bi_pseries(pr *Process, args ...object.Object) object.Object {
-	// positive series or empty list
-	return series(pr, "pseries", args, true)
+var bi_pseries = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "pseries",
+		Description: "like series(), but returns positive series or empty list (given a negative range)",
+
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: 2,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// positive series or empty list
+		return series(pr, "pseries", args, true)
+	},
 }
 
 func series(pr *Process, fnName string, args []object.Object, forAscendingSeries bool) object.Object {

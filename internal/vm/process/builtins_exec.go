@@ -11,32 +11,40 @@ import (
 )
 
 // execT, execTH
-
 // executed trusted source string
-func bi_execT(pr *Process, args ...object.Object) object.Object {
-	const fnName = "execT"
 
-	cmd, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
-	}
+var bi_execT = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:            "execT",
+		ImpureEffects:   true,
+		Description:     "executes a command from a trusted source string, returning a result or throwing an exception",
+		ParamPositional: []object.Parameter{object.Parameter{ExternalName: "source"}},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "execT"
 
-	out, err := execCmd(cmd.String())
+		cmd, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
+		}
 
-	// result or exception
-	if err == nil {
-		return object.NewString(out)
-	} else {
-		es := err.Error()
-		err := object.NewError(object.ERR_GENERAL, fnName,
-			es+": "+formatErrString(out))
+		out, err := execCmd(cmd.String())
 
-		// add the exit status to the hash
-		err.Contents.WritePair(object.NewString("status"),
-			object.NumberFromInt(getExitStatusFromExecError(es)))
+		// result or exception
+		if err == nil {
+			return object.NewString(out)
+		} else {
+			es := err.Error()
+			err := object.NewError(object.ERR_GENERAL, fnName,
+				es+": "+formatErrString(out))
 
-		return err
-	}
+			// add the exit status to the hash
+			err.Contents.WritePair(object.NewString("status"),
+				object.NumberFromInt(getExitStatusFromExecError(es)))
+
+			return err
+		}
+	},
 }
 
 func execCmd(s string) (string, error) {
@@ -51,30 +59,38 @@ func execCmd(s string) (string, error) {
 	return string(out), err
 }
 
-func bi_execTH(pr *Process, args ...object.Object) object.Object {
-	const fnName = "execTH"
+var bi_execTH = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:            "execTH",
+		ImpureEffects:   true,
+		Description:     "executes a command from a trusted source string, returning a hash",
+		ParamPositional: []object.Parameter{object.Parameter{ExternalName: "source"}},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "execTH"
 
-	cmd, ok := args[0].(*object.String)
-	if !ok {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
-	}
+		cmd, ok := args[0].(*object.String)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
+		}
 
-	out, err := execCmd(cmd.String())
+		out, err := execCmd(cmd.String())
 
-	hash := &object.Hash{}
+		hash := &object.Hash{}
 
-	if err == nil {
-		hash.WritePair(object.NewString("result"), object.NewString(out))
-		hash.WritePair(object.NewString("error"), object.NONE)
-		hash.WritePair(object.NewString("status"), object.Zero)
+		if err == nil {
+			hash.WritePair(object.NewString("result"), object.NewString(out))
+			hash.WritePair(object.NewString("error"), object.NONE)
+			hash.WritePair(object.NewString("status"), object.Zero)
 
-	} else {
-		hash.WritePair(object.NewString("result"), object.ZLS)
-		hash.WritePair(object.NewString("error"), object.NewString(formatErrString(out)))
-		hash.WritePair(object.NewString("status"),
-			object.NumberFromInt(getExitStatusFromExecError(err.Error())))
-	}
-	return hash
+		} else {
+			hash.WritePair(object.NewString("result"), object.ZLS)
+			hash.WritePair(object.NewString("error"), object.NewString(formatErrString(out)))
+			hash.WritePair(object.NewString("status"),
+				object.NumberFromInt(getExitStatusFromExecError(err.Error())))
+		}
+		return hash
+	},
 }
 
 var getExitStatusRegex = regexp.MustCompile("^exit status (-?\\d+)")

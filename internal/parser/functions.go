@@ -146,6 +146,8 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			p.advanceToken()
 			value = p.parseExpression(precedence_LOWEST)
 			if alias != nil {
+				// param already set as ident
+				// having an alias, set param as infix expression: ident as alias
 				param = &ast.InfixExpressionNode{
 					Token:    param.TokenInfo(),
 					Left:     param,
@@ -163,27 +165,24 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			param = ast.MakeAssignmentExpression(param, value, false)
 			return
 		}
-		if alias != nil {
-			p.addError("Expected assignment after alias in parameter")
-		}
 		return
 
 	case token.VAR:
 		mutable := true
 		p.advanceToken()
 		parseIdentAliasAndAssignment()
+
+		// FIXME: ???
 		if value != nil {
 			param = ast.MakeDeclarationAssignmentExpression(param, value, false, mutable)
 			return
-		}
-		if alias != nil {
-			p.addError("Expected assignment after alias in parameter")
 		}
 		param = &ast.LineDeclarationNode{
 			Token:      param.TokenInfo(),
 			Mutable:    mutable,
 			Assignment: param,
 		}
+
 		return
 
 	case token.EXPANSION:

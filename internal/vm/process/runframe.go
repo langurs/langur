@@ -320,7 +320,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if object.IsCallable(right) {
 				// must be handled here, where we have access to the process
 				// right operand as function to call; pass left as argument
-				result, err = pr.call(right, left)
+				result, err = pr.callback(right, left)
 
 			} else {
 				result, err = object.BinaryNonLogicalOperation(op, left, right, 0)

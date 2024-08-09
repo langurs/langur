@@ -9,101 +9,114 @@ import (
 
 // map, mapX
 
-func bi_map(pr *Process, args ...object.Object) object.Object {
-	const fnName = "map"
+var bi_map = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "map",
+		Description: "map(function, lists...); returns list (or hash) of values mapped to the given function from the given lists or hashes (one type only)",
 
-	var fns []object.Object
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: -1,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "map"
 
-	fn := args[0]
-	if !object.IsCallable(fn) {
-		arr, ok := fn.(*object.List)
-		if !ok || len(arr.Elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
-		}
-		fns = arr.Elements
-		for i, f := range fns {
-			if f == object.NONE {
-				fns[i] = nil
-			} else if !object.IsCallable(f) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable or no-op", i+1))
+		var fns []object.Object
+
+		fn := args[0]
+		if !object.IsCallable(fn) {
+			arr, ok := fn.(*object.List)
+			if !ok || len(arr.Elements) == 0 {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
 			}
-		}
-		fn = fns[0] // initialiaze fn to first function
-	}
-
-	if len(args) > 2 {
-		return mapMultiple(pr, fn, fns, args[1:])
-	}
-
-	fnn := 0 // current function number
-
-	nextFunction := func() {
-		if fns != nil {
-			if fnn > len(fns)-2 {
-				fnn = 0
-			} else {
-				fnn++
-			}
-			fn = fns[fnn]
-		}
-	}
-
-	mapToList := func(elements []object.Object) object.Object {
-		arr := &object.List{}
-
-		for _, v := range elements {
-			if fn == nil {
-				// no op
-				arr.Elements = append(arr.Elements, v)
-
-			} else {
-				result, err := pr.call(fn, v)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			fns = arr.Elements
+			for i, f := range fns {
+				if f == object.NONE {
+					fns[i] = nil
+				} else if !object.IsCallable(f) {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable or no-op", i+1))
 				}
-				arr.Elements = append(arr.Elements, result)
 			}
-			nextFunction()
+			fn = fns[0] // initialiaze fn to first function
 		}
-		return arr
-	}
 
-	switch arg := args[1].(type) {
-	case *object.List:
-		return mapToList(arg.Elements)
-
-	case *object.Range:
-		from, err := arg.ToList()
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		if len(args) > 2 {
+			return mapMultiple(pr, fn, fns, args[1:])
 		}
-		return mapToList(from.Elements)
 
-	case *object.Hash:
-		elements := make([]object.Object, 0, len(arg.Pairs)*2)
+		fnn := 0 // current function number
 
-		for _, kv := range arg.Pairs {
-			if fn == nil {
-				// no op
-				elements = append(elements, kv.Key, kv.Value)
-
-			} else {
-				result, err := pr.call(fn, kv.Value)
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		nextFunction := func() {
+			if fns != nil {
+				if fnn > len(fns)-2 {
+					fnn = 0
+				} else {
+					fnn++
 				}
-				elements = append(elements, kv.Key, result)
+				fn = fns[fnn]
 			}
-			nextFunction()
 		}
-		hash, err := object.NewHashFromSlice(elements, false)
-		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-		}
-		return hash
-	}
 
-	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes after first argument")
+		mapToList := func(elements []object.Object) object.Object {
+			arr := &object.List{}
+
+			for _, v := range elements {
+				if fn == nil {
+					// no op
+					arr.Elements = append(arr.Elements, v)
+
+				} else {
+					result, err := pr.callback(fn, v)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					arr.Elements = append(arr.Elements, result)
+				}
+				nextFunction()
+			}
+			return arr
+		}
+
+		switch arg := args[1].(type) {
+		case *object.List:
+			return mapToList(arg.Elements)
+
+		case *object.Range:
+			from, err := arg.ToList()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			}
+			return mapToList(from.Elements)
+
+		case *object.Hash:
+			elements := make([]object.Object, 0, len(arg.Pairs)*2)
+
+			for _, kv := range arg.Pairs {
+				if fn == nil {
+					// no op
+					elements = append(elements, kv.Key, kv.Value)
+
+				} else {
+					result, err := pr.callback(fn, kv.Value)
+					if err != nil {
+						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					}
+					elements = append(elements, kv.Key, result)
+				}
+				nextFunction()
+			}
+			hash, err := object.NewHashFromSlice(elements, false)
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			}
+			return hash
+		}
+
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes after first argument")
+	},
 }
 
 // an extension of bi_map() for mapping multiple lists or hashes
@@ -181,7 +194,7 @@ func mapMultiple(
 				arr.Elements = append(arr.Elements, &object.List{Elements: items})
 
 			} else {
-				result, err := pr.call(fn, items...)
+				result, err := pr.callback(fn, items...)
 				if err != nil {
 					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 				}
@@ -209,7 +222,7 @@ func mapMultiple(
 				elements = append(elements, kv.Key, &object.List{Elements: items})
 
 			} else {
-				result, err := pr.call(fn, items...)
+				result, err := pr.callback(fn, items...)
 				if err != nil {
 					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 				}
@@ -227,34 +240,47 @@ func mapMultiple(
 	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes")
 }
 
-func bi_mapX(pr *Process, args ...object.Object) object.Object {
-	const fnName = "mapX"
+var bi_mapX = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "mapX",
+		Description: "mapX(function, lists...); returns list of values mapped to the given function from the given lists",
 
-	var fn object.Object
-	var arrs []object.Object
+		// TODO: update
+		ParamPositional: []object.Parameter{
+			object.Parameter{},
+		},
+		ParamExpansionMin: 2,
+		ParamExpansionMax: -1,
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "mapX"
 
-	if object.IsCallable(args[0]) {
-		fn = args[0]
-		arrs = args[1:]
+		var fn object.Object
+		var arrs []object.Object
 
-	} else {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+		if object.IsCallable(args[0]) {
+			fn = args[0]
+			arrs = args[1:]
 
-		// fn = nil
-		// arrs = args
+		} else {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
 
-		// arr, ok := args[0].(*object.List)
-		// if ok {
-		// 	// not presently allowing no-ops or functions in first list to mapX()
-		// 	for i, f := range arr.Elements {
-		// 		if object.IsCallable(f) || f == object.NONE {
-		// 			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d callable or no-op", i+1))
-		// 		}
-		// 	}
-		// }
-	}
+			// fn = nil
+			// arrs = args
 
-	return crossMap(pr, fnName, fn, arrs...)
+			// arr, ok := args[0].(*object.List)
+			// if ok {
+			// 	// not presently allowing no-ops or functions in first list to mapX()
+			// 	for i, f := range arr.Elements {
+			// 		if object.IsCallable(f) || f == object.NONE {
+			// 			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d callable or no-op", i+1))
+			// 		}
+			// 	}
+			// }
+		}
+
+		return crossMap(pr, fnName, fn, arrs...)
+	},
 }
 
 func crossMap(
@@ -300,7 +326,7 @@ func crossMap(
 		if fn == nil {
 			arr.Elements = append(arr.Elements, &object.List{Elements: items})
 		} else {
-			result, err := pr.call(fn, items...)
+			result, err := pr.callback(fn, items...)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
