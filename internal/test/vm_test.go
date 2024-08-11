@@ -5212,6 +5212,24 @@ func TestOptionalParameters(t *testing.T) {
 			expected:     44,
 			expectedType: object.NUMBER_OBJ,
 		},
+		{ // ... and external name same as a keyword
+			input: `
+		val mult = fn(a, b as break=12, c=4) { a * b + c }	# internally use b
+		mult(4, break=10)									# called with break=...
+		`,
+			expected:     44,
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// with parameter mutability
+		{
+			input: `
+		val mult = fn(a, var b as break=12, c=4) { b += 1 ; a * b + c }	# internally use b
+		mult(4, break=10)									# called with break=...
+		`,
+			expected:     48,
+			expectedType: object.NUMBER_OBJ,
+		},
 
 		{ // c not just a simple number; must be calculated
 			input: `
@@ -5349,6 +5367,21 @@ func TestOptionalParameters(t *testing.T) {
 		add([4, 7], b=100)
 		`,
 			expected:     234,
+			expectedType: object.NUMBER_OBJ,
+		},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
+func TestParametersRequiredByName(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+		val mult = fn(a, b as b) { a + b }
+		mult(4, b=10)
+		`,
+			expected:     14,
 			expectedType: object.NUMBER_OBJ,
 		},
 	}

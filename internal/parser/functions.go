@@ -172,15 +172,15 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 		p.advanceToken()
 		parseIdentAliasAndAssignment()
 
-		// FIXME: ???
-		if value != nil {
+		if value == nil {
+			param = &ast.LineDeclarationNode{
+				Token:      param.TokenInfo(),
+				Mutable:    mutable,
+				Assignment: param,
+			}
+
+		} else {
 			param = ast.MakeDeclarationAssignmentExpression(param, value, false, mutable)
-			return
-		}
-		param = &ast.LineDeclarationNode{
-			Token:      param.TokenInfo(),
-			Mutable:    mutable,
-			Assignment: param,
 		}
 
 		return

@@ -105,19 +105,13 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	}()
 
 	var args []object.Object
-	if bi.FnSignature != nil {
-		args, err = reformArgumentsBySignature(positional, byname, bi.FnSignature)
-		if err != nil {
-			return
-		}
-
-		// FIXME: temporary until we make a change
-		if bi.FnSignature.ParamExpansionMax != 0 || bi.FnSignature.ParamExpansionMin != 0 {
-			args = args[0].(*object.List).Elements
-		}
-
-	} else {
-		args = append(positional, byname...)
+	args, err = reformArgumentsBySignature(positional, byname, bi.FnSignature)
+	if err != nil {
+		return
+	}
+	// FIXME: temporary until we make a change
+	if bi.FnSignature.ParamExpansionMax != 0 || bi.FnSignature.ParamExpansionMin != 0 {
+		args = args[0].(*object.List).Elements
 	}
 
 	// type assertion required on interface{} here
@@ -184,7 +178,7 @@ func reformArgumentsBySignature(
 
 			// NOTE: nil default okay for built-ins
 			// Use nil default for built-ins to check if passed a value.
-			// Compiled functions will have to use another means.
+			// Compiled functions will use another means.
 		}
 		argPtr++
 	}

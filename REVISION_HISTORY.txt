@@ -2,12 +2,12 @@ langur revision history
 https://langurlang.org
 
 ... - 0.17.4
-- added ability to specify a "required parameter by name" (that is, argument must use name, but parameter is not optional)
+- added ability to specify a "required parameter by name" (that is, argument must use name, but is not optional)
 - fixed potential bug in compiler adding pop opcodes when not appropriate
 - replaced compiler.compileNode parameter popAtEndOfExpression with function compiler.compileNodeWithPopIfExprStmt
 - removed ast.Evaluator interface and added Evaluate() to ast.Node interface
 - moved built-in signatures closer to their Go functions and eliminated object.Builtin.ParamMax and ParamMin
-
+- fixed potential parsing bug re. mutable parameters
 
 
 
