@@ -118,6 +118,7 @@ func init() {
 		bi_submatch,
 		bi_submatchH,
 		bi_submatches,
+		bi_submatchesH,
 
 		bi_nfc,
 		bi_nfd,

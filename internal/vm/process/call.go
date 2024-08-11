@@ -111,6 +111,11 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 			return
 		}
 
+		// FIXME: temporary until we make a change
+		if bi.FnSignature.ParamExpansionMax != 0 || bi.FnSignature.ParamExpansionMin != 0 {
+			args = args[0].(*object.List).Elements
+		}
+
 	} else {
 		args = append(positional, byname...)
 	}
