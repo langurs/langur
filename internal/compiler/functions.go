@@ -230,10 +230,21 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 			system = assign.SystemAssignment
 
 		default:
-			err = c.makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
+			err = c.makeErr(p, fmt.Sprintf("Parameter %d invalid", pnum))
 			return
 		}
 		param.Mutable = p.Mutable
+
+	case *ast.InfixExpressionNode:
+		// required parameter by name
+		param = object.Parameter{Required: true}
+
+		if p.Operator.Type == token.AS {
+			param.InternalName = p.Left.(*ast.IdentNode).Name
+			param.ExternalName = p.Right.(*ast.IdentNode).Name
+		} else {
+			err = c.makeErr(p, "Expected identifier or identifier/alias for parameter by name")
+		}
 
 	case *ast.AssignmentNode:
 		param, defaultIns, err = c.assessParameterByName(p)
@@ -245,7 +256,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 
 	case *ast.ExpansionNode:
 		if !lastPositional {
-			err = c.makeErr(node, "Parameter expansion only allowed on last positional parameter")
+			err = c.makeErr(p, "Parameter expansion only allowed on last positional parameter")
 			return
 		}
 
@@ -274,11 +285,11 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 				}
 
 			default:
-				err = c.makeErr(node, "Invalid expression for limits on parameter expansion")
+				err = c.makeErr(p, "Invalid expression for limits on parameter expansion")
 			}
 
 		default:
-			err = c.makeErr(node, fmt.Sprintf("Invalid limit type on parameter expansion (%T)", lim))
+			err = c.makeErr(p, fmt.Sprintf("Invalid limit type on parameter expansion (%T)", lim))
 		}
 		if err == nil &&
 			(paramExpansionMin < 0 || paramExpansionMax < -1 || paramExpansionMax == 0 ||
@@ -295,12 +306,12 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 			param.InternalName = continuation.Name
 			system = continuation.System
 		default:
-			err = c.makeErr(node, "Invalid parameter expansion; expected variable name only")
+			err = c.makeErr(p, "Invalid parameter expansion; expected variable name only")
 			return
 		}
 
 	default:
-		err = c.makeErr(node, fmt.Sprintf("Parameter %d invalid", pnum))
+		err = c.makeErr(p, fmt.Sprintf("Parameter %d invalid", pnum))
 		return
 	}
 
@@ -320,12 +331,7 @@ func (c *Compiler) compileParameter(node ast.Node, pnum int, lastPositional bool
 func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 	param object.Parameter, defaultIns opcode.Instructions, err error) {
 
-	// optional by name or required by name?
-	param.Required = assign.Values == nil
-
-	if len(assign.Identifiers) != 1 ||
-		(!param.Required && len(assign.Values) != 1) {
-
+	if len(assign.Identifiers) != 1 {
 		err = c.makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
 		return
 	}
@@ -349,24 +355,22 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 		return
 	}
 
-	if !param.Required {
-		// attempt to build default value now (if possible)
-		var ok bool
-		param.DefaultValue, ok = assign.Values[0].Evaluate()
-		if !ok {
-			param.DefaultValue = nil
-			defaultIns, err = c.compileNode(assign.Values[0])
-		}
-		if err != nil {
-			err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
-			return
-		}
-		if param.DefaultValue == nil {
-			// default failed to evaluate at compile-time
-			// set to no value for now to indicate an optional parameter, not a "required by name" parameter
-			// instructions to be evaluated at run-time
-			param.DefaultValue = object.NONE
-		}
+	// attempt to build default value now (if possible)
+	var ok bool
+	param.DefaultValue, ok = assign.Values[0].Evaluate()
+	if !ok {
+		param.DefaultValue = nil
+		defaultIns, err = c.compileNode(assign.Values[0])
+	}
+	if err != nil {
+		err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
+		return
+	}
+	if param.DefaultValue == nil {
+		// default failed to evaluate at compile-time
+		// set to no value for now to indicate an optional parameter, not a "required by name" parameter
+		// instructions to be evaluated at run-time
+		param.DefaultValue = object.NONE
 	}
 
 	return

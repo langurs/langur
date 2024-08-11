@@ -81,7 +81,7 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 		return node
 	}
 
-	// check if partial test expressions used for comparison such as switch != .x { ... }
+	// check if partial test expressions used for comparison such as switch != x { ... }
 	for _, e := range exprs {
 		expr := ast.PartialExpr{}
 

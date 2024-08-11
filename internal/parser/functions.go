@@ -66,7 +66,7 @@ func (p *Parser) parseFunction() ast.Node {
 		p.advanceToken()
 
 	} else {
-		// fn .x, .y: ...
+		// fn x, y: ...
 		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON})
 	}
 
@@ -96,6 +96,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (
 
 		if isByName {
 			byname = append(byname, param)
+
 		} else {
 			if len(byname) != 0 {
 				p.addError("Cannot have positional parameter after parameter by name")
@@ -130,14 +131,24 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			if level != 0 {
 				p.addError("Unexpected alias on parameter expansion")
 			}
+
 			aliasTok = p.tok
 			p.advanceToken()
 			var ok bool
 			alias, ok = p.parseWord()
 			if !ok {
-				p.addError("Error parsing alias for parameter")
+				p.addError("Error parsing alias for parameter (a as b)")
+			}
+			// param already set as ident
+			// having an alias, set param as infix expression, a as b
+			param = &ast.InfixExpressionNode{
+				Token:    param.TokenInfo(),
+				Left:     param,
+				Operator: aliasTok,
+				Right:    alias,
 			}
 		}
+
 		if p.tok.Type == token.ASSIGN {
 			isByName = true
 			if level != 0 {
@@ -145,16 +156,6 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			}
 			p.advanceToken()
 			value = p.parseExpression(precedence_LOWEST)
-			if alias != nil {
-				// param already set as ident
-				// having an alias, set param as infix expression: ident as alias
-				param = &ast.InfixExpressionNode{
-					Token:    param.TokenInfo(),
-					Left:     param,
-					Operator: aliasTok,
-					Right:    alias,
-				}
-			}
 		}
 	}
 
@@ -214,7 +215,11 @@ func (p *Parser) parseParameterExpansion(level int) ast.Node {
 		}
 		p.advanceToken()
 	}
-	continuation, _ := p.parseParameter(level + 1)
+	continuation, isByName := p.parseParameter(level + 1)
+
+	if isByName {
+		p.addError("Cannot use parameter expansion on parameter by name")
+	}
 
 	return &ast.ExpansionNode{
 		Token:        exp,

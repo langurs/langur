@@ -155,7 +155,7 @@ func (c *Compiler) compileAssignment(node *ast.AssignmentNode) (ins opcode.Instr
 				index = nil
 
 			case *ast.IndexNode:
-				// .x[1] = ...
+				// x[1] = ...
 				variable = n.Left.(*ast.IdentNode)
 				index = n.Index
 

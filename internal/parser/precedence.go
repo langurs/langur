@@ -13,7 +13,7 @@ const (
 
 	precedence_LOWEST precedence = iota
 
-	precedence_ASSIGNMENT // .x = 123
+	precedence_ASSIGNMENT // x = 123
 
 	// C places bitwise xor between bitwise and and or,...
 	// so we follow that precedence for logical xor.

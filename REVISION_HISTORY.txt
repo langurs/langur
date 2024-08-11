@@ -7,7 +7,7 @@ https://langurlang.org
 - replaced compiler.compileNode parameter popAtEndOfExpression with function compiler.compileNodeWithPopIfExprStmt
 - removed ast.Evaluator interface and added Evaluate() to ast.Node interface
 - moved built-in signatures closer to their Go functions and eliminated object.Builtin.ParamMax and ParamMin
-- fixed potential parsing bug re. mutable parameters
+- fixed potential parsing bug re. mutable parameters and a parsing bug re. parameter alias
 
 
 
