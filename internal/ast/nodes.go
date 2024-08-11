@@ -395,7 +395,7 @@ func (es *ExpressionStatementNode) Copy() Node {
 }
 
 func (es *ExpressionStatementNode) Evaluate() (object.Object, bool) {
-	return nil, false
+	return es.Evaluate()
 }
 
 func (es *ExpressionStatementNode) TokenRepresentation() string {
@@ -1760,14 +1760,18 @@ func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
 	return nil, false
 }
 
+// TODO: once the compiler is moved to the AST...
 // func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
-// 	left, ok := TryEvaluate(ie.Left)
+// 	left, ok := ie.Left.Evaluate()
 // 	if ok {
-// 		right, ok := TryEvaluate(ie.Right)
+// 		right, ok := ie.Right.Evaluate()
 // 		if ok {
 // 			op, negated, ok := compiler.InfixTokenToOpCode(ie.Operator)
 // 			obj, err := object.BinaryOperation(op, left, right, ie.Operator.Code)
 // 			ok = err == nil
+// 			if negated {
+// 				obj = object.NativeBoolToObject(obj.IsTruthy())
+// 			}
 // 			return obj, ok
 // 		}
 // 	}

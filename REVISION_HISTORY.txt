@@ -1,15 +1,13 @@
 langur revision history
 https://langurlang.org
 
-... - 0.17.4
+2024-08-11 - 0.17.4
 - added ability to specify a "required parameter by name" (that is, argument must use name, but is not optional)
 - fixed potential bug in compiler adding pop opcodes when not appropriate
 - replaced compiler.compileNode parameter popAtEndOfExpression with function compiler.compileNodeWithPopIfExprStmt
 - removed ast.Evaluator interface and added Evaluate() to ast.Node interface
 - moved built-in signatures closer to their Go functions and eliminated object.Builtin.ParamMax and ParamMin
-- fixed potential parsing bug re. mutable parameters and a parsing bug re. parameter alias
-
-
+- fixed potential parsing bug re. mutable parameters and a parsing bug re. parameter aliases
 
 2024-08-02 - 0.17.3
 - changed token.Line and token.LinePosition to use a struct trace.Where
