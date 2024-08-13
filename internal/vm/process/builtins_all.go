@@ -23,6 +23,9 @@ var bi_all = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "all"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var isRegex bool
 		var re *object.Regex
 		var fn, over object.Object
@@ -140,6 +143,9 @@ var bi_any = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "any"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		var isRegex bool
 		var re *object.Regex

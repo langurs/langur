@@ -67,6 +67,9 @@ var bi_match = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "match"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		re, ok := args[0].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
@@ -100,6 +103,9 @@ var bi_matches = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "matches"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		re, ok := args[0].(*object.Regex)
 		if !ok {
@@ -199,6 +205,9 @@ var bi_submatches = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatches"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		re, ok := args[0].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
@@ -241,6 +250,9 @@ var bi_submatchesH = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchesH"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		re, ok := args[0].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
@@ -282,6 +294,9 @@ var bi_split = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "split"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		// default delimiter as ZLS
 		var delim, s string
@@ -359,6 +374,9 @@ var bi_index = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "index"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var sub *object.String
 		var ok bool
 
@@ -406,6 +424,9 @@ var bi_indices = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "indices"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		var sub *object.String
 		var ok bool
@@ -489,6 +510,9 @@ var bi_subindices = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindices"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		re, ok := args[0].(*object.Regex)
 		if !ok {

@@ -26,6 +26,9 @@ var bi_less = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "less"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		switch arg := args[0].(type) {
 		case *object.List:
 			if len(arg.Elements) == 0 {
@@ -95,6 +98,9 @@ var bi_more = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "more"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		if len(args) == 1 {
 			return args[0]
@@ -243,6 +249,9 @@ var bi_rotate = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "rotate"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		rotation := 1
 		if len(args) > 1 {

@@ -23,6 +23,9 @@ var bi_group = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "group"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var integer int
 		var fn, over object.Object
 		var ok bool
@@ -98,6 +101,9 @@ var bi_groupby = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "groupby"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		var fn, over object.Object
 

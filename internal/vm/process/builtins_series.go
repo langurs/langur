@@ -21,6 +21,9 @@ var bi_series = &object.BuiltIn{
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		return series(pr, "series", args, false)
 	},
 }
@@ -38,6 +41,9 @@ var bi_pseries = &object.BuiltIn{
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		// positive series or empty list
 		return series(pr, "pseries", args, true)
 	},

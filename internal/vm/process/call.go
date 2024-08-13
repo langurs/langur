@@ -109,10 +109,6 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	if err != nil {
 		return
 	}
-	// FIXME: temporary until we make a change
-	if bi.FnSignature.ParamExpansionMax != 0 || bi.FnSignature.ParamExpansionMin != 0 {
-		args = args[0].(*object.List).Elements
-	}
 
 	// type assertion required on interface{} here
 	result = bi.Fn.(BuiltInFunction)(pr, args...)

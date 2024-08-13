@@ -24,6 +24,9 @@ var bi_sort = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "sort"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var fn, over object.Object
 		var pmax int
 

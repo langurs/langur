@@ -164,6 +164,9 @@ var bi_join = &object.BuiltIn{
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		// delimiter defaulting to zls
 		var delim string
 		var arr *object.List

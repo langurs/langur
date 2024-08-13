@@ -139,6 +139,9 @@ var bi_s2cp = &object.BuiltIn{
 		// string to code point(s): indexes string and returns code point or list of code points
 		const fnName = "s2cp"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		s, ok := args[0].(*object.String)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
@@ -222,6 +225,9 @@ var bi_s2s = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		// string to string: indexes string and returns string
 		const fnName = "s2s"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		s, ok := args[0].(*object.String)
 		if !ok {

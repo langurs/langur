@@ -24,6 +24,9 @@ var bi_filter = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "filter"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var isRegex bool
 		var re *object.Regex
 		var fn, over object.Object
@@ -139,6 +142,9 @@ var bi_count = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "count"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		var isRegex bool
 		var re *object.Regex

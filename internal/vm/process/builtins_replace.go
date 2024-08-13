@@ -28,6 +28,9 @@ var bi_replace = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "replace"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var find *object.String
 		var ok bool
 

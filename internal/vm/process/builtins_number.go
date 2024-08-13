@@ -525,6 +525,9 @@ var bi_round = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "round"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		n, ok := args[0].(*object.Number)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument")
@@ -586,6 +589,9 @@ var bi_trunc = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "trunc"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		n, ok := args[0].(*object.Number)
 		if !ok {

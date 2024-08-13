@@ -24,6 +24,9 @@ var bi_string = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.StringType
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		if len(args) > 1 {
 			switch n := args[0].(type) {
 			case *object.Number:
@@ -68,6 +71,9 @@ var bi_number = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.NumberType
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var ok bool
 		base := 10
 		if len(args) > 1 {
@@ -96,6 +102,9 @@ var bi_hash = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.HashType
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		if len(args) == 0 {
 			// empty hash
@@ -179,6 +188,9 @@ var bi_datetime = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.DateTimeType
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		format := ""
 		var ok bool

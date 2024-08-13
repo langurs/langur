@@ -29,6 +29,9 @@ var bi_write = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		for _, v := range args {
 			out.WriteString(v.String())
 		}
@@ -78,6 +81,9 @@ var bi_writeErr = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		for _, v := range args {
 			out.WriteString(v.String())
 		}
@@ -125,6 +131,10 @@ var bi_read = &object.BuiltIn{
 		ParamExpansionMax: 5,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var fn, alternate object.Object
 		var re *object.Regex
 		prompt := ""

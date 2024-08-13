@@ -27,6 +27,9 @@ var bi_benchmark = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "benchmark"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		fn := args[0]
 		if !object.IsCallable(fn) {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable for first argument")
@@ -63,6 +66,10 @@ var bi_exit = &object.BuiltIn{
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var err error
 		code := 0 // 0 = success
 		var str object.Object
@@ -275,6 +282,9 @@ var bi_nn = &object.BuiltIn{
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		arr, ok := args[0].(*object.List)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, "nn", "Expected list for first argument")

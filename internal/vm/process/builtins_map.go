@@ -24,6 +24,9 @@ var bi_map = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "map"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var fns []object.Object
 
 		fn := args[0]
@@ -254,6 +257,9 @@ var bi_mapX = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "mapX"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		var fn object.Object
 		var arrs []object.Object

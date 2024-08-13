@@ -54,6 +54,9 @@ var bi_writefile = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "writefile"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		perm := pr.Modes.NewFilePermissions
 
 		filename, ok := args[0].(*object.String)
@@ -98,6 +101,9 @@ var bi_appendfile = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "appendfile"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		perm := pr.Modes.NewFilePermissions
 

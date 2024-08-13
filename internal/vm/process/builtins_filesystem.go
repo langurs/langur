@@ -24,6 +24,9 @@ var bi_cd = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "cd"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		var err error
 		var pwd string
 

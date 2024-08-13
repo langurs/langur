@@ -101,6 +101,9 @@ var bi_foldfrom = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "foldfrom"
 
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
+
 		if len(args) == 3 {
 			// starting result and single list
 			var arr *object.List
@@ -229,6 +232,9 @@ var bi_zip = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "zip"
+
+		// FIXME: update parameters/args
+		args = args[0].(*object.List).Elements
 
 		fn := args[0]
 		useFn := object.IsCallable(fn)
