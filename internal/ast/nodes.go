@@ -1779,7 +1779,11 @@ func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
 // }
 
 func (ie *InfixExpressionNode) TokenRepresentation() string {
-	return "(" + tokenRepOrNil(ie.Left) + " " + ie.Operator.Literal + " " + tokenRepOrNil(ie.Right) + ")"
+	space := " "
+	if ie.Operator.Type == token.DOT {
+		space = ""
+	}
+	return "(" + tokenRepOrNil(ie.Left) + space + ie.Operator.Literal + space + tokenRepOrNil(ie.Right) + ")"
 }
 func (ie *InfixExpressionNode) String() string {
 	return "Infix ( " + stringOrNil(ie.Left) + " " + operatorTokenString(ie.Operator) + " " + stringOrNil(ie.Right) + ")"

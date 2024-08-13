@@ -377,6 +377,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 
 		case '.':
 			if lex.peekCp == '.' {
+				// 2 or 3 dots
 				lex.advanceCodePoint()
 
 				if lex.peekCp == '.' {
@@ -395,23 +396,9 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 					lex.advanceCodePoint()
 				}
 
-			} else if cpoint.IsWordTokenChar(lex.peekCp) {
-				// .var
-				lex.advanceCodePoint() // past the dot
-
-				tok.Literal, err = lex.readWord()
-				if err != nil {
-					addError(&tok, err)
-				}
-				// tok.Type = token.IDENT
-
-				err = fmt.Errorf(".var syntax not supported; use var without dot")
-				addError(&tok, err)
-
 			} else {
-				tok.Type = token.INVALID
-				err = fmt.Errorf("Dot . cannot stand on its own")
-				addError(&tok, err)
+				// 1 dot
+				tok.Literal, tok.Type = ".", token.DOT
 				lex.advanceCodePoint()
 			}
 

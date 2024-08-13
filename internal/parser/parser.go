@@ -145,6 +145,10 @@ func (p *Parser) setParseFunctionMaps() {
 
 	// infix functions
 	p.infixParseFns = map[token.Type]infixParseFn{
+		token.LBRACKET: p.parseIndexExpression,
+		token.LPAREN:   p.parseParenthesizedCallExpression,
+		token.DOT:      p.parseDotExpression,
+
 		token.APPEND:      p.parseInfixExpression,
 		token.PLUS:        p.parseInfixExpression,
 		token.MINUS:       p.parseInfixExpression,
@@ -181,9 +185,6 @@ func (p *Parser) setParseFunctionMaps() {
 		token.NOR:  p.parseInfixExpression,
 		token.XOR:  p.parseInfixExpression,
 		token.NXOR: p.parseInfixExpression,
-
-		token.LBRACKET: p.parseIndexExpression,
-		token.LPAREN:   p.parseParenthesizedCallExpression,
 	}
 }
 

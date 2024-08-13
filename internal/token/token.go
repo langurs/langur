@@ -16,6 +16,8 @@ const (
 	INVALID Type = ""
 	EOF          = "EOF"
 
+	DOT = "DOT"
+
 	MODULE = "MODULE"
 	IMPORT = "IMPORT"
 	AS     = "AS"
@@ -43,13 +45,13 @@ const (
 
 	PLUS        = "PLUS"
 	MINUS       = "MINUS"
-	ASTERISK       = "ASTERISK"
-	SLASH      = "SLASH"
+	ASTERISK    = "ASTERISK"
+	SLASH       = "SLASH"
 	BACKSLASH   = "BACKSLASH"
 	DOUBLESLASH = "DOUBLESLASH"
 	REMAINDER   = "REMAINDER"
 	MODULUS     = "MODULUS"
-	POWER    = "POWER"
+	POWER       = "POWER"
 	ROOT        = "ROOT"
 
 	LESS_THAN    = "LESS_THAN"

@@ -51,6 +51,10 @@ const (
 )
 
 var infixPrecedences = map[token.Type]precedence{
+	token.DOT:      precedence_AFTER,
+	token.LPAREN:   precedence_AFTER,
+	token.LBRACKET: precedence_AFTER,
+
 	token.ASSIGN:  precedence_ASSIGNMENT,
 	token.FORWARD: precedence_FORWARD,
 
@@ -92,9 +96,6 @@ var infixPrecedences = map[token.Type]precedence{
 	token.NOR:  precedence_LOGICAL_OR,
 	token.XOR:  precedence_LOGICAL_EQUIVALENCE,
 	token.NXOR: precedence_LOGICAL_EQUIVALENCE,
-
-	token.LPAREN:   precedence_AFTER,
-	token.LBRACKET: precedence_AFTER,
 }
 
 func getInfixPrecedence(tt token.Type) precedence {

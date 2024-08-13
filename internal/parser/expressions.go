@@ -467,6 +467,31 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 	return expr
 }
 
+func (p *Parser) parseDotExpression(left ast.Node) ast.Node {
+	expr := &ast.InfixExpressionNode{
+		Token:    left.TokenInfo(),
+		Operator: p.parseInfixOperator(),
+		Left:     left,
+	}
+
+	if expr.Operator.CpDiff != 0 {
+		p.addError("Expected no spacing before dot in dot expression")
+	}
+
+	var ok bool
+	expr.Right, ok = p.parseWord()
+	if !ok {
+		p.addError("Expected word token to continue dot expression")
+		return nil
+	}
+
+	if expr.Right.TokenInfo().CpDiff != 0 {
+		p.addError("Expected no spacing after dot in dot expression")
+	}
+
+	return expr
+}
+
 func (p *Parser) parseNone() ast.Node {
 	expr := &ast.NoneNode{Token: p.tok}
 	p.advanceToken()

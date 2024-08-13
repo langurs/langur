@@ -71,7 +71,7 @@ func (lex *Lexer) readAndInterpretWordToken(tok *token.Token, cpPosition int) (e
 func (lex *Lexer) readWord() (tl string, err error) {
 	position := lex.bytePosition
 
-	for cpoint.IsWordTokenChar(lex.cp) || lex.cp == '.' {
+	for cpoint.IsWordTokenChar(lex.cp) {
 		if lex.cp == '.' && lex.peekCp == '.' {
 			// 2 dots in a row
 			break

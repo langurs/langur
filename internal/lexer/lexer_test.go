@@ -20,7 +20,6 @@ func TestGeneralTokens(t *testing.T) {
 
 		{"α", &token.Token{Type: token.INVALID, Literal: "α"}, false},
 		{"abc", &token.Token{Type: token.IDENT, Literal: "abc"}, false},
-		{"std.something", &token.Token{Type: token.IDENT, Literal: "std.something"}, false},
 		{"_systemVar", &token.Token{Type: token.IDENT, Literal: "_systemVar"}, false},
 		{"123", &token.Token{Type: token.INT, Literal: "123"}, false},
 		{"1.23", &token.Token{Type: token.FLOAT, Literal: "1.23"}, false},
@@ -139,7 +138,7 @@ func TestGeneralTokens(t *testing.T) {
 		{"..", &token.Token{Type: token.RANGE, Literal: ".."}, false},
 		{"_", &token.Token{Type: token.NONE, Literal: "_"}, false},
 
-		{".", &token.Token{Type: token.INVALID, Literal: "."}, true},
+		{".", &token.Token{Type: token.DOT, Literal: "."}, false},
 
 		{"=", &token.Token{Type: token.ASSIGN, Literal: "="}, false},
 		{"var", &token.Token{Type: token.VAR, Literal: "var"}, false},

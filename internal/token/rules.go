@@ -80,7 +80,7 @@ func IsValueOp(tt Type) bool {
 }
 
 func IsInfixOp(tt Type) bool {
-	return tt == APPEND || tt == RANGE || tt == IS || tt == AS ||
+	return tt == APPEND || tt == RANGE || tt == IS || tt == AS || tt == DOT ||
 		IsInfixComparisonOp(tt) || IsInfixLogicalOp(tt) ||
 		IsInfixValueOp(tt) || IsInfixBitwiseOp(tt)
 }
