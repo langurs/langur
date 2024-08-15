@@ -62,7 +62,8 @@ var bi_writeln = &object.BuiltIn{
 		ParamExpansionMax: -1,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		return bi_write.Fn.(BuiltInFunction)(pr, append(args, object.NewString(str.SysNewLine))...)
+		// FIXME: update parameters/args
+		return bi_write.Fn.(BuiltInFunction)(pr, &object.List{Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
 	},
 }
 
@@ -114,7 +115,8 @@ var bi_writelnErr = &object.BuiltIn{
 		ParamExpansionMax: -1,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		return bi_writeErr.Fn.(BuiltInFunction)(pr, append(args, object.NewString(str.SysNewLine))...)
+		// FIXME: update parameters/args
+		return bi_writeErr.Fn.(BuiltInFunction)(pr, &object.List{Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
 	},
 }
 
