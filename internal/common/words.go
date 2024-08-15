@@ -3,7 +3,9 @@
 
 package common
 
-const IdentifierRegexString = "[a-zA-Z][a-zA-Z0-9_]*"
+const IdentifierRegexString = "[_a-zA-Z][a-zA-Z0-9_]*$"
+
+// const IdentifierRegexString = "^[a-zA-Z][_a-zA-Z0-9]*|_+[a-zA-Z0-9][_a-zA-Z0-9]*$"
 
 const (
 	NumberType   = "number"

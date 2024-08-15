@@ -1,10 +1,9 @@
 langur revision history
 https://langurlang.org
 
-... - 0.17.5
+2024-08-15 - 0.17.5
 - moved responsibility for current patch state of built-in function parameters to the functions themselves
 - added parsing of dot expressions (but not compiled)
-
 
 2024-08-11 - 0.17.4
 - added ability to specify a "required parameter by name" (that is, argument must use name, but is not optional)
