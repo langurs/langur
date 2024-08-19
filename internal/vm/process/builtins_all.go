@@ -12,39 +12,30 @@ var bi_all = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "all",
 		Description: "returns bool indicating whether the validation function or regex returns true for all elements of a list or hash, or null when given an empty list or hash",
-
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "all"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var isRegex bool
 		var re *object.Regex
-		var fn, over object.Object
 
-		if len(args) == 2 {
-			if object.IsCallable(args[0]) {
-				fn = args[0]
-			} else {
+		over, by := args[0], args[1]
+
+		if by != nil {
+			if !object.IsCallable(by) {
 				var ok bool
-				re, ok = args[0].(*object.Regex)
+				re, ok = by.(*object.Regex)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
 				}
 				isRegex = true
 			}
-			over = args[1]
-
-		} else {
-			over = args[0]
 		}
 
 		var result object.Object
@@ -67,9 +58,9 @@ var bi_all = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, v := range arg.Elements {
-					result, err = pr.callback(fn, v)
+					result, err = pr.callback(by, v)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -102,9 +93,9 @@ var bi_all = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, kv := range arg.Pairs {
-					result, err = pr.callback(fn, kv.Value)
+					result, err = pr.callback(by, kv.Value)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -122,7 +113,7 @@ var bi_all = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
 		}
 
 		return object.TRUE
@@ -133,39 +124,30 @@ var bi_any = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "any",
 		Description: "returns bool indicating whether the validation function or regex returns true for any elements of a list or hash, or null when given an empty list or hash",
-
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "any"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var isRegex bool
 		var re *object.Regex
-		var fn, over object.Object
 
-		if len(args) == 2 {
-			if object.IsCallable(args[0]) {
-				fn = args[0]
-			} else {
+		over, by := args[0], args[1]
+
+		if by != nil {
+			if !object.IsCallable(by) {
 				var ok bool
-				re, ok = args[0].(*object.Regex)
+				re, ok = by.(*object.Regex)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
 				}
 				isRegex = true
 			}
-			over = args[1]
-
-		} else {
-			over = args[0]
 		}
 
 		var result object.Object
@@ -188,9 +170,9 @@ var bi_any = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, v := range arg.Elements {
-					result, err = pr.callback(fn, v)
+					result, err = pr.callback(by, v)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -223,9 +205,9 @@ var bi_any = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, kv := range arg.Pairs {
-					result, err = pr.callback(fn, kv.Value)
+					result, err = pr.callback(by, kv.Value)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -243,7 +225,7 @@ var bi_any = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
 		}
 
 		return object.FALSE
