@@ -5861,14 +5861,14 @@ func TestBuiltinFunctions(t *testing.T) {
 		},
 
 		// any
-		{`any(fn{> 100}, [10, 101])`, true, object.BOOLEAN_OBJ},
-		{`any(fn{> 100}, [10, 99])`, false, object.BOOLEAN_OBJ},
-		{`any(re/01/, [10, 101])`, true, object.BOOLEAN_OBJ},
-		{`any(re/02/, [10, 99])`, false, object.BOOLEAN_OBJ},
-		{`any(fn{> 100}, {1: 10, 2: 101})`, true, object.BOOLEAN_OBJ},
-		{`any(fn{> 100}, {1: 10, 2: 99})`, false, object.BOOLEAN_OBJ},
-		{`any(re/01/, {1: 10, 2: 101})`, true, object.BOOLEAN_OBJ},
-		{`any(re/02/, {1: 10, 2: 99})`, false, object.BOOLEAN_OBJ},
+		{`any([10, 101], by=fn{> 100})`, true, object.BOOLEAN_OBJ},
+		{`any([10, 99], by=fn{> 100})`, false, object.BOOLEAN_OBJ},
+		{`any([10, 101], by=re/01/)`, true, object.BOOLEAN_OBJ},
+		{`any([10, 99], by=re/02/)`, false, object.BOOLEAN_OBJ},
+		{`any({1: 10, 2: 101}, by=fn{> 100})`, true, object.BOOLEAN_OBJ},
+		{`any({1: 10, 2: 99}, by=fn{> 100})`, false, object.BOOLEAN_OBJ},
+		{`any({1: 10, 2: 101}, by=re/01/)`, true, object.BOOLEAN_OBJ},
+		{`any({1: 10, 2: 99}, by=re/02/)`, false, object.BOOLEAN_OBJ},
 
 		// any with one argument (by truthiness)
 		{`any([123, 345])`, true, object.BOOLEAN_OBJ},
@@ -5878,15 +5878,15 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`any({1: [], 2: null})`, false, object.BOOLEAN_OBJ},
 
 		// all
-		{`all(fn{> 7}, [10, 101])`, true, object.BOOLEAN_OBJ},
-		{`all(fn{> 100}, [10, 101])`, false, object.BOOLEAN_OBJ},
-		{`all(fn{> 100}, [101, 10])`, false, object.BOOLEAN_OBJ},
-		{`all(re/01/, [10, 101])`, false, object.BOOLEAN_OBJ},
-		{`all(re/[0-9]/, [10, 99])`, true, object.BOOLEAN_OBJ},
-		{`all(fn{> 7}, {1: 10, 2: 101})`, true, object.BOOLEAN_OBJ},
-		{`all(fn{> 100}, {1: 10, 2: 101})`, false, object.BOOLEAN_OBJ},
-		{`all(re/01/, {1: 10, 2: 101})`, false, object.BOOLEAN_OBJ},
-		{`all(re/[0-9]/, {1: 10, 2: 99})`, true, object.BOOLEAN_OBJ},
+		{`all([10, 101], by=fn{> 7})`, true, object.BOOLEAN_OBJ},
+		{`all([10, 101], by=fn{> 100})`, false, object.BOOLEAN_OBJ},
+		{`all([101, 10], by=fn{> 100})`, false, object.BOOLEAN_OBJ},
+		{`all([10, 101], by=re/01/)`, false, object.BOOLEAN_OBJ},
+		{`all([10, 99], by=re/[0-9]/)`, true, object.BOOLEAN_OBJ},
+		{`all({1: 10, 2: 101}, by=fn{> 7})`, true, object.BOOLEAN_OBJ},
+		{`all({1: 10, 2: 101}, by=fn{> 100})`, false, object.BOOLEAN_OBJ},
+		{`all({1: 10, 2: 101}, by=re/01/)`, false, object.BOOLEAN_OBJ},
+		{`all({1: 10, 2: 99}, by=re/[0-9]/)`, true, object.BOOLEAN_OBJ},
 
 		// all with one argument (by truthiness)
 		{`all([123, 345])`, true, object.BOOLEAN_OBJ},
@@ -5896,14 +5896,14 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`all({1: 123, 2: null})`, false, object.BOOLEAN_OBJ},
 
 		// all or any with empty hash or list
-		{`all(re/[0-9]/, {:})`, nil, object.NULL_OBJ},
-		{`all(fn{> 100}, {:})`, nil, object.NULL_OBJ},
-		{`all(re/[0-9]/, [])`, nil, object.NULL_OBJ},
-		{`all(fn{> 100}, [])`, nil, object.NULL_OBJ},
-		{`any(re/[0-9]/, {:})`, nil, object.NULL_OBJ},
-		{`any(fn{> 100}, {:})`, nil, object.NULL_OBJ},
-		{`any(re/[0-9]/, [])`, nil, object.NULL_OBJ},
-		{`any(fn{> 100}, [])`, nil, object.NULL_OBJ},
+		{`all({:}, by=re/[0-9]/)`, nil, object.NULL_OBJ},
+		{`all({:}, by=fn{> 100})`, nil, object.NULL_OBJ},
+		{`all([], by=re/[0-9]/)`, nil, object.NULL_OBJ},
+		{`all([], by=fn{> 100})`, nil, object.NULL_OBJ},
+		{`any({:}, by=re/[0-9]/)`, nil, object.NULL_OBJ},
+		{`any({:}, by=fn{> 100})`, nil, object.NULL_OBJ},
+		{`any([], by=re/[0-9]/)`, nil, object.NULL_OBJ},
+		{`any([], by=fn{> 100})`, nil, object.NULL_OBJ},
 
 		{`all([])`, nil, object.NULL_OBJ},
 		{`all({:})`, nil, object.NULL_OBJ},
