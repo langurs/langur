@@ -15,10 +15,12 @@ import (
 
 var bi_execT = &object.BuiltIn{
 	FnSignature: &object.Signature{
-		Name:            "execT",
-		ImpureEffects:   true,
-		Description:     "executes a command from a trusted source string, returning a result or throwing an exception",
-		ParamPositional: []object.Parameter{object.Parameter{ExternalName: "source"}},
+		Name:          "execT",
+		ImpureEffects: true,
+		Description:   "executes a command from a trusted source string, returning a result or throwing an exception",
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "source"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "execT"
@@ -61,10 +63,12 @@ func execCmd(s string) (string, error) {
 
 var bi_execTH = &object.BuiltIn{
 	FnSignature: &object.Signature{
-		Name:            "execTH",
-		ImpureEffects:   true,
-		Description:     "executes a command from a trusted source string, returning a hash",
-		ParamPositional: []object.Parameter{object.Parameter{ExternalName: "source"}},
+		Name:          "execTH",
+		ImpureEffects: true,
+		Description:   "executes a command from a trusted source string, returning a hash",
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "source"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "execTH"
