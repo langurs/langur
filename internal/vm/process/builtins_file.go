@@ -94,7 +94,7 @@ var bi_appendfile = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "appendfile",
 		ImpureEffects: true,
-		Description:   "appends string to specified file name (or writes new file if it doesn't exist); permissions optional (default 664); permissions in form of 8x644 (NOT 0644, which would give the wrong number)",
+		Description:   "appends string to specified file name (or writes new file if it doesn't exist); new file permissions optional (default 664); permissions in form of 8x644 (NOT 0644, which would give the wrong number)",
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "file"},
 			object.Parameter{ExternalName: "contents"},
@@ -108,6 +108,7 @@ var bi_appendfile = &object.BuiltIn{
 
 		file, contents, perm := args[0], args[1], args[2]
 
+		// Permissions only apply if creating a new file.
 		permissions := pr.Modes.NewFilePermissions
 
 		filename, ok := file.(*object.String)
