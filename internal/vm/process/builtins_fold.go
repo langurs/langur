@@ -103,8 +103,7 @@ var bi_fold = &object.BuiltIn{
 	},
 }
 
-// an extension of bi_fold() for folding between lists
-// may be slower than folding on a single list
+// an extension of fold() for folding between lists
 func foldBetweenLists(
 	pr *Process,
 	lists, fns []object.Object,
