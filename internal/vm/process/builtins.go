@@ -75,7 +75,6 @@ var BuiltIns = []*object.BuiltIn{
 	bi_last,
 
 	bi_fold,
-	bi_foldfrom,
 	bi_zip,
 
 	bi_group,

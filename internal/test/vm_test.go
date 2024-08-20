@@ -2947,7 +2947,7 @@ func TestStringInterpolations(t *testing.T) {
 		// test newlines in allowed interpolations...
 		{`val x = [7, 14, 21]
 		  qs"meaning of life: {{
-			fold(fn{+}, x)
+			fold(x, by=fn{+})
 		   }}"
 		`, "meaning of life: 42", object.STRING_OBJ},
 	}
@@ -5991,28 +5991,28 @@ func TestBuiltinFunctions(t *testing.T) {
 		},
 
 		// fold
-		{`fold(fn{*}, [])`,
+		{`fold([], by=fn{*})`,
 			nil,
 			object.NULL_OBJ,
 		},
-		{`fold(fn{*}, [7])`,
+		{`fold([7], by=fn{*})`,
 			7,
 			object.NUMBER_OBJ,
 		},
-		{`fold(fn{*}, [7, 7])`,
+		{`fold([7, 7], by=fn{*})`,
 			49,
 			object.NUMBER_OBJ,
 		},
-		{`fold(fn{*}, [7, 7, 21])`,
+		{`fold([7, 7, 21], by=fn{*})`,
 			1029,
 			object.NUMBER_OBJ,
 		},
 
-		{`fold(fn{*}, 1..4)`,
+		{`fold(1..4, by=fn{*})`,
 			24,
 			object.NUMBER_OBJ,
 		},
-		{`fold(fn{*}, 4..1)`,
+		{`fold(4..1, by=fn{*})`,
 			24,
 			object.NUMBER_OBJ,
 		},
@@ -6542,34 +6542,34 @@ func TestTrigonometryFunctions(t *testing.T) {
 
 func TestOperatorImpliedFunctions(t *testing.T) {
 	tests := []vmTestCase{
-		{`fold(fn{+}, [1, 2, 3, 4])`,
+		{`fold([1, 2, 3, 4], by=fn{+})`,
 			10, object.NUMBER_OBJ,
 		},
-		{`fold(fn{*}, [1, 2, 3, 4])`,
+		{`fold([1, 2, 3, 4], by=fn{*})`,
 			24, object.NUMBER_OBJ,
 		},
-		{`fold(fn{^/}, [16, 2, 2])`,
+		{`fold([16, 2, 2], by=fn{^/})`,
 			2, object.NUMBER_OBJ,
 		},
-		{`fold(fn{~}, ["w", "h", "a", "t", "?"])`,
+		{`fold(["w", "h", "a", "t", "?"], by=fn{~})`,
 			"what?", object.STRING_OBJ,
 		},
-		{`fold(fn{and}, [true, true, false])`,
+		{`fold([true, true, false], by=fn{and})`,
 			false, object.BOOLEAN_OBJ,
 		},
-		{`fold(fn{or?}, [true, true, false])`,
+		{`fold([true, true, false], by=fn{or?})`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{`fold(fn{or?}, [true, true, null])`,
+		{`fold([true, true, null], by=fn{or?})`,
 			nil, object.NULL_OBJ,
 		},
-		{`fold(fn{or}, [true, true, null])`,
+		{`fold( [true, true, null], by=fn{or})`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{`fold(fn{xor}, [true, true, false])`,
+		{`fold([true, true, false], by=fn{xor})`,
 			false, object.BOOLEAN_OBJ,
 		},
-		{`fold(fn{xor}, [true, false, false])`,
+		{`fold([true, false, false], by=fn{xor})`,
 			true, object.BOOLEAN_OBJ,
 		},
 	}
@@ -7806,23 +7806,23 @@ func TestZipFunction(t *testing.T) {
 		},
 
 		// zip with a function
-		{"zip(fn(x, y) {[x, y]}, [], [])",
+		{"zip([], [], by=fn(x, y) {[x, y]})",
 			[]int{}, object.LIST_OBJ,
 		},
-		{"zip(fn x, y: [x, y], [1, 3], [2, 4])",
+		{"zip([1, 3], [2, 4], by=fn x, y: [x, y])",
 			[]int{1, 2, 3, 4}, object.LIST_OBJ,
 		},
-		{"zip(fn x, y: [x + 7, y * 3], [1, 3], [2, 4])",
+		{"zip([1, 3], [2, 4], by=fn x, y: [x + 7, y * 3])",
 			[]int{8, 6, 10, 12}, object.LIST_OBJ,
 		},
-		{"zip(fn(x, y) { if(y > 3: 123; [x, y]) }, [1, 3], [2, 4])",
+		{"zip([1, 3], [2, 4], by=fn(x, y) { if(y > 3: 123; [x, y]) })",
 			[]int{1, 2, 123}, object.LIST_OBJ,
 		},
 
-		{"zip(fn x, y: [x, y], 1..3, 7..9)", // function redundant in this case, but just a test
+		{"zip(1..3, 7..9, by=fn x, y: [x, y])", // function redundant in this case, but just a test
 			[]int{1, 7, 2, 8, 3, 9}, object.LIST_OBJ,
 		},
-		{"zip(fn(x, y) { if(y rem 2 == 0: []; [x, y]) }, 1..3, 7..9)",
+		{"zip(1..3, 7..9, by=fn(x, y) { if(y rem 2 == 0: []; [x, y]) })",
 			[]int{1, 7, 3, 9}, object.LIST_OBJ,
 		},
 	}
@@ -8110,82 +8110,88 @@ func TestParameterExpansionMinMax(t *testing.T) {
 func TestFoldAndFoldFromFunctions(t *testing.T) {
 	tests := []vmTestCase{
 		// fold using function with implied parameters
-		{"fold(fn{*}, [16, 14, 16, 13, 12, 25, 36])",
+		{"fold([16, 14, 16, 13, 12, 25, 36], by=fn{*})",
 			"503193600", object.NUMBER_OBJ,
 		},
 
 		// factorial using fold() and series()
-		{"fold(fn{*}, series(7))",
+		{"fold(series(7), by=fn{*})",
 			"5040", object.NUMBER_OBJ,
 		},
 
 		// fold with multiple functions
-		{"fold([fn{*}, fn{+}], series(7))",
+		{"fold(series(7), by=[fn{*}, fn{+}])",
 			"157", object.NUMBER_OBJ,
 		},
 
 		// fold from starting value
-		{`foldfrom(
-			fn{*}, 
-			111, 
-			[10, 2, 3, 4])`,
+		{`fold(
+			[10, 2, 3, 4],
+			by=fn{*}, 
+			init=111, 
+			)`,
 			"26640", object.NUMBER_OBJ,
 		},
-		{`foldfrom(
-			fn{*}, 
-			111, 
-			5..7)`,
+		{`fold(
+			5..7,
+			by=fn{*}, 
+			init=111, 
+			)`,
 			"23310", object.NUMBER_OBJ,
 		},
 
 		// fold on multiple lists (or ranges); requires starting value (can't use fold() for multiple lists)
-		{`foldfrom(
-			fn from, a, b: from + a * b, 
-			1, 
+		{`fold(
 			[1, 2, 3], 
 			[10, 5, 6],
+			by=fn from, a, b: from + a * b, 
+			init=1, 
 			)`,
 			"39", object.NUMBER_OBJ,
 		},
-		{`foldfrom(
-			fn(from, a, b, c) { from + a * b - c },
-			1, 
+		{`fold(
 			[1, 2, 3], 
 			[10, 5, 6],
 			[3.2, 7, 7],
+			by=fn(from, a, b, c) { from + a * b - c },
+			init=1, 
 			)`,
 			"21.8", object.NUMBER_OBJ,
 		},
 
-		{`foldfrom(
-			fn(from, a, b, c) { from + a * b - c },
-			1, 
+		{`fold(
 			1 .. 3, 
 			[10, 5, 6],
 			[3.2, 7, 7],
+			by=fn(from, a, b, c) { from + a * b - c },
+			init=1, 
 			)`,
 			"21.8", object.NUMBER_OBJ,
 		},
 
-		// foldfrom with list of functions
-		{`foldfrom(
-			[fn{*}], 
-			111, 
-			[10, 2, 3, 4])`,
+		// fold from with list of functions
+		{`fold(
+			[10, 2, 3, 4],
+			by=[fn{*}], 
+			init=111, 
+			)`,
 			"26640", object.NUMBER_OBJ,
 		},
-		{`foldfrom(
-			[fn{*}, fn{+}], 
-			111, 
-			[10, 2, 3, 4])`,
+		{`fold(
+			[10, 2, 3, 4],
+			by=[fn{*}, fn{+}], 
+			init=111, 
+			)`,
 			"3340", object.NUMBER_OBJ,
 		},
 
-		// foldfrom with list of functions and multiple lists
-		{`foldfrom(
-			[fn(a, b, c) { a + b * c }, fn(a, b, c) { a+b+c }], 
-			111, 
-			[10, 2, 3, 4], [7, 8, 9, 10])`,
+		// fold from with list of functions and multiple lists
+		{`fold(
+			[10, 2, 3, 4], 
+			[7, 8, 9, 10],
+			by=[fn(a, b, c) { a + b * c }, fn(a, b, c) { a+b+c }], 
+			init=111, 
+			)`,
 			"232", object.NUMBER_OBJ,
 		},
 	}

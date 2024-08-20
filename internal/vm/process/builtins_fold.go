@@ -7,66 +7,83 @@ import (
 	"langur/object"
 )
 
-// fold, foldfrom, zip
+// fold,  zip
 
 var bi_fold = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "fold",
-		Description: "fold(function, list); returns list of values folded by the given function from the given list",
+		Description: "returns list of values folded by the given function from the given list",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
+		},
+		ParamExpansionMin: 1,
+		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "init"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "fold"
 
 		var fns []object.Object
-
-		fn := args[0]
+		fn := args[1]
 		if !object.IsCallable(fn) {
 			fnArr, _ := fn.(*object.List)
 			if len(fnArr.Elements) == 0 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions")
 			}
 			fns = fnArr.Elements
 			for i, f := range fns {
 				if !object.IsCallable(f) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable", i+1))
+					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Function list element %d not callable", i+1))
 				}
 			}
 			fn = fns[0] // initialiaze fn to first function
 		}
 
-		var arr *object.List
+		result := args[2] // nil if init not passed; checked later
 
-		switch arg := args[1].(type) {
-		case *object.List:
-			arr = arg
+		lists := args[0].(*object.List).Elements // We know it's a list, because parameter expansion made it so.
+		var list *object.List
+		if len(lists) == 1 {
+			switch arg := lists[0].(type) {
+			case *object.List:
+				list = arg
 
-		case *object.Range:
-			from, err := arg.ToList()
-			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			case *object.Range:
+				from, err := arg.ToList()
+				if err != nil {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				}
+				list = from
+
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range")
 			}
-			arr = from
+			if len(list.Elements) == 0 {
+				// empty list
+				// FIXME: ? return initialization if not nil ?
+				return object.NONE
+			}
 
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list (or range)")
+		} else {
+			// more than 1 list
+			return foldBetweenLists(pr, lists, fns, fn, result)
 		}
-		if len(arr.Elements) == 0 {
-			// empty list
-			return object.NONE
+
+		start := 0
+		if result == nil {
+			result = list.Elements[0]
+			start = 1
 		}
 
 		var err error
 		fnn := 0
-
-		result := arr.Elements[0]
-		for i := 1; i < len(arr.Elements); i++ {
-			result, err = pr.callback(fn, result, arr.Elements[i])
+		for i := start; i < len(list.Elements); i++ {
+			result, err = pr.callback(fn, result, list.Elements[i])
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -86,85 +103,28 @@ var bi_fold = &object.BuiltIn{
 	},
 }
 
-var bi_foldfrom = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "foldfrom",
-		Description: "foldfrom(function, init, lists...); returns list of values folded by the given function from the given lists; given function parameter count == number of lists + 1 for the result (result as first parameter in given function)",
+// an extension of bi_fold() for folding between lists
+// may be slower than folding on a single list
+func foldBetweenLists(
+	pr *Process,
+	lists, fns []object.Object,
+	fn, result object.Object) object.Object {
 
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-		},
-		ParamExpansionMin: 3,
-		ParamExpansionMax: -1,
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		const fnName = "foldfrom"
+	const fnName = "fold"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		if len(args) == 3 {
-			// starting result and single list
-			var arr *object.List
-
-			switch arg := args[2].(type) {
-			case *object.List:
-				arr = arg
-
-			case *object.Range:
-				from, err := arg.ToList()
-				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-				}
-				arr = from
-
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list (or range) for third argument")
-			}
-
-			arr.Elements = append([]object.Object{args[1]}, arr.Elements...)
-			return bi_fold.Fn.(BuiltInFunction)(pr, args[0], arr)
-		}
-		return foldMultiple(pr, args...)
-	},
-}
-
-// an extension of bi_foldfrom() for folding on multiple lists
-// may be slower than using a single list
-func foldMultiple(pr *Process, args ...object.Object) object.Object {
-	const fnName = "foldfrom"
-
-	var fns []object.Object
-
-	fn := args[0]
-	if !object.IsCallable(fn) {
-		fnArr, _ := fn.(*object.List)
-		if len(fnArr.Elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
-		}
-		fns = fnArr.Elements
-		for i, f := range fns {
-			if !object.IsCallable(f) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable", i+1))
-			}
-		}
-		fn = fns[0] // initialiaze fn to first function
+	if result == nil {
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Cannot fold between lists without initialization")
 	}
 
-	result := args[1]
-
 	var length int = -1
-	var lists []object.Object
 
-	for _, o := range args[2:] {
+	for i, o := range lists {
 		switch arg := o.(type) {
 		case *object.List:
 			if length > -1 && length != len(arg.Elements) {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
 			}
 			length = len(arg.Elements)
-			lists = append(lists, arg)
 
 		case *object.Range:
 			from, err := arg.ToList()
@@ -175,7 +135,7 @@ func foldMultiple(pr *Process, args ...object.Object) object.Object {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
 			}
 			length = len(from.Elements)
-			lists = append(lists, from)
+			lists[i] = from
 
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) only for foldfrom")
@@ -183,7 +143,7 @@ func foldMultiple(pr *Process, args ...object.Object) object.Object {
 	}
 	if length == 0 {
 		// empty lists
-		// return starting result or "no data" ??????
+		// FIXME: ? return starting result or "no data" ?
 		return object.NONE
 	}
 
@@ -221,41 +181,38 @@ func foldMultiple(pr *Process, args ...object.Object) object.Object {
 var bi_zip = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "zip",
-		Description: "zips together lists; may optionally use a function (first argument)",
+		Description: "zips together lists; may optionally use a function",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 		ParamExpansionMin: 2,
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "zip"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		fn := args[0]
-		useFn := object.IsCallable(fn)
-
-		start := 0
-		if useFn {
-			start = 1
+		fn := args[1]
+		if fn != nil {
+			if !object.IsCallable(fn) {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function")
+			}
 		}
 
 		length := -1
 
-		var lists []object.Object
-
-		for _, o := range args[start:] {
+		lists := args[0].(*object.List).Elements
+		for i, o := range lists {
 			switch arg := o.(type) {
 			case *object.List:
 				if length > -1 && length != len(arg.Elements) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists to zip")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
 				}
 				length = len(arg.Elements)
-				lists = append(lists, arg)
 
 			case *object.Range:
 				from, err := arg.ToList()
@@ -266,16 +223,16 @@ var bi_zip = &object.BuiltIn{
 					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
 				}
 				length = len(from.Elements)
-				lists = append(lists, from)
+				lists[i] = from
 
 			default:
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists only to zip")
 			}
 		}
 
-		arr := &object.List{}
+		list := &object.List{}
 		var items []object.Object
-		if useFn {
+		if fn != nil {
 			// use function to determine zip values
 			for i := 0; i < length; i++ {
 				items = nil
@@ -288,9 +245,9 @@ var bi_zip = &object.BuiltIn{
 				}
 				switch r := result.(type) {
 				case *object.List:
-					arr.Elements = append(arr.Elements, r.Elements...)
+					list.Elements = append(list.Elements, r.Elements...)
 				default:
-					arr.Elements = append(arr.Elements, result)
+					list.Elements = append(list.Elements, result)
 				}
 			}
 
@@ -301,10 +258,10 @@ var bi_zip = &object.BuiltIn{
 				for _, arr2 := range lists {
 					items = append(items, arr2.(*object.List).Elements[i])
 				}
-				arr.Elements = append(arr.Elements, items...)
+				list.Elements = append(list.Elements, items...)
 			}
 		}
 
-		return arr
+		return list
 	},
 }
