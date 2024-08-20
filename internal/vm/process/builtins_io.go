@@ -120,81 +120,78 @@ var bi_read = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "read",
 		ImpureEffects: true,
-		Description:   "read(prompt, validation, errmessage, maxattempts, alternate); reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
+		Description:   "reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
 
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "prompt", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "validation"},
+			object.Parameter{ExternalName: "errmsg", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "maxattempts", DefaultValue: object.One},
+			object.Parameter{ExternalName: "alt"},
 		},
-		ParamExpansionMax: 5,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "read"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		var fn, alternate object.Object
-		var re *object.Regex
-		prompt := ""
-		errMsg := ""
-		maxattempts := 1
-		validationByRegex := false
-
-		// gather parameters
-		if len(args) > 0 {
-			p, ok := args[0].(*object.String)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, "read", "Expected string for prompt")
-			}
+		// Gather arguments.
+		// "prompt" argument
+		var prompt string
+		p, ok := args[0].(*object.String)
+		if ok {
 			prompt = p.String()
-
 			if pr.Modes.ConsoleTextMode {
 				prompt = str.ReplaceNewLinesWithSystem(prompt)
 			}
 
-			if len(args) > 1 {
-				re, ok = args[1].(*object.Regex)
-				if ok {
-					validationByRegex = true
-				} else {
-					fn = args[1]
-					if !object.IsCallable(fn) {
-						return object.NewError(object.ERR_ARGUMENTS, "read", "Expected callable or regex for second argument")
-					}
-				}
+		} else {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for prompt")
+		}
 
-				if len(args) > 2 {
-					e, ok := args[2].(*object.String)
-					if !ok {
-						return object.NewError(object.ERR_ARGUMENTS, "read", "Expected string for error message")
-					}
-					errMsg = e.String()
+		// "validation" argument
+		var fn object.Object
+		var re *object.Regex
+		validationByRegex := false
 
-					if pr.Modes.ConsoleTextMode {
-						errMsg = str.ReplaceNewLinesWithSystem(errMsg)
-					}
-
-					if len(args) > 3 {
-						maxattempts, ok = object.NumberToInt(args[3])
-						if !ok {
-							return object.NewError(object.ERR_ARGUMENTS, "read", "Expected integer for maximum attempts")
-						}
-
-						if len(args) > 4 {
-							// alternate return value instead of an exception
-							alternate = args[4]
-						}
-					}
+		if args[1] != nil {
+			re, ok = args[1].(*object.Regex)
+			if ok {
+				validationByRegex = true
+			} else {
+				fn = args[1]
+				if !object.IsCallable(fn) {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or regex for validation argument")
 				}
 			}
 		}
+
+		// "errmsg" argument
+		var errMsg string
+		e, ok := args[2].(*object.String)
+		if ok {
+			errMsg = e.String()
+			if pr.Modes.ConsoleTextMode {
+				errMsg = str.ReplaceNewLinesWithSystem(errMsg)
+			}
+
+		} else {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for error message")
+		}
+
+		// "maxattempts" argument
+		maxattempts, ok := object.NumberToInt(args[3])
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for maximum attempts")
+		}
+
+		// "alt" argument
+		alternate := args[4]
 
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; {
 			fmt.Print(prompt)
 			line, err := readLine(os.Stdin)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, "read", err.Error())
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
 
 			if pr.Modes.ConsoleTextMode {
@@ -210,7 +207,7 @@ var bi_read = &object.BuiltIn{
 					verify, err = pr.callback(fn, object.NewString(line))
 				}
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, "read", err.Error())
+					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 				}
 				if verify == object.TRUE {
 					return object.NewString(line)
@@ -227,7 +224,7 @@ var bi_read = &object.BuiltIn{
 		}
 
 		if alternate == nil {
-			return object.NewError(object.ERR_GENERAL, "read", "Input failed to match expected")
+			return object.NewError(object.ERR_GENERAL, fnName, "Input failed to match expected")
 		}
 		return alternate
 	},
