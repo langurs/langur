@@ -137,6 +137,38 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool) (Symbol, error) {
 	return sym, nil
 }
 
+func (st *SymbolTable) defineRootSymbol(name string, mutable bool) (Symbol, error) {
+	if st.Outer == nil {
+		return st.defineSymbol(name, mutable)
+	}
+	return st.Outer.defineRootSymbol(name, mutable)
+}
+
+func (st *SymbolTable) defineFree(original Symbol) Symbol {
+	st.FreeSymbols = append(st.FreeSymbols, original)
+
+	sym := Symbol{
+		Name:    original.Name,
+		Index:   len(st.FreeSymbols) - 1,
+		Scope:   FreeScope,
+		Mutable: false,
+	}
+
+	st.store[original.Name] = sym
+	return sym
+}
+
+func (st *SymbolTable) DefineSelf(name string) Symbol {
+	sym := Symbol{
+		Name:    name,
+		Index:   0,
+		Scope:   SelfScope,
+		Mutable: false,
+	}
+	st.store[name] = sym
+	return sym
+}
+
 func (st *SymbolTable) Resolve(name string) (sym Symbol, level int, ok bool) {
 	sym, level, ok = st.resolveSymbol(name, 0)
 	return
@@ -174,29 +206,4 @@ func (st *SymbolTable) AddImpureEffects(s string) {
 			st.Outer.AddImpureEffects(s)
 		}
 	}
-}
-
-func (st *SymbolTable) defineFree(original Symbol) Symbol {
-	st.FreeSymbols = append(st.FreeSymbols, original)
-
-	sym := Symbol{
-		Name:    original.Name,
-		Index:   len(st.FreeSymbols) - 1,
-		Scope:   FreeScope,
-		Mutable: false,
-	}
-
-	st.store[original.Name] = sym
-	return sym
-}
-
-func (st *SymbolTable) DefineSelf(name string) Symbol {
-	sym := Symbol{
-		Name:    name,
-		Index:   0,
-		Scope:   SelfScope,
-		Mutable: false,
-	}
-	st.store[name] = sym
-	return sym
 }
