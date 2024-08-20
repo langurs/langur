@@ -6024,10 +6024,10 @@ func TestBuiltinFunctions(t *testing.T) {
 func TestFilterFunctions(t *testing.T) {
 	tests := []vmTestCase{
 		// filter
-		{`filter(re/1/, [16, 16, 25, 36, 42, 29, 49])`,
+		{`filter([16, 16, 25, 36, 42, 29, 49], by=re/1/)`,
 			[]int{16, 16}, object.LIST_OBJ,
 		},
-		{`filter(re/[234]/, {1: 16, 2: 16, 3: 25, 4: 36, 5: 42, 6: 29, 7: 56})`,
+		{`filter({1: 16, 2: 16, 3: 25, 4: 36, 5: 42, 6: 29, 7: 56}, by=re/[234]/)`,
 			[][]object.Object{
 				{object.NumberFromInt(3), object.NumberFromInt(25)},
 				{object.NumberFromInt(4), object.NumberFromInt(36)},
@@ -6051,16 +6051,16 @@ func TestFilterFunctions(t *testing.T) {
 		},
 
 		// count
-		{`count(fn{> 100}, [])`, "0", object.NUMBER_OBJ},
-		{`count(fn{> 100}, [79, 7, 9])`, "0", object.NUMBER_OBJ},
-		{`count(fn{< 100}, [79, 7, 9])`, "3", object.NUMBER_OBJ},
-		{`count(fn{> 100}, [123, 90, 170])`, "2", object.NUMBER_OBJ},
-		{`count(re/[0-9]/, ["yo", "abc", "zzz"])`, "0", object.NUMBER_OBJ},
-		{`count(re/[0-9]/, [123, "abc9", "zzz"])`, "2", object.NUMBER_OBJ},
-		{`count(re/[0-9]/, [123, "abc9", "zzz0"])`, "3", object.NUMBER_OBJ},
+		{`count([], by=fn{> 100})`, "0", object.NUMBER_OBJ},
+		{`count([79, 7, 9], by=fn{> 100})`, "0", object.NUMBER_OBJ},
+		{`count([79, 7, 9], by=fn{< 100})`, "3", object.NUMBER_OBJ},
+		{`count([123, 90, 170], by=fn{> 100})`, "2", object.NUMBER_OBJ},
+		{`count(["yo", "abc", "zzz"], by=re/[0-9]/)`, "0", object.NUMBER_OBJ},
+		{`count([123, "abc9", "zzz"], by=re/[0-9]/)`, "2", object.NUMBER_OBJ},
+		{`count([123, "abc9", "zzz0"], by=re/[0-9]/)`, "3", object.NUMBER_OBJ},
 
-		{`count(re/[0-9]/, {1: "yo", 2: "abc", 3: "zzz"})`, "0", object.NUMBER_OBJ},
-		{`count(re/[0-9]/, {1: 123, 2: "abc9", 3: "zzz"})`, "2", object.NUMBER_OBJ},
+		{`count({1: "yo", 2: "abc", 3: "zzz"}, by=re/[0-9]/)`, "0", object.NUMBER_OBJ},
+		{`count({1: 123, 2: "abc9", 3: "zzz"}, by=re/[0-9]/)`, "2", object.NUMBER_OBJ},
 
 		// count with 1 argument
 		{`count([])`, 0, object.NUMBER_OBJ},
@@ -7742,7 +7742,7 @@ func TestCallingBuiltInsFromBuiltIns(t *testing.T) {
 
 func TestCallingRegexFromBuiltIns(t *testing.T) {
 	tests := []vmTestCase{
-		{`filter(re/[19]/, [16, 16, 25, 36, 42, 29, 49])`,
+		{`filter([16, 16, 25, 36, 42, 29, 49], by=re/[19]/)`,
 			[]int{16, 16, 29, 49}, object.LIST_OBJ,
 		},
 	}
@@ -7755,12 +7755,12 @@ func TestCallingCompiledFunctionsFromBuiltIns(t *testing.T) {
 		{`map(fn(x) { x * 2 }, [7, 9, 10])`, []int{14, 18, 20}, object.LIST_OBJ},
 
 		{`val x = fn(y) { (y ^/ 2) >= 4 }
-			filter(x, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])`,
+			filter([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=x)`,
 			[]int{16, 16, 25, 36, 42, 29, 49}, object.LIST_OBJ,
 		},
 
 		{`val x = fn(y) { y >= 49 }
-			filter(x, {1: 49, 2: 35, 3: 70})`,
+			filter({1: 49, 2: 35, 3: 70}, by=x)`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(49)},
 				{object.NumberFromInt(3), object.NumberFromInt(70)},
@@ -7773,7 +7773,7 @@ func TestCallingCompiledFunctionsFromBuiltIns(t *testing.T) {
 		  # true if the square root of a number is an integer
 		  # There are probably better ways to check this.
 	
-			filter(x, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])`,
+			filter([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=x)`,
 			[]int{16, 16, 25, 36, 49}, object.LIST_OBJ,
 		},
 

@@ -12,35 +12,33 @@ import (
 var bi_cd = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "cd",
-		Description:   "may change the current directory of the script; returns present working directory; has no effect on parent processes",
+		Description:   "current directory/change directory: may change the current directory of the script; returns present working directory; has no effect on parent processes",
 		ImpureEffects: true,
 
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "path"},
 		},
-		ParamExpansionMax: 1,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "cd"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var err error
 		var pwd string
 
-		if len(args) != 0 {
-			switch arg := args[0].(type) {
-			case *object.String:
-				err = os.Chdir(arg.String())
-				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-				}
+		path := args[0]
 
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for new path")
+		switch arg := path.(type) {
+		case nil:
+		// okay; no change of directory
+
+		case *object.String:
+			err = os.Chdir(arg.String())
+			if err != nil {
+				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
+
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for new path")
 		}
 
 		// return the present working directory

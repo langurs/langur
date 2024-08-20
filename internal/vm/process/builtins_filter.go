@@ -14,37 +14,28 @@ var bi_filter = &object.BuiltIn{
 		Name:        "filter",
 		Description: "returns list (or hash) of values verified by given function or regex, or an empty list or hash if there are no matches",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "filter"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var isRegex bool
 		var re *object.Regex
-		var fn, over object.Object
 
-		if len(args) == 1 {
-			over = args[0]
-		} else {
-			over = args[1]
-			if object.IsCallable(args[0]) {
-				fn = args[0]
-			} else {
-				var ok bool
-				re, ok = args[0].(*object.Regex)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
-				}
-				isRegex = true
+		over, by := args[0], args[1]
+
+		if by != nil && !object.IsCallable(by) {
+			var ok bool
+			re, ok = by.(*object.Regex)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to filter by")
 			}
+			isRegex = true
 		}
 
 		var result object.Object
@@ -64,9 +55,9 @@ var bi_filter = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, v := range arg.Elements {
-					result, err = pr.callback(fn, v)
+					result, err = pr.callback(by, v)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -97,9 +88,9 @@ var bi_filter = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, kv := range arg.Pairs {
-					result, err = pr.callback(fn, kv.Value)
+					result, err = pr.callback(by, kv.Value)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -123,7 +114,7 @@ var bi_filter = &object.BuiltIn{
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash to filter")
 	},
 }
 
@@ -133,38 +124,29 @@ var bi_count = &object.BuiltIn{
 		Name:        "count",
 		Description: "returns count of values verified by given function or regex",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "count"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var isRegex bool
 		var re *object.Regex
-		var fn, over object.Object
 		var count int64
 
-		if len(args) == 1 {
-			over = args[0]
-		} else {
-			over = args[1]
-			if object.IsCallable(args[0]) {
-				fn = args[0]
-			} else {
-				var ok bool
-				re, ok = args[0].(*object.Regex)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for first argument")
-				}
-				isRegex = true
+		over, by := args[0], args[1]
+
+		if by != nil && !object.IsCallable(by) {
+			var ok bool
+			re, ok = by.(*object.Regex)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to count by")
 			}
+			isRegex = true
 		}
 
 		var result object.Object
@@ -183,9 +165,9 @@ var bi_count = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, v := range arg.Elements {
-					result, err = pr.callback(fn, v)
+					result, err = pr.callback(by, v)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -214,9 +196,9 @@ var bi_count = &object.BuiltIn{
 					}
 				}
 
-			} else if fn != nil {
+			} else if by != nil {
 				for _, kv := range arg.Pairs {
-					result, err = pr.callback(fn, kv.Value)
+					result, err = pr.callback(by, kv.Value)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -234,7 +216,7 @@ var bi_count = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash for second argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash to count entries")
 		}
 
 		return object.NumberFromInt64(count)
