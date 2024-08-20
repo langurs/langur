@@ -1,6 +1,14 @@
 langur revision history
 https://langurlang.org
 
+... - 0.18.0
+- changed parameters for built-in functions
+
+
+- dropped builtin functions foldfrom, group, groupby, groupbyH
+
+
+
 2024-08-15 - 0.17.5
 - moved responsibility for current patch state of built-in function parameters to the functions themselves
 - added parsing of dot expressions (but not compiled)
