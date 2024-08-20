@@ -20,7 +20,6 @@ var bi_write = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "writes to the console",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
@@ -29,7 +28,6 @@ var bi_write = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
-		// FIXME: update parameters/args
 		args = args[0].(*object.List).Elements
 
 		for _, v := range args {
@@ -55,15 +53,15 @@ var bi_writeln = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "writes to the console, adding a system newline at the end",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		return bi_write.Fn.(BuiltInFunction)(pr, &object.List{Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
+		return bi_write.Fn.(BuiltInFunction)(pr,
+			&object.List{
+				Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
 	},
 }
 
@@ -73,7 +71,6 @@ var bi_writeErr = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "writes to standard error",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
@@ -82,7 +79,6 @@ var bi_writeErr = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
-		// FIXME: update parameters/args
 		args = args[0].(*object.List).Elements
 
 		for _, v := range args {
@@ -108,15 +104,15 @@ var bi_writelnErr = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "writes to standard error, adding a system newline at the end",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		return bi_writeErr.Fn.(BuiltInFunction)(pr, &object.List{Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
+		return bi_writeErr.Fn.(BuiltInFunction)(pr,
+			&object.List{
+				Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
 	},
 }
 
