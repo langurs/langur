@@ -12,9 +12,8 @@ var bi__limit = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: "_limit",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -66,9 +65,8 @@ var bi__values = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: "_values",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
