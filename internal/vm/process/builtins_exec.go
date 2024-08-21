@@ -99,8 +99,8 @@ var bi_execTH = &object.BuiltIn{
 
 var getExitStatusRegex = regexp.MustCompile("^exit status (-?\\d+)")
 
-func getExitStatusFromExecError(arg string) int {
-	ns := getExitStatusRegex.FindStringSubmatch(arg)
+func getExitStatusFromExecError(over string) int {
+	ns := getExitStatusRegex.FindStringSubmatch(over)
 	if len(ns) == 0 || ns[1] == "" {
 		return system.GetExitStatus("")
 	}

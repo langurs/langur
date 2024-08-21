@@ -16,64 +16,65 @@ var bi_less = &object.BuiltIn{
 		Name:        "less",
 		Description: "creates a new list or string, with 1 less element at the end, or an empty one if the length is already 0; may return empty list or string; also may create a new hash, with specified keys left out, or return original hash if specified keys not present",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "of"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "less"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		of := args[1]
 
-		switch arg := args[0].(type) {
+		switch over := args[0].(type) {
 		case *object.List:
-			if len(arg.Elements) == 0 {
-				return arg
+			if len(over.Elements) == 0 {
+				return over
 			}
-			if len(args) == 1 {
+			if of == nil {
 				// 1 less element
-				newElements := make([]object.Object, len(arg.Elements)-1)
-				copy(newElements, arg.Elements[:len(arg.Elements)-1])
+				newElements := make([]object.Object, len(over.Elements)-1)
+				copy(newElements, over.Elements[:len(over.Elements)-1])
 				return &object.List{Elements: newElements}
 			}
+
 			// remove specific indices
-			list, err := arg.RemoveIndices(args[1])
+			list, err := over.RemoveIndices(of)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
 			return list
 
 		case *object.String:
-			if arg.LenCP() == 0 {
-				return arg
+			if over.LenCP() == 0 {
+				return over
 			}
-			if len(args) == 1 {
+			if of == nil {
 				// 1 less code point
-				cpSlc := arg.RuneSlc()
+				cpSlc := over.RuneSlc()
 				s, err := object.NewStringFromParts(cpSlc[:len(cpSlc)-1])
 				if err == nil {
 					return s
 				}
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
-			str, err := arg.RemoveIndices(args[1])
+			str, err := over.RemoveIndices(of)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from string: "+err.Error())
 			}
 			return str
 
 		case *object.Hash:
-			if len(args) < 2 {
+			if of == nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected second argument for hash (key or list of keys)")
 			}
-			if len(arg.Pairs) == 0 {
-				return arg
+			if len(over.Pairs) == 0 {
+				return over
 			}
-			hash, err := arg.RemoveKeys(args[1])
+			hash, err := over.RemoveKeys(of)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing keys from hash: "+err.Error())
 			}
