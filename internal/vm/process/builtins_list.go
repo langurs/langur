@@ -69,7 +69,7 @@ var bi_less = &object.BuiltIn{
 
 		case *object.Hash:
 			if of == nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected second argument for hash (key or list of keys)")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected key or list of keys to remove from hash")
 			}
 			if len(over.Pairs) == 0 {
 				return over
@@ -81,7 +81,7 @@ var bi_less = &object.BuiltIn{
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash or string for first argument")
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash or string")
 	},
 }
 

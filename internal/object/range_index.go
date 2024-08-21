@@ -103,13 +103,19 @@ func (left *Range) SetIndex(index, setTo Object) (Object, error) {
 	return left, nil
 }
 
-// receives 1-based integer index
-// returns 0-based integer index
 func (left *Range) IndexNativeInt(index Object) (idx int, ok bool) {
 	idx, ok = NumberToInt(index)
 	if !ok {
 		return
 	}
+	return left.indexNativeInt(idx)
+}
+
+// receives 1-based integer index (langur)
+// returns 0-based integer index (Go)
+// ok true/false depending on validity
+func (left *Range) indexNativeInt(index int) (idx int, ok bool) {
+	idx = index
 
 	switch idx {
 	case 1, 2:

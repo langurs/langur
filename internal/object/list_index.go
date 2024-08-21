@@ -118,14 +118,21 @@ func (left *List) SetIndex(index, setTo Object) (Object, error) {
 	return left, nil
 }
 
-// receives 1-based integer index
-// returns 0-based integer index
-// if applicable, flips negative index to positive
 func (left *List) IndexNativeInt(index Object) (idx int, ok bool) {
 	idx, ok = NumberToInt(index)
 	if !ok {
 		return
 	}
+	return left.indexNativeInt(idx)
+}
+
+// receives 1-based integer index (langur)
+// returns 0-based integer index (Go)
+// if applicable, flips negative index to positive
+// ok true/false depending on validity
+func (left *List) indexNativeInt(index int) (idx int, ok bool) {
+	idx = index
+
 	if idx < 0 {
 		// flip negative index
 		idx = len(left.Elements) + idx + 1

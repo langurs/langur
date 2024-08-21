@@ -161,14 +161,20 @@ func (left *String) SetIndex(index, setTo Object) (Object, error) {
 	return NewStringFromParts(cpSlc[:n], piece, cpSlc[n+1:])
 }
 
-// receives 1-based integer index (langur)
-// returns 0-based integer index (Go)
-// if applicable, flips negative index to positive
 func (left *String) IndexNativeInt(index Object) (idx int, ok bool) {
 	idx, ok = NumberToInt(index)
 	if !ok {
 		return
 	}
+	return left.indexNativeInt(idx)
+}
+
+// receives 1-based integer index (langur)
+// returns 0-based integer index (Go)
+// if applicable, flips negative index to positive
+// ok true/false depending on validity
+func (left *String) indexNativeInt(index int) (idx int, ok bool) {
+	idx = index
 
 	cpCnt := left.LenCP()
 	if idx < 0 {
