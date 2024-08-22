@@ -1,5 +1,4 @@
-// langur/object/binary_ops.go
-// "binary" as in 2 operands, not as in bitwise operations
+// langur/object/infix_ops.go
 
 package object
 
