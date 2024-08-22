@@ -130,7 +130,9 @@ func makeNativeIntIndexMap(obj, index Object) (indexmap map[int]bool, err error)
 			if !ok {
 				return fmt.Errorf("Number not an integer")
 			}
-			resolve(n)
+			if _, ok := resolve(n); !ok {
+				return fmt.Errorf("Could not resolve integer index")
+			}
 
 		case *Range:
 			start, ok := NumberToInt(idx.Start)
