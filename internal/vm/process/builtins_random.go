@@ -81,11 +81,11 @@ var bi_random = &object.BuiltIn{
 			if len(codePoints) == 0 {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-zero-length string")
 			}
-			arg, err := randomCryptoInteger(0, int64(len(codePoints)))
+			with, err := randomCryptoInteger(0, int64(len(codePoints)))
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
-			return object.NumberFromRune(codePoints[arg])
+			return object.NumberFromRune(codePoints[with])
 
 		case *object.Hash:
 			// return 1 element of hash at random

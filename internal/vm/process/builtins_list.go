@@ -9,7 +9,7 @@ import (
 )
 
 // reverse, rotate
-// less, more, rest
+// less, more
 
 var bi_less = &object.BuiltIn{
 	FnSignature: &object.Signature{
@@ -88,11 +88,11 @@ var bi_less = &object.BuiltIn{
 var bi_more = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "more",
-		Description: "more(list, items...); creates a new list or string, adding an item or items",
+		Description: "creates a new list or string, adding an item or items",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "with"},
+			object.Parameter{ExternalName: "add"},
 		},
 		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
@@ -100,26 +100,21 @@ var bi_more = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "more"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		add := args[1].(*object.List).Elements
 
-		if len(args) == 1 {
-			return args[0]
-		}
-
-		switch arg := args[0].(type) {
+		switch with := args[0].(type) {
 		case *object.List:
-			newElements := make([]object.Object, len(arg.Elements)+len(args)-1)
-			copy(newElements, arg.Elements)
-			copy(newElements[len(arg.Elements):], args[1:])
+			newElements := make([]object.Object, len(with.Elements)+len(add))
+			copy(newElements, with.Elements)
+			copy(newElements[len(with.Elements):], add)
 			return &object.List{Elements: newElements}
 
 		case *object.String:
 			ns := &strings.Builder{}
-			ns.WriteString(arg.String())
-			for i := 1; i < len(args); i++ {
+			ns.WriteString(with.String())
+			for i := range add {
 				// items may be strings or code points (integers)
-				switch item := args[i].(type) {
+				switch item := add[i].(type) {
 				case *object.String:
 					ns.WriteString(item.String())
 
@@ -138,10 +133,10 @@ var bi_more = &object.BuiltIn{
 			return object.NewString(ns.String())
 
 		case *object.Hash:
-			hash := arg
+			hash := with
 
-			for i := 1; i < len(args); i++ {
-				from, ok := args[i].(*object.Hash)
+			for i := range add {
+				from, ok := add[i].(*object.Hash)
 				if !ok {
 					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected hashes to add to hash")
 				}
@@ -164,71 +159,38 @@ var bi_more = &object.BuiltIn{
 	},
 }
 
-var bi_rest = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "rest",
-		Description: "removes the first element of a list or string or does nothing if the length is 0; may return empty list or string",
-
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		switch arg := args[0].(type) {
-		case *object.List:
-			if len(arg.Elements) == 0 {
-				return arg
-			}
-			newElements := make([]object.Object, len(arg.Elements)-1)
-			copy(newElements, arg.Elements[1:])
-			return &object.List{Elements: newElements}
-
-		case *object.String:
-			if arg.LenCP() == 0 {
-				return arg
-			}
-			cpSlc := arg.RuneSlc()
-			return object.NewString(string(cpSlc[1:]))
-		}
-
-		return object.NewError(object.ERR_ARGUMENTS, "rest", "Expected list or string")
-	},
-}
-
 var bi_reverse = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "reverse",
 		Description: "returns the reversed list or range",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "reverse"
 
-		switch arg := args[0].(type) {
+		switch over := args[0].(type) {
 		case *object.List:
-			return &object.List{Elements: object.CopyAndReverseSlice(arg.Elements)}
+			return &object.List{Elements: object.CopyAndReverseSlice(over.Elements)}
 
 		case *object.Hash:
 			// reverse keys/values of hash if possible
-			hash, err := arg.Reverse()
+			hash, err := over.Reverse()
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return hash
 
 		case *object.String:
-			return object.NewString(str.Reverse(arg.String()))
+			return object.NewString(str.Reverse(over.String()))
 
 		case *object.Range:
-			return &object.Range{Start: arg.End, End: arg.Start}
+			return &object.Range{Start: over.End, End: over.Start}
 
 		case *object.Number:
-			return arg.Reverse()
+			return over.Reverse()
 
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, string, or range")
@@ -241,44 +203,54 @@ var bi_rotate = &object.BuiltIn{
 		Name:        "rotate",
 		Description: "rotates list elements or a number within a range",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "distance"},
+			object.Parameter{ExternalName: "range"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "rotate"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		rotation := 1
-		if len(args) > 1 {
+		distance := 1
+		if args[1] != nil {
 			var ok bool
-			rotation, ok = object.NumberToInt(args[1])
+			distance, ok = object.NumberToInt(args[1])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer distance to rotate for second argument")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer distance to rotate")
 			}
 		}
 
-		switch arg := args[0].(type) {
+		theRange := args[2]
+		var rng *object.Range
+		var ok bool
+		const expectedRng = "Expected integer range to rotate number within"
+		if theRange != nil {
+			rng, ok = theRange.(*object.Range)
+			if !ok {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
+			}
+		}
+
+		switch over := args[0].(type) {
 		case *object.List:
-			if len(args) > 2 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected third argument")
+			if theRange != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
 			}
-			rotation = determineRotation(rotation, len(arg.Elements))
-			if rotation == 0 {
-				return arg
+			distance = determineRotation(distance, len(over.Elements))
+			if distance == 0 {
+				return over
 			}
-			newSlcL := object.CopySlice(arg.Elements[rotation:])
-			newSlcR := object.CopySlice(arg.Elements[:rotation])
+			newSlcL := object.CopySlice(over.Elements[distance:])
+			newSlcR := object.CopySlice(over.Elements[:distance])
 			return &object.List{Elements: append(newSlcL, newSlcR...)}
 
 		case *object.String:
-			if len(args) > 2 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected third argument")
+			if theRange != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
 			}
 
 			// TODO: determine rotation on strings; see notes on reverse() for string by Unicode rules
@@ -296,14 +268,8 @@ var bi_rotate = &object.BuiltIn{
 			// 	return object.StringFromCpSlice(append(newSlcL, newSlcR...))
 
 		case *object.Number:
-			const expectedRng = "Expected range to rotate number within for third argument"
-
 			var start, end int
-			if len(args) > 2 {
-				rng, ok := args[2].(*object.Range)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
-				}
+			if theRange != nil {
 				start, ok = object.NumberToInt(rng.Start)
 				if !ok {
 					return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
@@ -315,24 +281,24 @@ var bi_rotate = &object.BuiltIn{
 				if start > end {
 					start, end = end, start
 				}
-				rotation = determineRotation(rotation, end-start+1)
-				if rotation == 0 {
-					return arg
+				distance = determineRotation(distance, end-start+1)
+				if distance == 0 {
+					return over
 				}
 
 			} else {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
 			}
 
-			i, ok := object.NumberToInt(arg)
+			i, ok := object.NumberToInt(over)
 			if !ok {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "expected integer")
 			}
 			if i < start || i > end {
 				// number outside the range passed through
-				return arg
+				return over
 			}
-			i -= rotation
+			i -= distance
 			if i < start {
 				i = i + end - start + 1
 			}

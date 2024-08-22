@@ -90,7 +90,6 @@ var BuiltIns = []*object.BuiltIn{
 
 	bi_less,
 	bi_more,
-	bi_rest,
 	bi_reverse,
 	bi_rotate,
 

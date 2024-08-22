@@ -5607,69 +5607,69 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49])",
 			[]int{14, 16, 13, 12, 25, 36, 42, 29, 49, 16}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], 2)",
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=2)",
 			[]int{16, 13, 12, 25, 36, 42, 29, 49, 16, 14}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], 10)", // same: no rotation
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=10)", // same: no rotation
 			[]int{16, 14, 16, 13, 12, 25, 36, 42, 29, 49}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], 12)", // excessive: 12 becomes 2
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=12)", // excessive: 12 becomes 2
 			[]int{16, 13, 12, 25, 36, 42, 29, 49, 16, 14}, object.LIST_OBJ,
 		},
 
 		{"rotate([])",
 			[]int{}, object.LIST_OBJ,
 		},
-		{"rotate([], 7)",
+		{"rotate([], distance=7)",
 			[]int{}, object.LIST_OBJ,
 		},
 		{"rotate([21])",
 			[]int{21}, object.LIST_OBJ,
 		},
-		{"rotate([21], 3)",
+		{"rotate([21], distance=3)",
 			[]int{21}, object.LIST_OBJ,
 		},
 
 		// rotate list with negative number
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], -1)",
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=-1)",
 			[]int{49, 16, 14, 16, 13, 12, 25, 36, 42, 29}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], -2)",
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=-2)",
 			[]int{29, 49, 16, 14, 16, 13, 12, 25, 36, 42}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], -10)", // same: no rotation
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=-10)", // same: no rotation
 			[]int{16, 14, 16, 13, 12, 25, 36, 42, 29, 49}, object.LIST_OBJ,
 		},
-		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], -12)", // excessive: -12 becomes -2
+		{"rotate([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], distance=-12)", // excessive: -12 becomes -2
 			[]int{29, 49, 16, 14, 16, 13, 12, 25, 36, 42}, object.LIST_OBJ,
 		},
 
-		{"rotate([], -1)",
+		{"rotate([], distance=-1)",
 			[]int{}, object.LIST_OBJ,
 		},
-		{"rotate([], -7)",
+		{"rotate([], distance=-7)",
 			[]int{}, object.LIST_OBJ,
 		},
-		{"rotate([21], -1)",
+		{"rotate([21], distance=-1)",
 			[]int{21}, object.LIST_OBJ,
 		},
-		{"rotate([21], -3)",
+		{"rotate([21], distance=-3)",
 			[]int{21}, object.LIST_OBJ,
 		},
 
 		// rotate number within range
 		// number outside of range passed through
-		{"rotate(10, -12, 3..14)", "10", object.NUMBER_OBJ},
-		{"rotate(10, -12, 14..21)", "10", object.NUMBER_OBJ},
-		{"rotate(2, -12, 1..21)", "14", object.NUMBER_OBJ},
-		{"rotate(2, -33, 1..21)", "14", object.NUMBER_OBJ},
-		{"rotate(20, -1, 1..21)", "21", object.NUMBER_OBJ},
-		{"rotate(20, -2, 1..21)", "1", object.NUMBER_OBJ},
+		{"rotate(10, distance=-12, range=3..14)", "10", object.NUMBER_OBJ},
+		{"rotate(10, distance=-12, range=14..21)", "10", object.NUMBER_OBJ},
+		{"rotate(2, distance=-12, range=1..21)", "14", object.NUMBER_OBJ},
+		{"rotate(2, distance=-33, range=1..21)", "14", object.NUMBER_OBJ},
+		{"rotate(20, distance=-1, range=1..21)", "21", object.NUMBER_OBJ},
+		{"rotate(20, distance=-2, range=1..21)", "1", object.NUMBER_OBJ},
 
-		{"rotate(2, 12, 1..21)", "11", object.NUMBER_OBJ},
-		{"rotate(2, 33, 1..21)", "11", object.NUMBER_OBJ},
-		{"rotate(2, 1, 1..21)", "1", object.NUMBER_OBJ},
-		{"rotate(2, 2, 1..21)", "21", object.NUMBER_OBJ},
+		{"rotate(2, distance=12, range=1..21)", "11", object.NUMBER_OBJ},
+		{"rotate(2, distance=33, range=1..21)", "11", object.NUMBER_OBJ},
+		{"rotate(2, distance=1, range=1..21)", "1", object.NUMBER_OBJ},
+		{"rotate(2, distance=2, range=1..21)", "21", object.NUMBER_OBJ},
 
 		// any
 		{`any([10, 101], by=fn{> 100})`, true, object.BOOLEAN_OBJ},
@@ -8183,7 +8183,7 @@ func TestRecursiveFunctions(t *testing.T) {
 				        if len(remaining) == 0 {
 				            accumulated
 				        } else {
-				            iter(rest(remaining), more(accumulated, f(first(remaining))))
+				            iter(less(remaining, of=1), more(accumulated, f(first(remaining))))
 				       }
 				    }
 				    iter(zlist, [])
@@ -8201,7 +8201,7 @@ func TestRecursiveFunctions(t *testing.T) {
 				    val iter = fn(zlist, result) { if len(zlist) == 0 {
 			            result
 			        } else {
-			            iter(rest(zlist), f(result, zlist[1]))
+			            iter(less(zlist, of=1), f(result, zlist[1]))
 			        }}
 
 				    iter(zlist, initial)
