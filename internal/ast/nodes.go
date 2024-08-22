@@ -1767,7 +1767,7 @@ func (ie *InfixExpressionNode) Evaluate() (object.Object, bool) {
 // 		right, ok := ie.Right.Evaluate()
 // 		if ok {
 // 			op, negated, ok := compiler.InfixTokenToOpCode(ie.Operator)
-// 			obj, err := object.BinaryOperation(op, left, right, ie.Operator.Code)
+// 			obj, err := object.InfixOperation(op, left, right, ie.Operator.Code)
 // 			ok = err == nil
 // 			if negated {
 // 				obj = object.NativeBoolToObject(obj.IsTruthy())

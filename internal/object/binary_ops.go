@@ -67,13 +67,13 @@ func ShortCircuitingOperation(op opcode.OpCode, left Object, code int) (
 }
 
 // to use from ast.InfixExpressionNode.Evaluate()
-func BinaryOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
+func InfixOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
 	switch op {
 	case opcode.OpLogicalAnd, opcode.OpLogicalNAnd,
 		opcode.OpLogicalOr, opcode.OpLogicalNOr,
 		opcode.OpLogicalXor, opcode.OpLogicalNXor:
 
-		return BinaryLogicalOperation(op, left, right, code)
+		return InfixLogicalOperation(op, left, right, code)
 
 	case opcode.OpEqual, opcode.OpNotEqual,
 		opcode.OpGreaterThan, opcode.OpGreaterThanOrEqual,
@@ -81,15 +81,15 @@ func BinaryOperation(op opcode.OpCode, left, right Object, code int) (Object, er
 		opcode.OpDivisibleBy, opcode.OpNotDivisibleBy,
 		opcode.OpIn, opcode.OpOf:
 
-		return BinaryComparison(op, left, right, code)
+		return InfixComparison(op, left, right, code)
 
 	default:
-		return BinaryNonLogicalOperation(op, left, right, code)
+		return InfixNonLogicalOperation(op, left, right, code)
 	}
 }
 
-// NOTE: If adding or removing codes here, also update BinaryOperation().
-func BinaryLogicalOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
+// NOTE: If adding or removing codes here, also update InfixOperation().
+func InfixLogicalOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
 	dbComp := isDatabaseOperation(code)
 	if dbComp {
 		// database comparison; either side null, return null
@@ -125,7 +125,7 @@ func BinaryLogicalOperation(op opcode.OpCode, left, right Object, code int) (Obj
 
 // not a "logical" operation ...
 // did not say "illogical" :D
-func BinaryNonLogicalOperation(op opcode.OpCode, left, right Object, code int) (result Object, err error) {
+func InfixNonLogicalOperation(op opcode.OpCode, left, right Object, code int) (result Object, err error) {
 	dbComp := false
 
 	defer func() {
@@ -247,8 +247,8 @@ func AsMathError(err error, source string) error {
 	return NewError(ERR_MATH, source, msg)
 }
 
-// NOTE: If adding or removing codes here, also update BinaryOperation().
-func BinaryComparison(
+// NOTE: If adding or removing codes here, also update InfixOperation().
+func InfixComparison(
 	op opcode.OpCode, left, right Object,
 	code int) (
 	Object, error) {

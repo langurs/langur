@@ -216,7 +216,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.BinaryComparison(op, left, right, 0)
+			result, err = object.InfixComparison(op, left, right, 0)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -232,7 +232,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.BinaryNonLogicalOperation(op, left, right, 0)
+			result, err = object.InfixNonLogicalOperation(op, left, right, 0)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -244,7 +244,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.BinaryNonLogicalOperation(op, left, right, code)
+			result, err = object.InfixNonLogicalOperation(op, left, right, code)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -287,7 +287,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				right = pr.pop()
 				left = pr.pop()
 
-				result, err = object.BinaryLogicalOperation(op, left, right, code)
+				result, err = object.InfixLogicalOperation(op, left, right, code)
 				if err == nil {
 					err = pr.push(result)
 				}
@@ -323,7 +323,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				result, err = pr.callback(right, left)
 
 			} else {
-				result, err = object.BinaryNonLogicalOperation(op, left, right, 0)
+				result, err = object.InfixNonLogicalOperation(op, left, right, 0)
 			}
 
 			if err == nil {
@@ -350,7 +350,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				right = pr.pop()
 				left = pr.pop()
 
-				result, err = object.BinaryComparison(op, left, right, code)
+				result, err = object.InfixComparison(op, left, right, code)
 				if err == nil {
 					err = pr.push(result)
 				}

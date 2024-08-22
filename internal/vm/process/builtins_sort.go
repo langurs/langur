@@ -80,7 +80,7 @@ var bi_sort = &object.BuiltIn{
 				var err error
 
 				if pmax == 0 {
-					less, err = object.BinaryComparison(opcode.OpLessThan, rng.Start, rng.End, 0)
+					less, err = object.InfixComparison(opcode.OpLessThan, rng.Start, rng.End, 0)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -95,7 +95,7 @@ var bi_sort = &object.BuiltIn{
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
 
-					less, err = object.BinaryComparison(opcode.OpLessThan, first, second, 0)
+					less, err = object.InfixComparison(opcode.OpLessThan, first, second, 0)
 					if err != nil {
 						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -180,7 +180,7 @@ func quickSortFromSingleParameterFunction(
 			return nil, err
 		}
 
-		less, err := object.BinaryComparison(opcode.OpLessThan, first, second, 0)
+		less, err := object.InfixComparison(opcode.OpLessThan, first, second, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +215,7 @@ func quickSort(elements []object.Object) (
 	pivot := elements[len(elements)-1]
 
 	for _, v := range elements[:len(elements)-1] {
-		less, err := object.BinaryComparison(opcode.OpLessThan, v, pivot, 0)
+		less, err := object.InfixComparison(opcode.OpLessThan, v, pivot, 0)
 		if err != nil {
 			return nil, err
 		}
