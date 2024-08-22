@@ -126,12 +126,13 @@ func (s *String) RemoveIndices(indices Object) (*String, error) {
 	// build new string without indices we want to remove
 	cpSlc := []rune{}
 
+	intIdx, err := makeNativeIntIndexMap(s, indices)
+	if err != nil {
+		return nil, err
+	}
+
 	for i, cp := range s.RuneSlc() {
-		excludeThis, err := intInObject(i+1, indices)
-		if err != nil {
-			return s, err
-		}
-		if !excludeThis {
+		if !intIdx[i] {
 			cpSlc = append(cpSlc, cp)
 		}
 	}

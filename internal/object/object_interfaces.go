@@ -17,6 +17,8 @@ type Object interface {
 	ReplString() string
 }
 
+// NOTE: not following Go convention for naming the following interfaces
+
 // IComposableString: for including things like quote marks around strings, re// around regex, etc.
 type IComposableString interface {
 	Object
@@ -53,11 +55,17 @@ type IIndex interface {
 	Object
 	Index(index Object, returnOtherObjType bool) (Object, error)
 	// Index on error ...
-	// return original value if valid operation, but failed index
-	// return nil value if not a valid operation
+	// return original Object if valid operation, but failed index
+	// return nil for Object if not a valid operation
 
 	IndexValid(index Object) bool
 	SetIndex(index, setTo Object) (Object, error)
+}
+
+type IIndexNativeInt interface {
+	IIndex
+	IndexNativeInt(Object) (int, bool)
+	indexNativeInt(int) (int, bool)
 }
 
 // type IIterable interface {

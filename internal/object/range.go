@@ -155,6 +155,53 @@ func (r *Range) toInt64Slice() ([]int64, error) {
 	}
 }
 
+func (r *Range) toIntSlice() ([]int, error) {
+	var start, end, num int
+	var err error
+
+	switch e := r.Start.(type) {
+	case *Number:
+		start, err = e.ToInt()
+		if err != nil {
+			return nil, fmt.Errorf("Expected integer range")
+		}
+	}
+	switch e := r.End.(type) {
+	case *Number:
+		end, err = e.ToInt()
+		if err != nil {
+			return nil, fmt.Errorf("Expected integer range")
+		}
+	}
+
+	num = start
+	if start > end {
+		// descending range
+		numbers := make([]int, 0, start-end+1)
+		for {
+			numbers = append(numbers, num)
+			num--
+			if num < end {
+				break
+			}
+		}
+
+		return numbers, nil
+
+	} else {
+		numbers := make([]int, 0, end-start+1)
+		for {
+			numbers = append(numbers, num)
+			num++
+			if num > end {
+				break
+			}
+		}
+
+		return numbers, nil
+	}
+}
+
 func (right *Range) ToNumber() (*Number, bool) {
 	// gives hypothetical count for an integer range converted to list elements
 	start, ok := right.Start.(*Number)
