@@ -6,7 +6,8 @@ https://langurlang.org
 
 
 - dropped builtin functions foldfrom, group, groupby, groupbyH
-
+- renamed object "binary" operations as infix
+- fixed builtin function less() to work properly with negative indices
 
 
 2024-08-15 - 0.17.5
