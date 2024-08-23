@@ -6153,7 +6153,7 @@ func TestMathFunctions(t *testing.T) {
 		{`min(fn{})`, "0", object.NUMBER_OBJ},
 		{`min(fn x: x)`, "1", object.NUMBER_OBJ},
 		{`min(fn x, y: x + y)`, "2", object.NUMBER_OBJ},
-		{`min(map)`, "2", object.NUMBER_OBJ},
+		{`min(map)`, 1, object.NUMBER_OBJ},
 
 		// max
 		{`max([3, 56, 12, -1, 34, 5])`, "56", object.NUMBER_OBJ},
@@ -6169,7 +6169,7 @@ func TestMathFunctions(t *testing.T) {
 		{`max(fn{})`, "0", object.NUMBER_OBJ},
 		{`max(fn(x) { x })`, "1", object.NUMBER_OBJ},
 		{`max(fn(x, y) {x + y})`, "2", object.NUMBER_OBJ},
-		{`max(map)`, "-1", object.NUMBER_OBJ},
+		{`max(map)`, -1, object.NUMBER_OBJ},
 
 		// minmax
 		{"minmax([3, 56, 12, -1, 34, 5])", []int64{-1, 56}, object.RANGE_OBJ},
@@ -6184,7 +6184,7 @@ func TestMathFunctions(t *testing.T) {
 		{`minmax(fn{})`, []int64{0, 0}, object.RANGE_OBJ},
 		{`minmax(fn(x) { x })`, []int64{1, 1}, object.RANGE_OBJ},
 		{`minmax(fn(x, y) {x + y})`, []int64{2, 2}, object.RANGE_OBJ},
-		{`minmax(map)`, []int64{2, -1}, object.RANGE_OBJ},
+		{`minmax(map)`, []int64{1, -1}, object.RANGE_OBJ},
 
 		// mid
 		{`mid([1, 2])`, "1.5", object.NUMBER_OBJ},
@@ -6406,13 +6406,13 @@ func TestOperatorImpliedFunctions(t *testing.T) {
 
 func TestNilLeftPartiallyImpliedFunctions(t *testing.T) {
 	tests := []vmTestCase{
-		{`map(fn{+7}, [1, 3, 9])`,
+		{`map([1, 3, 9], by=fn{+7})`,
 			[]int{8, 10, 16}, object.LIST_OBJ,
 		},
-		{`map(fn{-7}, [1, 3, 9])`,
+		{`map([1, 3, 9], by=fn{-7})`,
 			[]int{-6, -4, 2}, object.LIST_OBJ,
 		},
-		{`map(fn{* 7}, [1, 3, 9])`,
+		{`map([1, 3, 9], by=fn{* 7})`,
 			[]int{7, 21, 63}, object.LIST_OBJ,
 		},
 
@@ -7163,7 +7163,7 @@ func TestSplitByNumber(t *testing.T) {
 		// Do something practical with it.
 		{`join(",", split(-3, "1234567890"))`, "1,234,567,890", object.STRING_OBJ},
 
-		{`"2x" ~ join("_", map(fn x: "{{x:8(0)}}", split(-8, "{{2 ^ 63 - 1 : 2x}}")))`,
+		{`"2x" ~ join("_", map(split(-8, "{{2 ^ 63 - 1 : 2x}}"), by=fn x:"{{x:8(0)}}"))`,
 			"2x01111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111", object.STRING_OBJ},
 	}
 
@@ -7544,9 +7544,9 @@ func TestDurationConversion(t *testing.T) {
 
 func TestCallingBuiltInsFromBuiltIns(t *testing.T) {
 	tests := []vmTestCase{
-		{`map(len, [[], "Jim", {7: 14}])`, []int{0, 3, 1}, object.LIST_OBJ},
+		{`map([[], "Jim", {7: 14}], by=len)`, []int{0, 3, 1}, object.LIST_OBJ},
 
-		{`map(len, {1: "", 7: "abc", 14: [1, 2]})`,
+		{`map({1: "", 7: "abc", 14: [1, 2]}, by=len)`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(0)},
 				{object.NumberFromInt(7), object.NumberFromInt(3)},
@@ -7554,7 +7554,7 @@ func TestCallingBuiltInsFromBuiltIns(t *testing.T) {
 			},
 			object.HASH_OBJ},
 
-		{`map len, [[], "Jim", {7: 14}]`, []int{0, 3, 1}, object.LIST_OBJ},
+		{`map [[], "Jim", {7: 14}], by=len`, []int{0, 3, 1}, object.LIST_OBJ},
 
 		// sort from single parameter function
 		{`sort(len, ["abcd", "ab", "abc", "zzzzzzz"])`,
@@ -7577,7 +7577,7 @@ func TestCallingRegexFromBuiltIns(t *testing.T) {
 
 func TestCallingCompiledFunctionsFromBuiltIns(t *testing.T) {
 	tests := []vmTestCase{
-		{`map(fn(x) { x * 2 }, [7, 9, 10])`, []int{14, 18, 20}, object.LIST_OBJ},
+		{`map([7, 9, 10], by=fn(x) {x * 2})`, []int{14, 18, 20}, object.LIST_OBJ},
 
 		{`val x = fn(y) { (y ^/ 2) >= 4 }
 			filter([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=x)`,
@@ -7657,11 +7657,11 @@ func TestZipFunction(t *testing.T) {
 
 func TestMapFunction(t *testing.T) {
 	tests := []vmTestCase{
-		{`map(fn x: x * 2, [7, 9, 10])`, []int{14, 18, 20}, object.LIST_OBJ},
-		{`map(fn x: x * 2, 1..3)`, []int{2, 4, 6}, object.LIST_OBJ},
-		{`map(fn x: x * 2, 7..3)`, []int{14, 12, 10, 8, 6}, object.LIST_OBJ},
+		{`map([7, 9, 10], by=fn x:x * 2)`, []int{14, 18, 20}, object.LIST_OBJ},
+		{`map(1..3, by=fn x: x * 2)`, []int{2, 4, 6}, object.LIST_OBJ},
+		{`map(7..3, by=fn x: x * 2)`, []int{14, 12, 10, 8, 6}, object.LIST_OBJ},
 
-		{`map(fn x: x * 2, {1: 7, 2: 9, 3: 10})`,
+		{`map({1: 7, 2: 9, 3: 10}, by=fn x: x * 2)`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(14)},
 				{object.NumberFromInt(2), object.NumberFromInt(18)},
@@ -7671,41 +7671,41 @@ func TestMapFunction(t *testing.T) {
 		},
 
 		{`val x = fn(y) { if y >? 21 { y } else { -y } }
-			map(x, [7, 21, 35, 49])`,
+			map([7, 21, 35, 49], by=x)`,
 			[]int{-7, -21, 35, 49}, object.LIST_OBJ,
 		},
 
 		// map multiple
-		{`map(fn(x, y) { x * y }, [7, 9, 10], [7, 11, 14])`, []int{49, 99, 140}, object.LIST_OBJ},
-		{`map(fn(x, y) { x * y }, 1..3, [7, 8, 9])`, []int{7, 16, 27}, object.LIST_OBJ},
-		{`map(fn(x, y) { x * y }, 1..3, 9..7)`, []int{9, 16, 21}, object.LIST_OBJ},
+		{`map([7, 9, 10], [7, 11, 14], by=fn{*})`, []int{49, 99, 140}, object.LIST_OBJ},
+		{`map(1..3, [7, 8, 9], by=fn{*})`, []int{7, 16, 27}, object.LIST_OBJ},
+		{`map(1..3, 9..7, by=fn{*})`, []int{9, 16, 21}, object.LIST_OBJ},
 
 		// map with list of functions
 		{ // multiply every second one by 2
 			`val f = fn{*2}
-		 	 map([fn x: x, f], [7, 9, 10])`,
+		 	 map([7, 9, 10], by=[fn x: x, f])`,
 			[]int{7, 18, 10}, object.LIST_OBJ},
 
 		{ // multiply every second one by 2
 			`val f = fn{*2}
-		 	 map([fn x: x, f], [7, 9, 10, 11, 12, 13, 14, 15])`,
+		 	 map([7, 9, 10, 11, 12, 13, 14, 15], by=[fn x:x, f])`,
 			[]int{7, 18, 10, 22, 12, 26, 14, 30}, object.LIST_OBJ},
 		{ // multiply every second one by 2; use no-op for first
-			`map([_, fn{*2}], [7, 9, 10, 11, 12, 13, 14, 15])`,
+			`map([7, 9, 10, 11, 12, 13, 14, 15], by=[_, fn{*2}])`,
 			[]int{7, 18, 10, 22, 12, 26, 14, 30}, object.LIST_OBJ},
 
 		{ // multiply every third one by 2; use no-op for first and second
-			`map([_, _, fn{*2}], [7, 9, 10, 11, 12, 13, 14, 15])`,
+			`map([7, 9, 10, 11, 12, 13, 14, 15], by=[_, _, fn{*2}])`,
 			[]int{7, 9, 20, 11, 12, 26, 14, 15}, object.LIST_OBJ},
 
 		// map multiple with list of functions
-		{`map([fn{*}, fn{+}], [7, 9, 10], [13, 14, 15])`,
+		{`map([7, 9, 10], [13, 14, 15], by=[fn{*}, fn{+}])`,
 			[]int{91, 23, 150}, object.LIST_OBJ},
-		{`map([fn{*}, fn{+}], [7, 9, 10, 11], [13, 14, 15, 16])`,
+		{`map([7, 9, 10, 11], [13, 14, 15, 16], by=[fn{*}, fn{+}])`,
 			[]int{91, 23, 150, 27}, object.LIST_OBJ},
 
 		// map multiple including a no-op
-		{`string(map([fn{*}, _], [7, 9, 10, 11], [13, 14, 15, 16]))`,
+		{`string(map([7, 9, 10, 11], [13, 14, 15, 16], by=[fn{*}, _]))`,
 			`[91, [9, 14], 150, [11, 16]]`, object.STRING_OBJ},
 	}
 
@@ -8122,18 +8122,18 @@ func TestCallingClosuresFromBuiltins(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			// this one not a closure, but we test it here to prepare for the next test
-			"map(fn{+2}, [1, 2, 3])",
+			"map([1, 2, 3], by=fn{+2})",
 			[]int{3, 4, 5}, object.LIST_OBJ,
 		},
 		{
 			`val v = 120
 			 val f = fn x: x - v
-			 map(f, [1, 2, 3])`,
+			 map([1, 2, 3], by=f)`,
 			[]int{-119, -118, -117}, object.LIST_OBJ,
 		},
 		{
 			`val v = 120
-			 map(fn x: x + v, [1, 2, 3])`,
+			 map([1, 2, 3], by=fn x: x + v)`,
 			[]int{121, 122, 123}, object.LIST_OBJ,
 		},
 	}

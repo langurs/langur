@@ -12,24 +12,25 @@ import (
 var bi_map = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "map",
-		Description: "map(function, lists...); returns list (or hash) of values mapped to the given function from the given lists or hashes (one type only)",
+		Description: "returns list (or hash) of values mapped to the given function from the given lists or hashes (one type only)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "lists"},
 		},
-		ParamExpansionMin: 2,
+		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "map"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		lists := args[0].(*object.List)
+		fn := args[1]
 
 		var fns []object.Object
-
-		fn := args[0]
 		if !object.IsCallable(fn) {
 			arr, ok := fn.(*object.List)
 			if !ok || len(arr.Elements) == 0 {
@@ -46,8 +47,8 @@ var bi_map = &object.BuiltIn{
 			fn = fns[0] // initialiaze fn to first function
 		}
 
-		if len(args) > 2 {
-			return mapMultiple(pr, fn, fns, args[1:])
+		if len(lists.Elements) > 1 {
+			return mapBetween(pr, fn, fns, lists.Elements)
 		}
 
 		fnn := 0 // current function number
@@ -83,7 +84,7 @@ var bi_map = &object.BuiltIn{
 			return arr
 		}
 
-		switch arg := args[1].(type) {
+		switch arg := lists.Elements[0].(type) {
 		case *object.List:
 			return mapToList(arg.Elements)
 
@@ -122,9 +123,8 @@ var bi_map = &object.BuiltIn{
 	},
 }
 
-// an extension of bi_map() for mapping multiple lists or hashes
-// may be slower than using a single list or hash
-func mapMultiple(
+// an extension of bi_map() for mapping between lists or hashes
+func mapBetween(
 	pr *Process,
 	fn object.Object, fns, args []object.Object) object.Object {
 

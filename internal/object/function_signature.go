@@ -44,8 +44,9 @@ func (s *Signature) Max() int {
 // including parameter expansion
 // not including optional parameters
 func (s *Signature) Min() int {
-	if s.ParamExpansionMin > 0 {
+	if s.ParamExpansionMin != 0 {
 		return len(s.ParamPositional) + s.ParamExpansionMin - 1
+
 	} else if s.ParamExpansionMax != 0 {
 		// We already know that ParamExpansionMin == 0 (from the previous test failing), ...
 		// ... so if the maximum is not 0, we have an optional one at the end, so we subtract 1.
