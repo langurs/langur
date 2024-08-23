@@ -61,8 +61,6 @@ var BuiltIns = []*object.BuiltIn{
 	bi_all,
 	bi_any,
 
-	bi_benchmark,
-
 	bi_execT,
 	bi_execTH,
 
@@ -70,9 +68,6 @@ var BuiltIns = []*object.BuiltIn{
 
 	bi_count,
 	bi_filter,
-
-	bi_first,
-	bi_last,
 
 	bi_fold,
 	bi_zip,

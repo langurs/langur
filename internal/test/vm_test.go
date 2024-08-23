@@ -8183,7 +8183,7 @@ func TestRecursiveFunctions(t *testing.T) {
 				        if len(remaining) == 0 {
 				            accumulated
 				        } else {
-				            iter(less(remaining, of=1), more(accumulated, f(first(remaining))))
+				            iter(less(remaining, of=1), more(accumulated, f(remaining[1])))
 				       }
 				    }
 				    iter(zlist, [])

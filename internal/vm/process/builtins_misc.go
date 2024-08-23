@@ -9,49 +9,8 @@ import (
 	"time"
 )
 
-// benchmark, exit, first, haskey, keys
-// last, len, sleep, ticks, nn
-
-var bi_benchmark = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "benchmark",
-		Description: "benchmark(function, times); runs function specified number of times (default 1), returning time elapsed (as string)",
-
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		const fnName = "benchmark"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		fn := args[0]
-		if !object.IsCallable(fn) {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable for first argument")
-		}
-		times := 1
-		if len(args) > 1 {
-			n, ok := object.NumberToInt(args[1])
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument")
-			}
-			times = n
-		}
-		start := time.Now()
-		for i := 0; i < times; i++ {
-			_, err := pr.callback(fn)
-			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-			}
-		}
-		return object.NewString(time.Since(start).String())
-	},
-}
+// exit, haskey, keys
+// len, sleep, ticks, nn
 
 var bi_exit = &object.BuiltIn{
 	FnSignature: &object.Signature{
@@ -109,40 +68,6 @@ var bi_exit = &object.BuiltIn{
 
 		// no need to return, but the compiler requires it...
 		return object.NONE
-	},
-}
-
-var bi_first = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "first",
-		Description: "returns first element in list or string, or start of range",
-
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		switch arg := args[0].(type) {
-		case *object.List:
-			if len(arg.Elements) > 0 {
-				return arg.Elements[0]
-			} else {
-				return object.NewError(object.ERR_INDEX, "first", "Index out of range")
-			}
-
-		case *object.String:
-			cp, ok := arg.IndexToCP(1)
-			if !ok {
-				return object.NewError(object.ERR_INDEX, "first", "String index out of range")
-			}
-			return object.NumberFromInt(int(cp))
-
-		case *object.Range:
-			return arg.Start
-		}
-
-		return object.NewError(object.ERR_ARGUMENTS, "first", "Expected list, string or range")
 	},
 }
 
@@ -205,40 +130,6 @@ var bi_keys = &object.BuiltIn{
 		}
 
 		return &object.List{Elements: numbers}
-	},
-}
-
-var bi_last = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "last",
-		Description: "returns last element in list or string, or end of range",
-
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		switch arg := args[0].(type) {
-		case *object.List:
-			if len(arg.Elements) > 0 {
-				return arg.Elements[len(arg.Elements)-1]
-			} else {
-				return object.NewError(object.ERR_INDEX, "last", "Index out of range")
-			}
-
-		case *object.String:
-			if arg.LenCP() == 0 {
-				return object.NewError(object.ERR_INDEX, "last", "String index out of range")
-			}
-			cpSlc := arg.RuneSlc()
-			return object.NumberFromRune(cpSlc[len(cpSlc)-1])
-
-		case *object.Range:
-			return arg.End
-		}
-
-		return object.NewError(object.ERR_ARGUMENTS, "last", "Expected list, string or range")
 	},
 }
 
