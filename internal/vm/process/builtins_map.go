@@ -246,66 +246,50 @@ func mapBetween(
 var bi_mapX = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "mapX",
-		Description: "mapX(function, lists...); returns list of values mapped to the given function from the given lists",
+		Description: "returns list of values mapped to the given function from the given lists",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "lists"},
 		},
-		ParamExpansionMin: 2,
+		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "mapX"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		lists := args[0].(*object.List).Elements
+		fn := args[1]
 
-		var fn object.Object
-		var arrs []object.Object
-
-		if object.IsCallable(args[0]) {
-			fn = args[0]
-			arrs = args[1:]
-
-		} else {
+		if !object.IsCallable(fn) {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
-
-			// fn = nil
-			// arrs = args
-
-			// arr, ok := args[0].(*object.List)
-			// if ok {
-			// 	// not presently allowing no-ops or functions in first list to mapX()
-			// 	for i, f := range arr.Elements {
-			// 		if object.IsCallable(f) || f == object.NONE {
-			// 			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d callable or no-op", i+1))
-			// 		}
-			// 	}
-			// }
 		}
 
-		return crossMap(pr, fnName, fn, arrs...)
+		return crossMap(pr, fnName, fn, lists...)
 	},
 }
 
+// for mapX()
 func crossMap(
 	pr *Process,
 	fnName string,
 	fn object.Object,
-	arrs ...object.Object) object.Object {
+	lists ...object.Object) object.Object {
 
-	var lists []*object.List
-	arr := &object.List{}
+	var workinglists []*object.List
+	resultlist := &object.List{}
 
-	for _, o := range arrs {
+	for _, o := range lists {
 		switch o := o.(type) {
 		case *object.List:
 			if len(o.Elements) == 0 {
 				// with any zero length lists, return an empty list
-				return arr
+				return resultlist
 			}
-			lists = append(lists, o)
+			workinglists = append(workinglists, o)
 
 		case *object.Range:
 			// ranges converted to lists
@@ -313,36 +297,36 @@ func crossMap(
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
-			lists = append(lists, arr)
+			workinglists = append(workinglists, arr)
 
 		default:
-			lists = append(lists, &object.List{Elements: []object.Object{o}})
+			workinglists = append(workinglists, &object.List{Elements: []object.Object{o}})
 		}
 	}
 
-	var counters = make([]int, len(lists))
+	var counters = make([]int, len(workinglists))
 
 	done := false
 	for !done {
 		items := make([]object.Object, 0, len(counters))
 		for i := 0; i < len(counters); i++ {
-			items = append(items, lists[i].Elements[counters[i]])
+			items = append(items, workinglists[i].Elements[counters[i]])
 		}
 
 		if fn == nil {
-			arr.Elements = append(arr.Elements, &object.List{Elements: items})
+			resultlist.Elements = append(resultlist.Elements, &object.List{Elements: items})
 		} else {
 			result, err := pr.callback(fn, items...)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
-			arr.Elements = append(arr.Elements, result)
+			resultlist.Elements = append(resultlist.Elements, result)
 		}
 
 		done = true
 		for i := len(counters) - 1; i >= 0; i-- {
 			counters[i]++
-			if counters[i] > len(lists[i].Elements)-1 {
+			if counters[i] > len(workinglists[i].Elements)-1 {
 				counters[i] = 0
 				continue
 			}
@@ -351,5 +335,5 @@ func crossMap(
 		}
 	}
 
-	return arr
+	return resultlist
 }
