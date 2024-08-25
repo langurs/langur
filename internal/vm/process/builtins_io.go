@@ -187,39 +187,36 @@ var bi_read = &object.BuiltIn{
 		alternate := args[4]
 
 		// parameters gathered...
-		for i := 0; maxattempts == -1 || i < maxattempts; {
+		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
 			fmt.Print(prompt)
-			line, err := readLine(os.Stdin)
+			input, err := readLine(os.Stdin)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
 
 			if pr.Modes.ConsoleTextMode {
-				line = str.ReplaceNewLinesWithLinux(line)
+				input = str.ReplaceNewLinesWithLinux(input)
 			}
 
 			if validationByRegex || fn != nil {
 				var verify object.Object
 
 				if validationByRegex {
-					verify, err = object.RegexMatching(re, line)
+					verify, err = object.RegexMatching(re, input)
 				} else {
-					verify, err = pr.callback(fn, object.NewString(line))
+					verify, err = pr.callback(fn, object.NewString(input))
 				}
 				if err != nil {
 					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 				}
 				if verify == object.TRUE {
-					return object.NewString(line)
+					return object.NewString(input)
 				} else {
 					fmt.Print(errMsg)
 				}
-			} else {
-				return object.NewString(line)
-			}
 
-			if maxattempts > -1 {
-				i++
+			} else {
+				return object.NewString(input)
 			}
 		}
 
