@@ -4,8 +4,10 @@ https://langurlang.org
 ... - 0.18.0
 - changed parameters for built-in functions
 
+- changed REPL to use parentheses for commands, such as exit()
 
-- dropped builtin functions foldfrom, group, groupby, groupbyH
+- dropped builtin functions ...
+
 - renamed object "binary" operations as infix
 - fixed builtin function less() to work properly with negative indices
 
