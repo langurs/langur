@@ -122,9 +122,9 @@ func Start(in io.Reader, out io.Writer) {
 		firstRun = false
 	}
 
-	fmt.Fprintf(out, "Type “exit” to quit.\n")
-	fmt.Fprintf(out, "Type “reset” for a new environment.\n")
-	fmt.Fprintf(out, "Type “list” to list built-in functions.\n")
+	fmt.Fprintf(out, "Type “exit()” to quit.\n")
+	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
+	fmt.Fprintf(out, "Type “list()” to list built-in functions.\n")
 
 	resetEnvironment()
 
@@ -137,14 +137,18 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 
 		case "exit":
+			fmt.Fprintf(out, "Type exit() to quit.\n")
+			continue
+
+		case "exit()":
 			return
 
-		case "reset":
+		case "reset()":
 			resetEnvironment()
 			fmt.Fprintf(out, "Environment Reset\n")
 			continue
 
-		case "list":
+		case "list()":
 			var keys []string
 			for _, k := range process.BuiltIns {
 				// leave out internal built-ins
