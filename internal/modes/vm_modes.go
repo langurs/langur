@@ -30,14 +30,14 @@ var ModeNames = map[string]ModeNumber{
 }
 
 const Default_DivisionMaxScale = 33
-const Default_ConsoleTextMode = true
+const Default_ConsoleTextMode = false
 const Default_NewFilePerm os.FileMode = 0664 // in langur, 8x664
 const Default_Rounding = RoundHalfAwayFromZero
 const Default_NowIncludesNano = false
 
 var DefaultSubLexString = map[ModeNumber]string{
 	MODE_DIVISION_MAX_SCALE:   "33",
-	MODE_CONSOLE_TEXT_MODE:    "true",
+	MODE_CONSOLE_TEXT_MODE:    "false",
 	MODE_NEW_FILE_PERMISSIONS: "8x664",
 	MODE_ROUNDING:             RoundHashName + "'" + RoundHashModeNames[Default_Rounding],
 	MODE_NOW_INCLUDES_NANO:    "false",

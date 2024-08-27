@@ -141,6 +141,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 
 		case "exit()":
+			// exit(): would work with this case, but leaving it for now
 			return
 
 		case "reset()":

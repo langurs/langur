@@ -5,6 +5,7 @@ https://langurlang.org
 - changed parameters for built-in functions
 
 - changed REPL to use parentheses for commands, such as exit()
+- changed mode consoleText default to false
 
 - dropped builtin functions ...
 
