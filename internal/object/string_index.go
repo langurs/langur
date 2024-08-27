@@ -4,8 +4,6 @@ package object
 
 import (
 	"fmt"
-	"langur/cpoint"
-	"strings"
 )
 
 // returnOtherObjType: string instead of code point(s)
@@ -39,63 +37,23 @@ func (left *String) index(index Object, returnOtherObjType bool) (
 		}
 		return ListFromRuneSlice(left.RuneSlc()), nil
 
-	case *Range:
-		start, ok := left.IndexNativeInt(idx.Start)
-		if !ok {
-			return left, fmt.Errorf("String start of range index not an integer or out of range")
-		}
-		end, ok := left.IndexNativeInt(idx.End)
-		if !ok {
-			return left, fmt.Errorf("String end of range index not an integer or out of range")
+	case *Range, *List:
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
 		}
 
-		reverse := start > end
-		if reverse {
-			start, end = end, start
-		}
-		rSlc := left.RuneSlc()[start : end+1]
-		if reverse {
-			rSlc = cpoint.ReverseSlice(rSlc)
+		orig := left.RuneSlc()
+		rSlc := []rune{}
+		for _, n := range intIdx {
+			rSlc = append(rSlc, orig[n])
 		}
 
 		if returnOtherObjType {
 			s, err := NewStringFromParts(rSlc)
 			return s, err
 		}
-
 		return ListFromRuneSlice(rSlc), nil
-
-	case *List:
-		if returnOtherObjType {
-			var sb strings.Builder
-			for _, v := range idx.Elements {
-				s, err := left.index(v, returnOtherObjType)
-				if err != nil {
-					return left, err
-				}
-				sb.WriteString(s.String())
-			}
-			return NewString(sb.String()), nil
-
-		} else {
-			arr := &List{}
-			for _, v := range idx.Elements {
-				elements, err := left.index(v, returnOtherObjType)
-				if err != nil {
-					return left, err
-				}
-
-				switch e := elements.(type) {
-				case *Number:
-					arr.Elements = append(arr.Elements, e)
-				case *List:
-					arr.Elements = append(arr.Elements, e.Elements...)
-				default:
-					return left, fmt.Errorf("Invalid index type for string (%s)", e.TypeString())
-				}
-			}
-			return arr, nil
-		}
 
 	default:
 		// invalid index type
