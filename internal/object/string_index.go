@@ -193,3 +193,21 @@ func (left *String) indexNativeInt(index int) (idx int, ok bool) {
 	// convert 1-based (langur) index to 0-based (native Go) and return
 	return idx - 1, true
 }
+
+func (s *String) RemoveIndices(indices Object) (*String, error) {
+	// build new string without indices we want to remove
+	cpSlc := []rune{}
+
+	intIdx, err := makeNativeIntIndexSlice(s, indices)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, cp := range s.RuneSlc() {
+		if !intInSlice(i, intIdx) {
+			cpSlc = append(cpSlc, cp)
+		}
+	}
+
+	return NewStringFromParts(cpSlc)
+}

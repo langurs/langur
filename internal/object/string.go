@@ -121,21 +121,3 @@ func (s *String) IndexRangeToCodePoints(start, end int) ([]rune, bool) {
 		return rSlc[start-1 : end], true
 	}
 }
-
-func (s *String) RemoveIndices(indices Object) (*String, error) {
-	// build new string without indices we want to remove
-	cpSlc := []rune{}
-
-	intIdx, err := makeNativeIntIndexMap(s, indices)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, cp := range s.RuneSlc() {
-		if !intIdx[i] {
-			cpSlc = append(cpSlc, cp)
-		}
-	}
-
-	return NewStringFromParts(cpSlc)
-}

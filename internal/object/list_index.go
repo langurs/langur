@@ -24,51 +24,16 @@ func (left *List) index(index Object, returnOtherObjType bool) (result Object, e
 		}
 		return left.Elements[n], nil, false
 
-	case *Range:
-		start, ok := left.IndexNativeInt(idx.Start)
-		if !ok {
-			return left, fmt.Errorf("List start of range index not an integer, or out of range for native integer type"), true
+	case *Range, *List:
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err, false
 		}
-		end, ok := left.IndexNativeInt(idx.End)
-		if !ok {
-			return left, fmt.Errorf("List end of range index not an integer, or out of range for native integer type"), true
+		list := &List{}
+		for _, n := range intIdx {
+			list.Elements = append(list.Elements, left.Elements[n])
 		}
-
-		// build a new list
-		var elements []Object
-		if start > end {
-			// high to low range
-			elements = make([]Object, 0, start-end+1)
-			for i := start; i >= end; i-- {
-				elements = append(elements, left.Elements[i])
-			}
-
-		} else {
-			// low to high range
-			elements = make([]Object, 0, end-start+1)
-			for _, v := range left.Elements[start : end+1] {
-				elements = append(elements, v)
-			}
-		}
-
-		return &List{Elements: elements}, nil, true
-
-	case *List:
-		arr := &List{}
-		for _, v := range idx.Elements {
-			e, err, poly := left.index(v, returnOtherObjType)
-			if err != nil {
-				return left, err, poly
-			}
-			if poly {
-				for _, e2 := range e.(*List).Elements {
-					arr.Elements = append(arr.Elements, e2)
-				}
-			} else {
-				arr.Elements = append(arr.Elements, e)
-			}
-		}
-		return arr, nil, true
+		return list, nil, false
 
 	default:
 		// invalid index type
@@ -148,4 +113,109 @@ func (left *List) indexNativeInt(index int) (idx int, ok bool) {
 	// All is well.
 	// convert 1-based index to 0-based (native) and return
 	return idx - 1, true
+}
+
+// builds new list without keys we want to remove
+func (left *List) RemoveIndices(indices Object) (*List, error) {
+	intIdx, err := makeNativeIntIndexSlice(left, indices)
+	if err != nil {
+		return nil, err
+	}
+
+	elements := []Object{}
+	for i := range left.Elements {
+		if !intInSlice(i, intIdx) {
+			elements = append(elements, left.Elements[i])
+		}
+	}
+
+	return &List{Elements: elements}, nil
+}
+
+func intInSlice(i int, iSlc []int) bool {
+	for _, n := range iSlc {
+		if i == n {
+			return true
+		}
+	}
+	return false
+}
+
+func makeNativeIntIndexSlice(obj, index Object) (iSlc []int, err error) {
+	resolve := func(n int, add bool) (int, bool) {
+		iii, ok := obj.(IIndexNativeInt)
+		if ok {
+			n, ok = iii.indexNativeInt(n)
+			if ok {
+				// resolved and valid index; add to slice
+				if add {
+					iSlc = append(iSlc, n)
+				}
+				return n, true
+			}
+		}
+		return 0, false
+	}
+
+	var recursive func(Object) error
+	recursive = func(index Object) error {
+		switch idx := index.(type) {
+		case *Number:
+			n, ok := NumberToInt(idx)
+			if !ok {
+				return fmt.Errorf("Number not an integer")
+			}
+			if _, ok := resolve(n, true); !ok {
+				return fmt.Errorf("Could not resolve integer index")
+			}
+
+		case *Range:
+			// resolve start and end first; could be negative indices
+			start, ok := NumberToInt(idx.Start)
+			if !ok {
+				return fmt.Errorf("Start of range not an integer")
+			}
+			start, ok = resolve(start, false)
+			if !ok {
+				return fmt.Errorf("Start of range not resolvable")
+			}
+			end, ok := NumberToInt(idx.End)
+			if !ok {
+				return fmt.Errorf("End of range not an integer")
+			}
+			end, ok = resolve(end, false)
+			if !ok {
+				return fmt.Errorf("End of range not resolvable")
+			}
+			start++
+			end++
+
+			if end < start {
+				for n := start; n > end-1; n-- {
+					resolve(n, true)
+				}
+
+			} else {
+				for n := start; n < end+1; n++ {
+					resolve(n, true)
+				}
+			}
+
+		case *List:
+			for _, item := range idx.Elements {
+				err := recursive(item)
+				if err != nil {
+					return err
+				}
+			}
+
+		default:
+			return fmt.Errorf("Expected integer, range of integers, or list of such")
+		}
+
+		return nil
+	}
+
+	err = recursive(index)
+	return
 }
