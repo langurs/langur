@@ -7,20 +7,20 @@ import (
 )
 
 // returnOtherObjType: unused on hash
-func (left *Hash) Index(index Object, returnOtherObjType bool) (result Object, err error) {
-	result, err, _ = left.index(index, returnOtherObjType)
+func (left *Hash) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
+	result, err, _ = left.index(index, negated, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, err error, isPoly bool) {
+func (left *Hash) index(index Object, negated, returnOtherObjType bool) (result Object, err error, isPoly bool) {
 	switch idx := index.(type) {
 	case *List:
 		arr := &List{}
 		for _, v := range idx.Elements {
-			e, err, poly := left.index(v, returnOtherObjType)
+			e, err, poly := left.index(v, negated, returnOtherObjType)
 			if err != nil {
 				return left, err, poly
 			}
@@ -74,4 +74,37 @@ func (left *Hash) SetIndex(index, setTo Object) (Object, error) {
 
 	left.WritePair(index, setTo)
 	return left, nil
+}
+
+func (d *Hash) RemoveKeys(keys Object) (*Hash, error) {
+	var keySlc []Object
+
+	arr, isArr := keys.(*List)
+	if isArr {
+		keySlc = arr.Elements
+	} else {
+		keySlc = []Object{keys}
+	}
+
+	hash := &Hash{}
+	if len(keySlc) < 100 {
+		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs))
+	} else {
+		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs)-len(keySlc))
+	}
+
+	for _, kv := range d.Pairs {
+		addThis := true
+		for _, k := range keySlc {
+			if compareHashKeys(kv.Key, MakeHashKey(k)) {
+				addThis = false
+				break
+			}
+		}
+		if addThis {
+			hash.Pairs = append(hash.Pairs, kv)
+		}
+	}
+
+	return hash, nil
 }

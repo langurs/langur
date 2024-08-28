@@ -7,15 +7,15 @@ import (
 )
 
 // returnOtherObjType: string instead of code point(s)
-func (left *String) Index(index Object, returnOtherObjType bool) (result Object, err error) {
-	result, err = left.index(index, returnOtherObjType)
+func (left *String) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
+	result, err = left.index(index, negated, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *String) index(index Object, returnOtherObjType bool) (
+func (left *String) index(index Object, negated, returnOtherObjType bool) (
 	result Object, err error) {
 
 	switch idx := index.(type) {

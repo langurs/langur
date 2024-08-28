@@ -7,15 +7,15 @@ import (
 )
 
 // returnOtherObjType: unused on list
-func (left *List) Index(index Object, returnOtherObjType bool) (result Object, err error) {
-	result, err, _ = left.index(index, returnOtherObjType)
+func (left *List) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
+	result, err, _ = left.index(index, negated, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *List) index(index Object, returnOtherObjType bool) (result Object, err error, isPoly bool) {
+func (left *List) index(index Object, negated, returnOtherObjType bool) (result Object, err error, isPoly bool) {
 	switch idx := index.(type) {
 	case *Number:
 		n, ok := left.IndexNativeInt(idx)

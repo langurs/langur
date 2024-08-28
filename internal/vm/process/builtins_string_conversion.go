@@ -150,14 +150,14 @@ var bi_s2cp = &object.BuiltIn{
 		var err error
 		// s2cp(string, index, alternate)
 		if len(args) > 2 {
-			result, err = s.Index(args[1], false)
+			result, err = s.Index(args[1], false, false)
 			if err != nil {
 				return args[2]
 			}
 		} else if len(args) > 1 {
-			result, err = s.Index(args[1], false)
+			result, err = s.Index(args[1], false, false)
 		} else {
-			result, err = s.Index(nil, false)
+			result, err = s.Index(nil, false, false)
 		}
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
@@ -237,14 +237,14 @@ var bi_s2s = &object.BuiltIn{
 		var err error
 		// s2s(string, index, alternate)
 		if len(args) > 2 {
-			result, err = s.Index(args[1], true)
+			result, err = s.Index(args[1], false, true)
 			if err != nil {
 				return args[2]
 			}
 		} else if len(args) > 1 {
-			result, err = s.Index(args[1], true)
+			result, err = s.Index(args[1], false, true)
 		} else {
-			result, err = s.Index(nil, true)
+			result, err = s.Index(nil, false, true)
 		}
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())

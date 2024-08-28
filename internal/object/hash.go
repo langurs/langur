@@ -216,39 +216,6 @@ func (d *Hash) AppendWithOverWrite(d2 *Hash) (hash *Hash) {
 	return hash
 }
 
-func (d *Hash) RemoveKeys(keys Object) (*Hash, error) {
-	var keySlc []Object
-
-	arr, isArr := keys.(*List)
-	if isArr {
-		keySlc = arr.Elements
-	} else {
-		keySlc = []Object{keys}
-	}
-
-	hash := &Hash{}
-	if len(keySlc) < 100 {
-		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs))
-	} else {
-		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs)-len(keySlc))
-	}
-
-	for _, kv := range d.Pairs {
-		addThis := true
-		for _, k := range keySlc {
-			if compareHashKeys(kv.Key, MakeHashKey(k)) {
-				addThis = false
-				break
-			}
-		}
-		if addThis {
-			hash.Pairs = append(hash.Pairs, kv)
-		}
-	}
-
-	return hash, nil
-}
-
 func NewHashFromSlice(elements []Object, overwriteIfDupeKeys bool) (*Hash, error) {
 	if len(elements)%2 == 1 {
 		return nil, fmt.Errorf("Wrong list length for building hash; expected list with even number of elements")
