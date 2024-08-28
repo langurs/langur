@@ -23,6 +23,7 @@ const (
 	// 8 bit flags (0x01, 0x02, 0x04, 0x08, ...)
 	OC_Database_Op = 1 << iota
 	OC_Combination_Op
+	OC_Index_inverse_Op
 )
 
 const (
@@ -169,7 +170,9 @@ var definitions = map[OpCode]*Definition{
 	OpRange: {Name: "Range"},
 	OpList:  {Name: "List", OperandWidths: []int{2}},
 	OpHash:  {Name: "Hash", OperandWidths: []int{2}},
-	OpIndex: {Name: "Index", OperandWidths: []int{OperandWidth_ShortCircuitJump}},
+
+	// operands: code, short-circuit jump
+	OpIndex: {Name: "Index", OperandWidths: []int{1, OperandWidth_ShortCircuitJump}},
 
 	OpJumpIfNotTruthy: {Name: "JumpIfNotTruthy", OperandWidths: []int{OperandWidth_Jump}},
 	OpJump:            {Name: "Jump", OperandWidths: []int{OperandWidth_Jump}},

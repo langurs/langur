@@ -16,7 +16,8 @@ const (
 	INVALID Type = ""
 	EOF          = "EOF"
 
-	DOT = "DOT"
+	DOT  = "DOT"
+	BANG = "BANG"
 
 	MODULE = "MODULE"
 	IMPORT = "IMPORT"

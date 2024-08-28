@@ -5907,6 +5907,18 @@ func TestMoreAndLessFunctions(t *testing.T) {
 			object.HASH_OBJ,
 		},
 
+		// index inverse
+		{`{-34: 890, 45: 23}[!-34]`,
+			[][]object.Object{
+				{object.NumberFromInt(45), object.NumberFromInt(23)},
+			},
+			object.HASH_OBJ,
+		},
+		{`{34: 890, 45: 23}[![34, 45]]`,
+			[][]object.Object{},
+			object.HASH_OBJ,
+		},
+
 		// less
 		{`less({34: 890, 45: 23}, of=34)`,
 			[][]object.Object{

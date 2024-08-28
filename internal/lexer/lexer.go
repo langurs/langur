@@ -245,7 +245,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 				lex.advanceCodePoint()
 
 			} else {
-				tok.Type = token.INVALID
+				tok.Literal, tok.Type = "!", token.BANG
 			}
 			lex.advanceCodePoint()
 			checkDBop()

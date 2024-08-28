@@ -27,8 +27,13 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 	}
 	ins = append(ins, b...)
 
+	code := 0
+	if node.Inverse {
+		code = opcode.OC_Index_inverse_Op
+	}
+
 	if node.Alternate == nil {
-		ins = append(ins, opcode.Make(opcode.OpIndex, 0)...)
+		ins = append(ins, opcode.Make(opcode.OpIndex, code, 0)...)
 
 	} else {
 		// alternate for an invalid index
@@ -37,7 +42,7 @@ func (c *Compiler) compileIndexNode(node *ast.IndexNode) (ins opcode.Instruction
 		if err != nil {
 			return
 		}
-		ins = append(ins, opcode.Make(opcode.OpIndex, len(alt))...)
+		ins = append(ins, opcode.Make(opcode.OpIndex, code, len(alt))...)
 		ins = append(ins, alt...)
 	}
 

@@ -193,6 +193,20 @@ func (p *Parser) parseIndexExpression(left ast.Node) ast.Node {
 	expr := &ast.IndexNode{Token: p.tok, Left: left}
 	p.advanceToken()
 
+	if p.tok.Type == token.BANG {
+		if p.tok.CpDiff != 0 {
+			p.addError("Index inverse expression syntax: value[!1]")
+		}
+		p.advanceToken()
+		if p.tok.CpDiff == 0 &&
+			!(p.tok.Type == token.IDENT || p.tok.Type == token.FLOAT ||
+				p.tok.Type == token.INT || p.tok.Type == token.LBRACKET ||
+				p.tok.Type == token.MINUS) {
+			p.addError("Index inverse expression syntax: value[!1]")
+		}
+		expr.Inverse = true
+	}
+
 	expr.Index = p.parseExpression(precedence_LOWEST)
 
 	// altenative for index expressions
