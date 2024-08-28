@@ -53,13 +53,18 @@ type IContains interface {
 
 type IIndex interface {
 	Object
-	Index(index Object, negated, returnOtherObjType bool) (Object, error)
+	Index(index Object, returnOtherObjType bool) (Object, error)
 	// Index on error ...
 	// return original Object if valid operation, but failed index
 	// return nil for Object if not a valid operation
 
 	IndexValid(index Object) bool
 	SetIndex(index, setTo Object) (Object, error)
+}
+
+type IIndexInverse interface {
+	IIndex
+	IndexInverse(index Object, returnOtherObjType bool) (Object, error)
 }
 
 type IIndexNativeInt interface {

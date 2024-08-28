@@ -473,7 +473,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			left := pr.pop()
 
 			jumpAlt := true
-			result, err = object.Index(left, index, false)
+			result, err = object.Index(left, index)
 			if err == nil {
 				err = pr.push(result)
 

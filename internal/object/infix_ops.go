@@ -291,7 +291,7 @@ func InfixComparison(
 	case opcode.OpOf:
 		var err error
 		var result Object
-		result, err = Index(right, left, false)
+		result, err = Index(right, left)
 		comparable = result != nil
 		match = err == nil
 
@@ -360,10 +360,21 @@ func Contains(l, r Object) (yes, comparable bool) {
 
 // result as nil indicates invalid operation; not to use alternate value
 // result as left for most errors
-func Index(left, index Object, negated bool) (result Object, err error) {
+func Index(left, index Object) (result Object, err error) {
 	switch left := left.(type) {
 	case IIndex:
-		return left.Index(index, negated, false)
+		return left.Index(index, false)
+	case *Null:
+		return left, fmt.Errorf("Index on null without alternate")
+	default:
+		return nil, fmt.Errorf("Index operation not supported on %s", left.TypeString())
+	}
+}
+
+func IndexInverse(left, index Object) (result Object, err error) {
+	switch left := left.(type) {
+	case IIndexInverse:
+		return left.IndexInverse(index, false)
 	case *Null:
 		return left, fmt.Errorf("Index on null without alternate")
 	default:

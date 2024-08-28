@@ -7,15 +7,15 @@ import (
 )
 
 // returnOtherObjType: unused on range
-func (left *Range) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
-	result, err = left.index(index, negated, returnOtherObjType)
+func (left *Range) Index(index Object, returnOtherObjType bool) (result Object, err error) {
+	result, err = left.index(index, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *Range) index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
+func (left *Range) index(index Object, returnOtherObjType bool) (result Object, err error) {
 	switch idx := index.(type) {
 	case nil:
 		return left, nil
@@ -37,7 +37,7 @@ func (left *Range) index(index Object, negated, returnOtherObjType bool) (result
 	case *List:
 		arr := &List{}
 		for _, v := range idx.Elements {
-			elements, err := left.index(v, negated, returnOtherObjType)
+			elements, err := left.index(v, returnOtherObjType)
 			if err != nil {
 				return left, err
 			}

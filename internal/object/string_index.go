@@ -7,45 +7,16 @@ import (
 )
 
 // returnOtherObjType: string instead of code point(s)
-func (left *String) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
-	result, err = left.index(index, negated, returnOtherObjType)
+func (left *String) Index(index Object, returnOtherObjType bool) (result Object, err error) {
+	result, err = left.index(index, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *String) index(index Object, negated, returnOtherObjType bool) (
+func (left *String) index(index Object, returnOtherObjType bool) (
 	result Object, err error) {
-
-	makeList := func() (result Object, err error) {
-		intIdx, err := makeNativeIntIndexSlice(left, index)
-		if err != nil {
-			return nil, err
-		}
-
-		orig := left.RuneSlc()
-		rSlc := []rune{}
-
-		if negated {
-			for n := range orig {
-				if !intInSlice(n, intIdx) {
-					rSlc = append(rSlc, orig[n])
-				}
-			}
-
-		} else {
-			for _, n := range intIdx {
-				rSlc = append(rSlc, orig[n])
-			}
-		}
-
-		if returnOtherObjType {
-			s, err := NewStringFromParts(rSlc)
-			return s, err
-		}
-		return ListFromRuneSlice(rSlc), nil
-	}
 
 	switch idx := index.(type) {
 	case nil:
@@ -56,10 +27,6 @@ func (left *String) index(index Object, negated, returnOtherObjType bool) (
 		return ListFromRuneSlice(left.RuneSlc()), nil
 
 	case *Number:
-		if negated {
-			return makeList()
-		}
-
 		n, ok := left.IndexNativeInt(idx)
 		if !ok {
 			return left, fmt.Errorf("String index not an integer or out of range")
@@ -71,7 +38,53 @@ func (left *String) index(index Object, negated, returnOtherObjType bool) (
 		return NumberFromRune(left.RuneSlc()[n]), nil
 
 	case *Range, *List:
-		return makeList()
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
+		}
+
+		orig := left.RuneSlc()
+		rSlc := []rune{}
+		for _, n := range intIdx {
+			rSlc = append(rSlc, orig[n])
+		}
+
+		if returnOtherObjType {
+			s, err := NewStringFromParts(rSlc)
+			return s, err
+		}
+		return ListFromRuneSlice(rSlc), nil
+
+	default:
+		// invalid index type
+		return left, fmt.Errorf("Invalid index type for string (%s)", idx.TypeString())
+	}
+}
+
+func (left *String) IndexInverse(index Object, returnOtherObjType bool) (
+	result Object, err error) {
+
+	switch idx := index.(type) {
+	case *Range, *List, *Number:
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
+		}
+
+		orig := left.RuneSlc()
+		rSlc := []rune{}
+
+		for n := range orig {
+			if !intInSlice(n, intIdx) {
+				rSlc = append(rSlc, orig[n])
+			}
+		}
+
+		if returnOtherObjType {
+			s, err := NewStringFromParts(rSlc)
+			return s, err
+		}
+		return ListFromRuneSlice(rSlc), nil
 
 	default:
 		// invalid index type

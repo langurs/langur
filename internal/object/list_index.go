@@ -7,57 +7,62 @@ import (
 )
 
 // returnOtherObjType: unused on list
-func (left *List) Index(index Object, negated, returnOtherObjType bool) (result Object, err error) {
-	result, err, _ = left.index(index, negated, returnOtherObjType)
+func (left *List) Index(index Object, returnOtherObjType bool) (result Object, err error) {
+	result, err = left.index(index, returnOtherObjType)
 	if err != nil {
 		return left, fmt.Errorf("Index out of range")
 	}
 	return
 }
 
-func (left *List) index(index Object, negated, returnOtherObjType bool) (
-	result Object, err error, isPoly bool) {
-
-	makeList := func() (result Object, err error, isPoly bool) {
-		intIdx, err := makeNativeIntIndexSlice(left, index)
-		if err != nil {
-			return nil, err, false
-		}
-		list := &List{}
-
-		if negated {
-			for n := range left.Elements {
-				if !intInSlice(n, intIdx) {
-					list.Elements = append(list.Elements, left.Elements[n])
-				}
-			}
-
-		} else {
-			for _, n := range intIdx {
-				list.Elements = append(list.Elements, left.Elements[n])
-			}
-		}
-		return list, nil, false
-	}
+func (left *List) index(index Object, returnOtherObjType bool) (
+	result Object, err error) {
 
 	switch idx := index.(type) {
 	case *Number:
-		if negated {
-			return makeList()
-		}
-
 		n, ok := left.IndexNativeInt(idx)
 		if !ok {
-			return left, fmt.Errorf("List index not an integer, or out of range for native integer type"), false
+			return left, fmt.Errorf("List index not an integer, or out of range for native integer type")
 		}
-		return left.Elements[n], nil, false
+		return left.Elements[n], nil
 
 	case *Range, *List:
-		return makeList()
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
+		}
+		list := &List{}
+		for _, n := range intIdx {
+			list.Elements = append(list.Elements, left.Elements[n])
+		}
+		return list, nil
 
 	default:
 		// invalid index type
-		return left, fmt.Errorf("Invalid index type for list"), false
+		return left, fmt.Errorf("Invalid index type for list")
+	}
+}
+
+func (left *List) IndexInverse(index Object, returnOtherObjType bool) (
+	result Object, err error) {
+
+	switch index.(type) {
+	case *Range, *List, *Number:
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
+		}
+		list := &List{}
+		for n := range left.Elements {
+			if !intInSlice(n, intIdx) {
+				list.Elements = append(list.Elements, left.Elements[n])
+			}
+		}
+		return list, nil
+
+	default:
+		// invalid index type
+		return left, fmt.Errorf("Invalid index type for list")
 	}
 }
 
