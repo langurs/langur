@@ -18,8 +18,48 @@ func (left *String) Index(index Object, negated, returnOtherObjType bool) (resul
 func (left *String) index(index Object, negated, returnOtherObjType bool) (
 	result Object, err error) {
 
+	makeList := func() (result Object, err error) {
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err
+		}
+
+		orig := left.RuneSlc()
+		rSlc := []rune{}
+
+		if negated {
+			for n := range orig {
+				if !intInSlice(n, intIdx) {
+					rSlc = append(rSlc, orig[n])
+				}
+			}
+
+		} else {
+			for _, n := range intIdx {
+				rSlc = append(rSlc, orig[n])
+			}
+		}
+
+		if returnOtherObjType {
+			s, err := NewStringFromParts(rSlc)
+			return s, err
+		}
+		return ListFromRuneSlice(rSlc), nil
+	}
+
 	switch idx := index.(type) {
+	case nil:
+		// implicit range; may be called from built-in functions
+		if returnOtherObjType {
+			return left, nil
+		}
+		return ListFromRuneSlice(left.RuneSlc()), nil
+
 	case *Number:
+		if negated {
+			return makeList()
+		}
+
 		n, ok := left.IndexNativeInt(idx)
 		if !ok {
 			return left, fmt.Errorf("String index not an integer or out of range")
@@ -30,30 +70,8 @@ func (left *String) index(index Object, negated, returnOtherObjType bool) (
 		}
 		return NumberFromRune(left.RuneSlc()[n]), nil
 
-	case nil:
-		// implicit range; may be called from built-in functions
-		if returnOtherObjType {
-			return left, nil
-		}
-		return ListFromRuneSlice(left.RuneSlc()), nil
-
 	case *Range, *List:
-		intIdx, err := makeNativeIntIndexSlice(left, index)
-		if err != nil {
-			return nil, err
-		}
-
-		orig := left.RuneSlc()
-		rSlc := []rune{}
-		for _, n := range intIdx {
-			rSlc = append(rSlc, orig[n])
-		}
-
-		if returnOtherObjType {
-			s, err := NewStringFromParts(rSlc)
-			return s, err
-		}
-		return ListFromRuneSlice(rSlc), nil
+		return makeList()
 
 	default:
 		// invalid index type
@@ -150,22 +168,4 @@ func (left *String) indexNativeInt(index int) (idx int, ok bool) {
 	// All is well.
 	// convert 1-based (langur) index to 0-based (native Go) and return
 	return idx - 1, true
-}
-
-func (s *String) RemoveIndices(indices Object) (*String, error) {
-	// build new string without indices we want to remove
-	cpSlc := []rune{}
-
-	intIdx, err := makeNativeIntIndexSlice(s, indices)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, cp := range s.RuneSlc() {
-		if !intInSlice(i, intIdx) {
-			cpSlc = append(cpSlc, cp)
-		}
-	}
-
-	return NewStringFromParts(cpSlc)
 }

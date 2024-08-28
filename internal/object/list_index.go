@@ -15,9 +15,37 @@ func (left *List) Index(index Object, negated, returnOtherObjType bool) (result 
 	return
 }
 
-func (left *List) index(index Object, negated, returnOtherObjType bool) (result Object, err error, isPoly bool) {
+func (left *List) index(index Object, negated, returnOtherObjType bool) (
+	result Object, err error, isPoly bool) {
+
+	makeList := func() (result Object, err error, isPoly bool) {
+		intIdx, err := makeNativeIntIndexSlice(left, index)
+		if err != nil {
+			return nil, err, false
+		}
+		list := &List{}
+
+		if negated {
+			for n := range left.Elements {
+				if !intInSlice(n, intIdx) {
+					list.Elements = append(list.Elements, left.Elements[n])
+				}
+			}
+
+		} else {
+			for _, n := range intIdx {
+				list.Elements = append(list.Elements, left.Elements[n])
+			}
+		}
+		return list, nil, false
+	}
+
 	switch idx := index.(type) {
 	case *Number:
+		if negated {
+			return makeList()
+		}
+
 		n, ok := left.IndexNativeInt(idx)
 		if !ok {
 			return left, fmt.Errorf("List index not an integer, or out of range for native integer type"), false
@@ -25,15 +53,7 @@ func (left *List) index(index Object, negated, returnOtherObjType bool) (result 
 		return left.Elements[n], nil, false
 
 	case *Range, *List:
-		intIdx, err := makeNativeIntIndexSlice(left, index)
-		if err != nil {
-			return nil, err, false
-		}
-		list := &List{}
-		for _, n := range intIdx {
-			list.Elements = append(list.Elements, left.Elements[n])
-		}
-		return list, nil, false
+		return makeList()
 
 	default:
 		// invalid index type
@@ -113,23 +133,6 @@ func (left *List) indexNativeInt(index int) (idx int, ok bool) {
 	// All is well.
 	// convert 1-based index to 0-based (native) and return
 	return idx - 1, true
-}
-
-// builds new list without keys we want to remove
-func (left *List) RemoveIndices(indices Object) (*List, error) {
-	intIdx, err := makeNativeIntIndexSlice(left, indices)
-	if err != nil {
-		return nil, err
-	}
-
-	elements := []Object{}
-	for i := range left.Elements {
-		if !intInSlice(i, intIdx) {
-			elements = append(elements, left.Elements[i])
-		}
-	}
-
-	return &List{Elements: elements}, nil
 }
 
 func intInSlice(i int, iSlc []int) bool {

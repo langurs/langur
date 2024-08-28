@@ -42,7 +42,7 @@ var bi_less = &object.BuiltIn{
 			}
 
 			// remove specific indices
-			list, err := over.RemoveIndices(of)
+			list, err := over.Index(of, true, false)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
@@ -61,7 +61,8 @@ var bi_less = &object.BuiltIn{
 				}
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
-			str, err := over.RemoveIndices(of)
+
+			str, err := over.Index(of, true, true)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from string: "+err.Error())
 			}
