@@ -68,7 +68,7 @@ func (left *String) IndexInverse(index Object, returnOtherObjType bool) (
 	case *Range, *List, *Number:
 		intIdx, err := makeNativeIntIndexSlice(left, index)
 		if err != nil {
-			return nil, err
+			return left, err
 		}
 
 		orig := left.RuneSlc()

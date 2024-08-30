@@ -52,23 +52,22 @@ func (d *Hash) IndexInverse(index Object, returnOtherObjType bool) (
 
 	var keySlc []Object
 
-	arr, isArr := index.(*List)
-	if isArr {
-		keySlc = arr.Elements
+	list, isList := index.(*List)
+	if isList {
+		keySlc = list.Elements
 	} else {
 		keySlc = []Object{index}
 	}
 
 	hash := &Hash{}
-	if len(keySlc) < 100 {
-		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs))
-	} else {
-		hash.Pairs = make([]keyValuePair, 0, len(d.Pairs)-len(keySlc))
-	}
+	hash.Pairs = make([]keyValuePair, 0, len(d.Pairs)-len(keySlc))
 
 	for _, kv := range d.Pairs {
 		addThis := true
 		for _, k := range keySlc {
+			if d.keyIndex(k) == -1 {
+				return d, fmt.Errorf("Invalid index on hash")
+			}
 			if compareHashKeys(kv.Key, MakeHashKey(k)) {
 				addThis = false
 				break

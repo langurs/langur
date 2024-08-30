@@ -155,6 +155,10 @@ func (c *Compiler) compileAssignment(node *ast.AssignmentNode) (ins opcode.Instr
 				index = nil
 
 			case *ast.IndexNode:
+				if n.Inverse {
+					err = fmt.Errorf("Cannot assign to inverse index")
+				}
+
 				// x[1] = ...
 				variable = n.Left.(*ast.IdentNode)
 				index = n.Index

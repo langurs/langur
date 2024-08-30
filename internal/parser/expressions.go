@@ -198,10 +198,7 @@ func (p *Parser) parseIndexExpression(left ast.Node) ast.Node {
 			p.addError("Index inverse expression syntax: value[!1]")
 		}
 		p.advanceToken()
-		if p.tok.CpDiff == 0 &&
-			!(p.tok.Type == token.IDENT || p.tok.Type == token.FLOAT ||
-				p.tok.Type == token.INT || p.tok.Type == token.LBRACKET ||
-				p.tok.Type == token.MINUS) {
+		if p.tok.CpDiff == 0 && !token.MayFollowBangWithoutSpacking(p.tok) {
 			p.addError("Index inverse expression syntax: value[!1]")
 		}
 		expr.Inverse = true

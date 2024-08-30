@@ -10,7 +10,7 @@ import (
 func (left *List) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err = left.index(index, returnOtherObjType)
 	if err != nil {
-		return left, fmt.Errorf("Index out of range")
+		return left, fmt.Errorf("Index out of range or invalid")
 	}
 	return
 }
@@ -29,7 +29,7 @@ func (left *List) index(index Object, returnOtherObjType bool) (
 	case *Range, *List:
 		intIdx, err := makeNativeIntIndexSlice(left, index)
 		if err != nil {
-			return nil, err
+			return left, err
 		}
 		list := &List{}
 		for _, n := range intIdx {
@@ -50,7 +50,7 @@ func (left *List) IndexInverse(index Object, returnOtherObjType bool) (
 	case *Range, *List, *Number:
 		intIdx, err := makeNativeIntIndexSlice(left, index)
 		if err != nil {
-			return nil, err
+			return left, err
 		}
 		list := &List{}
 		for n := range left.Elements {
