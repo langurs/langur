@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// exit, haskey, keys
+// exit, keys
 // len, sleep, ticks, nn
 
 var bi_exit = &object.BuiltIn{
@@ -64,26 +64,6 @@ var bi_exit = &object.BuiltIn{
 		os.Exit(code)
 
 		// no need to return, but the compiler requires it...
-		return object.NONE
-	},
-}
-
-var bi_haskey = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:        "haskey",
-		Description: "tells you if a key exists in something indexable; null if not indexable",
-
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		obj, indexable := args[0].(object.IIndex)
-		if indexable {
-			return object.NativeBoolToObject(obj.IndexValid(args[1]))
-		}
 		return object.NONE
 	},
 }
