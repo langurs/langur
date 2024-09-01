@@ -466,8 +466,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 
 		case opcode.OpIndex:
-			code := int(ins[ip+1])
-			ip += 1
 			shortCircuitJump := int(opcode.ReadUInt16(ins[ip+1:]))
 			ip += 2
 
@@ -476,11 +474,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 
 			jumpAlt := true
 
-			if 0 != code&opcode.OC_Index_inverse_Op {
-				result, err = object.IndexInverse(left, index)
-			} else {
-				result, err = object.Index(left, index)
-			}
+			result, err = object.Index(left, index)
 			if err == nil {
 				err = pr.push(result)
 

@@ -202,15 +202,6 @@ func MayPrecedeOpeningBracketWithoutSpacing(tok Token) bool {
 	return !IsKeyword(tok.Literal)
 }
 
-func MayFollowBangWithoutSpacking(tok Token) bool {
-	switch tok.Type {
-	case IDENT, FLOAT, INT,
-		LBRACKET, MINUS:
-		return true
-	}
-	return false
-}
-
 func MayFollowDeclarationVariableWithoutSpacing(tok Token) bool {
 	// used by parser
 	// so we don't get nonsense like var x[1]

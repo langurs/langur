@@ -1540,7 +1540,6 @@ type IndexNode struct {
 	Token     token.Token
 	Left      Node
 	Index     Node
-	Inverse   bool
 	Alternate Node
 }
 
@@ -1551,7 +1550,6 @@ func (i *IndexNode) Copy() Node {
 		Token:     i.Token.Copy(),
 		Left:      copyOrNil(i.Left),
 		Index:     copyOrNil(i.Index),
-		Inverse:   i.Inverse,
 		Alternate: copyOrNil(i.Alternate)}
 }
 
@@ -1565,9 +1563,6 @@ func (i *IndexNode) TokenRepresentation() string {
 	out.WriteString("(")
 	out.WriteString(tokenRepOrNil(i.Left))
 	out.WriteString("[")
-	if i.Inverse {
-		out.WriteString("! ")
-	}
 	out.WriteString(tokenRepOrNil(i.Index))
 
 	if i.Alternate != nil {
@@ -1583,9 +1578,6 @@ func (i *IndexNode) String() string {
 	out.WriteString("Index (")
 	out.WriteString(stringOrNil(i.Left))
 	out.WriteString("[")
-	if i.Inverse {
-		out.WriteString("! ")
-	}
 	out.WriteString(stringOrNil(i.Index))
 
 	if i.Alternate != nil {
