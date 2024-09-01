@@ -73,9 +73,8 @@ var bi_keys = &object.BuiltIn{
 		Name:        "keys",
 		Description: "returns the keys (as list) of a hash, or list or string indices (always 1-based index)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -115,9 +114,8 @@ var bi_len = &object.BuiltIn{
 		Name:        "len",
 		Description: "returns the length (as integer) of a list, hash, or string (in code points)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -140,29 +138,28 @@ var bi_len = &object.BuiltIn{
 var bi_nn = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "nn",
-		Description: "nn(list, alternate); returns the first non-null value from a list, unless there are no non-null values, in which case it returns the alternate or an exception",
+		Description: "returns the first non-null value from a list, unless there are no non-null values, in which case it returns the alternate or an exception",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "list"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "alt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		arr, ok := args[0].(*object.List)
+		list, ok := args[0].(*object.List)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, "nn", "Expected list for first argument")
 		}
-		for _, v := range arr.Elements {
+		for _, v := range list.Elements {
 			if v != object.NULL {
 				return v
 			}
 		}
-		if len(args) > 1 {
+
+		if args[1] != nil {
 			// return alternate
 			return args[1]
 		}

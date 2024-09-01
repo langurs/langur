@@ -5475,9 +5475,9 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"len({7: 14, 21: 35, 42: 49})", "3", object.NUMBER_OBJ},
 
 		// non-null
-		{"nn([null], 789)", "789", object.NUMBER_OBJ},
-		{"nn([null, 123], 789)", "123", object.NUMBER_OBJ},
-		{"nn([null, null, true, 123], false)", true, object.BOOLEAN_OBJ},
+		{"nn([null], alt=789)", "789", object.NUMBER_OBJ},
+		{"nn([null, 123], alt=789)", "123", object.NUMBER_OBJ},
+		{"nn([null, null, true, 123], alt=false)", true, object.BOOLEAN_OBJ},
 
 		// reverse
 		{"reverse([16, 14, 16, 13, 12, 25, 36, 42, 29, 49])",
