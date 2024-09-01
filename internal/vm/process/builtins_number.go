@@ -503,60 +503,52 @@ var bi_mid = &object.BuiltIn{
 var bi_round = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "round",
-		Description: "round(number, max, addzeroes, mode); rounds number to specified digits after decimal point; mode from the " + modes.RoundHashName + " hash",
+		Description: "rounds number to specified digits after decimal point; mode from the " + modes.RoundHashName + " hash",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 4,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "max", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
+			object.Parameter{ExternalName: "mode"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "round"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		n, ok := args[0].(*object.Number)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number")
 		}
 
-		max := 0
-		if len(args) > 1 {
-			max, ok = object.NumberToInt(args[1])
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument")
-			}
+		max, ok := object.NumberToInt(args[1])
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
 		}
 
-		addTrailingZeroes := true
-		if len(args) > 2 {
-			trim, ok := args[2].(*object.Boolean)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to add trailing zeroes)")
-			}
-			addTrailingZeroes = trim.Value
+		trim, ok := args[2].(*object.Boolean)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument addzeroes")
 		}
-
+		addTrailingZeroes := trim.Value
 		trimTrailingZeroes := false
 
-		var num *object.Number
-		var err error
-		if len(args) > 3 {
-			mode, ok := object.NumberToInt(args[3])
+		var mode modes.RoundingMode
+		if args[3] == nil {
+			// round by current mode
+			mode = pr.Modes.Rounding
+
+		} else {
+			m, ok := object.NumberToInt(args[3])
 			if !ok {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
 			}
-
-			num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, modes.RoundingMode(mode))
-
-		} else {
-			// round by current mode
-			num, err = n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, pr.Modes.Rounding)
+			mode = modes.RoundingMode(m)
 		}
 
+		num, err := n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, mode)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
