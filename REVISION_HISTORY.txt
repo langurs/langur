@@ -2,14 +2,10 @@ langur revision history
 https://langurlang.org
 
 ... - 0.18.0
-- changed parameters for built-in functions ...
-
-- dropped builtin functions ...
-
+- changed parameters, making use of parameters by name, for built-in functions all, any, appendfile, cd, count, exit, filter, fold, less, map, mapX, more, read, rotate, writefile, zip
+- dropped builtin functions benchmark, first, foldfrom, group, groupby, groupbyH, last, rest
 - changed REPL to use parentheses for commands, such as exit()
 - changed mode consoleText default to false
-
-
 - renamed object "binary" operations as infix
 - fixed builtin function less() to work properly with negative indices
 - dropped setting range start or end by index; just make a new range
