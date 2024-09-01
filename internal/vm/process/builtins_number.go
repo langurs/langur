@@ -18,11 +18,10 @@ import (
 var bi_abs = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "abs",
-		Description: "abs(number); returns the absolute value of a number",
+		Description: "returns the absolute value of a number",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -39,9 +38,8 @@ var bi_ceiling = &object.BuiltIn{
 		Name:        "ceiling",
 		Description: "returns least integer greater than or equal to input number",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -58,9 +56,8 @@ var bi_floor = &object.BuiltIn{
 		Name:        "floor",
 		Description: "returns greatest integer less than or equal to input number",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -77,9 +74,8 @@ var bi_gcd = &object.BuiltIn{
 		Name:        "gcd",
 		Description: "returns the greatest common divisor of 2 or more integers",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -144,9 +140,8 @@ var bi_lcm = &object.BuiltIn{
 		Name:        "lcm",
 		Description: "returns the least common multiple of 2 or more integers",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -210,9 +205,8 @@ var bi_max = &object.BuiltIn{
 		Name:        "max",
 		Description: "returns maximum from a list, hash, range, string, or function; for string, max. code point; for function, max. parameter count (-1 for no max.)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -274,9 +268,8 @@ var bi_min = &object.BuiltIn{
 		Name:        "min",
 		Description: "returns minimum from a list, hash, range, string, or function; for string, min. code point; for function, min. parameter count",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -338,9 +331,8 @@ var bi_minmax = &object.BuiltIn{
 		Name:        "minmax",
 		Description: "returns range of minimum to maximum from a list, hash, range, string, or function; for string, min. code point; for function, min./max. parameter count",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -411,9 +403,8 @@ var bi_mean = &object.BuiltIn{
 		Name:        "mean",
 		Description: "returns mean (average) from given set of numbers",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -463,9 +454,8 @@ var bi_mid = &object.BuiltIn{
 		Name:        "mid",
 		Description: "returns mid-point from given set of numbers",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -632,9 +622,8 @@ var bi_simplify = &object.BuiltIn{
 		Name:        "simplify",
 		Description: "simplifies number, removing trailing zeros",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
