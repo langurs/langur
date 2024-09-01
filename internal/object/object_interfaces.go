@@ -59,6 +59,10 @@ type IIndex interface {
 	// return nil for Object if not a valid operation
 
 	IndexValid(index Object) bool
+}
+
+type IIndexSet interface {
+	IIndex
 	SetIndex(index, setTo Object) (Object, error)
 }
 

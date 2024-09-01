@@ -75,34 +75,6 @@ func (left *Range) IndexValid(index Object) bool {
 	}
 }
 
-// assumes mutability of an object (checked elsewhere)
-func (left *Range) SetIndex(index, setTo Object) (Object, error) {
-	n, ok := left.IndexNativeInt(index)
-	if !ok {
-		return left, fmt.Errorf("Cannot set range index value from invalid index (not an integer or out of range)")
-	}
-	left = left.CopyRefs().(*Range)
-
-	switch n {
-	case 0: // 1 in langur
-		if !RangeValid(setTo, left.End) {
-			return left, fmt.Errorf("Cannot set start of range to type incompatible with end of range type")
-		}
-		left.Start = setTo
-
-	case 1: // 2 in langur
-		if !RangeValid(left.Start, setTo) {
-			return left, fmt.Errorf("Cannot set end of range to type incompatible with start of range type")
-		}
-		left.End = setTo
-
-	default:
-		return left, fmt.Errorf("Cannot set range index value from invalid index")
-	}
-
-	return left, nil
-}
-
 func (left *Range) IndexNativeInt(index Object) (idx int, ok bool) {
 	idx, ok = NumberToInt(index)
 	if !ok {

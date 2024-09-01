@@ -2018,38 +2018,6 @@ func TestIndexStringAssignment(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestIndexRangeAssignment(t *testing.T) {
-	tests := []vmTestCase{
-		{`var x = 1..4
-		  x[1] = 7
-		  x`, []int64{7, 4}, object.RANGE_OBJ,
-		},
-		{`var x = 1..4
-		  x[2] = 7
-		  x`, []int64{1, 7}, object.RANGE_OBJ,
-		},
-		{`var x = 1..4
-		  x[1] = 21
-		  x[2] = 7
-		  x`, []int64{21, 7}, object.RANGE_OBJ,
-		},
-		{`var x = 1..4
-		  var y = x
-		  y[1] = 21
-		  y[2] = 7
-		  y`, []int64{21, 7}, object.RANGE_OBJ,
-		},
-		{`var x = 1..4
-		  var y = x
-		  y[1] = 21
-		  y[2] = 7
-		  x`, []int64{1, 4}, object.RANGE_OBJ,
-		},
-	}
-
-	runVmTests(t, tests, false, false)
-}
-
 func TestMultiVariableDeclarationAssignment(t *testing.T) {
 	tests := []vmTestCase{
 		{

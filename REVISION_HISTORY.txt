@@ -2,15 +2,17 @@ langur revision history
 https://langurlang.org
 
 ... - 0.18.0
-- changed parameters for built-in functions
+- changed parameters for built-in functions ...
+
+- dropped builtin functions ...
 
 - changed REPL to use parentheses for commands, such as exit()
 - changed mode consoleText default to false
 
-- dropped builtin functions ...
 
 - renamed object "binary" operations as infix
 - fixed builtin function less() to work properly with negative indices
+- dropped setting range start or end by index; just make a new range
 
 
 2024-08-15 - 0.17.5
