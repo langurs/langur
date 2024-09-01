@@ -3,7 +3,9 @@
 package process
 
 import (
+	"fmt"
 	"langur/object"
+	"langur/str"
 	"langur/system"
 	"os"
 	"time"
@@ -16,53 +18,48 @@ var bi_exit = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "exit",
 		ImpureEffects: true,
-		Description:   "exits with the integer code given; 0 if no code is given; second arg as string to write to standard error, appending a newline",
+		Description:   "exits with the integer code given; 0 if no code is given; msg as string to write to standard error, appending a newline, if code not 0",
 
-		// TODO: update
-		ParamPositional: []object.Parameter{
-			object.Parameter{},
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "code", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "msg", DefaultValue: object.ZLS},
 		},
-		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var err error
 		code := 0 // 0 = success
-		var str object.Object
+		strArg := args[1]
 
-		if len(args) > 0 {
-			switch arg1 := args[0].(type) {
-			case *object.Number:
-				code, err = arg1.ToInt()
-				if err != nil {
-					// failure to convert to native integer
-					code = system.GetExitStatus("argtoexitBad")
-				}
-				code = system.FixExitStatus(code)
-
-			case *object.Boolean:
-				//  true: success (code 0)
-				// false: general failure
-				if !arg1.Value {
-					code = system.GetExitStatus("")
-				}
-
-			default:
-				// invalid argument to exit()
+		switch codeArg := args[0].(type) {
+		case *object.Number:
+			code, err = codeArg.ToInt()
+			if err != nil {
+				// failure to convert to native integer
 				code = system.GetExitStatus("argtoexitBad")
 			}
+			code = system.FixExitStatus(code)
 
-			if len(args) > 1 {
-				str = args[1]
+		case *object.Boolean:
+			//  true: success (code 0)
+			// false: general failure
+			if !codeArg.Value {
+				code = system.GetExitStatus("")
 			}
+
+		default:
+			// invalid code argument to exit()
+			code = system.GetExitStatus("argtoexitBad")
 		}
 
-		if str != nil && code != 0 {
+		if code != 0 && strArg.IsTruthy() {
 			// if non-zero return code, write string to standard error, appending a newline
-			bi_writelnErr.Fn.(BuiltInFunction)(pr, str)
+			s := strArg.String()
+			if pr.Modes.ConsoleTextMode {
+				s = str.ReplaceNewLinesWithSystem(s)
+			}
+			if len(s) != 0 {
+				fmt.Fprint(os.Stderr, s)
+			}
 		}
 		os.Exit(code)
 
