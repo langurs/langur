@@ -141,7 +141,7 @@ var bi_nn = &object.BuiltIn{
 		Description: "returns the first non-null value from a list, unless there are no non-null values, in which case it returns the alternate or an exception",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "list"},
+			object.Parameter{ExternalName: "over"},
 		},
 
 		ParamByName: []object.Parameter{
@@ -173,9 +173,8 @@ var bi_sleep = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "waits for the specified number of milliseconds",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "ms"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
