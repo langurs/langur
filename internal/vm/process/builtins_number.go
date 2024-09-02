@@ -562,41 +562,33 @@ var bi_trunc = &object.BuiltIn{
 		Name:        "trunc",
 		Description: "trunc(number, max, addzeroes); truncate number to specified digits after decimal point",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "num"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "max", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "trunc"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
 
 		n, ok := args[0].(*object.Number)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument")
 		}
 
-		max := 0
-		if len(args) > 1 {
-			max, ok = object.NumberToInt(args[1])
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument")
-			}
+		max, ok := object.NumberToInt(args[1])
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
 		}
 
-		addTrailingZeroes := true
-		if len(args) > 2 {
-			trim, ok := args[2].(*object.Boolean)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for third argument (whether to add trailing zeroes)")
-			}
-			addTrailingZeroes = trim.Value
+		trim, ok := args[2].(*object.Boolean)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument addzeroes")
 		}
-
+		addTrailingZeroes := trim.Value
 		trimTrailingZeroes := false
 
 		num, err := n.Truncate(max, addTrailingZeroes, trimTrailingZeroes)
