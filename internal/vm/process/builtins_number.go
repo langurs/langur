@@ -510,7 +510,7 @@ var bi_round = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "max", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
 			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
 			object.Parameter{ExternalName: "mode"},
 		},
@@ -523,9 +523,9 @@ var bi_round = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number")
 		}
 
-		max, ok := object.NumberToInt(args[1])
+		places, ok := object.NumberToInt(args[1])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
 		trim, ok := args[2].(*object.Boolean)
@@ -548,7 +548,7 @@ var bi_round = &object.BuiltIn{
 			mode = modes.RoundingMode(m)
 		}
 
-		num, err := n.RoundByMode(max, addTrailingZeroes, trimTrailingZeroes, mode)
+		num, err := n.RoundByMode(places, addTrailingZeroes, trimTrailingZeroes, mode)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -567,7 +567,7 @@ var bi_trunc = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "max", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
 			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
 		},
 	},
@@ -579,9 +579,9 @@ var bi_trunc = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument")
 		}
 
-		max, ok := object.NumberToInt(args[1])
+		places, ok := object.NumberToInt(args[1])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
 		trim, ok := args[2].(*object.Boolean)
@@ -591,7 +591,7 @@ var bi_trunc = &object.BuiltIn{
 		addTrailingZeroes := trim.Value
 		trimTrailingZeroes := false
 
-		num, err := n.Truncate(max, addTrailingZeroes, trimTrailingZeroes)
+		num, err := n.Truncate(places, addTrailingZeroes, trimTrailingZeroes)
 
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())

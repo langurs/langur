@@ -6109,78 +6109,78 @@ func TestMathFunctions(t *testing.T) {
 		// truncate without padding zeroes
 		{`trunc(123)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123, max=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
+		{`trunc(123, places=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=4, addzeroes=false)`, "123.1234", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=8, addzeroes=false)`, "123.12345678", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=4, addzeroes=false)`, "123.1234", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=8, addzeroes=false)`, "123.12345678", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// truncate with padding zeros
-		{`trunc(123, max=0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.0, max=0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123, max=2)`, "123.00", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=4)`, "123.1234", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=8)`, "123.12345678", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=9)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=10)`, "123.1234567890", object.NUMBER_OBJ},
-		{`trunc(123.123456789, max=12)`, "123.123456789000", object.NUMBER_OBJ},
+		{`trunc(123, places=0)`, 123, object.NUMBER_OBJ},
+		{`trunc(123.0, places=0)`, 123, object.NUMBER_OBJ},
+		{`trunc(123, places=2)`, "123.00", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=0)`, 123, object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=4)`, "123.1234", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=8)`, "123.12345678", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=9)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=10)`, "123.1234567890", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=12)`, "123.123456789000", object.NUMBER_OBJ},
 
 		// truncate on integer
-		{`trunc(123, max=-1)`, 120, object.NUMBER_OBJ},
-		{`trunc(123.4, max=-1)`, 120, object.NUMBER_OBJ},
-		{`trunc(123, max=-2)`, 100, object.NUMBER_OBJ},
-		{`trunc(123.4, max=-2)`, 100, object.NUMBER_OBJ},
-		{`trunc(123, max=-3)`, 0, object.NUMBER_OBJ},
-		{`trunc(123.4, max=-3)`, 0, object.NUMBER_OBJ},
-		{`trunc(153, max=-2)`, 100, object.NUMBER_OBJ},
-		{`trunc(153.4, max=-2)`, 100, object.NUMBER_OBJ},
+		{`trunc(123, places=-1)`, 120, object.NUMBER_OBJ},
+		{`trunc(123.4, places=-1)`, 120, object.NUMBER_OBJ},
+		{`trunc(123, places=-2)`, 100, object.NUMBER_OBJ},
+		{`trunc(123.4, places=-2)`, 100, object.NUMBER_OBJ},
+		{`trunc(123, places=-3)`, 0, object.NUMBER_OBJ},
+		{`trunc(123.4, places=-3)`, 0, object.NUMBER_OBJ},
+		{`trunc(153, places=-2)`, 100, object.NUMBER_OBJ},
+		{`trunc(153.4, places=-2)`, 100, object.NUMBER_OBJ},
 
 		// round without padding zeroes
 		{`round(123)`, 123, object.NUMBER_OBJ},
 		{`round(123.4)`, 123, object.NUMBER_OBJ},
 		{`round(123.7)`, 124, object.NUMBER_OBJ},
 		{`round(123.0)`, 123, object.NUMBER_OBJ},
-		{`round(123, max=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
+		{`round(123, places=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
 		{`round(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`round(123.123456789, max=4, addzeroes=false)`, "123.1235", object.NUMBER_OBJ},
-		{`round(123.123456789, max=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, max=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, max=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=4, addzeroes=false)`, "123.1235", object.NUMBER_OBJ},
+		{`round(123.123456789, places=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// round with padding zeroes
-		{`round(123, max=0)`, 123, object.NUMBER_OBJ},
-		{`round(123.4, max=0)`, 123, object.NUMBER_OBJ},
-		{`round(123.7, max=0)`, 124, object.NUMBER_OBJ},
-		{`round(123.0, max=0)`, 123, object.NUMBER_OBJ},
-		{`round(123, max=2)`, "123.00", object.NUMBER_OBJ},
-		{`round(123.123456789, max=0)`, 123, object.NUMBER_OBJ},
-		{`round(123.123456789, max=4)`, "123.1235", object.NUMBER_OBJ},
-		{`round(123.123456789, max=9)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, max=10)`, "123.1234567890", object.NUMBER_OBJ},
-		{`round(123.123456789, max=12)`, "123.123456789000", object.NUMBER_OBJ},
+		{`round(123, places=0)`, 123, object.NUMBER_OBJ},
+		{`round(123.4, places=0)`, 123, object.NUMBER_OBJ},
+		{`round(123.7, places=0)`, 124, object.NUMBER_OBJ},
+		{`round(123.0, places=0)`, 123, object.NUMBER_OBJ},
+		{`round(123, places=2)`, "123.00", object.NUMBER_OBJ},
+		{`round(123.123456789, places=0)`, 123, object.NUMBER_OBJ},
+		{`round(123.123456789, places=4)`, "123.1235", object.NUMBER_OBJ},
+		{`round(123.123456789, places=9)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=10)`, "123.1234567890", object.NUMBER_OBJ},
+		{`round(123.123456789, places=12)`, "123.123456789000", object.NUMBER_OBJ},
 
 		// round on integer
-		{`round(123, max=-1)`, 120, object.NUMBER_OBJ},
-		{`round(123.4, max=-1)`, 120, object.NUMBER_OBJ},
-		{`round(123, max=-2)`, 100, object.NUMBER_OBJ},
-		{`round(123.4, max=-2)`, 100, object.NUMBER_OBJ},
-		{`round(123, max=-3)`, 0, object.NUMBER_OBJ},
-		{`round(123.4, max=-3)`, 0, object.NUMBER_OBJ},
-		{`round(153, max=-2)`, 200, object.NUMBER_OBJ},
-		{`round(153.4, max=-2)`, 200, object.NUMBER_OBJ},
+		{`round(123, places=-1)`, 120, object.NUMBER_OBJ},
+		{`round(123.4, places=-1)`, 120, object.NUMBER_OBJ},
+		{`round(123, places=-2)`, 100, object.NUMBER_OBJ},
+		{`round(123.4, places=-2)`, 100, object.NUMBER_OBJ},
+		{`round(123, places=-3)`, 0, object.NUMBER_OBJ},
+		{`round(123.4, places=-3)`, 0, object.NUMBER_OBJ},
+		{`round(153, places=-2)`, 200, object.NUMBER_OBJ},
+		{`round(153.4, places=-2)`, 200, object.NUMBER_OBJ},
 
 		// test passing rounding mode to round() function
-		{`round(123.5, max=0, mode=_round'halfeven)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, max=0, mode=_round'halfeven)`, 122, object.NUMBER_OBJ},
-		{`round(123.5, max=0, mode=_round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
-		{`round(122.5, max=0, mode=_round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
+		{`round(123.5, places=0, mode=_round'halfeven)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, places=0, mode=_round'halfeven)`, 122, object.NUMBER_OBJ},
+		{`round(123.5, places=0, mode=_round'halfawayfrom0)`, 124, object.NUMBER_OBJ},
+		{`round(122.5, places=0, mode=_round'halfawayfrom0)`, 123, object.NUMBER_OBJ},
 
-		{`val x = round(2.5, max=0, mode=_round'halfeven)
-		  val y = round(2.5, max=0, mode=_round'halfawayfrom0)
-		  val z = round(4.45, max=1, mode=_round'halfeven)
+		{`val x = round(2.5, places=0, mode=_round'halfeven)
+		  val y = round(2.5, places=0, mode=_round'halfawayfrom0)
+		  val z = round(4.45, places=1, mode=_round'halfeven)
 		  x + y + z`, "9.4", object.NUMBER_OBJ},
 
 		// alternating rounding modes
@@ -6195,7 +6195,7 @@ func TestMathFunctions(t *testing.T) {
 		  mode rounding = _round'halfawayfrom0
 		  val y = round(2.5)
 		  mode rounding = _round'halfeven
-		  val z = round(4.45, max=1)
+		  val z = round(4.45, places=1)
 		  x + y + z`, "9.4", object.NUMBER_OBJ},
 
 		// gcd
