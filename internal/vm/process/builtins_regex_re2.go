@@ -16,9 +16,8 @@ var bi_reCompile = &object.BuiltIn{
 		Name:        "reCompile",
 		Description: "compiles string pattern into re2 regex",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -39,9 +38,8 @@ var bi_reEsc = &object.BuiltIn{
 		Name:        "reEsc",
 		Description: "escapes re2 metacharacters in a pattern string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
