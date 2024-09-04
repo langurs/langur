@@ -13,11 +13,10 @@ import (
 var bi_random = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "random",
-		Description: "returns random integer from a given range",
+		Description: "returns random integer from a given range or item from a list, hash, or string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

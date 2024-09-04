@@ -6053,7 +6053,7 @@ func TestMathFunctions(t *testing.T) {
 		{`min("asdf")`, "97", object.NUMBER_OBJ},
 		{`min(["abc", "ABC"])`, "ABC", object.STRING_OBJ},
 
-		// min for parameter counts
+		// min for positional parameter counts
 		{`min(fn{})`, "0", object.NUMBER_OBJ},
 		{`min(fn x: x)`, "1", object.NUMBER_OBJ},
 		{`min(fn x, y: x + y)`, "2", object.NUMBER_OBJ},
@@ -6069,7 +6069,7 @@ func TestMathFunctions(t *testing.T) {
 		{`max("asdf")`, "115", object.NUMBER_OBJ},
 		{`max(["abc", "ABC"])`, "abc", object.STRING_OBJ},
 
-		// max for parameter counts
+		// max for positional parameter counts
 		{`max(fn{})`, "0", object.NUMBER_OBJ},
 		{`max(fn(x) { x })`, "1", object.NUMBER_OBJ},
 		{`max(fn(x, y) {x + y})`, "2", object.NUMBER_OBJ},
@@ -6084,7 +6084,7 @@ func TestMathFunctions(t *testing.T) {
 		{"minmax(40..30)", []int64{30, 40}, object.RANGE_OBJ},
 		{`minmax("asdf")`, []int64{97, 115}, object.RANGE_OBJ},
 
-		// minmax for parameter counts
+		// minmax for positional parameter counts
 		{`minmax(fn{})`, []int64{0, 0}, object.RANGE_OBJ},
 		{`minmax(fn(x) { x })`, []int64{1, 1}, object.RANGE_OBJ},
 		{`minmax(fn(x, y) {x + y})`, []int64{2, 2}, object.RANGE_OBJ},
