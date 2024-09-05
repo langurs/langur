@@ -6563,10 +6563,10 @@ func TestRe2(t *testing.T) {
 		{`matching(123.0, by=RE/\d+\.\d+/)`, true, object.BOOLEAN_OBJ},
 		{`matching(123, by=RE/\d+\.\d+/)`, false, object.BOOLEAN_OBJ},
 
-		{`match(re/a.*c/, " abc ")`, "abc", object.STRING_OBJ},
-		{`match(re/a.*c/, " abc ", alt=7)`, "abc", object.STRING_OBJ},
-		{`match(re/a.*d/, " abc ")`, nil, object.NULL_OBJ},
-		{`match(re/a.*d/, " abc ", alt=7)`, "7", object.NUMBER_OBJ},
+		{`match(" abc ", by=re/a.*c/)`, "abc", object.STRING_OBJ},
+		{`match(" abc ", by=re/a.*c/, alt=7)`, "abc", object.STRING_OBJ},
+		{`match(" abc ", by=re/a.*d/)`, nil, object.NULL_OBJ},
+		{`match(" abc ", by=re/a.*d/, alt=7)`, "7", object.NUMBER_OBJ},
 
 		{`matches(re/a.*?c/, "abc azc aec ")`, []string{"abc", "azc", "aec"}, object.LIST_OBJ},
 		{`matches(re/a.*?z/, "abc azc aec ")`, []string{"abc az"}, object.LIST_OBJ},
@@ -6784,16 +6784,16 @@ func TestRe2Modifiers(t *testing.T) {
 		{`matching("abc\n", by=re:m(a.c$))`, true, object.BOOLEAN_OBJ},
 
 		// ungreedy mode (reverse "greediness"/"laziness" of quantifiers)
-		{`match(RE/\d+/, "1234567")`, "1234567", object.STRING_OBJ},
-		{`match(RE:U/\d+/, "1234567")`, "1", object.STRING_OBJ},
+		{`match("1234567", by=RE/\d+/)`, "1234567", object.STRING_OBJ},
+		{`match("1234567", by=RE:U/\d+/)`, "1", object.STRING_OBJ},
 
-		{`match(RE/\d+?/, "1234567")`, "1", object.STRING_OBJ},
-		{`match(RE:U/\d+?/, "1234567")`, "1234567", object.STRING_OBJ},
+		{`match("1234567", by=RE/\d+?/)`, "1", object.STRING_OBJ},
+		{`match("1234567", by=RE:U/\d+?/)`, "1234567", object.STRING_OBJ},
 
 		// combined
 		{`matching("a\nC", by=re:s:i/a.c/)`, true, object.BOOLEAN_OBJ},
 		{`matching("a\nC", by=re:s/a.c/)`, false, object.BOOLEAN_OBJ},
-		{`match(re:s:m:U:i/a.c.*$/, "a\nC\n")`, "a\nC", object.STRING_OBJ},
+		{`match("a\nC\n", by=re:s:m:U:i/a.c.*$/)`, "a\nC", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

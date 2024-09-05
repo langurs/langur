@@ -61,32 +61,35 @@ var bi_match = &object.BuiltIn{
 		Description: "accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "alt"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "match"
 
-		re, ok := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
 		}
-		s := object.ToString(args[1])
 
 		result, err := object.RegexMatchOnce(re, s.String())
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
+
 		if result == object.NONE && args[2] != nil {
 			// no match
 			// return alternate value
 			return args[2]
 		}
+
 		return result
 	},
 }
