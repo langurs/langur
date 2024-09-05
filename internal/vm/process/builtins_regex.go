@@ -57,7 +57,7 @@ var bi_match = &object.BuiltIn{
 		Description: "accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "regex"},
+			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "anything"},
 		},
 
@@ -92,36 +92,32 @@ var bi_matches = &object.BuiltIn{
 		Name:        "matches",
 		Description: "matches(regex, anything, max); accepts compiled regex and returns list of progressive matches (empty list if no matches); max optional (defaults to -1 meaning infinite)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "by"},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "max", DefaultValue: object.NegOne},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "matches"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		re, ok := args[0].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
 		}
 		s := object.ToString(args[1])
 
-		cnt := -1 // -1 == infinite (practically)
-		if len(args) > 2 {
-			var err error
-			count, ok := args[2].(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-			}
-			cnt, err = count.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-			}
+		var err error
+		count, ok := args[2].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for max count argument")
+		}
+		cnt, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		arr, err := object.RegexMatchProgressive(re, s.String(), cnt)

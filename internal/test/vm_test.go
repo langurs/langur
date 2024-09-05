@@ -6575,8 +6575,10 @@ func TestRe2(t *testing.T) {
 		{`matches(re/a.*?Z/, "abc azc aec ")`, []string{}, object.LIST_OBJ},
 
 		{`matches(re/^a.*?c/, "abc azc aec ")`, []string{"abc"}, object.LIST_OBJ},
-		{`matches(re/^a.*?c/, "abc azc aec ", 7)`, []string{"abc"}, object.LIST_OBJ},
+		{`matches(re/^a.*?c/, "abc azc aec ", max=7)`, []string{"abc"}, object.LIST_OBJ},
 		{`matches(re/^a.*?Z/, "abc azc aec ")`, []string{}, object.LIST_OBJ},
+		{`matches(re/[a-c]/, "abc azc aec ", max=6)`, []string{"a", "b", "c", "a", "c", "a"}, object.LIST_OBJ},
+		{`matches(re/[a-c]/, "abc azc aec ", max=2)`, []string{"a", "b"}, object.LIST_OBJ},
 
 		{`replace(" abc abc abc abc ", re/a.*?c/, "7")`, " 7 7 7 7 ", object.STRING_OBJ},
 		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 1)`, " 7 abc abc abc ", object.STRING_OBJ},
