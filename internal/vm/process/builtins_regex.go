@@ -97,41 +97,42 @@ var bi_match = &object.BuiltIn{
 var bi_matches = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "matches",
-		Description: "matches(regex, anything, max); accepts compiled regex and returns list of progressive matches (empty list if no matches); max optional (defaults to -1 meaning infinite)",
+		Description: "accepts compiled regex and returns list of progressive matches (empty list if no matches)",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "max", DefaultValue: object.NegOne},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "matches"
 
-		re, ok := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
 		}
-		s := object.ToString(args[1])
 
 		var err error
 		count, ok := args[2].(*object.Number)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for max count argument")
 		}
-		cnt, err := count.ToInt()
+		max, err := count.ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		arr, err := object.RegexMatchProgressive(re, s.String(), cnt)
+		list, err := object.RegexMatchProgressive(re, s.String(), max)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-		return arr
+		return list
 	},
 }
 

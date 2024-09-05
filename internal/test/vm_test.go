@@ -6568,15 +6568,15 @@ func TestRe2(t *testing.T) {
 		{`match(" abc ", by=re/a.*d/)`, nil, object.NULL_OBJ},
 		{`match(" abc ", by=re/a.*d/, alt=7)`, "7", object.NUMBER_OBJ},
 
-		{`matches(re/a.*?c/, "abc azc aec ")`, []string{"abc", "azc", "aec"}, object.LIST_OBJ},
-		{`matches(re/a.*?z/, "abc azc aec ")`, []string{"abc az"}, object.LIST_OBJ},
-		{`matches(re/a.*?Z/, "abc azc aec ")`, []string{}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/a.*?c/)`, []string{"abc", "azc", "aec"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/a.*?z/)`, []string{"abc az"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/a.*?Z/)`, []string{}, object.LIST_OBJ},
 
-		{`matches(re/^a.*?c/, "abc azc aec ")`, []string{"abc"}, object.LIST_OBJ},
-		{`matches(re/^a.*?c/, "abc azc aec ", max=7)`, []string{"abc"}, object.LIST_OBJ},
-		{`matches(re/^a.*?Z/, "abc azc aec ")`, []string{}, object.LIST_OBJ},
-		{`matches(re/[a-c]/, "abc azc aec ", max=6)`, []string{"a", "b", "c", "a", "c", "a"}, object.LIST_OBJ},
-		{`matches(re/[a-c]/, "abc azc aec ", max=2)`, []string{"a", "b"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/^a.*?c/)`, []string{"abc"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/^a.*?c/, max=7)`, []string{"abc"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/^a.*?Z/)`, []string{}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/[a-c]/, max=6)`, []string{"a", "b", "c", "a", "c", "a"}, object.LIST_OBJ},
+		{`matches("abc azc aec ", by=re/[a-c]/, max=2)`, []string{"a", "b"}, object.LIST_OBJ},
 
 		{`replace(" abc abc abc abc ", re/a.*?c/, "7")`, " 7 7 7 7 ", object.STRING_OBJ},
 		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 1)`, " 7 abc abc abc ", object.STRING_OBJ},
