@@ -20,8 +20,11 @@ var bi_matching = &object.BuiltIn{
 		Description: "accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "anything"},
+		},
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -30,14 +33,14 @@ var bi_matching = &object.BuiltIn{
 		var check *object.String
 		var ok bool
 
-		re, isRegex := args[0].(*object.Regex)
+		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
-			check, ok = args[0].(*object.String)
+			check, ok = args[1].(*object.String)
 			if !ok {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for matching by argument")
 			}
 		}
-		s := object.ToString(args[1])
+		s := object.ToString(args[0])
 
 		if isRegex {
 			success, err := object.RegexMatching(re, s.String())

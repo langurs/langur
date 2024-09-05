@@ -2748,7 +2748,7 @@ func TestStringBlockQuotes(t *testing.T) {
 func TestStringAndRegexModifiers(t *testing.T) {
 	tests := []vmTestCase{
 		{"QS:any(\uF8FF)", "\uF8FF", object.STRING_OBJ},
-		{"matching(re:any(\uF8FF), QS:any(\uF8FF))", true, object.BOOLEAN_OBJ},
+		{"matching(QS:any(\uF8FF), by=re:any(\uF8FF))", true, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6556,14 +6556,12 @@ func TestRe2(t *testing.T) {
 		{"re/abc/ is regex", true, object.BOOLEAN_OBJ},
 		{"qs/abc/ is regex", false, object.BOOLEAN_OBJ},
 
-		{`matching(re/a.*c/, " abc ")`, true, object.BOOLEAN_OBJ},
-		{`matching(re/a.*d/, " abc ")`, false, object.BOOLEAN_OBJ},
+		{`matching(" abc ", by=re/a.*c/)`, true, object.BOOLEAN_OBJ},
+		{`matching(" abc ", by=re/a.*d/)`, false, object.BOOLEAN_OBJ},
 
 		// regex functions accepting non-strings (auto-stringification)
-		{`matching(RE/\d+\.\d+/, 123.0)`, true, object.BOOLEAN_OBJ},
-		{`matching(RE/\d+\.\d+/, 123)`, false, object.BOOLEAN_OBJ},
-		{`matching RE/\d+\.\d+/, 123.0`, true, object.BOOLEAN_OBJ}, // look ma, no parentheses
-		{`matching RE/\d+\.\d+/, 123`, false, object.BOOLEAN_OBJ},
+		{`matching(123.0, by=RE/\d+\.\d+/)`, true, object.BOOLEAN_OBJ},
+		{`matching(123, by=RE/\d+\.\d+/)`, false, object.BOOLEAN_OBJ},
 
 		{`match(re/a.*c/, " abc ")`, "abc", object.STRING_OBJ},
 		{`match(re/a.*c/, " abc ", alt=7)`, "abc", object.STRING_OBJ},
@@ -6687,26 +6685,26 @@ func TestRe2(t *testing.T) {
 		{`reEsc("\\(\x0D\x0Aabc #)\x09+")`, `\\\(\r\nabc\ \#\)\t\+`, object.STRING_OBJ},
 
 		// characters added for free-spacing mode escaped and handled well?
-		{`matching(reCompile("(?x:" ~ reEsc("\n") ~ ")"), "\n")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("\n") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\n")), "\n")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\n")), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("\r") ~ ")"), "\r")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("\r") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\r")), "\r")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\r")), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("\t") ~ ")"), "\t")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("\t") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\t")), "\t")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("\t")), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc(" ") ~ ")"), " ")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc(" ") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc(" ")), " ")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc(" ")), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("#") ~ ")"), "#")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile("(?x:" ~ reEsc("#") ~ ")"), "")`, false, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("#")), "#")`, true, object.BOOLEAN_OBJ},
-		{`matching(reCompile(reEsc("#")), "")`, false, object.BOOLEAN_OBJ},
+		{`matching("\n", by=reCompile("(?x:" ~ reEsc("\n") ~ ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" ~ reEsc("\n") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\n", by=reCompile(reEsc("\n")))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile(reEsc("\n")))`, false, object.BOOLEAN_OBJ},
+		{`matching("\r", by=reCompile("(?x:" ~ reEsc("\r") ~ ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" ~ reEsc("\r") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\r", by=reCompile(reEsc("\r")))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile(reEsc("\r")))`, false, object.BOOLEAN_OBJ},
+		{`matching("\t", by=reCompile("(?x:" ~ reEsc("\t") ~ ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" ~ reEsc("\t") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\t", by=reCompile(reEsc("\t")))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile(reEsc("\t")))`, false, object.BOOLEAN_OBJ},
+		{`matching(" ", by=reCompile("(?x:" ~ reEsc(" ") ~ ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" ~ reEsc(" ") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching(" ", by=reCompile(reEsc(" ")))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile(reEsc(" ")))`, false, object.BOOLEAN_OBJ},
+		{`matching("#", by=reCompile("(?x:" ~ reEsc("#") ~ ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" ~ reEsc("#") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("#", by=reCompile(reEsc("#")))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile(reEsc("#")))`, false, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6765,25 +6763,25 @@ func TestRe2Modifiers(t *testing.T) {
 		// http://rexegg.com/regex-modifiers.html
 
 		// case insensitive
-		{`matching(re/a.*c/, "ABC")`, false, object.BOOLEAN_OBJ},
-		{`matching(re:i/a.*c/, "ABC")`, true, object.BOOLEAN_OBJ},
-		{`matching(re:i/a.*z/, "ABC")`, false, object.BOOLEAN_OBJ},
+		{`matching("ABC", by=re/a.*c/)`, false, object.BOOLEAN_OBJ},
+		{`matching("ABC", by=re:i/a.*c/)`, true, object.BOOLEAN_OBJ},
+		{`matching("ABC", by=re:i/a.*z/)`, false, object.BOOLEAN_OBJ},
 
 		// case insensitive with interpolation
-		{`matching(re/a.*{{1+1}}c/, "AB2C")`, false, object.BOOLEAN_OBJ},
-		{`matching(re:i/a.*{{1+1}}c/, "AB2C")`, true, object.BOOLEAN_OBJ},
-		{`matching(re:i/a.*{{1+1}}z/, "AB2C")`, false, object.BOOLEAN_OBJ},
+		{`matching("AB2C", by=re/a.*{{1+1}}c/)`, false, object.BOOLEAN_OBJ},
+		{`matching("AB2C", by=re:i/a.*{{1+1}}c/)`, true, object.BOOLEAN_OBJ},
+		{`matching("AB2C", by=re:i/a.*{{1+1}}z/)`, false, object.BOOLEAN_OBJ},
 
 		// single line (a.k.a. DOTALL mode)
-		{`matching(re/a.c/, "a\nc")`, false, object.BOOLEAN_OBJ},
-		{`matching(re:s/a.c/, "a\nc")`, true, object.BOOLEAN_OBJ},
+		{`matching("a\nc", by=re/a.c/)`, false, object.BOOLEAN_OBJ},
+		{`matching("a\nc", by=re:s/a.c/)`, true, object.BOOLEAN_OBJ},
 
 		// multiline mode, which is NOT the opposite of single line mode
-		{`matching(re/^a.c/, "\nabc")`, false, object.BOOLEAN_OBJ},
-		{`matching(re:m/^a.c/, "\nabc")`, true, object.BOOLEAN_OBJ},
+		{`matching("\nabc", by=re/^a.c/)`, false, object.BOOLEAN_OBJ},
+		{`matching("\nabc", by=re:m/^a.c/)`, true, object.BOOLEAN_OBJ},
 
-		{`matching(re(a.c$), "abc\n")`, false, object.BOOLEAN_OBJ},
-		{`matching(re:m(a.c$), "abc\n")`, true, object.BOOLEAN_OBJ},
+		{`matching("abc\n", by=re(a.c$))`, false, object.BOOLEAN_OBJ},
+		{`matching("abc\n", by=re:m(a.c$))`, true, object.BOOLEAN_OBJ},
 
 		// ungreedy mode (reverse "greediness"/"laziness" of quantifiers)
 		{`match(RE/\d+/, "1234567")`, "1234567", object.STRING_OBJ},
@@ -6793,8 +6791,8 @@ func TestRe2Modifiers(t *testing.T) {
 		{`match(RE:U/\d+?/, "1234567")`, "1234567", object.STRING_OBJ},
 
 		// combined
-		{`matching(re:s:i/a.c/, "a\nC")`, true, object.BOOLEAN_OBJ},
-		{`matching(re:s/a.c/, "a\nC")`, false, object.BOOLEAN_OBJ},
+		{`matching("a\nC", by=re:s:i/a.c/)`, true, object.BOOLEAN_OBJ},
+		{`matching("a\nC", by=re:s/a.c/)`, false, object.BOOLEAN_OBJ},
 		{`match(re:s:m:U:i/a.c.*$/, "a\nC\n")`, "a\nC", object.STRING_OBJ},
 	}
 
@@ -6806,41 +6804,41 @@ func TestRe2BlockQuotesAndFreeSpacingMode(t *testing.T) {
 		{`val r = RE:block END
 \d+\.\d+
 END
-matching(r, 123.0)`, true, object.BOOLEAN_OBJ},
+matching(123.0, by=r)`, true, object.BOOLEAN_OBJ},
 
 		// using lead modifier, which trims leading space on each line
 		{`val r = RE:lead:block END
 			\d+\.\d+
 			abc
 			END
-			matching(r, "123.0\nabc")`, true, object.BOOLEAN_OBJ},
+			matching("123.0\nabc", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val r = re:block END
 \\d+\\.\\d+
 END
-		matching(r, 123.0)`, true, object.BOOLEAN_OBJ},
+		matching(123.0, by=r)`, true, object.BOOLEAN_OBJ},
 
 		// free-spacing mode
 		{`val r = re:x/ abc /
-		  matching(r, "abc")`, true, object.BOOLEAN_OBJ},
+		  matching("abc", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val r = re:x:block END
 			abc
 END
-		  matching(r, "abc")`, true, object.BOOLEAN_OBJ},
+		  matching("abc", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val r = re:x:block END
 			abc
 			# an intwesting comment
 END
-		  matching(r, "abc")`, true, object.BOOLEAN_OBJ},
+		  matching("abc", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val r = re:x:block END
 			abc
 			# an intwesting comment
 			123[ ]
 END
-		  matching(r, "abc123 ")`, true, object.BOOLEAN_OBJ},
+		  matching("abc123 ", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val r = RE:x:block END
 			abc\#
@@ -6848,7 +6846,7 @@ END
 			(?-x: you know )  	# with a non-free-spacing section in the middle
 			123\ 				# can't stop commenting
 		  END
-		  matching(r, "abc# you know 123 ")`, true, object.BOOLEAN_OBJ},
+		  matching("abc# you know 123 ", by=r)`, true, object.BOOLEAN_OBJ},
 
 		// free-spacing mode with interpolation
 		// esc modifier on re literal will escape all interpolations
@@ -6858,7 +6856,7 @@ END
 			# an intwesting comment
 			123
 		  END
-		  matching(r, "abcyo yo123")`, true, object.BOOLEAN_OBJ},
+		  matching("abcyo yo123", by=r)`, true, object.BOOLEAN_OBJ},
 
 		{`val x = "hey hey"
 		  val r = re:x:block END
@@ -6866,7 +6864,7 @@ END
 			# an intwesting comment
 			123
      END
-		  matching(r, "abcheyhey123")`, true, object.BOOLEAN_OBJ},
+		  matching("abcheyhey123", by=r)`, true, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -6877,31 +6875,31 @@ func TestInterpolationIntoNonFreeSpacingRegex(t *testing.T) {
 		{ // non-free-spacing regex interpolated into a non-free-spacing regex literal
 			`val re1 = re/yo joe/
 		     val re2 = re/{{re1}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // free-spacing regex interpolated into a non-free-spacing regex literal
 			`val re1 = re:x/yo joe/
 		     val re2 = re/{{re1}}/
-		     matching(re2, "yojoes")`,
+		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a non-free-spacing regex literal without escaping
 			`val re1 = "yo joe"
 		     val re2 = re/{{re1}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a non-free-spacing regex literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:esc/{{re1}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a non-free-spacing regex literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re/{{re1:esc}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 	}
@@ -6914,31 +6912,31 @@ func TestInterpolationIntoFreeSpacingRegex(t *testing.T) {
 		{ // non-free-spacing regex interpolated into a free-spacing regex literal
 			`val re1 = re/yo joe/
 		     val re2 = re:x/{{re1}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // free-spacing regex interpolated into a free-spacing regex literal
 			`val re1 = re:x/yo joe/
 		     val re2 = re:x/{{re1}}/
-		     matching(re2, "yojoes")`,
+		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a free-spacing regex literal without escaping
 			`val re1 = "yo joe"
 		     val re2 = re:x/{{re1}}/
-		     matching(re2, "yojoes")`,
+		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a free-spacing regex literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:esc:x/{{re1}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 		{ // string interpolated into a free-spacing regex literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:x/{{re1:esc}}/
-		     matching(re2, "yo joes")`,
+		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
 	}
@@ -6967,8 +6965,8 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 		{`split("ασδ")`, []string{"α", "σ", "δ"}, object.LIST_OBJ},
 		{`split(3.14)`, []string{"3", ".", "1", "4"}, object.LIST_OBJ},
 
-		{`matching("abc", "basdfabcklsdf")`, true, object.BOOLEAN_OBJ},
-		{`matching("abC", "basdfabcklsdf")`, false, object.BOOLEAN_OBJ},
+		{`matching("basdfabcklsdf", by="abc")`, true, object.BOOLEAN_OBJ},
+		{`matching("basdfabcklsdf", by="abC")`, false, object.BOOLEAN_OBJ},
 
 		{`index("abc", "basdfabcklsdf")`, []int64{6, 8}, object.RANGE_OBJ},
 		{`index("abC", "basdfabcklsdf")`, nil, object.NULL_OBJ},
