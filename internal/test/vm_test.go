@@ -6566,9 +6566,9 @@ func TestRe2(t *testing.T) {
 		{`matching RE/\d+\.\d+/, 123`, false, object.BOOLEAN_OBJ},
 
 		{`match(re/a.*c/, " abc ")`, "abc", object.STRING_OBJ},
-		{`match(re/a.*c/, " abc ", 7)`, "abc", object.STRING_OBJ},
+		{`match(re/a.*c/, " abc ", alt=7)`, "abc", object.STRING_OBJ},
 		{`match(re/a.*d/, " abc ")`, nil, object.NULL_OBJ},
-		{`match(re/a.*d/, " abc ", 7)`, "7", object.NUMBER_OBJ},
+		{`match(re/a.*d/, " abc ", alt=7)`, "7", object.NUMBER_OBJ},
 
 		{`matches(re/a.*?c/, "abc azc aec ")`, []string{"abc", "azc", "aec"}, object.LIST_OBJ},
 		{`matches(re/a.*?z/, "abc azc aec ")`, []string{"abc az"}, object.LIST_OBJ},

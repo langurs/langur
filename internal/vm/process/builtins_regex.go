@@ -17,12 +17,11 @@ import (
 var bi_matching = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "matching",
-		Description: "matching(regex, anything); accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
+		Description: "accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
+			object.Parameter{ExternalName: "by"},
+			object.Parameter{ExternalName: "anything"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -35,7 +34,7 @@ var bi_matching = &object.BuiltIn{
 		if !isRegex {
 			check, ok = args[0].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for matching by argument")
 			}
 		}
 		s := object.ToString(args[1])
@@ -55,24 +54,23 @@ var bi_matching = &object.BuiltIn{
 var bi_match = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "match",
-		Description: "match(regex, anything, alternate); accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
+		Description: "accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "regex"},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "alt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "match"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		re, ok := args[0].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
 		}
 		s := object.ToString(args[1])
 
@@ -80,7 +78,7 @@ var bi_match = &object.BuiltIn{
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
-		if result == object.NONE && len(args) > 2 {
+		if result == object.NONE && args[2] != nil {
 			// no match
 			// return alternate value
 			return args[2]
