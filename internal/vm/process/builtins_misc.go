@@ -18,7 +18,7 @@ var bi_exit = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "exit",
 		ImpureEffects: true,
-		Description:   "exits with the integer code given; 0 if no code is given; msg as string to write to standard error, appending a newline, if code not 0",
+		Description:   "exits with the integer code given; msg as string to write to standard error, appending a newline, if code not 0",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "code"},
