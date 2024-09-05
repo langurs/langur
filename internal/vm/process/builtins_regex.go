@@ -33,6 +33,8 @@ var bi_matching = &object.BuiltIn{
 		var check *object.String
 		var ok bool
 
+		s := object.ToString(args[0])
+
 		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
 			check, ok = args[1].(*object.String)
@@ -40,7 +42,6 @@ var bi_matching = &object.BuiltIn{
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for matching by argument")
 			}
 		}
-		s := object.ToString(args[0])
 
 		if isRegex {
 			success, err := object.RegexMatching(re, s.String())
