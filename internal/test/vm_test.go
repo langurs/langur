@@ -2593,7 +2593,7 @@ func TestDecouplingDeclarationWithExpansion(t *testing.T) {
 func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 	tests := []vmTestCase{
 		{
-			`if val x, y = submatch(RE/(\d+).+?(\d+)/, "jklwer489werjk27,.dsjfkl56") {
+			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(\d+).+?(\d+)/) {
 				[y, x]
 			 }`,
 			[]string{"27", "489"},
@@ -2602,7 +2602,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 
 		{
 			`val line = "jklwer489werjk27,.dsjfkl56"
-			 if val x = submatch(RE/(\d+).+?(\d+)/, line) {
+			 if val x = submatch(line, by=RE/(\d+).+?(\d+)/) {
 				x
 			 }`,
 			[]string{"489", "27"},
@@ -2611,7 +2611,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 
 		{
 			`val line = "jklwer489werjk27,.dsjfkl56"
-			 if val _, x = submatch(RE/(\d+).+?(\d+)/, line) {
+			 if val _, x = submatch(line, by=RE/(\d+).+?(\d+)/) {
 				x
 			 }`,
 			"27",
@@ -2620,7 +2620,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 
 		// no match
 		{
-			`if val x, y = submatch(RE/(asdf\d+).+?(vwewr\d+)/, "jklwer489werjk27,.dsjfkl56") {
+			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(asdf\d+).+?(vwewr\d+)/) {
 				[y, x]
 			 }`,
 			nil,
@@ -2629,7 +2629,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 
 		// no match on first test
 		{
-			`if val x, y = submatch(RE/(asdf\d+).+?(vwewr\d+)/, "jklwer489werjk27,.dsjfkl56") {
+			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(asdf\d+).+?(vwewr\d+)/) {
 				[y, x]
 			 } else if var x = null {	# with scope on second test as well
 				123; x
@@ -2638,7 +2638,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 			object.NULL_OBJ,
 		},
 		{
-			`if val x, y = submatch(RE/(asdf\d+).+?(vwewr\d+)/, "jklwer489werjk27,.dsjfkl56") {
+			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(asdf\d+).+?(vwewr\d+)/) {
 				[y, x]
 			 } else if false == true xor false {	# without scope on second test
 				123; 456; 789
@@ -2647,7 +2647,7 @@ func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
 			object.NULL_OBJ,
 		},
 		{
-			`if val x, y = submatch(RE/(asdf\d+).+?(vwewr\d+)/, "jklwer489werjk27,.dsjfkl56") {
+			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(asdf\d+).+?(vwewr\d+)/) {
 				[y, x]
 			 } else {			# with explicit else after scoped test and action
 				123; 456; 789
@@ -6641,8 +6641,8 @@ func TestRe2(t *testing.T) {
 		{`split("", "")`, []string{}, object.LIST_OBJ},
 		{`split(3, "")`, []string{}, object.LIST_OBJ}, // ?
 
-		{`submatch(re"(a.).+(zz)(t)", "asdfzzto")`, []string{"as", "zz", "t"}, object.LIST_OBJ},
-		{`submatch(re"(a.).+(zz)(t)", "asdfzz")`, []string{}, object.LIST_OBJ},
+		{`submatch("asdfzzto", by=re"(a.).+(zz)(t)")`, []string{"as", "zz", "t"}, object.LIST_OBJ},
+		{`submatch("asdfzz", by=re"(a.).+(zz)(t)")`, []string{}, object.LIST_OBJ},
 
 		{`submatchH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " abcd: peaceInJerusalem ")`,
 			[][]object.Object{
@@ -8752,18 +8752,18 @@ func TestVariableScoping(t *testing.T) {
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = []; if x { 0 } else if x = submatch(re/a(b)c/, "abc") { x[1] }`,
+			input:        `var x = []; if x { 0 } else if x = submatch("abc", by=re/a(b)c/) { x[1] }`,
 			expected:     "b",
 			expectedType: object.STRING_OBJ,
 		},
 		{
-			input:        `{ var x = []; if x { 0 } else if x = submatch(re/a(b)c/, "abc") { x[1] }}`,
+			input:        `{ var x = []; if x { 0 } else if x = submatch("abc", by=re/a(b)c/) { x[1] }}`,
 			expected:     "b",
 			expectedType: object.STRING_OBJ,
 		},
 
 		{
-			input:        `if x, y = submatch(re/a(b)(c)/, "abc") { x ~ "!" ~ y }`,
+			input:        `if x, y = submatch("abc", by=re/a(b)(c)/) { x ~ "!" ~ y }`,
 			expected:     "b!c",
 			expectedType: object.STRING_OBJ,
 		},
@@ -8881,7 +8881,7 @@ func TestAssignmentContexts(t *testing.T) {
 			14, object.NUMBER_OBJ,
 		},
 		{`var x = ""
-		  if k, v = submatch(re/(.+):(.+)/, "abcd:fish") {
+		  if k, v = submatch("abcd:fish", by=re/(.+):(.+)/) {
 		  	x = k ~ "+" ~ v
 		  }
 		  x`,

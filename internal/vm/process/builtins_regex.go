@@ -139,22 +139,25 @@ var bi_matches = &object.BuiltIn{
 var bi_submatch = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "submatch",
-		Description: "submatch(regex, anything); returns list of submatches (empty list if not a match)",
+		Description: "returns list of submatches (empty list if not a match)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
+		},
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatch"
 
-		re, ok := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
 		}
-		s := object.ToString(args[1])
 
 		result, err := object.RegexSubMatches(re, s.String())
 		if err != nil {
