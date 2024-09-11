@@ -6711,7 +6711,7 @@ func TestRe2(t *testing.T) {
 }
 
 func TestSubMatchesHashList(t *testing.T) {
-	str := `submatchesH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " abcd: ")`
+	str := `submatchesH(" abcd: ", by=RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/)`
 	expect := [][][]object.Object{}
 	result := oneResult(t, 1, str, false, false)
 	err := testListOfHashesObject(expect, result)
@@ -6719,7 +6719,7 @@ func TestSubMatchesHashList(t *testing.T) {
 		t.Errorf("testListOfHashesObject failed: %s", err)
 	}
 
-	str = `submatchesH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " abcd: peaceInJerusalem ")`
+	str = `submatchesH(" abcd: peaceInJerusalem ", by=RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/)`
 	expect = [][][]object.Object{{
 		{object.NumberFromInt(0), object.NewString("abcd: peaceInJerusalem")},
 		{object.NumberFromInt(1), object.NewString("abcd")},
@@ -6733,7 +6733,7 @@ func TestSubMatchesHashList(t *testing.T) {
 		t.Errorf("testListOfHashesObject failed: %s", err)
 	}
 
-	str = `submatchesH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " first: youknow ; second : youdontknow ")`
+	str = `submatchesH(" first: youknow ; second : youdontknow ", by=RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/)`
 	expect = [][][]object.Object{
 		{
 			{object.NumberFromInt(0), object.NewString("first: youknow")},
