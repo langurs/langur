@@ -6655,9 +6655,9 @@ func TestRe2(t *testing.T) {
 			object.HASH_OBJ,
 		},
 
-		{`submatches(re/(a.).+?(z)z/, "asdfzzmnazmnopzz")`, [][]string{{"as", "z"}, {"az", "z"}}, object.LIST_OBJ},
-		{`submatches(re/(a.).+?(z)z/, "asdfmnazmnopzz")`, [][]string{{"as", "z"}}, object.LIST_OBJ},
-		{`submatches(re/(a.).+?(z)z/, "asdfmnazmnop")`, [][]string{}, object.LIST_OBJ},
+		{`submatches("asdfzzmnazmnopzz", by=re/(a.).+?(z)z/)`, [][]string{{"as", "z"}, {"az", "z"}}, object.LIST_OBJ},
+		{`submatches("asdfmnazmnopzz", by=re/(a.).+?(z)z/)`, [][]string{{"as", "z"}}, object.LIST_OBJ},
+		{`submatches("asdfmnazmnop", by=re/(a.).+?(z)z/)`, [][]string{}, object.LIST_OBJ},
 
 		{`index(re"(a.).+(zz)(t)", "asdfzzto")`, []int64{1, 7}, object.RANGE_OBJ},
 		{`index(re"zz", "asdfzzto")`, []int64{5, 6}, object.RANGE_OBJ},

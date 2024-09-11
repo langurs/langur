@@ -105,7 +105,7 @@ var bi_matches = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.NegOne},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -201,38 +201,34 @@ var bi_submatchH = &object.BuiltIn{
 var bi_submatches = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "submatches",
-		Description: "submatches(regex, anything, max); returns list of lists of progressive submatches (empty list if not a match); max optional (defaults to -1 meaning infinite)",
+		Description: "returns list of lists of progressive submatches (empty list if not a match)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatches"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		s := object.ToString(args[0])
 
-		re, ok := args[0].(*object.Regex)
+		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
-		s := object.ToString(args[1])
 
-		cnt := -1
-		if len(args) > 2 {
-			count, ok := args[2].(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-			}
-			var err error
-			cnt, err = count.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-			}
+		count, ok := args[2].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+		}
+		cnt, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		result, err := object.RegexProgressiveSubMatches(re, s.String(), cnt)
