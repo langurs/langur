@@ -283,20 +283,19 @@ var bi_submatchesH = &object.BuiltIn{
 var bi_split = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "split",
-		Description: "split(delim, anything, max); accepts regex or string delimiter and splits string into a list of strings; max optional",
+		Description: "accepts regex or string delimiter and splits anything into a list of strings",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "split"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
 
 		// default delimiter as ZLS
 		var delim, s string
@@ -304,39 +303,32 @@ var bi_split = &object.BuiltIn{
 		var isRegex, isCountEach bool
 		var re *object.Regex
 
-		if len(args) == 1 {
-			// 1 argument, split into single code point strings
-			s = args[0].String()
+		s = args[0].String()
 
-		} else {
-			// check for regex/string/integer count to split by
-			switch args[0].(type) {
-			case *object.Regex:
-				re, isRegex = args[0].(*object.Regex)
-			case *object.String:
-				delim = args[0].String()
-			case *object.Number:
-				countEach, isCountEach = object.NumberToInt(args[0])
-				if !isCountEach {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
-				}
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for first argument")
+		// check for regex/string/integer count to split by
+		switch by := args[1].(type) {
+		case nil:
+			// okay
+		case *object.Regex:
+			re, isRegex = by, true
+		case *object.String:
+			delim = by.String()
+		case *object.Number:
+			countEach, isCountEach = object.NumberToInt(by)
+			if !isCountEach {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument by")
 			}
-			s = args[1].String()
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument by")
 		}
 
-		max := -1
-		if len(args) > 2 {
-			count, ok := args[2].(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-			}
-			var err error
-			max, err = count.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-			}
+		count, ok := args[2].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+		}
+		max, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if isRegex {
