@@ -39,7 +39,7 @@ var bi_matching = &object.BuiltIn{
 		if !isRegex {
 			check, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for matching by argument")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
@@ -76,7 +76,7 @@ var bi_match = &object.BuiltIn{
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
 		result, err := object.RegexMatchOnce(re, s.String())
@@ -115,13 +115,13 @@ var bi_matches = &object.BuiltIn{
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for match by argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
 		var err error
 		count, ok := args[2].(*object.Number)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for max count argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
 		}
 		max, err := count.ToInt()
 		if err != nil {
@@ -156,7 +156,7 @@ var bi_submatch = &object.BuiltIn{
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
 		result, err := object.RegexSubMatches(re, s.String())
@@ -170,22 +170,25 @@ var bi_submatch = &object.BuiltIn{
 var bi_submatchH = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "submatchH",
-		Description: "submatchH(regex, anything); returns hash of submatches (empty hash if not a match)",
+		Description: "returns hash of submatches (empty hash if not a match)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
+		},
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchH"
 
-		re, ok := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
-		s := object.ToString(args[1])
 
 		result, err := object.RegexSubMatchesHash(re, s.String())
 		if err != nil {

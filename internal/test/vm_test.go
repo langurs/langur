@@ -6644,7 +6644,7 @@ func TestRe2(t *testing.T) {
 		{`submatch("asdfzzto", by=re"(a.).+(zz)(t)")`, []string{"as", "zz", "t"}, object.LIST_OBJ},
 		{`submatch("asdfzz", by=re"(a.).+(zz)(t)")`, []string{}, object.LIST_OBJ},
 
-		{`submatchH(RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/, " abcd: peaceInJerusalem ")`,
+		{`submatchH(" abcd: peaceInJerusalem ", by=RE/(?P<key>\w+)\s*:\s*(?P<value>\w+)/)`,
 			[][]object.Object{
 				{object.NumberFromInt(0), object.NewString("abcd: peaceInJerusalem")},
 				{object.NumberFromInt(1), object.NewString("abcd")},
