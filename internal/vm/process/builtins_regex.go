@@ -460,22 +460,25 @@ var bi_indices = &object.BuiltIn{
 var bi_subindex = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "subindex",
-		Description: `subindex(regex, anything); accepts regex and returns list of code point ranges for submatches, or empty list for no match`,
+		Description: `accepts regex and returns list of code point ranges for submatches, or empty list for no match`,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
+		},
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindex"
 
-		re, ok := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
-		s := object.ToString(args[1])
 
 		result, err := object.RegexSubMatchesIndices(re, s.String())
 		if err != nil {

@@ -6667,9 +6667,9 @@ func TestRe2(t *testing.T) {
 		{`indices("cdefghabab12", by=re/ab/)`, [][]int64{{7, 8}, {9, 10}}, object.LIST_OBJ},
 		{`indices("cdefghazaz12", by=re/ab/)`, [][]int64{}, object.LIST_OBJ},
 
-		{`subindex(re/(a.)/, "sdfbbzzmnazmnop")`, [][]int64{{10, 11}}, object.LIST_OBJ},
-		{`subindex(re/(a.).+?(z)z/, "asdfbbzzmnazmnopzz")`, [][]int64{{1, 2}, {7, 7}}, object.LIST_OBJ},
-		{`subindex(re/(a.)/, "sdfbbzzmnzmnop")`, [][]int64{}, object.LIST_OBJ},
+		{`subindex("sdfbbzzmnazmnop", by=re/(a.)/)`, [][]int64{{10, 11}}, object.LIST_OBJ},
+		{`subindex("asdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/)`, [][]int64{{1, 2}, {7, 7}}, object.LIST_OBJ},
+		{`subindex("sdfbbzzmnzmnop", by=re/(a.)/)`, [][]int64{}, object.LIST_OBJ},
 
 		{`subindices(re/(a.)/, "sdfbbzzmnazmnop")`, [][][]int64{{{10, 11}}}, object.LIST_OBJ},
 
