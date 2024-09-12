@@ -6659,9 +6659,9 @@ func TestRe2(t *testing.T) {
 		{`submatches("asdfmnazmnopzz", by=re/(a.).+?(z)z/)`, [][]string{{"as", "z"}}, object.LIST_OBJ},
 		{`submatches("asdfmnazmnop", by=re/(a.).+?(z)z/)`, [][]string{}, object.LIST_OBJ},
 
-		{`index(re"(a.).+(zz)(t)", "asdfzzto")`, []int64{1, 7}, object.RANGE_OBJ},
-		{`index(re"zz", "asdfzzto")`, []int64{5, 6}, object.RANGE_OBJ},
-		{`index(re"z", "aaasdfzzto")`, []int64{7, 7}, object.RANGE_OBJ},
+		{`index("asdfzzto", by=re"(a.).+(zz)(t)")`, []int64{1, 7}, object.RANGE_OBJ},
+		{`index("asdfzzto", by=re"zz")`, []int64{5, 6}, object.RANGE_OBJ},
+		{`index("aaasdfzzto", by=re"z")`, []int64{7, 7}, object.RANGE_OBJ},
 
 		{`indices(re/[73]+/, 7467334300)`, [][]int64{{1, 1}, {4, 6}, {8, 8}}, object.LIST_OBJ},
 		{`indices(re/ab/, "cdefghabab12")`, [][]int64{{7, 8}, {9, 10}}, object.LIST_OBJ},
@@ -6968,9 +6968,9 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 		{`matching("basdfabcklsdf", by="abc")`, true, object.BOOLEAN_OBJ},
 		{`matching("basdfabcklsdf", by="abC")`, false, object.BOOLEAN_OBJ},
 
-		{`index("abc", "basdfabcklsdf")`, []int64{6, 8}, object.RANGE_OBJ},
-		{`index("abC", "basdfabcklsdf")`, nil, object.NULL_OBJ},
-		{`index("Z", "basdfaZcklsdf")`, []int64{7, 7}, object.RANGE_OBJ},
+		{`index("basdfabcklsdf", by="abc")`, []int64{6, 8}, object.RANGE_OBJ},
+		{`index("basdfabcklsdf", by="abC")`, nil, object.NULL_OBJ},
+		{`index("basdfaZcklsdf", by="Z")`, []int64{7, 7}, object.RANGE_OBJ},
 
 		{`indices("73", 7467337300)`, [][]int64{{4, 5}, {7, 8}}, object.LIST_OBJ},
 		{`indices("7", 7467337300)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},

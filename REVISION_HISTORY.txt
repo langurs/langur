@@ -2,7 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 1.0.0
-- changed parameters, making use of parameters by name, for built-in functions all, any, appendfile, cd, count, exit, filter, fold, less, map, mapX, match, matches, more, nn, read, rotate, round, split, submatch, submatches, submatchH, trunc, writefile, zip
+- changed parameters, making use of parameters by name, for built-in functions all, any, appendfile, cd, count, exit, filter, fold, index, less, map, mapX, match, matches, more, nn, read, rotate, round, split, submatch, submatches, submatchH, trunc, writefile, zip
 - dropped builtin functions benchmark, first, foldfrom, group, groupby, groupbyH, haskey, last, rest
 - changed REPL to use parentheses for commands, such as exit()
 - changed mode consoleText default to false
