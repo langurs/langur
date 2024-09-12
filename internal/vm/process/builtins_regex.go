@@ -444,7 +444,6 @@ var bi_indices = &object.BuiltIn{
 		}
 
 		var result object.Object
-
 		if isRegex {
 			result, err = object.RegexProgressiveIndices(re, s.String(), cnt)
 		} else {
@@ -491,38 +490,34 @@ var bi_subindex = &object.BuiltIn{
 var bi_subindices = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "subindices",
-		Description: `subindices(regex, anything, max); accepts regex and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match; max optional`,
+		Description: `accepts regex and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match`,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindices"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		s := object.ToString(args[0])
 
-		re, ok := args[0].(*object.Regex)
+		re, ok := args[1].(*object.Regex)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
-		s := object.ToString(args[1])
 
-		cnt := -1
-		if len(args) > 2 {
-			count, ok := args[2].(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-			}
-			var err error
-			cnt, err = count.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-			}
+		count, ok := args[2].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+		}
+		cnt, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		result, err := object.RegexProgressiveSubMatchesIndices(re, s.String(), cnt)

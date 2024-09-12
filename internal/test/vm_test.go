@@ -6671,14 +6671,14 @@ func TestRe2(t *testing.T) {
 		{`subindex("asdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/)`, [][]int64{{1, 2}, {7, 7}}, object.LIST_OBJ},
 		{`subindex("sdfbbzzmnzmnop", by=re/(a.)/)`, [][]int64{}, object.LIST_OBJ},
 
-		{`subindices(re/(a.)/, "sdfbbzzmnazmnop")`, [][][]int64{{{10, 11}}}, object.LIST_OBJ},
+		{`subindices("sdfbbzzmnazmnop", by=re/(a.)/)`, [][][]int64{{{10, 11}}}, object.LIST_OBJ},
 
-		{`subindices(re/(a.).+?(z)z/, "asdfbbzzmnazmnopzz")`, [][][]int64{{{1, 2}, {7, 7}}, {{11, 12}, {17, 17}}}, object.LIST_OBJ},
-		{`subindices(re/(a.).+?(z)z/, "asdfbbzzmnazmnopzz", 1)`, [][][]int64{{{1, 2}, {7, 7}}}, object.LIST_OBJ},
-		{`subindices(re/(a.).+?(z)z/, "asdfbbzzmnazmnopzz", 0)`, [][][]int64{}, object.LIST_OBJ},
+		{`subindices("asdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/)`, [][][]int64{{{1, 2}, {7, 7}}, {{11, 12}, {17, 17}}}, object.LIST_OBJ},
+		{`subindices("asdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/, max=1)`, [][][]int64{{{1, 2}, {7, 7}}}, object.LIST_OBJ},
+		{`subindices("asdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/, max=0)`, [][][]int64{}, object.LIST_OBJ},
 
-		{`subindices(re/(a.).+?(z)z/, "sdfbbzzmnazmnopzz")`, [][][]int64{{{10, 11}, {16, 16}}}, object.LIST_OBJ},
-		{`subindices(re/(a.).+?(z)z/, "sdfbbzzmnazmnop")`, [][][]int64{}, object.LIST_OBJ},
+		{`subindices("sdfbbzzmnazmnopzz", by=re/(a.).+?(z)z/)`, [][][]int64{{{10, 11}, {16, 16}}}, object.LIST_OBJ},
+		{`subindices("sdfbbzzmnazmnop", by=re/(a.).+?(z)z/)`, [][][]int64{}, object.LIST_OBJ},
 
 		{`reEsc(QS"\(abc)+")`, `\\\(abc\)\+`, object.STRING_OBJ},
 		// including free-spacing meta-characters...
