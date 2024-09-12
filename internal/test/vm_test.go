@@ -6663,9 +6663,9 @@ func TestRe2(t *testing.T) {
 		{`index("asdfzzto", by=re"zz")`, []int64{5, 6}, object.RANGE_OBJ},
 		{`index("aaasdfzzto", by=re"z")`, []int64{7, 7}, object.RANGE_OBJ},
 
-		{`indices(re/[73]+/, 7467334300)`, [][]int64{{1, 1}, {4, 6}, {8, 8}}, object.LIST_OBJ},
-		{`indices(re/ab/, "cdefghabab12")`, [][]int64{{7, 8}, {9, 10}}, object.LIST_OBJ},
-		{`indices(re/ab/, "cdefghazaz12")`, [][]int64{}, object.LIST_OBJ},
+		{`indices(7467334300, by=re/[73]+/)`, [][]int64{{1, 1}, {4, 6}, {8, 8}}, object.LIST_OBJ},
+		{`indices("cdefghabab12", by=re/ab/)`, [][]int64{{7, 8}, {9, 10}}, object.LIST_OBJ},
+		{`indices("cdefghazaz12", by=re/ab/)`, [][]int64{}, object.LIST_OBJ},
 
 		{`subindex(re/(a.)/, "sdfbbzzmnazmnop")`, [][]int64{{10, 11}}, object.LIST_OBJ},
 		{`subindex(re/(a.).+?(z)z/, "asdfbbzzmnazmnopzz")`, [][]int64{{1, 2}, {7, 7}}, object.LIST_OBJ},
@@ -6972,13 +6972,13 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 		{`index("basdfabcklsdf", by="abC")`, nil, object.NULL_OBJ},
 		{`index("basdfaZcklsdf", by="Z")`, []int64{7, 7}, object.RANGE_OBJ},
 
-		{`indices("73", 7467337300)`, [][]int64{{4, 5}, {7, 8}}, object.LIST_OBJ},
-		{`indices("7", 7467337300)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
-		{`indices("7", 7467337300, 4)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
-		{`indices("7", 7467337300, 3)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
-		{`indices("7", 7467337300, 2)`, [][]int64{{1, 1}, {4, 4}}, object.LIST_OBJ},
-		{`indices("7", 7467337300, 1)`, [][]int64{{1, 1}}, object.LIST_OBJ},
-		{`indices("a", 7467337300)`, [][]int64{}, object.LIST_OBJ},
+		{`indices(7467337300, by="73")`, [][]int64{{4, 5}, {7, 8}}, object.LIST_OBJ},
+		{`indices(7467337300, by="7")`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
+		{`indices(7467337300, by="7", max=4)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
+		{`indices(7467337300, by="7", max=3)`, [][]int64{{1, 1}, {4, 4}, {7, 7}}, object.LIST_OBJ},
+		{`indices(7467337300, by="7", max=2)`, [][]int64{{1, 1}, {4, 4}}, object.LIST_OBJ},
+		{`indices(7467337300, by="7", max=1)`, [][]int64{{1, 1}}, object.LIST_OBJ},
+		{`indices(7467337300, by="a")`, [][]int64{}, object.LIST_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

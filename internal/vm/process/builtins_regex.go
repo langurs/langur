@@ -407,48 +407,43 @@ var bi_index = &object.BuiltIn{
 var bi_indices = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "indices",
-		Description: `indices(regex, anything, max); accepts regex and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match; max optional`,
+		Description: `accepts regex and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match`,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "indices"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		var sub *object.String
 		var ok bool
 
-		re, isRegex := args[0].(*object.Regex)
+		s := object.ToString(args[0])
+
+		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
-			sub, ok = args[0].(*object.String)
+			sub, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for first argument")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
-		s := object.ToString(args[1])
 
-		cnt := -1
-		if len(args) > 2 {
-			count, ok := args[2].(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
-			}
-			var err error
-			cnt, err = count.ToInt()
-			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
-			}
+		count, ok := args[2].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+		}
+		cnt, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		var result object.Object
-		var err error
 
 		if isRegex {
 			result, err = object.RegexProgressiveIndices(re, s.String(), cnt)
