@@ -6578,38 +6578,38 @@ func TestRe2(t *testing.T) {
 		{`matches("abc azc aec ", by=re/[a-c]/, max=6)`, []string{"a", "b", "c", "a", "c", "a"}, object.LIST_OBJ},
 		{`matches("abc azc aec ", by=re/[a-c]/, max=2)`, []string{"a", "b"}, object.LIST_OBJ},
 
-		{`replace(" abc abc abc abc ", re/a.*?c/, "7")`, " 7 7 7 7 ", object.STRING_OBJ},
-		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 1)`, " 7 abc abc abc ", object.STRING_OBJ},
-		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 2)`, " 7 7 abc abc ", object.STRING_OBJ},
-		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 3)`, " 7 7 7 abc ", object.STRING_OBJ},
-		{`replace(" abc abc abc abc ", re/a.*?c/, "7", 4)`, " 7 7 7 7 ", object.STRING_OBJ},
+		{`replace(" abc abc abc abc ", by=re/a.*?c/, with="7")`, " 7 7 7 7 ", object.STRING_OBJ},
+		{`replace(" abc abc abc abc ", by=re/a.*?c/, with="7", max=1)`, " 7 abc abc abc ", object.STRING_OBJ},
+		{`replace(" abc abc abc abc ", by=re/a.*?c/, with="7", max=2)`, " 7 7 abc abc ", object.STRING_OBJ},
+		{`replace(" abc abc abc abc ", by=re/a.*?c/, with="7", max=3)`, " 7 7 7 abc ", object.STRING_OBJ},
+		{`replace(" abc abc abc abc ", by=re/a.*?c/, with="7", max=4)`, " 7 7 7 7 ", object.STRING_OBJ},
 
-		{`replace("abc abc abc abc ", re/^a.*?c/, "7")`, "7 abc abc abc ", object.STRING_OBJ},
-		{`replace("abc abc abc abc ", re/^a.*?c/, "7", 7)`, "7 abc abc abc ", object.STRING_OBJ},
+		{`replace("abc abc abc abc ", by=re/^a.*?c/, with="7")`, "7 abc abc abc ", object.STRING_OBJ},
+		{`replace("abc abc abc abc ", by=re/^a.*?c/, with="7", max=7)`, "7 abc abc abc ", object.STRING_OBJ},
 
-		{`replace("abc azc aec afc ", re/a(.*?)c/, "A$1", 7)`, "Ab Az Ae Af ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/a(.*?)c/, "A$1", 1)`, "Ab azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/a(.*?)c/, "A $1 Z")`, "A b Z A z Z A e Z A f Z ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A$1", max=7)`, "Ab Az Ae Af ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A$1", max=1)`, "Ab azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A $1 Z")`, "A b Z A z Z A e Z A f Z ", object.STRING_OBJ},
 
 		// passing a function to replace
-		{`replace("abc azc aec afc ", re/[e-z]/, fn(s) { ucase(s) } )`, "abc aZc aEc aFc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/./, fn(s) { ucase(s) } )`, "ABC AZC AEC AFC ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/a./, fn(s) { s~"AAA" })`, "abAAAc azAAAc aeAAAc afAAAc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[a-e]/, fn s: "Z")`, "ZZZ ZzZ ZZZ ZfZ ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[a-e]/, fn s: "Z", 2)`, "ZZc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[a-e]/, fn s: "Z", 1)`, "Zbc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/c/, fn s: "Z", 1)`, "abZ azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[e-z]/, with=fn(s) { ucase(s) } )`, "abc aZc aEc aFc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/./, with=fn(s) { ucase(s) } )`, "ABC AZC AEC AFC ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/a./, with=fn(s) { s~"AAA" })`, "abAAAc azAAAc aeAAAc afAAAc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z")`, "ZZZ ZzZ ZZZ ZfZ ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z", max=2)`, "ZZc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z", max=1)`, "Zbc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/c/, with=fn s: "Z", max=1)`, "abZ azc aec afc ", object.STRING_OBJ},
 
 		// passing multiple things to replace
-		{`replace("abc azc aec afc ", "c", ["Z", _])`, "abZ azc aeZ afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[ab]/, [fn s: ucase(s), fn s: s~"Y"])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[ab]/, [fn s: ucase(s), fn s: s~"Y"], 2)`, "AbYc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", re/[ab]/, [fn s: ucase(s), fn s: s~"Y"], 3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
-		// {`replace("abc azc aec afc ", re/[ab]/, ["Z", fn s: ucase s])`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
-		// {`replace("abc azc aec afc ", re/[ab]/, ["$1", fn s: ucase s])`, "aBc azc Aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by="c", with=["Z", _])`, "abZ azc aeZ afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
+		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn s: ucase s])`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
+		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["$1", fn s: ucase s])`, "aBc azc Aec afc ", object.STRING_OBJ},
 
 		// passing nothing to replace (no replacement string or function; default ZLS)
-		{`replace("abc azc aec afc ", re/[e-z]/)`, "abc ac ac ac ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[e-z]/)`, "abc ac ac ac ", object.STRING_OBJ},
 
 		{`split("5841755193", by=re/[789]/)`, []string{"5", "41", "551", "3"}, object.LIST_OBJ},
 		{`split("84175519", by=re/[789]/)`, []string{"", "41", "551", ""}, object.LIST_OBJ},
@@ -6947,15 +6947,15 @@ func TestInterpolationIntoFreeSpacingRegex(t *testing.T) {
 func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 	// some of the same functions with plain strings instead of regexes
 	tests := []vmTestCase{
-		{`replace(" abc abc ", "abc", "7", 1)`, " 7 abc ", object.STRING_OBJ},
-		{`replace(" abc abc ", "abc", "7")`, " 7 7 ", object.STRING_OBJ},
+		{`replace(" abc abc ", by="abc", with="7", max=1)`, " 7 abc ", object.STRING_OBJ},
+		{`replace(" abc abc ", by="abc", with="7")`, " 7 7 ", object.STRING_OBJ},
 
 		// passing nothing to replace (no replacement string or function; default ZLS)
-		{`replace("abc azc aec afc ", " a")`, "abczcecfc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=" a")`, "abczcecfc ", object.STRING_OBJ},
 
 		// replace with function
-		{`replace(" abc abc ", "b", fn s: ucase(s))`, " aBc aBc ", object.STRING_OBJ},
-		{`replace(" abc abc ", "abc", fn(s) { "ZZZ" })`, " ZZZ ZZZ ", object.STRING_OBJ},
+		{`replace(" abc abc ", by="b", with=fn s: ucase(s))`, " aBc aBc ", object.STRING_OBJ},
+		{`replace(" abc abc ", by="abc", with=fn(s) { "ZZZ" })`, " ZZZ ZZZ ", object.STRING_OBJ},
 
 		{`split("don't.ya.know", by=".")`, []string{"don't", "ya", "know"}, object.LIST_OBJ},
 		{`split("abc", by="b")`, []string{"a", "c"}, object.LIST_OBJ},

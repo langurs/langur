@@ -16,20 +16,20 @@ import (
 var bi_replace = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "replace",
-		Description: "replace(source, find, replace, max); accepts string or regex for find, and replaces portion of string with given replacement string; max optional",
+		Description: "accepts string or regex for find, and replaces portion of string with given replacement string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "anything"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 4,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "with", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "replace"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
 
 		var find *object.String
 		var ok bool
@@ -44,52 +44,44 @@ var bi_replace = &object.BuiltIn{
 			}
 		}
 
-		max := -1
 		var fn object.Object
 		var fns []object.Object
 
-		// defaulting to ZLS (replace with nothing)
 		var replacementString string
+		switch repl := args[2].(type) {
+		case *object.String:
+			replacementString = repl.String()
 
-		if len(args) > 2 {
-			switch repl := args[2].(type) {
-			case *object.String:
-				replacementString = repl.String()
+		case *object.CompiledCode, *object.BuiltIn:
+			fn = repl
 
-			case *object.CompiledCode, *object.BuiltIn:
-				fn = repl
-
-			case *object.List:
-				fns = repl.Elements
-				if len(fns) == 0 {
-					return object.NewError(object.ERR_ARGUMENTS, fnName,
-						"Expected string or function or list of functions for third argument (replacement)")
-				}
-				for i, f := range fns {
-					if f == object.NONE {
-						fns[i] = nil
-					} else if !object.IsCallable(f) && f.Type() != object.STRING_OBJ {
-						return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable, no-op, or string", i+1))
-					}
-				}
-				fn = fns[0] // initialiaze fn to first function
-
-			default:
+		case *object.List:
+			fns = repl.Elements
+			if len(fns) == 0 {
 				return object.NewError(object.ERR_ARGUMENTS, fnName,
-					"Expected string or function or list of functions for third argument (replacement)")
+					"Expected string or function or list of functions for argument with")
 			}
+			for i, f := range fns {
+				if f == object.NONE {
+					fns[i] = nil
+				} else if !object.IsCallable(f) && f.Type() != object.STRING_OBJ {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable, no-op, or string", i+1))
+				}
+			}
+			fn = fns[0] // initialiaze fn to first function
 
-			if len(args) > 3 {
-				count, ok := args[3].(*object.Number)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument")
-				}
-				var err error
-				max, err = count.ToInt()
-				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
-				}
-			}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName,
+				"Expected string or function or list of functions for argument with")
+		}
+
+		count, ok := args[3].(*object.Number)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+		}
+		max, err := count.ToInt()
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		if isRegex {
