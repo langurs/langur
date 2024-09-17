@@ -38,8 +38,9 @@ func GetDivisionMaxScaleMode() int {
 var Zero = NumberFromInt(0)
 var One = NumberFromInt(1)
 var Two = NumberFromInt(2)
+var NegOne = NumberFromInt(-1)
 
-var IndicatorNoMax = NumberFromInt(-1)
+var IndicatorNoMax = NegOne
 
 type Number struct {
 	decimal decType

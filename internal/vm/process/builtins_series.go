@@ -11,20 +11,17 @@ import (
 var bi_series = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "series",
-		Description: "series(range, increment); generates a list of numbers from a range and increment (optional, defaults to 1 or -1)",
+		Description: "generates a list of numbers from a range and increment (optional, defaults to 1 or -1)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "inc"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		return series(pr, "series", args, false)
+		return series(pr, "series", args[0], args[1], false)
 	},
 }
 
@@ -33,27 +30,24 @@ var bi_pseries = &object.BuiltIn{
 		Name:        "pseries",
 		Description: "like series(), but returns positive series or empty list (given a negative range)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "inc"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
 		// positive series or empty list
-		return series(pr, "pseries", args, true)
+		return series(pr, "pseries", args[0], args[1], true)
 	},
 }
 
-func series(pr *Process, fnName string, args []object.Object, forAscendingSeries bool) object.Object {
+func series(pr *Process, fnName string, from, increment object.Object, forAscendingSeries bool) object.Object {
 	var start, end *object.Number
 	var ok bool
 
-	switch arg := args[0].(type) {
+	switch arg := from.(type) {
 	case *object.Range:
 		start, ok = arg.Start.(*object.Number)
 		if !ok {
@@ -92,7 +86,7 @@ func series(pr *Process, fnName string, args []object.Object, forAscendingSeries
 		}
 
 	default:
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or integer for first argument")
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or integer for argument from")
 	}
 
 	descending, _ := start.GreaterThan(end)
@@ -105,27 +99,24 @@ func series(pr *Process, fnName string, args []object.Object, forAscendingSeries
 	// check increment
 	var inc *object.Number
 
-	if len(args) > 1 {
-		switch e := args[1].(type) {
-		case *object.Number:
-			if e.IsZero() {
-				// can't use a zero increment, but not an error
-				return &object.List{}
-			}
-			inc = e
-
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for second argument")
-		}
-	}
-
-	if inc == nil {
+	switch e := increment.(type) {
+	case nil:
 		// no increment specified; default 1 or -1
 		if descending {
-			inc = object.NumberFromInt(-1)
+			inc = object.NegOne
 		} else {
 			inc = object.One
 		}
+
+	case *object.Number:
+		if e.IsZero() {
+			// can't use a zero increment, but not an error
+			return &object.List{}
+		}
+		inc = e
+
+	default:
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument inc")
 	}
 
 	// start and end the same
