@@ -127,7 +127,6 @@ var BuiltIns = []*object.BuiltIn{
 	bi_s2n,
 
 	bi_series,
-	bi_pseries,
 
 	bi_sine,
 	bi_cos,
