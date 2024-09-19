@@ -48,7 +48,7 @@ type Number struct {
 
 	// is using the integer optimization ...
 	// 1. is within int64 limits
-	// 2. has no trailing zeros after the decimal point
+	// 2. has no digits after the decimal point (not even trailing zeros)
 	usingIntOptimization bool
 }
 
