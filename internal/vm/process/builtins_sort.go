@@ -12,40 +12,33 @@ import (
 var bi_sort = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "sort",
-		Description: "sort(function, list); returns a sorted list from the given list, comparing by the given function (taking two variables and returning a Boolean in the form of f(.a, .b) .a < .b, or with implied parameters in the form of f .a < .b)",
+		Description: "returns a sorted list from the given list, comparing by the given function (taking two variables and returning a Boolean in the form of f(.a, .b) .a < .b, or with implied parameters in the form of f .a < .b)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "over"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "sort"
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		over, fn := args[0], args[1]
 
-		var fn, over object.Object
 		var pmax int
-
-		if len(args) == 1 {
-			pmax = 0
-			over = args[0]
-		} else {
-			fn = args[0]
+		if fn != nil {
 			if !object.IsCallable(fn) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable for first argument when passed 2 arguments")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable for argument by")
 			}
 			pmax = object.ParamMax(fn)
 			if pmax == -1 {
 				// if a function that takes an "unlimited" number of parameters, pass 2
 				pmax = 2
 			} else if pmax < 1 || pmax > 2 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable that may be passed 1 or 2 arguments")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable that may be passed 1 or 2 arguments for argument by")
 			}
-			over = args[1]
 		}
 
 		arr, isList := over.(*object.List)
@@ -120,7 +113,7 @@ var bi_sort = &object.BuiltIn{
 			}
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range")
+		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range for argument over")
 	},
 }
 

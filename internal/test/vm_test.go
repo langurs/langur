@@ -5671,17 +5671,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`series(4..0, asconly=true, inc=-2)`, []int{}, object.LIST_OBJ},
 
 		// sort using implied operator function
-		{"sort(fn{<}, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])",
+		{"sort([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=fn{<})",
 			[]int{12, 13, 14, 16, 16, 25, 29, 36, 42, 49}, object.LIST_OBJ,
 		},
 
 		// sort other direction using function
-		{"sort(fn{>}, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])",
+		{"sort([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=fn{>})",
 			[]int{49, 42, 36, 29, 25, 16, 16, 14, 13, 12}, object.LIST_OBJ,
 		},
 
 		// sort from single parameter function
-		{`sort(len, ["abcd", "ab", "abc", "zzzzzzz"])`,
+		{`sort(["abcd", "ab", "abc", "zzzzzzz"], by=len)`,
 			[]string{"ab", "abc", "abcd", "zzzzzzz"}, object.LIST_OBJ,
 		},
 
@@ -5691,10 +5691,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		},
 
 		// sort ranges
-		{"sort(fn{<}, 3 .. 7)",
+		{"sort(3 .. 7, by=fn{<})",
 			[]int64{3, 7}, object.RANGE_OBJ,
 		},
-		{"sort(fn{>}, 3 .. 7)",
+		{"sort(3 .. 7, by=fn{>})",
 			[]int64{7, 3}, object.RANGE_OBJ,
 		},
 
@@ -7461,7 +7461,7 @@ func TestCallingBuiltInsFromBuiltIns(t *testing.T) {
 		{`map [[], "Jim", {7: 14}], by=len`, []int{0, 3, 1}, object.LIST_OBJ},
 
 		// sort from single parameter function
-		{`sort(len, ["abcd", "ab", "abc", "zzzzzzz"])`,
+		{`sort(["abcd", "ab", "abc", "zzzzzzz"], by=len)`,
 			[]string{"ab", "abc", "abcd", "zzzzzzz"}, object.LIST_OBJ,
 		},
 	}
@@ -7506,7 +7506,7 @@ func TestCallingCompiledFunctionsFromBuiltIns(t *testing.T) {
 			[]int{16, 16, 25, 36, 49}, object.LIST_OBJ,
 		},
 
-		{`sort(fn(a, b) { a < b }, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])`,
+		{`sort([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=fn(a, b) { a < b })`,
 			[]int{12, 13, 14, 16, 16, 25, 29, 36, 42, 49}, object.LIST_OBJ,
 		},
 	}
