@@ -5663,12 +5663,12 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`series(0..4, inc=2)`, []int{0, 2, 4}, object.LIST_OBJ},
 		{`series(4..0, inc=-2)`, []int{4, 2, 0}, object.LIST_OBJ},
 
-		{`series(1..3, asc=true)`, []int{1, 2, 3}, object.LIST_OBJ},
-		{`series(3..1, asc=true)`, []int{}, object.LIST_OBJ},
-		{`series(1..3, inc=2, asc=true)`, []int{1, 3}, object.LIST_OBJ},
-		{`series(3..1, asc=true, inc=-2)`, []int{}, object.LIST_OBJ},
-		{`series(0..4, asc=true, inc=2)`, []int{0, 2, 4}, object.LIST_OBJ},
-		{`series(4..0, asc=true, inc=-2)`, []int{}, object.LIST_OBJ},
+		{`series(1..3, asconly=true)`, []int{1, 2, 3}, object.LIST_OBJ},
+		{`series(3..1, asconly=true)`, []int{}, object.LIST_OBJ},
+		{`series(1..3, inc=2, asconly=true)`, []int{1, 3}, object.LIST_OBJ},
+		{`series(3..1, asconly=true, inc=-2)`, []int{}, object.LIST_OBJ},
+		{`series(0..4, asconly=true, inc=2)`, []int{0, 2, 4}, object.LIST_OBJ},
+		{`series(4..0, asconly=true, inc=-2)`, []int{}, object.LIST_OBJ},
 
 		// sort using implied operator function
 		{"sort(fn{<}, [16, 14, 16, 13, 12, 25, 36, 42, 29, 49])",
