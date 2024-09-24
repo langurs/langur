@@ -21,9 +21,8 @@ var bi_lcase = &object.BuiltIn{
 		Name:        "lcase",
 		Description: "converts string (or code point integer) to lowercase string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -47,9 +46,8 @@ var bi_tcase = &object.BuiltIn{
 		Name:        "tcase",
 		Description: "converts string (or code point integer) to titlecase string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -73,9 +71,8 @@ var bi_ucase = &object.BuiltIn{
 		Name:        "ucase",
 		Description: "converts string (or code point integer) to uppercase string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -99,9 +96,8 @@ var bi_trim = &object.BuiltIn{
 		Name:        "trim",
 		Description: "trims Unicode whitespace around a string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -118,9 +114,8 @@ var bi_ltrim = &object.BuiltIn{
 		Name:        "ltrim",
 		Description: "trims left-most Unicode whitespace in a string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -137,9 +132,8 @@ var bi_rtrim = &object.BuiltIn{
 		Name:        "rtrim",
 		Description: "trims right-most Unicode whitespace in a string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -154,45 +148,38 @@ var bi_rtrim = &object.BuiltIn{
 var bi_join = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "join",
-		Description: "join(delim, list); joins list into a single string; uses auto-stringification on all list elements",
+		Description: "joins list into a single string; uses auto-stringification on all list elements",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "list"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "delim"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
-
-		// delimiter defaulting to zls
 		var delim string
-		var arr *object.List
+		var list *object.List
 		var ok bool
 
-		if len(args) == 1 {
-			arr, ok = args[0].(*object.List)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, "join", "Expected list of things to join")
-			}
+		list, ok = args[0].(*object.List)
+		if !ok {
+			return object.NewError(object.ERR_ARGUMENTS, "join", "Expected list of things to join for argument list")
+		}
 
-		} else {
-			d, ok := args[0].(*object.String)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, "join", "Expected string for delimiter")
-			}
+		switch d := args[1].(type) {
+		case nil:
+			// okay
+			// delimiter defaulting to zls
+		case *object.String:
 			delim = d.String()
-
-			arr, ok = args[1].(*object.List)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, "join", "Expected list of things to join")
-			}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, "join", "Expected string for argument by")
 		}
 
 		var sb strings.Builder
-		for i, e := range arr.Elements {
+		for i, e := range list.Elements {
 			if i > 0 {
 				// add delimiter
 				sb.WriteString(delim)
@@ -216,9 +203,8 @@ var bi_nfc = &object.BuiltIn{
 		Name:        "nfc",
 		Description: "converts string to NFC form (Unicode normalization form)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -235,9 +221,8 @@ var bi_nfd = &object.BuiltIn{
 		Name:        "nfd",
 		Description: "converts string to NFD form (Unicode normalization form)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -254,9 +239,8 @@ var bi_nfkc = &object.BuiltIn{
 		Name:        "nfkc",
 		Description: "converts string to NFKC form (Unicode normalization form)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -273,9 +257,8 @@ var bi_nfkd = &object.BuiltIn{
 		Name:        "nfkd",
 		Description: "converts string to NFKD form (Unicode normalization form)",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

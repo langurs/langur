@@ -13,9 +13,8 @@ var bi_tan = &object.BuiltIn{
 		Name:        "tan",
 		Description: "return tangent of a number given in radians",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "number"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -34,9 +33,8 @@ var bi_atan = &object.BuiltIn{
 		Name:        "atan",
 		Description: "return arctangent of a number given in radians",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "number"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -55,9 +53,8 @@ var bi_sine = &object.BuiltIn{
 		Name:        "sine",
 		Description: "return sine of a number given in radians",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "number"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -76,9 +73,8 @@ var bi_cos = &object.BuiltIn{
 		Name:        "cos",
 		Description: "return cosine of a number given in radians",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "number"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
