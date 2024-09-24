@@ -18,9 +18,8 @@ var bi_s2b = &object.BuiltIn{
 		Name:        "s2b",
 		Description: "returns list of UTF-8 bytes from a langur string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -29,7 +28,7 @@ var bi_s2b = &object.BuiltIn{
 
 		s, ok := args[0].(*object.String)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument string")
 		}
 		bytes := s.ByteSlc()
 		arr := &object.List{Elements: make([]object.Object, len(bytes))}
@@ -45,9 +44,8 @@ var bi_b2s = &object.BuiltIn{
 		Name:        "b2s",
 		Description: "converts a byte or list of UTF-8 bytes to a langur string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "bytes"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -102,9 +100,8 @@ var bi_cp2s = &object.BuiltIn{
 		Name:        "cp2s",
 		Description: "converts a code point (integer) or list of code points to a string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "cp"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -126,21 +123,20 @@ var bi_cp2s = &object.BuiltIn{
 var bi_s2cp = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "s2cp",
-		Description: "s2cp(string, index, alternate); indexes a string to a code point or a list of code points",
+		Description: "indexes a string to a code point or a list of code points",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "of"},
+			object.Parameter{ExternalName: "alt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		// string to code point(s): indexes string and returns code point or list of code points
 		const fnName = "s2cp"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
 
 		s, ok := args[0].(*object.String)
 		if !ok {
@@ -148,20 +144,17 @@ var bi_s2cp = &object.BuiltIn{
 		}
 		var result object.Object
 		var err error
-		// s2cp(string, index, alternate)
-		if len(args) > 2 {
-			result, err = s.Index(args[1], false)
-			if err != nil {
-				return args[2]
-			}
-		} else if len(args) > 1 {
-			result, err = s.Index(args[1], false)
-		} else {
-			result, err = s.Index(nil, false)
-		}
+
+		index, alt := args[1], args[2]
+
+		result, err = s.Index(index, false)
 		if err != nil {
+			if alt != nil {
+				return alt
+			}
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
+
 		return result
 	},
 }
@@ -169,11 +162,10 @@ var bi_s2cp = &object.BuiltIn{
 var bi_s2gc = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "s2gc",
-		Description: "s2gc(string); converts string to grapheme clusters list",
+		Description: "converts string to grapheme clusters list",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -182,7 +174,7 @@ var bi_s2gc = &object.BuiltIn{
 
 		s, ok := args[0].(*object.String)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument string")
 		}
 
 		var clusters []object.Object
@@ -213,21 +205,20 @@ func runeSlcToObjects(rSlc []rune) []object.Object {
 var bi_s2s = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "s2s",
-		Description: "s2s(string, index, alternate); indexes a string to a string",
+		Description: "indexes a string to a string",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
-		ParamExpansionMin: 2,
-		ParamExpansionMax: 3,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "of"},
+			object.Parameter{ExternalName: "alt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		// string to string: indexes string and returns string
 		const fnName = "s2s"
-
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
 
 		s, ok := args[0].(*object.String)
 		if !ok {
@@ -235,20 +226,17 @@ var bi_s2s = &object.BuiltIn{
 		}
 		var result object.Object
 		var err error
-		// s2s(string, index, alternate)
-		if len(args) > 2 {
-			result, err = s.Index(args[1], true)
-			if err != nil {
-				return args[2]
-			}
-		} else if len(args) > 1 {
-			result, err = s.Index(args[1], true)
-		} else {
-			result, err = s.Index(nil, true)
-		}
+
+		index, alt := args[1], args[2]
+
+		result, err = s.Index(index, true)
 		if err != nil {
+			if alt != nil {
+				return alt
+			}
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
+
 		return result
 	},
 }
@@ -258,9 +246,8 @@ var bi_s2n = &object.BuiltIn{
 		Name:        "s2n",
 		Description: "returns list of numbers from a langur string, interpreting 0-9, A-Z, and a-z as base 36 numbers",
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "string"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -283,7 +270,7 @@ var bi_s2n = &object.BuiltIn{
 			one = true
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for first argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for argument string")
 		}
 
 		if one {
