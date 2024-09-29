@@ -94,32 +94,26 @@ var bi_hash = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.HashType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
+		ParamExpansionMin: 1,
 		ParamExpansionMax: 2,
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.HashType
 
-		// FIXME: update parameters/args
 		args = args[0].(*object.List).Elements
 
-		if len(args) == 0 {
-			// empty hash
-			return &object.Hash{}
-		}
-
-		var arr1, arr2 *object.List
+		var list1, list2 *object.List
 		var err error
 
 		switch arg := args[0].(type) {
 		case *object.List:
-			arr1 = arg
+			list1 = arg
 
 		case *object.Range:
-			arr1, err = arg.ToList()
+			list1, err = arg.ToList()
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -148,7 +142,7 @@ var bi_hash = &object.BuiltIn{
 		}
 
 		if len(args) == 1 {
-			hash, err := object.NewHashFromSlice(arr1.Elements, false)
+			hash, err := object.NewHashFromSlice(list1.Elements, false)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -157,9 +151,9 @@ var bi_hash = &object.BuiltIn{
 
 		switch arg2 := args[1].(type) {
 		case *object.List:
-			arr2 = arg2
+			list2 = arg2
 		case *object.Range:
-			arr2, err = arg2.ToList()
+			list2, err = arg2.ToList()
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -167,7 +161,7 @@ var bi_hash = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range for second argument")
 		}
 
-		hash, err := object.NewHashFromParallelSlices(arr1.Elements, arr2.Elements, false)
+		hash, err := object.NewHashFromParallelSlices(list1.Elements, list2.Elements, false)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
