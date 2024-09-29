@@ -233,9 +233,8 @@ var bi_duration = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.DurationType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -276,9 +275,8 @@ var bi_bool = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.BooleanType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
