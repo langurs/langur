@@ -14,25 +14,25 @@ var bi_string = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.StringType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "fmt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.StringType
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		from, format := args[0], args[1]
 
-		if len(args) > 1 {
-			switch n := args[0].(type) {
+		if format != nil {
+			switch n := from.(type) {
 			case *object.Number:
-				base, ok := object.NumberToInt(args[1])
+				base, ok := object.NumberToInt(format)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument (base)")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt when converting number to string")
 				}
 
 				i, err := n.ToInt()
@@ -42,18 +42,18 @@ var bi_string = &object.BuiltIn{
 				return object.NewString(str.IntToStr(i, base))
 
 			case *object.DateTime:
-				format, ok := args[1].(*object.String)
+				format, ok := format.(*object.String)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for second argument (date-time format)")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt when converting datetime to string")
 				}
 				s := n.FormatString(format.String())
 				return object.NewString(s)
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument when given a base for second")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Unexpected argument fmt for this conversion")
 			}
 		}
-		return object.ToString(args[0])
+		return object.ToString(from)
 	},
 }
 

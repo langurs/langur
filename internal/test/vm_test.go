@@ -6482,7 +6482,7 @@ func TestTypeConversion(t *testing.T) {
 		{`number("123.45")`,
 			"123.45", object.NUMBER_OBJ},
 
-		{`string(65519, 16)`,
+		{`string(65519, fmt=16)`,
 			"ffef", object.STRING_OBJ},
 		{`number("ffef", 16)`,
 			65519, object.NUMBER_OBJ},
@@ -6500,7 +6500,7 @@ func TestTypeConversion(t *testing.T) {
 		{`number string(123)`,
 			"123", object.NUMBER_OBJ},
 
-		{`len string(123, 16)`,
+		{`len string(123, fmt=16)`,
 			2, object.NUMBER_OBJ},
 	}
 
@@ -7088,11 +7088,11 @@ func TestDateTimeLiterals(t *testing.T) {
 		{`dt/2020-03-24 17Z/`, "2020-03-24T17:00:00Z", object.DATETIME_OBJ},
 
 		// with fractions on seconds
-		{`string dt/2020-03-24 17:51:25.123+07:30/, "2006-01-02T15:04:05.999999999Z07:00"`,
+		{`string dt/2020-03-24 17:51:25.123+07:30/, fmt="2006-01-02T15:04:05.999999999Z07:00"`,
 			"2020-03-24T17:51:25.123+07:30", object.STRING_OBJ},
-		{`string dt/2020-03-24 17:51:25.123456789+07:30/, "2006-01-02T15:04:05.999999999Z07:00"`,
+		{`string dt/2020-03-24 17:51:25.123456789+07:30/, fmt="2006-01-02T15:04:05.999999999Z07:00"`,
 			"2020-03-24T17:51:25.123456789+07:30", object.STRING_OBJ},
-		{`string dt/2020-03-24 17:51:25.0001+07:30/, "2006-01-02T15:04:05.999999999Z07:00"`,
+		{`string dt/2020-03-24 17:51:25.0001+07:30/, fmt="2006-01-02T15:04:05.999999999Z07:00"`,
 			"2020-03-24T17:51:25.0001+07:30", object.STRING_OBJ},
 	}
 
@@ -7193,21 +7193,21 @@ func TestDateTimeOutputFormatting(t *testing.T) {
 		{`val x = dt/2020-03-24 17:51:25-05:00/
 		  string(x)`, "2020-03-24T17:51:25-05:00", object.STRING_OBJ},
 		{`val x = dt'2008-01-01 12:30:12'
-		  string(x, "2006")`, "2008", object.STRING_OBJ},
+		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 		{`val x = dt"2008-01-01 12:30:12"
-		  string(x, "2006")`, "2008", object.STRING_OBJ},
+		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 		{`val x = dt/2008-01-01 12:30/
-		  string(x, "2006")`, "2008", object.STRING_OBJ},
+		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 		{`val x = dt(2008-01-01 12)
-		  string(x, "2006")`, "2008", object.STRING_OBJ},
+		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 
 		{`val x = dt/2008-01-01 11/
-		  string(x, "pm")`, "am", object.STRING_OBJ},
+		  string(x, fmt="pm")`, "am", object.STRING_OBJ},
 		{`val x = dt/2008-01-01 13/
-		  string(x, "pm")`, "pm", object.STRING_OBJ},
+		  string(x, fmt="pm")`, "pm", object.STRING_OBJ},
 
 		{`val x = dt/2008-07-22 11/
-		  string(x, "Jan pm 01 05 3 January")`, "Jul am 07 00 11 July", object.STRING_OBJ},
+		  string(x, fmt="Jan pm 01 05 3 January")`, "Jul am 07 00 11 July", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
