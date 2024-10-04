@@ -61,28 +61,28 @@ var bi_number = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.NumberType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "fmt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.NumberType
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		from, format := args[0], args[1]
 
 		var ok bool
 		base := 10
-		if len(args) > 1 {
-			base, ok = object.NumberToInt(args[1])
+		if format != nil {
+			base, ok = object.NumberToInt(format)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for second argument (base)")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt")
 			}
 		}
-		n, ok := object.ToNumber(args[0], base)
+		n, ok := object.ToNumber(from, base)
 		if !ok {
 			return object.NewError(object.ERR_GENERAL, fnName, "Failed to convert to number")
 		}

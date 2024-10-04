@@ -6484,7 +6484,7 @@ func TestTypeConversion(t *testing.T) {
 
 		{`string(65519, fmt=16)`,
 			"ffef", object.STRING_OBJ},
-		{`number("ffef", 16)`,
+		{`number("ffef", fmt=16)`,
 			65519, object.NUMBER_OBJ},
 
 		{`duration(0) is duration`,
