@@ -7261,7 +7261,7 @@ func TestdatetimeFunction(t *testing.T) {
 			// no format string: defaults to local time zone, just as date-time literal does
 			true, object.BOOLEAN_OBJ,
 		},
-		{`dt/2020-03-13 00:00+00/ == datetime("Mar 13, 2020", "Jan 02, 2006")`,
+		{`dt/2020-03-13 00:00+00/ == datetime("Mar 13, 2020", fmt="Jan 02, 2006")`,
 			// with format string: defaults to UTC time zone (by Go time library)
 			true, object.BOOLEAN_OBJ,
 		},

@@ -173,54 +173,54 @@ var bi_datetime = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.DateTimeType,
 
-		// TODO: update
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "from"},
 		},
-		ParamExpansionMin: 1,
-		ParamExpansionMax: 2,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "fmt"},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = common.DateTimeType
 
-		// FIXME: update parameters/args
-		args = args[0].(*object.List).Elements
+		from, format := args[0], args[1]
 
-		format := ""
+		fmtStr := ""
 		var ok bool
 		var dt *object.DateTime
 		var err error
 
-		switch args[0].(type) {
+		switch from.(type) {
 		case *object.String:
-			if len(args) > 1 {
-				format, ok = object.ExpectString(args[1])
+			if format != nil {
+				fmtStr, ok = object.ExpectString(format)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for second argument (format string)")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
 				}
 			}
 
 		case *object.DateTime:
-			if len(args) == 1 {
+			if format == nil {
 				// pass through unaltered
-				return args[0]
+				return from
 
 			} else {
 				// change time zone
-				switch args[1].(type) {
+				switch format.(type) {
 				case *object.String:
-					format = args[1].String()
+					fmtStr = format.String()
 
 				// case *object.Number:
 				// offset in seconds?
 
 				default:
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for second argument (time zone/location string)")
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt (time zone/location string) when converting datetime to datetime")
 				}
 			}
 		}
 
-		dt, err = object.ToDateTime(args[0], format)
+		dt, err = object.ToDateTime(from, fmtStr)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
