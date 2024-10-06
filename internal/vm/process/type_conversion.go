@@ -187,40 +187,39 @@ var bi_datetime = &object.BuiltIn{
 		from, format := args[0], args[1]
 
 		fmtStr := ""
-		var ok bool
-		var dt *object.DateTime
-		var err error
 
 		switch from.(type) {
 		case *object.String:
-			if format != nil {
-				fmtStr, ok = object.ExpectString(format)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
-				}
+			switch format.(type) {
+			case nil:
+				// ok; no format string
+
+			case *object.String:
+				fmtStr = from.String()
+
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
 			}
 
 		case *object.DateTime:
-			if format == nil {
+			switch format.(type) {
+			case nil:
 				// pass through unaltered
 				return from
 
-			} else {
+			case *object.String:
 				// change time zone
-				switch format.(type) {
-				case *object.String:
-					fmtStr = format.String()
+				fmtStr = format.String()
 
-				// case *object.Number:
-				// offset in seconds?
+			// case *object.Number:
+			// offset in seconds?
 
-				default:
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt (time zone/location string) when converting datetime to datetime")
-				}
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt (time zone/location string) when converting datetime to datetime")
 			}
 		}
 
-		dt, err = object.ToDateTime(from, fmtStr)
+		dt, err := object.ToDateTime(from, fmtStr)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
