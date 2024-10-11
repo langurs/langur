@@ -14,6 +14,8 @@ import (
 // exit, keys
 // len, sleep, ticks, nn
 
+const rangeIndexCount = 2
+
 var bi_exit = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "exit",
@@ -96,7 +98,7 @@ var bi_keys = &object.BuiltIn{
 		case *object.String:
 			count = over.LenCP()
 		case *object.Range:
-			count = 2
+			count = rangeIndexCount
 
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, "keys", "Expected hash, list, string, or range")
@@ -132,7 +134,7 @@ var bi_len = &object.BuiltIn{
 			// returns code point, not code unit length
 			return object.NumberFromInt(arg.LenCP())
 		case *object.Range:
-			return object.NumberFromInt(2)
+			return object.NumberFromInt(rangeIndexCount)
 		}
 		return object.NewError(object.ERR_ARGUMENTS, "len", "Expected list, hash, string, or range")
 	},
