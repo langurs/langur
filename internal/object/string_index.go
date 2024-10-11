@@ -61,6 +61,10 @@ func (left *String) index(index Object, returnOtherObjType bool) (
 	}
 }
 
+func (left *String) IndexCount() int {
+	return left.LenCP()
+}
+
 func (left *String) IndexInverse(index Object, returnOtherObjType bool) (
 	result Object, err error) {
 

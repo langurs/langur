@@ -43,6 +43,10 @@ func (left *List) index(index Object, returnOtherObjType bool) (
 	}
 }
 
+func (left *List) IndexCount() int {
+	return len(left.Elements)
+}
+
 func (left *List) IndexInverse(index Object, returnOtherObjType bool) (
 	result Object, err error) {
 

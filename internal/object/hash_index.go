@@ -47,6 +47,10 @@ func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, e
 	return value, nil, false
 }
 
+func (d *Hash) IndexCount() int {
+	return len(d.Pairs)
+}
+
 func (d *Hash) IndexInverse(index Object, returnOtherObjType bool) (
 	result Object, err error) {
 

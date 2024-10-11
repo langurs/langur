@@ -85,21 +85,17 @@ var bi_keys = &object.BuiltIn{
 
 		switch over := args[0].(type) {
 		case *object.Hash:
-			arr := &object.List{}
+			list := &object.List{}
 			for _, kv := range over.Pairs {
-				arr.Elements = append(arr.Elements, kv.Key)
+				list.Elements = append(list.Elements, kv.Key)
 			}
-			return arr
+			return list
 
-		case *object.List:
-			count = len(over.Elements)
-		case *object.String:
-			count = over.LenCP()
-		case *object.Range:
-			count = object.RangeIndexCount
+		case object.IIndex:
+			count = over.IndexCount()
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, "keys", "Expected hash, list, string, or range")
+			return object.NewError(object.ERR_ARGUMENTS, "keys", "Expected indexable item")
 		}
 
 		numbers := make([]object.Object, count)
@@ -115,26 +111,18 @@ var bi_keys = &object.BuiltIn{
 var bi_len = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "len",
-		Description: "returns the length (as integer) of a list, hash, or string (in code points)",
+		Description: "returns the index count of an indexable item",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		// return integer giving the length
 		switch arg := args[0].(type) {
-		case *object.List:
-			return object.NumberFromInt(len(arg.Elements))
-		case *object.Hash:
-			return object.NumberFromInt(len(arg.Pairs))
-		case *object.String:
-			// returns code point, not code unit length
-			return object.NumberFromInt(arg.LenCP())
-		case *object.Range:
-			return object.NumberFromInt(object.RangeIndexCount)
+		case object.IIndex:
+			return object.NumberFromInt(arg.IndexCount())
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "len", "Expected list, hash, string, or range")
+		return object.NewError(object.ERR_ARGUMENTS, "len", "Expected indexable item")
 	},
 }
 
