@@ -6,6 +6,14 @@ import (
 	"fmt"
 )
 
+func (left *Range) IndexCount() int {
+	return 2
+}
+
+func (left *Range) IndexKeys() *List {
+	return &List{Elements: []Object{NumberFromInt(1), NumberFromInt(2)}}
+}
+
 // returnOtherObjType: unused on range
 func (left *Range) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err = left.index(index, returnOtherObjType)
@@ -54,10 +62,6 @@ func (left *Range) index(index Object, returnOtherObjType bool) (result Object, 
 		// invalid index type
 		return left, fmt.Errorf("Invalid index type for range")
 	}
-}
-
-func (left *Range) IndexCount() int {
-	return 2
 }
 
 func (left *Range) IndexValid(index Object) bool {

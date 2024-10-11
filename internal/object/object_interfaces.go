@@ -58,7 +58,9 @@ type IIndex interface {
 	// return original Object if valid operation, but failed index
 	// return nil for Object if not a valid operation
 
+	IndexKeys() *List
 	IndexCount() int
+
 	IndexValid(index Object) bool
 }
 

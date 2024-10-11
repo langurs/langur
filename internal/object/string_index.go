@@ -6,6 +6,14 @@ import (
 	"fmt"
 )
 
+func (left *String) IndexCount() int {
+	return left.LenCP()
+}
+
+func (left *String) IndexKeys() *List {
+	return indexListFromCount(left.LenCP())
+}
+
 // returnOtherObjType: string instead of code point(s)
 func (left *String) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err = left.index(index, returnOtherObjType)
@@ -59,10 +67,6 @@ func (left *String) index(index Object, returnOtherObjType bool) (
 		// invalid index type
 		return left, fmt.Errorf("Invalid index type for string (%s)", idx.TypeString())
 	}
-}
-
-func (left *String) IndexCount() int {
-	return left.LenCP()
 }
 
 func (left *String) IndexInverse(index Object, returnOtherObjType bool) (

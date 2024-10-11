@@ -142,3 +142,12 @@ func SliceHasImpureEffects(objSlc ...Object) bool {
 	}
 	return false
 }
+
+func indexListFromCount(count int) *List {
+	numbers := make([]Object, count)
+
+	for num := 1; num <= count; num++ {
+		numbers[num-1] = NumberFromInt(num)
+	}
+	return &List{Elements: numbers}
+}

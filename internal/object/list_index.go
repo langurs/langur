@@ -6,6 +6,14 @@ import (
 	"fmt"
 )
 
+func (left *List) IndexCount() int {
+	return len(left.Elements)
+}
+
+func (left *List) IndexKeys() *List {
+	return indexListFromCount(len(left.Elements))
+}
+
 // returnOtherObjType: unused on list
 func (left *List) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err = left.index(index, returnOtherObjType)
@@ -41,10 +49,6 @@ func (left *List) index(index Object, returnOtherObjType bool) (
 		// invalid index type
 		return left, fmt.Errorf("Invalid index type for list")
 	}
-}
-
-func (left *List) IndexCount() int {
-	return len(left.Elements)
 }
 
 func (left *List) IndexInverse(index Object, returnOtherObjType bool) (

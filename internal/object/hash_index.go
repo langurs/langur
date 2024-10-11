@@ -6,6 +6,18 @@ import (
 	"fmt"
 )
 
+func (d *Hash) IndexCount() int {
+	return len(d.Pairs)
+}
+
+func (left *Hash) IndexKeys() *List {
+	list := &List{}
+	for _, kv := range left.Pairs {
+		list.Elements = append(list.Elements, kv.Key)
+	}
+	return list
+}
+
 // returnOtherObjType: unused on hash
 func (left *Hash) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err, _ = left.index(index, returnOtherObjType)
@@ -45,10 +57,6 @@ func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, e
 	}
 
 	return value, nil, false
-}
-
-func (d *Hash) IndexCount() int {
-	return len(d.Pairs)
 }
 
 func (d *Hash) IndexInverse(index Object, returnOtherObjType bool) (

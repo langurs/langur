@@ -81,30 +81,13 @@ var bi_keys = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		count := 0
-
 		switch over := args[0].(type) {
-		case *object.Hash:
-			list := &object.List{}
-			for _, kv := range over.Pairs {
-				list.Elements = append(list.Elements, kv.Key)
-			}
-			return list
-
 		case object.IIndex:
-			count = over.IndexCount()
+			return over.IndexKeys()
 
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, "keys", "Expected indexable item")
 		}
-
-		numbers := make([]object.Object, count)
-
-		for num := 1; num <= count; num++ {
-			numbers[num-1] = object.NumberFromInt(num)
-		}
-
-		return &object.List{Elements: numbers}
 	},
 }
 
