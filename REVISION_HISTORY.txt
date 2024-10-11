@@ -4,11 +4,12 @@ https://langurlang.org
 ... - 1.0.0
 - changed parameters, making use of parameters by name for built-in functions all, any, appendfile, cd, count, datetime, exit, filter, fold, hash, index, indices, join, less, map, mapX, match, matches, more, nn, number, read, replace, rotate, round, s2cp, s2s, series, sort, split, string, subindex, subindices, submatch, submatches, submatchH, trunc, writefile, zip
 - dropped builtin functions benchmark, first, foldfrom, group, groupby, groupbyH, haskey, last, pseries, rest
+- fixed builtin function less() to work properly with negative indices
+- dropped setting range start or end by index; just make a new range
 - changed REPL to use parentheses for commands, such as exit()
 - changed mode consoleText default to false
 - renamed object "binary" operations as infix
-- fixed builtin function less() to work properly with negative indices
-- dropped setting range start or end by index; just make a new range
+- updated object.IIndex interface to include IndexCount() method
 
 
 2024-08-15 - 0.17.5
