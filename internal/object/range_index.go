@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+const RangeIndexCount = 2
+
 // returnOtherObjType: unused on range
 func (left *Range) Index(index Object, returnOtherObjType bool) (result Object, err error) {
 	result, err = left.index(index, returnOtherObjType)
