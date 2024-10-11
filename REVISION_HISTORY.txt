@@ -9,7 +9,7 @@ https://langurlang.org
 - changed REPL to use parentheses for commands, such as exit()
 - changed mode consoleText default to false
 - renamed object "binary" operations as infix
-- updated object.IIndex interface to include IndexCount() method
+- updated object.IIndex interface to include IndexCount() and IndexKeys() methods
 
 
 2024-08-15 - 0.17.5
