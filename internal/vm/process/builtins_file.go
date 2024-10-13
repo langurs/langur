@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-// NOTE: These essentially deal with bytes as plain text only.
+// NOTE: These deal with bytes as plain text only and assuming UTF-8.
 // Options may be added to make them more flexible, using optional parameters.
 
 // readfile, writefile, appendfile
