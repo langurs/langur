@@ -162,6 +162,7 @@ var bi__keys = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:            "_keys",
 		ParamPositional: bi_keys.FnSignature.ParamPositional,
+		ParamByName:     bi_keys.FnSignature.ParamByName,
 	},
 	Fn: bi_keys.Fn,
 }
@@ -170,6 +171,7 @@ var bi__len = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:            "_len",
 		ParamPositional: bi_len.FnSignature.ParamPositional,
+		ParamByName:     bi_len.FnSignature.ParamByName,
 	},
 	Fn: bi_len.Fn,
 }
