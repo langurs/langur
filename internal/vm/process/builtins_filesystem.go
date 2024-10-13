@@ -53,10 +53,11 @@ var bi_cd = &object.BuiltIn{
 var bi_prop = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "prop",
+		Description:   "returns hash of properties of path file or directory if it exists at the given moment of execution; otherwise returns null",
 		ImpureEffects: true,
-		Description:   "returns hash of properties of file or directory if it exists at the given moment of execution; otherwise returns null",
+
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "file"},
+			object.Parameter{ExternalName: "path"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
