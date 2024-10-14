@@ -89,7 +89,7 @@ var bi_less = &object.BuiltIn{
 var bi_more = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "more",
-		Description: "creates a new list or string, adding an item or items",
+		Description: "creates a new list, string, or hash, adding an item or items",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "with"},
