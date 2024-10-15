@@ -1,4 +1,4 @@
-# langur 0.17
+# langur 0.18
 
 [Langur](https://langurlang.org) is an open-source imperative/functional scripting language written in Go.
 

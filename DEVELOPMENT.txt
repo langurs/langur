@@ -1,0 +1,42 @@
+langur development
+v. 0.18
+
+I hope you find langur useful. I've put a lot of work into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0 soon. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax. I'm open to input.
+
+To make 1.0, I would like to fix setting by index. There are at least a couple of issues here. One is efficiency. The other is that you cannot presently set by index if using more than a single index on a variable (as shown below).
+
+x[1] = 123      # okay
+y[1][2] = 123   # doesn't work
+
+I make note of two kinds of "purity," one in regard to side effects, and one in regard to variables. Langur presently has strict purity in terms of variables. I'm not absolutely settled on this, so long as changes to this can be made that don't make concurrency difficult.
+
+--Anthony Davis
+
+possible things to consider...
+resource management
+    closes resources when finished, even if there's an exception
+import modules
+    presently parsed, but not compiled
+    must account for global modes
+    maybe move some built-in functions to be imports or pseudo-imports, uncluttering the global namespace
+        give more descriptive names; can be aliased to short names
+module compile
+    global modes
+    order irrelevant for module compiled declarations
+        presently parses module and compiles declarations in reverse order
+structures
+OOP with composition
+    no inheritance - I don't like inheritance in programming.
+    I also don't like "everything is an object."
+optional explicit typing
+bitwise operations
+    at least on explicit types
+pointers
+    using strict left-to-right syntax; none of the left/right business you see in C
+concurrency
+    maybe using go/conc library
+    must trap/account for exceptions
+dependency management (see Rust)
+testing mechanisms
+compile to native code
+
