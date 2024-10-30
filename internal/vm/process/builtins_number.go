@@ -560,7 +560,7 @@ var bi_round = &object.BuiltIn{
 var bi_trunc = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "trunc",
-		Description: "trunc(number, max, addzeroes); truncate number to specified digits after decimal point",
+		Description: "truncate number to specified digits after decimal point",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "num"},
