@@ -12,7 +12,7 @@ import (
 
 // matching, match, submatch, index, subindex
 // matches, submatches, indices, subindices
-// split, splitd
+// split
 
 var bi_matching = &object.BuiltIn{
 	FnSignature: &object.Signature{
