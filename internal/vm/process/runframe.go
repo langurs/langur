@@ -38,7 +38,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if p := recover(); p != nil {
 				name, ok := fr.getFnName()
 				if ok {
-					err = object.NewErrorFromAnything(p, "panic:."+name)
+					err = object.NewErrorFromAnything(p, "panic:"+name)
 				} else {
 					err = object.NewErrorFromAnything(p, "panic:")
 				}

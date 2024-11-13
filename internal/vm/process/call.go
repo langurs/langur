@@ -24,7 +24,8 @@ func (pr *Process) executeFunctionCall(fr *frame,
 			positional = append(positional[:len(positional)-1], pre.Elements...)
 
 		default:
-			return nil, fmt.Errorf("Expected list for argument expansion")
+			err = fmt.Errorf("Expected list for argument expansion")
+			return
 		}
 	}
 
@@ -34,7 +35,8 @@ func (pr *Process) executeFunctionCall(fr *frame,
 			(object.SliceHasImpureEffects(positional...) ||
 				object.SliceHasImpureEffects(byname...)) {
 
-			return nil, fmt.Errorf("Cannot pass value with impure effects as argument to function not declared as having impure effects")
+			err = fmt.Errorf("Cannot pass value with impure effects as argument to function not declared as having impure effects")
+			return
 		}
 
 		fnReturn, _, err = pr.runCompiledCode(fn, fr, positional, byname, nil)
@@ -48,10 +50,10 @@ func (pr *Process) executeFunctionCall(fr *frame,
 		fnReturn, err = pr.callBuiltIn(fn, positional, byname)
 
 	default:
-		return nil, fmt.Errorf("Call operation on non-function (%s)", fn.TypeString())
+		err = fmt.Errorf("Call operation on non-function (%s)", fn.TypeString())
 	}
 
-	return fnReturn, err
+	return
 }
 
 // callback from built-in functions
@@ -59,18 +61,20 @@ func (pr *Process) callback(
 	fn object.Object,
 	positional ...object.Object) (
 
-	object.Object, error) {
+	fnReturn object.Object, err error) {
 
 	switch fn := fn.(type) {
 	case *object.BuiltIn:
-		return pr.callBuiltIn(fn, positional, nil)
+		fnReturn, err = pr.callBuiltIn(fn, positional, nil)
+		return
 
 	case *object.CompiledCode:
-		result, _, err := pr.runCompiledCode(fn, pr.currentFrame, positional, nil, nil)
-		return result, err
+		fnReturn, _, err = pr.runCompiledCode(fn, pr.currentFrame, positional, nil, nil)
+		return
 	}
 
-	return nil, fmt.Errorf("Not a callable object (%s)", fn.TypeString())
+	err = fmt.Errorf("Not a callable object (%s)", fn.TypeString())
+	return
 }
 
 func (pr *Process) runCompiledCode(
