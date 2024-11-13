@@ -155,7 +155,7 @@ var bi_join = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "delim"},
+			object.Parameter{ExternalName: "by", DefaultValue: object.ZLS},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -169,9 +169,6 @@ var bi_join = &object.BuiltIn{
 		}
 
 		switch d := args[1].(type) {
-		case nil:
-			// okay
-			// delimiter defaulting to zls
 		case *object.String:
 			delim = d.String()
 		default:

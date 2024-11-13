@@ -182,6 +182,7 @@ func reformArgumentsBySignature(
 	// check if any invalid optional arguments passed
 	for i := range byname {
 		nv := byname[i].(*object.NameValue)
+
 		found := false
 		for _, param := range sig.ParamByName {
 			if param.ExternalName == nv.Name {

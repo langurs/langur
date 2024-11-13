@@ -5626,9 +5626,9 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`any({:})`, nil, object.NULL_OBJ},
 
 		// join
-		{`join(["abc", "123"], delim=",")`, "abc,123", object.STRING_OBJ},
+		{`join(["abc", "123"], by=",")`, "abc,123", object.STRING_OBJ},
 		// join with auto-stringification
-		{`join(series(1..7), delim=" ")`, "1 2 3 4 5 6 7", object.STRING_OBJ},
+		{`join(series(1..7), by=" ")`, "1 2 3 4 5 6 7", object.STRING_OBJ},
 
 		{`join(["abc", "123"])`, "abc123", object.STRING_OBJ},
 		{`join(series(7))`, "1234567", object.STRING_OBJ},
@@ -7065,9 +7065,9 @@ func TestSplitByNumber(t *testing.T) {
 		{`split("123456789", by=-1)`, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, object.LIST_OBJ},
 
 		// Do something practical with it.
-		{`join(split("1234567890", by=-3), delim=",")`, "1,234,567,890", object.STRING_OBJ},
+		{`join(split("1234567890", by=-3), by=",")`, "1,234,567,890", object.STRING_OBJ},
 
-		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", by=-8), by=fn x:"{{x:8(0)}}"), delim="_")`,
+		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", by=-8), by=fn x:"{{x:8(0)}}"), by="_")`,
 			"2x01111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111", object.STRING_OBJ},
 	}
 

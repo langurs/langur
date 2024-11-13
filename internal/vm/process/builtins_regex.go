@@ -290,7 +290,7 @@ var bi_split = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by"},
+			object.Parameter{ExternalName: "by", DefaultValue: object.ZLS},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
 		},
 	},
@@ -307,8 +307,6 @@ var bi_split = &object.BuiltIn{
 
 		// check for regex/string/integer count to split by
 		switch by := args[1].(type) {
-		case nil:
-			// okay
 		case *object.Regex:
 			re, isRegex = by, true
 		case *object.String:
