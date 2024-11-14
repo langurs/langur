@@ -195,7 +195,7 @@ var bi_datetime = &object.BuiltIn{
 				// ok; no format string
 
 			case *object.String:
-				fmtStr = from.String()
+				fmtStr = format.String()
 
 			default:
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
