@@ -195,7 +195,8 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
-			err = fmt.Errorf("Invalid optional argument (%s) passed", str.ReformatInput(nv.Name))
+			err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+				fmt.Sprintf("Invalid optional argument (%s) passed", str.ReformatInput(nv.Name)))
 			return
 		}
 	}
