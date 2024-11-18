@@ -2217,8 +2217,9 @@ func TestRecursion(t *testing.T) {
 			expectedConstants: []interface{}{
 				process.GetBuiltInByName("len"),
 				0,
-				object.NewString("of"),
 				process.GetBuiltInByName("less"),
+				object.NewString("of"),
+				1,
 				process.GetBuiltInByName("more"),
 				[]opcode.Instructions{ // iter function
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
@@ -2228,17 +2229,20 @@ func TestRecursion(t *testing.T) {
 					opcode.Make(opcode.OpEqual, 0, 0), // len(remaining) == 0
 					opcode.Make(opcode.OpJumpIfNotTruthy, 7),
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
-					opcode.Make(opcode.OpJump, 33),
+					opcode.Make(opcode.OpJump, 40),
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
+					opcode.Make(opcode.OpConstant, 3), // of=
+					opcode.Make(opcode.OpConstant, 4), // 1
+					opcode.Make(opcode.OpNameValue),   // of=1
 					opcode.Make(opcode.OpConstant, 2), // less(
-					opcode.Make(opcode.OpCall, 1, 0),  // less(remaining, of=1)
+					opcode.Make(opcode.OpCall, 1, 1),  // less(remaining, of=1)
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
-					opcode.Make(opcode.OpConstant, 4), // first(
-					opcode.Make(opcode.OpCall, 1, 0),  // first(remaining)
+					opcode.Make(opcode.OpConstant, 4), // 1
+					opcode.Make(opcode.OpIndex, 0),    // remaining[1]
 					opcode.Make(opcode.OpGetFree, 0),  // fn
 					opcode.Make(opcode.OpCall, 1, 0),  // fn(first(remaining))
-					opcode.Make(opcode.OpConstant, 3), // more(
+					opcode.Make(opcode.OpConstant, 5), // more(
 					opcode.Make(opcode.OpCall, 2, 0),  // more(accumulated, fn(first(remaining)))
 					opcode.Make(opcode.OpGetSelf),     // iter
 					opcode.Make(opcode.OpCall, 2, 0),  // iter(rest(remaining), more(accumulated, fn(first(remaining))))
@@ -2247,36 +2251,36 @@ func TestRecursion(t *testing.T) {
 				object.EmptyList,
 				[]opcode.Instructions{ // mapping function
 					opcode.Make(opcode.OpGetLocal, 0),
-					opcode.Make(opcode.OpFunction, 5, 1, 0),
-					opcode.Make(opcode.OpSetLocal, 2),
+					opcode.Make(opcode.OpFunction, 6, 1, 0),
+					opcode.Make(opcode.OpSetLocal, 2), // iter =
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 1), // arr
-					opcode.Make(opcode.OpConstant, 6), // empty list
+					opcode.Make(opcode.OpConstant, 7), // empty list
 					opcode.Make(opcode.OpGetLocal, 2), // iter
 					opcode.Make(opcode.OpCall, 2, 0),  // iter(...)
 					opcode.Make(opcode.OpReturnValue),
 				},
 				2,
-				[]opcode.Instructions{ // function x * 2
+				[]opcode.Instructions{ // fn{*2}
 					opcode.Make(opcode.OpGetLocal, 0), // x
-					opcode.Make(opcode.OpConstant, 8), // 2
+					opcode.Make(opcode.OpConstant, 9), // 2
 					opcode.Make(opcode.OpMultiply),    // x * 2
 					opcode.Make(opcode.OpReturnValue),
 				},
-				1, 3, 4,
+				3, 4,
 			},
 			expectedInstructions: []opcode.Instructions{
 				opcode.Make(opcode.OpConstant, 8),  // ... = fn(f, arr) { ...
 				opcode.Make(opcode.OpSetGlobal, 0), // mapping = ...
 				opcode.Make(opcode.OpPop),
-				opcode.Make(opcode.OpConstant, 10),
+				opcode.Make(opcode.OpConstant, 10), // fn{*2}
 				opcode.Make(opcode.OpConstant, 4),  // 1
 				opcode.Make(opcode.OpConstant, 9),  // 2
 				opcode.Make(opcode.OpConstant, 11), // 3
 				opcode.Make(opcode.OpConstant, 12), // 4
 				opcode.Make(opcode.OpList, 4),      // [1, 2, 3, 4]
 				opcode.Make(opcode.OpGetGlobal, 0), // mapping(...
-				opcode.Make(opcode.OpCall, 2, 0),   // mapping(fn(x) { x * 2 }, [1, 2, 3, 4])
+				opcode.Make(opcode.OpCall, 2, 0),   // mapping(fn{*2}, [1, 2, 3, 4])
 				opcode.Make(opcode.OpSetGlobal, 1), // doubled = ...
 				opcode.Make(opcode.OpPop),
 			},
