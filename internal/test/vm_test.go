@@ -3228,23 +3228,31 @@ func TestInterpolationModifierForRound(t *testing.T) {
 		{`mode rounding = _round'halfeven
 		  val x = -2.25; "{{x:r1}}"`, "-2.2", object.STRING_OBJ},
 
-		// round with padding zeroes
+		// round with padding zeroes (normal)
 		{`val x = 1.23; "{{x: r4 }}"`, "1.2300", object.STRING_OBJ},
 		{`val x = 1.234; "{{x:r4}}"`, "1.2340", object.STRING_OBJ},
 		{`val x = 1.2345; "{{x:r4}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:r1}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:r4}}"`, "1.2346", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:r1}}"`, "123456879.0", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r4}}"`, "1.2000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r7}}"`, "1.2000000", object.STRING_OBJ},
 
-		// round without padding zeroes
+		// trim padding zeroes
 		{`val x = 1.23; "{{x:r4-}}"`, "1.23", object.STRING_OBJ},
 		{`val x = 1.234; "{{x:r4-}}"`, "1.234", object.STRING_OBJ},
 		{`val x = 1.2345; "{{x:r4-}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:r1-}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:r4-}}"`, "1.2346", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:r1-}}"`, "123456879", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r4-}}"`, "1.2", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r7-}}"`, "1.2", object.STRING_OBJ},
 
-		// without adding zeroes...
+		// don't trim or add zeroes
+		{`val x = 1.2000000; "{{x:r4!}}"`, "1.2000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r7!}}"`, "1.2000000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:r9!}}"`, "1.2000000", object.STRING_OBJ},
+
 		{`val x = 123.1590; "{{x:r5!}}"`, "123.1590", object.STRING_OBJ},
 		{`val x = 123.1590; "{{x:r5}}"`, "123.15900", object.STRING_OBJ},
 		{`val x = 123.1590; "{{x:r5-}}"`, "123.159", object.STRING_OBJ},
@@ -3270,23 +3278,31 @@ func TestInterpolationModifierForTrunc(t *testing.T) {
 		{`val x = 42.3333; "{{x:t-1:X}}"`, "28", object.STRING_OBJ},
 		{`val x = 42.3333; "{{x:t-2}}"`, "0", object.STRING_OBJ},
 
-		// truncate with padding zeroes
+		// truncate with padding zeroes (normal)
 		{`val x = 1.23; "{{x: t4 }}"`, "1.2300", object.STRING_OBJ},
 		{`val x = 1.234; "{{x:t4}}"`, "1.2340", object.STRING_OBJ},
 		{`val x = 1.2345; "{{x:t4}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:t1}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:t4}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:t1}}"`, "123456879.0", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t4}}"`, "1.2000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t7}}"`, "1.2000000", object.STRING_OBJ},
 
-		// truncate without padding zeroes
+		// trim padding zeroes
 		{`val x = 1.23; "{{x:t4-}}"`, "1.23", object.STRING_OBJ},
 		{`val x = 1.234; "{{x:t4-}}"`, "1.234", object.STRING_OBJ},
 		{`val x = 1.2345; "{{x:t4-}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:t1-}}"`, "1.2", object.STRING_OBJ},
 		{`val x = 1.23456879; "{{x:t4-}}"`, "1.2345", object.STRING_OBJ},
 		{`val x = 123456879; "{{x:t1-}}"`, "123456879", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t4-}}"`, "1.2", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t7-}}"`, "1.2", object.STRING_OBJ},
 
-		// without adding zeroes...
+		// don't trim or add zeroes
+		{`val x = 1.2000000; "{{x:t4!}}"`, "1.2000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t7!}}"`, "1.2000000", object.STRING_OBJ},
+		{`val x = 1.2000000; "{{x:t9!}}"`, "1.2000000", object.STRING_OBJ},
+
 		{`val x = 123.1590; "{{x:t5!}}"`, "123.1590", object.STRING_OBJ},
 		{`val x = 123.1590; "{{x:t5}}"`, "123.15900", object.STRING_OBJ},
 		{`val x = 123.1590; "{{x:t5-}}"`, "123.159", object.STRING_OBJ},
