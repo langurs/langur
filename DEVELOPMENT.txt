@@ -1,5 +1,5 @@
 langur development
-v. 0.18
+2024-11-17
 
 I hope you find langur useful. I've put a lot of work into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0 soon. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax. I'm open to input.
 
@@ -12,14 +12,37 @@ I make note of two kinds of "purity," one in regard to side effects, and one in 
 
 --Anthony Davis
 
-possible things to consider...
+backlog
+value forwarding syntax with one or multiple uses of forwarding variable _fwd
+    instead of writing ...
+        join(filter(mapX(wordsets..., by=amb)), by="\n")
+    one could write ...
+        mapX(wordsets..., by=amb) -> filter -> join(_fwd, by="\n")
+
+    If there are multiple uses of the forwarded value, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
+
+compile on AST node instead of seperate compile package
+    Work was started toward this, but not finished.
+compile with metadata that can be used in VM to traceback errors to source code
+log (math) function
+atan2(), acos(), etc.
+duration string formatting, including weeks
+engineering notation (almost like scientific notation) interpolation modifier
+PEG grammar
+use VCS (github likely)
+
+other things to consider...
+efficiency
+    While we couldn't expect performance like C, Go, or Rust, it could be improved.
+    append way too slow
 resource management
     closes resources when finished, even if there's an exception
+dependency management (see Rust)
 import modules
     presently parsed, but not compiled
     must account for global modes
     maybe move some built-in functions to be imports or pseudo-imports, uncluttering the global namespace
-        give more descriptive names; can be aliased to short names
+        use more descriptive names; can be aliased to short names
 module compile
     global modes
     order irrelevant for module compiled declarations
@@ -29,6 +52,7 @@ OOP with composition
     no inheritance - I don't like inheritance in programming.
     I also don't like "everything is an object."
 optional explicit typing
+complex numbers
 bitwise operations
     at least on explicit types
 pointers
@@ -36,7 +60,5 @@ pointers
 concurrency
     maybe using go/conc library
     must trap/account for exceptions
-dependency management (see Rust)
 testing mechanisms
-compile to native code
 
