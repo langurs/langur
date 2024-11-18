@@ -348,6 +348,7 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 			param.ExternalName = expr.Right.(*ast.IdentNode).Name
 		} else {
 			err = c.makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
+			return
 		}
 
 	default:
@@ -367,8 +368,8 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 		return
 	}
 	if param.DefaultValue == nil {
-		// default failed to evaluate at compile-time
-		// set to no value for now to indicate an optional parameter, not a "required by name" parameter
+		// default did not evaluate at compile-time
+		// set to no value for now to indicate an optional parameter (not a "required by name" parameter)
 		// instructions to be evaluated at run-time
 		param.DefaultValue = object.NONE
 	}

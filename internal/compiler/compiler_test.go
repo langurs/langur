@@ -2206,7 +2206,7 @@ func TestRecursion(t *testing.T) {
 					        if len(remaining) == 0 {
 					            accumulated
 					        } else {
-					            iter(rest(remaining), more(accumulated, f(first(remaining))))
+					            iter(less(remaining, of=1), more(accumulated, f(remaining[1])))
 					       }
 					    }
 					    iter(arr, [])
@@ -2217,8 +2217,8 @@ func TestRecursion(t *testing.T) {
 			expectedConstants: []interface{}{
 				process.GetBuiltInByName("len"),
 				0,
-				process.GetBuiltInByName("rest"),
-				process.GetBuiltInByName("first"),
+				object.NewString("of"),
+				process.GetBuiltInByName("less"),
 				process.GetBuiltInByName("more"),
 				[]opcode.Instructions{ // iter function
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
@@ -2230,8 +2230,8 @@ func TestRecursion(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
 					opcode.Make(opcode.OpJump, 33),
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
-					opcode.Make(opcode.OpConstant, 2), // rest(
-					opcode.Make(opcode.OpCall, 1, 0),  // rest(remaining)
+					opcode.Make(opcode.OpConstant, 2), // less(
+					opcode.Make(opcode.OpCall, 1, 0),  // less(remaining, of=1)
 					opcode.Make(opcode.OpGetLocal, 1), // accumulated
 					opcode.Make(opcode.OpGetLocal, 0), // remaining
 					opcode.Make(opcode.OpConstant, 4), // first(
@@ -2266,12 +2266,12 @@ func TestRecursion(t *testing.T) {
 				1, 3, 4,
 			},
 			expectedInstructions: []opcode.Instructions{
-				opcode.Make(opcode.OpConstant, 7),  // ... = fn(f, arr) { ...
+				opcode.Make(opcode.OpConstant, 8),  // ... = fn(f, arr) { ...
 				opcode.Make(opcode.OpSetGlobal, 0), // mapping = ...
 				opcode.Make(opcode.OpPop),
-				opcode.Make(opcode.OpConstant, 9),
-				opcode.Make(opcode.OpConstant, 10), // 1
-				opcode.Make(opcode.OpConstant, 8),  // 2
+				opcode.Make(opcode.OpConstant, 10),
+				opcode.Make(opcode.OpConstant, 4),  // 1
+				opcode.Make(opcode.OpConstant, 9),  // 2
 				opcode.Make(opcode.OpConstant, 11), // 3
 				opcode.Make(opcode.OpConstant, 12), // 4
 				opcode.Make(opcode.OpList, 4),      // [1, 2, 3, 4]
