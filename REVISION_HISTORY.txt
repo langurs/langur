@@ -1,7 +1,7 @@
 langur revision history
 https://langurlang.org
 
-... - 0.18.0
+2024-11-19 - 0.18.0
 - changed parameters, making use of parameters by name for built-in functions all, any, appendfile, cd, count, datetime, exit, filter, fold, hash, index, indices, join, less, map, mapX, match, matches, more, nn, number, read, replace, rotate, round, s2cp, s2s, series, sort, split, string, subindex, subindices, submatch, submatches, submatchH, trunc, writefile, zip
 - dropped builtin functions benchmark, first, foldfrom, group, groupby, groupbyH, haskey, last, pseries, rest
 - fixed builtin function less() to work properly with negative indices
@@ -10,7 +10,6 @@ https://langurlang.org
 - changed mode consoleText default to false
 - renamed object "binary" operations as infix
 - updated object.IIndex interface to include IndexCount() and IndexKeys() methods
-
 
 2024-08-15 - 0.17.5
 - moved responsibility for current patch state of built-in function parameters to the functions themselves
