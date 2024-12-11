@@ -19,11 +19,12 @@ backlog
     one could write ...
         mapX(wordsets..., by=amb) -> filter -> join(_fwd, by="\n")
 
-    If there are multiple uses of the forwarded value, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
+    If there are multiple uses of the forwarded value after an operator, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
 
 - compile on AST node instead of seperate compile package
     Work was started toward this, but not finished.
 - compile with metadata that can be used in VM to traceback errors to source code
+    ditto
 - log (math) function
 - atan2(), acos(), etc.
 - duration string formatting, including weeks
@@ -35,15 +36,15 @@ backlog
 other things to consider...
 - efficiency
     While we couldn't expect performance like C, Go, or Rust, it could be improved.
-    append way too slow
+    Append is way too slow.
 - resource management
-    closes resources when finished, even if there's an exception
-- dependency management (see Rust)
+    close resources when finished, even if there's an exception
+- dependency management
 - import modules
     presently parsed, but not compiled
     must account for global modes
     maybe move some built-in functions to be imports or pseudo-imports, uncluttering the global namespace
-        use more descriptive names; can be aliased to short names
+        use more descriptive names, which could be aliased to short names
 - module compile
     global modes
     order irrelevant for module compiled declarations
