@@ -1,14 +1,12 @@
 # langur development
-2024-11-19
+2024-12-22
 
-I hope you find langur useful. I've put a lot of work into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0 soon. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax. I'm open to input.
+I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
-To make 1.0, I would like to fix setting by index. There are at least a couple of issues here. One is efficiency. The other is that you cannot presently set by index if using more than a single index on a variable (as shown below).
+To make 1.0, I would like to fix setting by index. One issue is efficiency. Another is that you cannot presently set by index if using more than a single index on a variable (as shown below).
 
 x[1] = 123      # okay
 y[1][2] = 123   # doesn't work
-
-I make note of two kinds of "purity," one in regard to side effects, and one in regard to variables. Langur presently has strict purity in terms of variables. I'm not absolutely settled on this, so long as changes to this can be made that don't make concurrency difficult.
 
 --Anthony Davis
 
@@ -21,17 +19,17 @@ backlog
 
     If there are multiple uses of the forwarded value after an operator, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
 
-- compile on AST node instead of seperate compile package
+- PEG grammar
+- use VCS (github likely)
+- compile on AST node instead of having a seperate compile package
     Work was started toward this, but not finished.
 - compile with metadata that can be used in VM to traceback errors to source code
-    ditto
+    Work was started toward this, but not finished.
 - log (math) function
 - atan2(), acos(), etc.
 - duration string formatting, including weeks
 - engineering notation (almost like scientific notation) interpolation modifier
 - possible changes to parameters to specify adding/removing trailing zeroes for round() and trunc()
-- PEG grammar
-- use VCS (github likely)
 
 other things to consider...
 - efficiency
@@ -44,7 +42,7 @@ other things to consider...
     presently parsed, but not compiled
     must account for global modes
     maybe move some built-in functions to be imports or pseudo-imports, uncluttering the global namespace
-        use more descriptive names, which could be aliased to short names
+        use more descriptive names, which a programmer could alias to short names if he wants to
 - module compile
     global modes
     order irrelevant for module compiled declarations
