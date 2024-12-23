@@ -511,7 +511,7 @@ var bi_round = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
-			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
+			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 			object.Parameter{ExternalName: "mode"},
 		},
 	},
@@ -528,12 +528,23 @@ var bi_round = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
-		trim, ok := args[2].(*object.Boolean)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument addzeroes")
-		}
-		addTrailingZeroes := trim.Value
+		addTrailingZeroes := false
 		trimTrailingZeroes := false
+
+		switch args[2] {
+		case object.NULL:
+			// ok; neither add, nor trim trailing zeroes
+			
+			// TODO: fix fundamental behavior in decimal library
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+			
+		case object.TRUE:
+			addTrailingZeroes = true
+		case object.FALSE:
+			trimTrailingZeroes = true
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+		}
 
 		var mode modes.RoundingMode
 		if args[3] == nil {
@@ -543,7 +554,7 @@ var bi_round = &object.BuiltIn{
 		} else {
 			m, ok := object.NumberToInt(args[3])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for fourth argument (from "+modes.RoundHashName+" hash")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument mode (from "+modes.RoundHashName+" hash")
 			}
 			mode = modes.RoundingMode(m)
 		}
@@ -568,7 +579,7 @@ var bi_trunc = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
-			object.Parameter{ExternalName: "addzeroes", DefaultValue: object.TRUE},
+			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -584,12 +595,23 @@ var bi_trunc = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
-		trim, ok := args[2].(*object.Boolean)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument addzeroes")
-		}
-		addTrailingZeroes := trim.Value
+		addTrailingZeroes := false
 		trimTrailingZeroes := false
+
+		switch args[2] {
+		case object.NULL:
+			// ok; neither add, nor trim trailing zeroes
+
+			// TODO: fix fundamental behavior in decimal library
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+
+		case object.TRUE:
+			addTrailingZeroes = true
+		case object.FALSE:
+			trimTrailingZeroes = true
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+		}
 
 		num, err := n.Truncate(places, addTrailingZeroes, trimTrailingZeroes)
 

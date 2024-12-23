@@ -6125,13 +6125,13 @@ func TestMathFunctions(t *testing.T) {
 		// truncate without padding zeroes
 		{`trunc(123)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.0)`, 123, object.NUMBER_OBJ},
-		{`trunc(123, places=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
+		{`trunc(123, places=2, zeroes=false)`, 123, object.NUMBER_OBJ},
 		{`trunc(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`trunc(123.123456789, places=4, addzeroes=false)`, "123.1234", object.NUMBER_OBJ},
-		{`trunc(123.123456789, places=8, addzeroes=false)`, "123.12345678", object.NUMBER_OBJ},
-		{`trunc(123.123456789, places=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, places=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`trunc(123.123456789, places=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=4, zeroes=false)`, "123.1234", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=8, zeroes=false)`, "123.12345678", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=9, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=10, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`trunc(123.123456789, places=12, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// truncate with padding zeros
 		{`trunc(123, places=0)`, 123, object.NUMBER_OBJ},
@@ -6159,12 +6159,12 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.4)`, 123, object.NUMBER_OBJ},
 		{`round(123.7)`, 124, object.NUMBER_OBJ},
 		{`round(123.0)`, 123, object.NUMBER_OBJ},
-		{`round(123, places=2, addzeroes=false)`, 123, object.NUMBER_OBJ},
+		{`round(123, places=2, zeroes=false)`, 123, object.NUMBER_OBJ},
 		{`round(123.123456789)`, 123, object.NUMBER_OBJ},
-		{`round(123.123456789, places=4, addzeroes=false)`, "123.1235", object.NUMBER_OBJ},
-		{`round(123.123456789, places=9, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, places=10, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
-		{`round(123.123456789, places=12, addzeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=4, zeroes=false)`, "123.1235", object.NUMBER_OBJ},
+		{`round(123.123456789, places=9, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=10, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
+		{`round(123.123456789, places=12, zeroes=false)`, "123.123456789", object.NUMBER_OBJ},
 
 		// round with padding zeroes
 		{`round(123, places=0)`, 123, object.NUMBER_OBJ},
