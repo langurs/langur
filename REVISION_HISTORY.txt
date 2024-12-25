@@ -1,9 +1,8 @@
 langur revision history
 https://langurlang.org
 
-0.18.1
+2024-12-25 - 0.18.1
 - for built-in functions round and trunc, renamed parameter addzeroes to zeroes; added null as valid value to indicate same thing as using exclamation point on round or truncate interpolation (neither add, nor trim zeroes)
-
 
 2024-11-19 - 0.18.0
 - changed parameters, making use of parameters by name for built-in functions all, any, appendfile, cd, count, datetime, exit, filter, fold, hash, index, indices, join, less, map, mapX, match, matches, more, nn, number, read, replace, rotate, round, s2cp, s2s, series, sort, split, string, subindex, subindices, submatch, submatches, submatchH, trunc, writefile, zip
