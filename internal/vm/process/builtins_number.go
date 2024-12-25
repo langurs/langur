@@ -534,10 +534,6 @@ var bi_round = &object.BuiltIn{
 		switch args[2] {
 		case object.NULL:
 			// ok; neither add, nor trim trailing zeroes
-			
-			// TODO: fix fundamental behavior in decimal library
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
-			
 		case object.TRUE:
 			addTrailingZeroes = true
 		case object.FALSE:
@@ -601,10 +597,6 @@ var bi_trunc = &object.BuiltIn{
 		switch args[2] {
 		case object.NULL:
 			// ok; neither add, nor trim trailing zeroes
-
-			// TODO: fix fundamental behavior in decimal library
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
-
 		case object.TRUE:
 			addTrailingZeroes = true
 		case object.FALSE:

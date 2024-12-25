@@ -6144,6 +6144,14 @@ func TestMathFunctions(t *testing.T) {
 		{`trunc(123.123456789, places=10)`, "123.1234567890", object.NUMBER_OBJ},
 		{`trunc(123.123456789, places=12)`, "123.123456789000", object.NUMBER_OBJ},
 
+		// zeroes true, false, null
+		{`trunc(123.200, places=7, zeroes=true)`, "123.2000000", object.NUMBER_OBJ},
+		{`trunc(123.200, places=7, zeroes=false)`, "123.2", object.NUMBER_OBJ},
+		{`trunc(123.200, places=7, zeroes=null)`, "123.200", object.NUMBER_OBJ},
+		{`trunc(123.222, places=7, zeroes=true)`, "123.2220000", object.NUMBER_OBJ},
+		{`trunc(123.222, places=7, zeroes=false)`, "123.222", object.NUMBER_OBJ},
+		{`trunc(123.222, places=7, zeroes=null)`, "123.222", object.NUMBER_OBJ},
+
 		// truncate on integer
 		{`trunc(123, places=-1)`, 120, object.NUMBER_OBJ},
 		{`trunc(123.4, places=-1)`, 120, object.NUMBER_OBJ},
@@ -6177,6 +6185,14 @@ func TestMathFunctions(t *testing.T) {
 		{`round(123.123456789, places=9)`, "123.123456789", object.NUMBER_OBJ},
 		{`round(123.123456789, places=10)`, "123.1234567890", object.NUMBER_OBJ},
 		{`round(123.123456789, places=12)`, "123.123456789000", object.NUMBER_OBJ},
+
+		// zeroes true, false, null
+		{`round(123.200, places=7, zeroes=true)`, "123.2000000", object.NUMBER_OBJ},
+		{`round(123.200, places=7, zeroes=false)`, "123.2", object.NUMBER_OBJ},
+		{`round(123.200, places=7, zeroes=null)`, "123.200", object.NUMBER_OBJ},
+		{`round(123.222, places=7, zeroes=true)`, "123.2220000", object.NUMBER_OBJ},
+		{`round(123.222, places=7, zeroes=false)`, "123.222", object.NUMBER_OBJ},
+		{`round(123.222, places=7, zeroes=null)`, "123.222", object.NUMBER_OBJ},
 
 		// round on integer
 		{`round(123, places=-1)`, 120, object.NUMBER_OBJ},
