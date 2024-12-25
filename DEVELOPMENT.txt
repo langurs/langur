@@ -1,5 +1,5 @@
 # langur development
-2024-12-22
+2024-12-25
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -29,7 +29,6 @@ backlog
 - atan2(), acos(), etc.
 - duration string formatting, including weeks
 - engineering notation (almost like scientific notation) interpolation modifier
-- possible changes to parameters to specify adding/removing trailing zeroes for round() and trunc()
 
 other things to consider...
 - efficiency
