@@ -94,6 +94,7 @@ var BuiltIns = []*object.BuiltIn{
 	bi_map,
 	bi_mapX,
 
+	bi_tran,
 	bi_replace,
 	bi_matching,
 	bi_match,

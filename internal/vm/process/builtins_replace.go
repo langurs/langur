@@ -5,10 +5,11 @@ package process
 import (
 	"fmt"
 	"langur/object"
+	"langur/str"
 	"strings"
 )
 
-// replace
+// replace, tran
 
 // for both regex and plain string replacements
 // replacement as string or function taking one parameter
@@ -40,7 +41,7 @@ var bi_replace = &object.BuiltIn{
 		if !isRegex {
 			find, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for second argument (find)")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
@@ -169,4 +170,98 @@ func replaceWithFunctionsAndStrings(
 	}
 
 	return object.StringConcat(elements)
+}
+
+var bi_tran = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:        "tran",
+		Description: "transliteration by strings, code points, or graphemes; may use lists",
+
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "anything"},
+		},
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "with", Required: true},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "tran"
+
+		src := args[0].String()
+		var sb strings.Builder
+
+		var list1, list2 []string
+		var err error
+
+		list1, err = listToGraphemeStringSlice(args[1])
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument by: %s", err.Error()))
+		}
+		list2, err = listToGraphemeStringSlice(args[2])
+		if err != nil {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
+		}
+		
+		// should have 2 lists of equal length
+		if len(list1) != len(list2) {
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same number of items for lists in arguments by and with")
+		}
+
+		for len(src) != 0 {
+			match := false
+			for i, find := range list1 {
+				if len(src) >= len(find) && src[:len(find)] == find {
+					match = true
+					sb.WriteString(list2[i])
+					src = src[len(find):]
+					break // for i, find
+				}
+			}
+			if !match {
+				// advance 1 byte
+				sb.WriteByte(src[0])
+				src = src[1:]
+			}
+		}
+		
+		return object.NewString(sb.String())
+	},
+}
+
+func listToGraphemeStringSlice(left object.Object) (elements []string, err error) {
+	switch left := left.(type) {
+	case *object.String:
+		elements = str.GraphemeStringSlice(left.String())
+		
+	case *object.Range:
+		rSlc, err := object.CodePointsToFlatRuneSlice(left)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range rSlc {
+			elements = append(elements, string(r))
+		}
+	
+	case *object.List:
+		for _, e := range left.Elements {
+			switch e.(type) {
+			case *object.String:
+				elements = append(elements, e.String())		
+
+			default:
+				rSlc, err := object.CodePointsToFlatRuneSlice(e)
+				if err != nil {
+					return nil, err
+				}
+				elements = append(elements, string(rSlc))		
+			}
+		}
+
+	default:
+		err = fmt.Errorf("Expected string, list, or range")
+	}
+	
+	return
 }

@@ -112,11 +112,8 @@ var bi_cp2s = &object.BuiltIn{
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
-		s, err := object.NewStringFromParts(rSlc)
-		if err == nil {
-			return s
-		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		
+		return object.NewString(string(rSlc))
 	},
 }
 

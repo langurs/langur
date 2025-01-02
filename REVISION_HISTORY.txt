@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.18.2
+- added built-in function tran (transliterate)
+
+
 2024-12-25 - 0.18.1
 - for built-in functions round and trunc, renamed parameter addzeroes to zeroes; added null as valid value to indicate same thing as using exclamation point on round or truncate interpolation (neither add, nor trim zeroes)
 

@@ -6583,6 +6583,18 @@ func TestParameterMutability(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
+func TestTransliterate(t *testing.T) {
+	tests := []vmTestCase{
+		{`tran("abcd", by='a'..'z', with='A'..'Z')`, "ABCD", object.STRING_OBJ},
+		{`tran("abcd", by=["bc", "d", "a"], with=["ED", " now", "A"])`, "AED now", object.STRING_OBJ},
+		{`tran("abcd", by=["bc", "d", "a"], with=["ed", " now", "a"])`, "aed now", object.STRING_OBJ},
+		{`tran("try this", by="something", with="SOMETHING")`, "Try THIS", object.STRING_OBJ},
+		{`tran("/0no//way/1man", by=fw"// /0 /1", with=fw"/ ! ?")`, "!no/way?man", object.STRING_OBJ},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestRe2(t *testing.T) {
 	tests := []vmTestCase{
 		{"re/abc/ is regex", true, object.BOOLEAN_OBJ},

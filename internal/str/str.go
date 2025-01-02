@@ -258,6 +258,18 @@ func Graphemes(s string) [][]rune {
 	return graphemes
 }
 
+func GraphemeStringSlice(s string) []string {
+	graphemes := []string{}
+	bSlc := []byte(s)
+	state := -1
+	var gr []byte
+	for len(bSlc) > 0 {
+		gr, bSlc, _, state = uniseg.FirstGraphemeCluster(bSlc, state)
+		graphemes = append(graphemes, string(gr))
+	}
+	return graphemes
+}
+
 func GraphemesToString(grSlc [][]rune) string {
 	var sb strings.Builder
 

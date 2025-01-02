@@ -87,3 +87,4 @@ func ListFromRuneSlice(rSlc []rune) *List {
 	}
 	return arr
 }
+

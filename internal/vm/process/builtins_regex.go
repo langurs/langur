@@ -33,7 +33,7 @@ var bi_matching = &object.BuiltIn{
 		var check *object.String
 		var ok bool
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
@@ -44,14 +44,14 @@ var bi_matching = &object.BuiltIn{
 		}
 
 		if isRegex {
-			success, err := object.RegexMatching(re, s.String())
+			success, err := object.RegexMatching(re, s)
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return success
 		}
 
-		return object.NativeBoolToObject(strings.Contains(s.String(), check.String()))
+		return object.NativeBoolToObject(strings.Contains(s, check.String()))
 	},
 }
 
@@ -72,14 +72,14 @@ var bi_match = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "match"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
-		result, err := object.RegexMatchOnce(re, s.String())
+		result, err := object.RegexMatchOnce(re, s)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -111,7 +111,7 @@ var bi_matches = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "matches"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
@@ -128,7 +128,7 @@ var bi_matches = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		list, err := object.RegexMatchProgressive(re, s.String(), max)
+		list, err := object.RegexMatchProgressive(re, s, max)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -152,14 +152,14 @@ var bi_submatch = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatch"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
-		result, err := object.RegexSubMatches(re, s.String())
+		result, err := object.RegexSubMatches(re, s)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -183,14 +183,14 @@ var bi_submatchH = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchH"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
-		result, err := object.RegexSubMatchesHash(re, s.String())
+		result, err := object.RegexSubMatchesHash(re, s)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -215,7 +215,7 @@ var bi_submatches = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatches"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
@@ -231,7 +231,7 @@ var bi_submatches = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatches(re, s.String(), cnt)
+		result, err := object.RegexProgressiveSubMatches(re, s, cnt)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -256,7 +256,7 @@ var bi_submatchesH = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchesH"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
@@ -272,7 +272,7 @@ var bi_submatchesH = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatchesHashList(re, s.String(), cnt)
+		result, err := object.RegexProgressiveSubMatchesHashList(re, s, cnt)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -369,7 +369,7 @@ var bi_index = &object.BuiltIn{
 		var sub *object.String
 		var ok bool
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
@@ -383,9 +383,9 @@ var bi_index = &object.BuiltIn{
 		var err error
 
 		if isRegex {
-			result, err = object.RegexIndex(re, s.String())
+			result, err = object.RegexIndex(re, s)
 		} else {
-			result, err = object.StringIndex(sub.String(), s.String())
+			result, err = object.StringIndex(sub.String(), s)
 		}
 
 		if err != nil {
@@ -422,7 +422,7 @@ var bi_indices = &object.BuiltIn{
 		var sub *object.String
 		var ok bool
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, isRegex := args[1].(*object.Regex)
 		if !isRegex {
@@ -443,9 +443,9 @@ var bi_indices = &object.BuiltIn{
 
 		var result object.Object
 		if isRegex {
-			result, err = object.RegexProgressiveIndices(re, s.String(), cnt)
+			result, err = object.RegexProgressiveIndices(re, s, cnt)
 		} else {
-			result, err = object.StringProgressiveIndices(sub.String(), s.String(), cnt)
+			result, err = object.StringProgressiveIndices(sub.String(), s, cnt)
 		}
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
@@ -470,14 +470,14 @@ var bi_subindex = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindex"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
 		}
 
-		result, err := object.RegexSubMatchesIndices(re, s.String())
+		result, err := object.RegexSubMatchesIndices(re, s)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -502,7 +502,7 @@ var bi_subindices = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindices"
 
-		s := object.ToString(args[0])
+		s := args[0].String()
 
 		re, ok := args[1].(*object.Regex)
 		if !ok {
@@ -518,7 +518,7 @@ var bi_subindices = &object.BuiltIn{
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatchesIndices(re, s.String(), cnt)
+		result, err := object.RegexProgressiveSubMatchesIndices(re, s, cnt)
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
