@@ -6590,6 +6590,8 @@ func TestTransliterate(t *testing.T) {
 		{`tran("abcd", by=["bc", "d", "a"], with=["ed", " now", "a"])`, "aed now", object.STRING_OBJ},
 		{`tran("try this", by="something", with="SOMETHING")`, "Try THIS", object.STRING_OBJ},
 		{`tran("/0no//way/1man", by=fw"// /0 /1", with=fw"/ ! ?")`, "!no/way?man", object.STRING_OBJ},
+		{`tran("𝄞€ЖöA", by="AöЖ€𝄞", with='A'..'E')`, "EDCBA", object.STRING_OBJ},
+		{`tran("CDAB", with="AöЖ€𝄞", by='A'..'E')`, "Ж€Aö", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
