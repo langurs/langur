@@ -3,6 +3,7 @@
 package process
 
 import (
+	"langur/cpoint"
 	"fmt"
 	"langur/object"
 	"langur/str"
@@ -220,9 +221,10 @@ var bi_tran = &object.BuiltIn{
 				}
 			}
 			if !match {
-				// advance 1 byte
-				sb.WriteByte(src[0])
-				src = src[1:]
+				// no match; advance by 1 code point
+				r, bc, _ := cpoint.Decode(&src, 0)
+				sb.WriteRune(r)
+				src = src[bc:]
 			}
 		}
 		
