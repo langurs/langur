@@ -18,11 +18,12 @@ var ExecuteMain = &CallNode{Function: &IdentNode{Name: "_main", System: true}}
 // NOTE: For error reporting, we attach tokens to the nodes (besides operators).
 // Besides the literal, tokens contain line numbers, etc.
 type Node interface {
-	TokenInfo() token.Token
-	TokenRepresentation() string
-	String() string
 	Copy() Node
-	Evaluate() (object.Object, bool)
+	Evaluate() object.Object
+	// Compile(*Compiler) (opcode.InsPackage, error)
+	String() string
+	TokenRepresentation() string
+	TokenInfo() token.Token
 }
 
 // simply marks it as a statement node (no action)

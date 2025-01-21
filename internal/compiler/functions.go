@@ -357,15 +357,13 @@ func (c *Compiler) assessParameterByName(assign *ast.AssignmentNode) (
 	}
 
 	// attempt to build default value now (if possible)
-	var ok bool
-	param.DefaultValue, ok = assign.Values[0].Evaluate()
-	if !ok {
-		param.DefaultValue = nil
+	param.DefaultValue = assign.Values[0].Evaluate()
+	if param.DefaultValue == nil {
 		defaultIns, err = c.compileNode(assign.Values[0])
-	}
-	if err != nil {
-		err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
-		return
+		if err != nil {
+			err = c.makeErr(assign, fmt.Sprintf("Failure to compile default value for optional parameter %s: %s", str.ReformatInput(param.InternalName), err.Error()))
+			return
+		}
 	}
 	if param.DefaultValue == nil {
 		// default did not evaluate at compile-time

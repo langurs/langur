@@ -18,6 +18,7 @@ func (ins Instructions) Copy() Instructions {
 	return newIns
 }
 
+// TODO: use InsPackage instead of just Instructions, allowing meta-data to be included
 type InsPackage struct {
 	Instructions Instructions
 	Where        trace.WhereSlice

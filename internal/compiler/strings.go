@@ -11,6 +11,12 @@ import (
 )
 
 func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instructions, err error) {
+	dt := node.Evaluate()
+	if dt != nil {
+		ins = c.constantIns(dt)
+		return
+	}
+
 	patternNode, ok := node.Pattern.(*ast.StringNode)
 	if !ok {
 		return nil, c.makeErr(node, fmt.Sprintf("Expected String Node within DateTime Node"))
@@ -20,12 +26,6 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 	if len(patternNode.Interpolations) == 0 {
 		if !object.IsValidDateTimeString(s, true) {
 			err = c.makeErr(node, "Invalid date-time literal string")
-			return
-		}
-
-		dt, ok := node.Evaluate()
-		if ok {
-			ins = c.constantIns(dt)
 			return
 		}
 	}
@@ -41,8 +41,8 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 }
 
 func (c *Compiler) compileDurationNode(node *ast.DurationNode) (ins opcode.Instructions, err error) {
-	dur, ok := node.Evaluate()
-	if ok {
+	dur := node.Evaluate()
+	if dur != nil {
 		ins = c.constantIns(dur)
 		return
 	}
