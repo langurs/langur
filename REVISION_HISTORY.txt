@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.18.2
 - added built-in function tran (transliterate)
+- updated ast.Node.Evaluate() to return only an object.Object (nil if not evaluated)
 
 
 2024-12-25 - 0.18.1
