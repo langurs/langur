@@ -4,6 +4,7 @@ https://langurlang.org
 ... - 0.18.2
 - added built-in function tran (transliterate)
 - updated ast.Node.Evaluate() to return only an object.Object (nil if not evaluated)
+- added Code2 to token.Token; now using Code2 to indicate number base
 
 
 2024-12-25 - 0.18.1
