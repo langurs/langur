@@ -516,6 +516,11 @@ func (p *Parser) parseNumber() ast.Node {
 	// removing underscores first ...
 	numStr := strings.Replace(p.tok.Literal, "_", "", -1)
 
+	if 0 != p.tok.Code&token.CODE_IMAGINARY_NUMBER {
+		// TODO: complex and imaginary numbers
+		p.addError("Unable to parse imaginary number")
+	}
+
 	if p.tok.Code2 == 0 {
 		base = 10
 	} else {

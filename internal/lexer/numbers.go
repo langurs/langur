@@ -11,7 +11,7 @@ import (
 )
 
 func (lex *Lexer) readNumber() (
-	tl string, tt token.Type, base int, err error) {
+	tl string, tt token.Type, base int, imaginary bool, err error) {
 
 	var sb strings.Builder
 	addCp := func() {
@@ -28,7 +28,10 @@ func (lex *Lexer) readNumber() (
 	includesNewline := false
 
 	for cpoint.IsWordTokenChar(lex.cp) || lex.cp == '.' {
-		if lex.cp == '.' {
+		if imaginary {
+			err = fmt.Errorf("Error after attempting to parse imaginary number")
+
+		} else if lex.cp == '.' {
 			if lex.peekCp == '.' {
 				// more than one dot in a row, not a floating point (may be range operator)
 				// Don't advance the code point, since we're already on the first dot.
@@ -133,6 +136,10 @@ func (lex *Lexer) readNumber() (
 			}
 
 			return
+
+		} else if lex.cp == 'i' {
+			imaginary = true
+			lex.advanceCodePoint()
 
 		} else {
 			// keeps reading whether the token is legal or illegal (grab all identifier characters)

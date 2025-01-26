@@ -26,6 +26,8 @@ func TestGeneralTokens(t *testing.T) {
 		{"16x123", &token.Token{Type: token.INT, Literal: "123", Code2: 16}, false},
 		{"16x1.23", &token.Token{Type: token.FLOAT, Literal: "1.23", Code2: 16}, false},
 
+		{"123i", &token.Token{Type: token.INT, Literal: "123", Code: token.CODE_IMAGINARY_NUMBER}, false},
+
 		{"-", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 		{"-123", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 		{"-1.23", &token.Token{Type: token.MINUS, Literal: "-"}, false},
