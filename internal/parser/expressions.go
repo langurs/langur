@@ -516,10 +516,10 @@ func (p *Parser) parseNumber() ast.Node {
 	// removing underscores first ...
 	numStr := strings.Replace(p.tok.Literal, "_", "", -1)
 
-	if p.tok.Code == token.CODE_DEFAULT {
+	if p.tok.Code2 == 0 {
 		base = 10
 	} else {
-		base = p.tok.Code
+		base = p.tok.Code2
 	}
 
 	node := &ast.NumberNode{Token: p.tok, Value: numStr, Base: base}

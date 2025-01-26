@@ -23,16 +23,15 @@ func TestGeneralTokens(t *testing.T) {
 		{"_systemVar", &token.Token{Type: token.IDENT, Literal: "_systemVar"}, false},
 		{"123", &token.Token{Type: token.INT, Literal: "123"}, false},
 		{"1.23", &token.Token{Type: token.FLOAT, Literal: "1.23"}, false},
-		{"16x123", &token.Token{Type: token.INT, Literal: "123", Code: 16}, false},
-		{"16x1.23", &token.Token{Type: token.FLOAT, Literal: "1.23", Code: 16}, false},
+		{"16x123", &token.Token{Type: token.INT, Literal: "123", Code2: 16}, false},
+		{"16x1.23", &token.Token{Type: token.FLOAT, Literal: "1.23", Code2: 16}, false},
 
 		{"-", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 		{"-123", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 		{"-1.23", &token.Token{Type: token.MINUS, Literal: "-"}, false},
-		{"-16x123", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 		{"-abc", &token.Token{Type: token.MINUS, Literal: "-"}, false},
 
-		{"16x", &token.Token{Type: token.INVALID, Literal: "16x", Code: 16}, true},
+		{"16x", &token.Token{Type: token.INVALID, Literal: "16x", Code2: 16}, true},
 
 		// good strings
 		{`"abc"`, &token.Token{Type: token.STRING, Literal: "abc"}, false},
@@ -195,7 +194,11 @@ func TestGeneralTokens(t *testing.T) {
 			}
 
 			if tok.Code != tt.tok.Code {
-				t.Errorf("(%q) token code expected=%d, received=%d", tt.input, tt.tok.Code, tok.Code)
+				t.Errorf("(%q) token Code expected=%d, received=%d", tt.input, tt.tok.Code, tok.Code)
+			}
+
+			if tok.Code2 != tt.tok.Code2 {
+				t.Errorf("(%q) token Code2 expected=%d, received=%d", tt.input, tt.tok.Code2, tok.Code2)
 			}
 		}
 

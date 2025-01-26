@@ -449,9 +449,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 			if lex.cp >= '0' && lex.cp <= '9' {
 				// starts with a base 10 digit
 				// must test for this before testing if IsTokenWordChar()
-				var code int
-				tok.Literal, tok.Type, code, err = lex.readNumber()
-				tok.Code |= code
+				tok.Literal, tok.Type, tok.Code2, err = lex.readNumber()
 
 				if err != nil {
 					addError(&tok, err)

@@ -35,7 +35,7 @@ func (c *Compiler) compileNoneNode(node *ast.NoneNode) (ins opcode.Instructions,
 func (c *Compiler) compileNumberNode(node *ast.NumberNode) (ins opcode.Instructions, err error) {
 	if c.Modes.WarnOnIntegerLiteralsStartingWithZero {
 		if node.Token.Type == token.INT && len(node.Value) > 1 &&
-			node.Token.Code == token.CODE_DEFAULT && node.Value[0] == '0' {
+			node.Token.Code2 == token.CODE_DEFAULT && node.Value[0] == '0' {
 			err = c.makeWarning(node, "Integer literal starting with zero (might be confused for a base 8 number (as used in other languages)")
 			return
 		}

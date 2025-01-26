@@ -12,14 +12,18 @@ type Token struct {
 	Type    Type
 	Literal string
 
-	// Code: so far has 5 uses
+	// Code: so far has 4 uses
+	// 1a. On an operator, this can indicate a database operation (not database op by default).
+	// 1b. ... and combination operator such as += *= etc.
+	// 2. indicates to implicitly escape interpolations
+	// 3. passes object type integer for type token
+	// 4. may indicate an imaginary number
+	Code int
+
+	// Code2
 	// 1. If basex notation is used, this will specify the base for the parser to use to interpret a number, ...
 	// ... or can be 0 for base 10.
-	// 2a. On an operator, this can indicate a database operation (not database op by default).
-	// 2b. ... and combination operator such as += *= etc.
-	// 3. indicates to implicitly escape interpolations
-	// 4. passes object type integer for type token
-	Code int
+	Code2 int
 
 	// Attachments: so far has 1 use
 	// 1. string/regex interpolation
@@ -44,6 +48,7 @@ func (tok Token) Copy() Token {
 		Type:            tok.Type,
 		Literal:         tok.Literal,
 		Code:            tok.Code,
+		Code2: 			tok.Code2,
 		Where:           tok.Where.Copy(),
 		NewLinePrecedes: tok.NewLinePrecedes,
 		CpDiff:          tok.CpDiff,
@@ -90,6 +95,7 @@ const (
 	CODE_DB_OPERATOR                     = 0x01
 	CODE_COMBINATION_ASSIGNMENT_OPERATOR = 0x02
 	CODE_ESC_ALL_INTERPOLATION           = 0x04
+	CODE_IMAGINARY_NUMBER = 0x08
 )
 
 func New(line, linePosition int) Token {
@@ -97,6 +103,7 @@ func New(line, linePosition int) Token {
 	tok.Type = INVALID
 	tok.Where = trace.NewWhere(line, linePosition)
 	tok.Code = CODE_DEFAULT
+	tok.Code2 = CODE_DEFAULT
 	tok.Attachments = nil
 	return tok
 }
@@ -160,6 +167,9 @@ func (t Token) String() string {
 
 	if t.Code != CODE_DEFAULT {
 		out.WriteString(fmt.Sprintf(", Code %d", t.Code))
+	}
+	if t.Code2 != CODE_DEFAULT {
+		out.WriteString(fmt.Sprintf(", Code2 %d", t.Code2))
 	}
 	if t.Errs != nil {
 		out.WriteString("; Errs: [" + t.Errors("; ") + "]")
