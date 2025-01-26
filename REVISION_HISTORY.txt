@@ -5,6 +5,7 @@ https://langurlang.org
 - added built-in function tran (transliterate)
 - updated ast.Node.Evaluate() to return only an object.Object (nil if not evaluated)
 - added Code2 to token.Token; now using Code2 to indicate number base
+- updated lexer to lex imaginary numbers (ending with letter i)
 
 
 2024-12-25 - 0.18.1
