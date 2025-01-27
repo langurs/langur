@@ -1434,47 +1434,68 @@ type NumberNode struct {
 	Token token.Token
 	Value string
 	Base  int
+	Imaginary bool
 }
 
 func (n *NumberNode) expressionNode() {}
 
 func (n *NumberNode) Copy() Node {
-	return &NumberNode{Token: n.Token.Copy(), Value: n.Value, Base: n.Base}
+	return &NumberNode{
+		Token: n.Token.Copy(), 
+		Value: n.Value, 
+		Base: n.Base, 
+		Imaginary: n.Imaginary,
+	}
 }
 
 func (n *NumberNode) Evaluate() object.Object {
-	number, err := object.NumberFromStringBase(n.Value, n.Base)
-	if err == nil {
-		return number
+	if !n.Imaginary {
+		number, err := object.NumberFromStringBase(n.Value, n.Base)
+		if err == nil {
+			return number
+		}
 	}
 	return nil
 }
 
 func (n *NumberNode) TokenRepresentation() string {
+	var sb strings.Builder
+	
 	if n.Base == 10 || n.Base == 0 {
-		return n.Value
+		sb.WriteString(n.Value)
+	} else {
+		sb.WriteString(str.NumberWithBasePrefix(n.Value, n.Base))
 	}
-	return str.NumberWithBasePrefix(n.Value, n.Base)
+	
+	if n.Imaginary {
+		sb.WriteByte('i')
+	}
+	
+	return sb.String()
 }
 func (n *NumberNode) String() string {
-	var out bytes.Buffer
+	var sb strings.Builder
 
-	out.WriteString("Number ")
+	sb.WriteString("Number ")
 	if n.Base == 10 || n.Base == 0 {
-		out.WriteString(n.Value)
+		sb.WriteString(n.Value)
 
 		v, err := str.StrToInt64(n.Value, 10)
 		if err == nil {
-			out.WriteString(" (")
-			out.WriteString(str.NumberWithBasePrefix(str.Int64ToStr(v, 16), 16))
-			out.WriteString(")")
+			sb.WriteString(" (")
+			sb.WriteString(str.NumberWithBasePrefix(str.Int64ToStr(v, 16), 16))
+			sb.WriteString(")")
 		}
 
 	} else {
-		out.WriteString(str.NumberWithBasePrefix(n.Value, n.Base))
+		sb.WriteString(str.NumberWithBasePrefix(n.Value, n.Base))
 	}
 
-	return out.String()
+	if n.Imaginary {
+		sb.WriteRune('i')
+	}
+
+	return sb.String()
 }
 
 func (n *NumberNode) TokenInfo() token.Token {
