@@ -516,10 +516,7 @@ func (p *Parser) parseNumber() ast.Node {
 	// removing underscores first ...
 	numStr := strings.Replace(p.tok.Literal, "_", "", -1)
 
-	if 0 != p.tok.Code&token.CODE_IMAGINARY_NUMBER {
-		// TODO: complex and imaginary numbers
-		p.addError("Unable to parse imaginary number")
-	}
+	imaginary := 0 != p.tok.Code&token.CODE_IMAGINARY_NUMBER
 
 	if p.tok.Code2 == 0 {
 		base = 10
@@ -527,7 +524,7 @@ func (p *Parser) parseNumber() ast.Node {
 		base = p.tok.Code2
 	}
 
-	node := &ast.NumberNode{Token: p.tok, Value: numStr, Base: base}
+	node := &ast.NumberNode{Token: p.tok, Value: numStr, Base: base, Imaginary: imaginary}
 	p.advanceToken()
 
 	return node

@@ -41,6 +41,11 @@ func (c *Compiler) compileNumberNode(node *ast.NumberNode) (ins opcode.Instructi
 		}
 	}
 
+	if node.Imaginary {
+		err = c.makeErr(node, "Misplaced imaginary number (not part of a complex number)")
+		return
+	}
+
 	var number *object.Number
 	number, err = object.NumberFromStringBase(node.Value, node.Base)
 	ins = c.constantIns(number)
