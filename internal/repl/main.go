@@ -1,7 +1,7 @@
 // langur/repl/main.go
 // langur REPL
 
-// Copyright 2024 Anthony Davis
+// Copyright 2025 Anthony Davis
 // See LICENSE file.
 // This constitutes notice for all appropriate source files.
 
