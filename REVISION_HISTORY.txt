@@ -1,12 +1,11 @@
 langur revision history
 https://langurlang.org
 
-... - 0.18.2
+2025-01-28 - 0.18.2
 - added built-in function tran (transliterate)
 - updated ast.Node.Evaluate() to return only an object.Object (nil if not evaluated)
 - added Code2 to token.Token; now using Code2 to indicate number base
 - updated to parse imaginary numbers (ending with letter i), but not compiled yet (to be part of complex numbers)
-
 
 2024-12-25 - 0.18.1
 - for built-in functions round and trunc, renamed parameter addzeroes to zeroes; added null as valid value to indicate same thing as using exclamation point on round or truncate interpolation (neither add, nor trim zeroes)
