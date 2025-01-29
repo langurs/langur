@@ -259,7 +259,12 @@ func (c *Compiler) compileNode(node ast.Node) (ins opcode.Instructions, err erro
 		ins, err = c.compileDurationNode(node)
 
 	case *ast.NumberNode:
-		ins, err = c.compileNumberNode(node)
+		if node.Imaginary {
+			// stand-alone imaginary number compiled to complex
+			ins, err = c.compileComplexNumber(nil, node, false)
+		} else {
+			ins, err = c.compileNumberNode(node)
+		}
 
 	case *ast.BooleanNode:
 		ins, err = c.compileBooleanNode(node)

@@ -60,7 +60,7 @@ func (c *Compiler) compileNumberObject(node *ast.NumberNode) (number *object.Num
 }
 
 func (c *Compiler) compileComplexNumber(
-	real ast.Node, imaginary ast.Node, subtract bool) (ins opcode.Instructions, err error) {
+	real ast.Node, imaginary ast.Node, conjugate bool) (ins opcode.Instructions, err error) {
 
 	var r, i *object.Number
 
@@ -98,7 +98,7 @@ func (c *Compiler) compileComplexNumber(
 		err = c.makeErr(real, "Expected number for imaginary part of complex number")
 	}
 
-	if subtract {
+	if conjugate {
 		i = i.Negate()
 	}
 
