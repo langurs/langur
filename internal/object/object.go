@@ -18,6 +18,7 @@ const (
 	_ ObjectType = iota
 
 	NUMBER_OBJ
+	COMPLEX_OBJ
 	BOOLEAN_OBJ
 	NULL_OBJ
 
@@ -56,6 +57,7 @@ func AutoString(o Object) (Object, error) {
 
 var TypeNameToType = map[string]ObjectType{
 	common.NumberType:   NUMBER_OBJ,
+	common.ComplexType: COMPLEX_OBJ,
 	common.RangeType:    RANGE_OBJ,
 	common.BooleanType:  BOOLEAN_OBJ,
 	common.StringType:   STRING_OBJ,

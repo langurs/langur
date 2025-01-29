@@ -116,6 +116,27 @@ func (c *Compiler) compilePrefixExpression(node *ast.PrefixExpressionNode) (ins 
 	return
 }
 
+// check for complex number such as 1 + 1i
+func (c *Compiler) checkForComplexNumber(node *ast.InfixExpressionNode, op opcode.OpCode) (ins opcode.Instructions, err error) {
+	numeric := func(node ast.Node) int {
+		switch node := node.(type) {
+		case *ast.NumberNode:
+			if node.Imaginary {
+				return 2
+			}
+			return 1
+		}
+		return 0
+	}
+	if (op == opcode.OpAdd || op == opcode.OpSubtract) && 
+		numeric(node.Left) == 1 &&
+		numeric(node.Right) == 2 {
+		
+		ins, err = c.compileComplexNumber(node.Left, node.Right, op == opcode.OpSubtract)
+	}
+	return
+}
+
 func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins opcode.Instructions, err error) {
 	var left, right []byte
 
@@ -127,6 +148,13 @@ func (c *Compiler) compileInfixExpression(node *ast.InfixExpressionNode) (ins op
 	if !ok {
 		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
 		return
+	}
+
+	if !negated && node.Operator.Code == 0 {
+		ins, err = c.checkForComplexNumber(node, op)
+		if ins != nil || err != nil {
+			return
+		}
 	}
 
 	left, err = c.compileNode(node.Left)

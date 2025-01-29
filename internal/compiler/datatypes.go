@@ -33,6 +33,15 @@ func (c *Compiler) compileNoneNode(node *ast.NoneNode) (ins opcode.Instructions,
 }
 
 func (c *Compiler) compileNumberNode(node *ast.NumberNode) (ins opcode.Instructions, err error) {
+	var number *object.Number
+	number, err = c.compileNumberObject(node)
+	if err == nil {
+		ins = c.constantIns(number)
+	}
+	return
+}
+
+func (c *Compiler) compileNumberObject(node *ast.NumberNode) (number *object.Number, err error) {
 	if c.Modes.WarnOnIntegerLiteralsStartingWithZero {
 		if node.Token.Type == token.INT && len(node.Value) > 1 &&
 			node.Token.Code2 == token.CODE_DEFAULT && node.Value[0] == '0' {
@@ -46,9 +55,54 @@ func (c *Compiler) compileNumberNode(node *ast.NumberNode) (ins opcode.Instructi
 		return
 	}
 
-	var number *object.Number
 	number, err = object.NumberFromStringBase(node.Value, node.Base)
-	ins = c.constantIns(number)
+	return
+}
+
+func (c *Compiler) compileComplexNumber(
+	real ast.Node, imaginary ast.Node, subtract bool) (ins opcode.Instructions, err error) {
+
+	var r, i *object.Number
+
+	switch real := real.(type) {
+	case nil:
+		r = object.Zero
+		
+	case *ast.NumberNode:
+		if real.Imaginary {
+			err = c.makeErr(real, "Expected real number for real part of complex number")
+			return
+		}
+		r, err = c.compileNumberObject(real)
+		
+	default:
+		err = c.makeErr(real, "Expected number for real part of complex number")
+	}
+	if err != nil {
+		return
+	}
+	
+	switch imaginary := imaginary.(type) {
+	case nil:
+		i = object.Zero
+
+	case *ast.NumberNode:
+		if !imaginary.Imaginary {
+			err = c.makeErr(real, "Expected imaginary number for imaginary part of complex number")
+			return
+		}
+		imaginary.Imaginary = false // remove flag here so it doesn't throw an error
+		i, err = c.compileNumberObject(imaginary)
+		
+	default:
+		err = c.makeErr(real, "Expected number for imaginary part of complex number")
+	}
+
+	if subtract {
+		i = i.Negate()
+	}
+
+	ins = c.constantIns(object.NewComplex(r, i))
 	return
 }
 
