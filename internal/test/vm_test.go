@@ -32,6 +32,8 @@ func TestNumberLiterals(t *testing.T) {
 		{"2", 2, object.NUMBER_OBJ},
 		{"16xff", 255, object.NUMBER_OBJ},
 		{"-2x0011_0000_0011_1011", -12347, object.NUMBER_OBJ},
+		{"2i", "0+2i", object.COMPLEX_OBJ},
+		{"2 + 2i", "2+2i", object.COMPLEX_OBJ},
 
 		// with continuation
 		{`6._
@@ -58,17 +60,37 @@ func TestMath(t *testing.T) {
 		{"1", "1", object.NUMBER_OBJ},
 		{"2", "2", object.NUMBER_OBJ},
 
+		{"-(1)", "-1", object.NUMBER_OBJ},
+		{"-(-1)", "1", object.NUMBER_OBJ},
+
+		{"-(1+1i)", "-1-1i", object.COMPLEX_OBJ},
+		{"-(-1-1i)", "1+1i", object.COMPLEX_OBJ},
+
 		{"1 + 2", "3", object.NUMBER_OBJ},
 		{"1 + 2.2", "3.2", object.NUMBER_OBJ},
 		{"3.2 + 3.8", "7.0", object.NUMBER_OBJ},
 
+		{"(2+2i) + (5+13.2i)", "7+15.2i", object.COMPLEX_OBJ},
+		{"(2+2i) + (5-13.2i)", "7-11.2i", object.COMPLEX_OBJ},
+		{"(2+2i) + 5", "7+2i", object.COMPLEX_OBJ},
+		{"(2+2i) + 5i", "2+7i", object.COMPLEX_OBJ},
+		{"5 + (2+2i)", "7+2i", object.COMPLEX_OBJ},
+		{"5i + (2+2i)", "2+7i", object.COMPLEX_OBJ},
+
 		{"1 - 2", "-1", object.NUMBER_OBJ},
+
+		{"(2+2i) - (5+13.2i)", "-3-11.2i", object.COMPLEX_OBJ},
+		{"(2+2i) - (5-13.2i)", "-3+15.2i", object.COMPLEX_OBJ},
+		{"(2+2i) - 5", "-3+2i", object.COMPLEX_OBJ},
+		{"(2+2i) - 5i", "2-3i", object.COMPLEX_OBJ},
+		{"5 - (2+2i)", "3-2i", object.COMPLEX_OBJ},
+		{"5i - (2+2i)", "-2+3i", object.COMPLEX_OBJ},
 
 		{"2 * 2", "4", object.NUMBER_OBJ},
 
-		{`5 \ 2`, "2", object.NUMBER_OBJ},
 		{"5 / 2", "2.5", object.NUMBER_OBJ},
 
+		{`5 \ 2`, "2", object.NUMBER_OBJ},
 		{`2 \ 3`, "0", object.NUMBER_OBJ},
 
 		// remainder

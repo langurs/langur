@@ -99,7 +99,7 @@ func (c *Compiler) compileComplexNumber(
 	}
 
 	if conjugate {
-		i = i.Negate()
+		i = i.Negate().(*object.Number)
 	}
 
 	ins = c.constantIns(object.NewComplex(r, i))

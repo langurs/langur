@@ -1,6 +1,11 @@
 langur revision history
 https://langurlang.org
 
+... - 0.19.0
+- added complex number type
+- added INumericNegation interface
+
+
 2025-01-28 - 0.18.2
 - added built-in function tran (transliterate)
 - updated ast.Node.Evaluate() to return only an object.Object (nil if not evaluated)

@@ -401,7 +401,7 @@ func LogicalNegation(operand Object, code int) (Object, error) {
 
 func NumericNegation(operand Object) (Object, error) {
 	switch n := operand.(type) {
-	case *Number:
+	case INumericNegation:
 		return n.Negate(), nil
 	default:
 		return nil, fmt.Errorf("Unsupported type for numeric negation: %s",

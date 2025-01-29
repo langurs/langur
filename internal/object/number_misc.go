@@ -10,16 +10,6 @@ import (
 	"math"
 )
 
-func (left *Number) Negate() *Number {
-	if left.usingIntOptimization {
-		n, ok := native.NegateInt64(left.integer)
-		if ok {
-			return NumberFromInt64(n)
-		}
-	}
-	return numberFromDecimal(left.ToDecimal().Neg())
-}
-
 func (left *Number) Abs() *Number {
 	if left.usingIntOptimization {
 		if left.integer < 0 {

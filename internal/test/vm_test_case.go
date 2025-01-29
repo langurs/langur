@@ -127,6 +127,12 @@ func testExpectedObject(
 			t.Fatalf("Test %d: (%q) testExpectedObject failed for object.NUMBER_OBJ: no case for %T", testno, input, expected)
 		}
 
+	case object.COMPLEX_OBJ:
+		err := testComplexObject(expected.(string), actual)
+		if err != nil {
+			t.Errorf("Test %d: (%q) testComplexObject failed: %s", testno, input, err)
+		}
+
 	case object.BOOLEAN_OBJ:
 		err := testBooleanObject(expected.(bool), actual)
 		if err != nil {
@@ -258,6 +264,19 @@ func testNumberObject(expected string, actual object.Object) error {
 	n, _ := object.NumberFromString(expected)
 
 	if !result.Same(n) {
+		return fmt.Errorf("object value wrong\nexpected=%q\nreceived=%q", expected, result.String())
+	}
+
+	return nil
+}
+
+func testComplexObject(expected string, actual object.Object) error {
+	result, ok := actual.(*object.Complex)
+	if !ok {
+		return fmt.Errorf("object not a Complex, received=%T (%+v)", actual, actual)
+	}
+
+	if result.String() != expected {
 		return fmt.Errorf("object value wrong\nexpected=%q\nreceived=%q", expected, result.String())
 	}
 

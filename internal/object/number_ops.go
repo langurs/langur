@@ -7,6 +7,16 @@ import (
 	"langur/native"
 )
 
+func (left *Number) Negate() Object {
+	if left.usingIntOptimization {
+		n, ok := native.NegateInt64(left.integer)
+		if ok {
+			return NumberFromInt64(n)
+		}
+	}
+	return numberFromDecimal(left.ToDecimal().Neg())
+}
+
 func (left *Number) Append(o2 Object) Object {
 	var s *String
 
@@ -81,6 +91,10 @@ func (left *Number) Add(o2 Object) Object {
 		}
 		// failing that for overflow or non-integers
 		return numberFromDecimal(left.ToDecimal().Add(right.ToDecimal()))
+
+	case *Complex:
+		// simply reverse the operands in this case (for addition won't affect result)
+		return right.Add(left)
 	}
 
 	return nil
@@ -97,6 +111,9 @@ func (left *Number) Subtract(o2 Object) Object {
 		}
 		// failing that for overflow or non-integers
 		return numberFromDecimal(left.ToDecimal().Sub(right.ToDecimal()))
+		
+	case *Complex:
+		return NewComplex(left, Zero).Subtract(right)
 	}
 
 	return nil

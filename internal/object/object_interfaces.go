@@ -30,6 +30,11 @@ type IHashKey interface {
 	HashKey() Object
 }
 
+type INumericNegation interface {
+	Object
+	Negate() Object
+}
+
 type IGreaterThan interface {
 	Object
 	GreaterThan(Object) (bool, bool)
