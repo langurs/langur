@@ -3967,6 +3967,11 @@ func TestIndexExpressions(t *testing.T) {
 		{`('a'..'z')[1; null]`, 97, object.NUMBER_OBJ},
 		{`('a'..'z')[7; null]`, nil, object.NULL_OBJ},
 
+		{`(7+21i)[1]`, 7, object.NUMBER_OBJ},
+		{`(7+21i)[2]`, 21, object.NUMBER_OBJ},
+		{`(7+21i)[1; 4]`, 7, object.NUMBER_OBJ},
+		{`(7+21i)[3; 4]`, 4, object.NUMBER_OBJ},
+
 		// alternate index
 		{`{1: 2, 3: 4}[3; "123"]`, "4", object.NUMBER_OBJ},
 		{"[12, 14, 17][7; 21]", "21", object.NUMBER_OBJ},
@@ -4030,10 +4035,18 @@ func TestIndexingWithLists(t *testing.T) {
 		{"{1: 2, 7: 3, 14: 4}[[1, 14, 7, 21]; []]", []int{}, object.LIST_OBJ},
 
 		// indexing ranges with lists
+		// necessary?
 		{"(7..40)[[1, 2]]", []int{7, 40}, object.LIST_OBJ},
 		{"(7..40)[[2, 1]]", []int{40, 7}, object.LIST_OBJ},
 		{"(7..40)[[2, 1]; []]", []int{40, 7}, object.LIST_OBJ},
 		{"(7..40)[[4, 1]; []]", []int{}, object.LIST_OBJ},
+
+		// indexing complexes with lists
+		// necessary?
+		{"(7+40i)[[1, 2]]", []int{7, 40}, object.LIST_OBJ},
+		{"(7+40i)[[2, 1]]", []int{40, 7}, object.LIST_OBJ},
+		{"(7+40i)[[2, 1]; []]", []int{40, 7}, object.LIST_OBJ},
+		{"(7+40i)[[4, 1]; []]", []int{}, object.LIST_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
