@@ -49,11 +49,31 @@ func (left *Complex) Subtract(o2 Object) Object {
 	return nil
 }
 
-// func (left *Complex) Multiply(o2 Object) Object {
-// 	switch right := o2.(type) {}
+func (left *Complex) Multiply(o2 Object) Object {
+	switch right := o2.(type) {
+	case *Complex:
+		// https://www.mathsisfun.com/algebra/complex-number-multiply.html
+		// simplified from the FOIL method for quicker/simpler application
+		// ... that is, since i squared == -1 ...
+		// (a+bi)(c+di) = (ac−bd) + (ad+bc)i
 
-// 	return nil
-// }
+		// real: (ac−bd)
+		real := left.real.Multiply(right.real).(*Number).
+			Subtract(left.imaginary.Multiply(right.imaginary)).(*Number)
+
+		// imaginary: (ad+bc)i
+		imaginary := left.real.Multiply(right.imaginary).(*Number).
+			Add(left.imaginary.Multiply(right.real)).(*Number)
+
+		return NewComplex(real, imaginary)		
+		
+	case *Number:
+		// convert number to complex and call self
+		return left.Multiply(NewComplex(right, Zero))
+	}
+
+	return nil
+}
 
 // func (left *Complex) Divide(o2 Object) Object {
 // 	switch right := o2.(type) {}

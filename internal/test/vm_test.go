@@ -66,34 +66,14 @@ func TestMath(t *testing.T) {
 		{"-(1)", "-1", object.NUMBER_OBJ},
 		{"-(-1)", "1", object.NUMBER_OBJ},
 
-		{"-(1+1i)", "-1-1i", object.COMPLEX_OBJ},
-		{"-(-1-1i)", "1+1i", object.COMPLEX_OBJ},
-
 		{"abs(1)", "1", object.NUMBER_OBJ},
 		{"abs(-1)", "1", object.NUMBER_OBJ},
-		{"abs(1+1i)", "1.414213562373095048801688724209699", object.NUMBER_OBJ},
-		{"abs(1.5+3i)", "3.354101966249684544613760503096915", object.NUMBER_OBJ},
-		{"abs(1+2i)", "2.236067977499789696409173668731277", object.NUMBER_OBJ},
 
 		{"1 + 2", "3", object.NUMBER_OBJ},
 		{"1 + 2.2", "3.2", object.NUMBER_OBJ},
 		{"3.2 + 3.8", "7.0", object.NUMBER_OBJ},
 
-		{"(2+2i) + (5+13.2i)", "7+15.2i", object.COMPLEX_OBJ},
-		{"(2+2i) + (5-13.2i)", "7-11.2i", object.COMPLEX_OBJ},
-		{"(2+2i) + 5", "7+2i", object.COMPLEX_OBJ},
-		{"(2+2i) + 5i", "2+7i", object.COMPLEX_OBJ},
-		{"5 + (2+2i)", "7+2i", object.COMPLEX_OBJ},
-		{"5i + (2+2i)", "2+7i", object.COMPLEX_OBJ},
-
 		{"1 - 2", "-1", object.NUMBER_OBJ},
-
-		{"(2+2i) - (5+13.2i)", "-3-11.2i", object.COMPLEX_OBJ},
-		{"(2+2i) - (5-13.2i)", "-3+15.2i", object.COMPLEX_OBJ},
-		{"(2+2i) - 5", "-3+2i", object.COMPLEX_OBJ},
-		{"(2+2i) - 5i", "2-3i", object.COMPLEX_OBJ},
-		{"5 - (2+2i)", "3-2i", object.COMPLEX_OBJ},
-		{"5i - (2+2i)", "-2+3i", object.COMPLEX_OBJ},
 
 		{"2 * 2", "4", object.NUMBER_OBJ},
 
@@ -152,6 +132,39 @@ func TestMath(t *testing.T) {
 
 		{"1.23e-2 + 1.23", "1.2423", object.NUMBER_OBJ},
 		{"1.23e+2 + 1.23", "124.23", object.NUMBER_OBJ},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
+func TestComplexMath(t *testing.T) {
+	tests := []vmTestCase{
+		{"-(1+1i)", "-1-1i", object.COMPLEX_OBJ},
+		{"-(-1-1i)", "1+1i", object.COMPLEX_OBJ},
+
+		{"abs(1+1i)", "1.414213562373095048801688724209699", object.NUMBER_OBJ},
+		{"abs(1.5+3i)", "3.354101966249684544613760503096915", object.NUMBER_OBJ},
+		{"abs(1+2i)", "2.236067977499789696409173668731277", object.NUMBER_OBJ},
+
+		{"(2+2i) + (5+13.2i)", "7+15.2i", object.COMPLEX_OBJ},
+		{"(2+2i) + (5-13.2i)", "7-11.2i", object.COMPLEX_OBJ},
+		{"(2+2i) + 5", "7+2i", object.COMPLEX_OBJ},
+		{"(2+2i) + 5i", "2+7i", object.COMPLEX_OBJ},
+		{"5 + (2+2i)", "7+2i", object.COMPLEX_OBJ},
+		{"5i + (2+2i)", "2+7i", object.COMPLEX_OBJ},
+		
+		{"(2+2i) - (5+13.2i)", "-3-11.2i", object.COMPLEX_OBJ},
+		{"(2+2i) - (5-13.2i)", "-3+15.2i", object.COMPLEX_OBJ},
+		{"(2+2i) - 5", "-3+2i", object.COMPLEX_OBJ},
+		{"(2+2i) - 5i", "2-3i", object.COMPLEX_OBJ},
+		{"5 - (2+2i)", "3-2i", object.COMPLEX_OBJ},
+		{"5i - (2+2i)", "-2+3i", object.COMPLEX_OBJ},
+
+		{"(1+1i) * (3.141592653589793+1.2i)", "1.941592653589793+4.341592653589793i", object.COMPLEX_OBJ},
+		{"(3+2i) * 2", "6+4i", object.COMPLEX_OBJ},
+		{"2 * (3+2i)", "6+4i", object.COMPLEX_OBJ},
+		{"2 * (3-2i)", "6-4i", object.COMPLEX_OBJ},
+
 	}
 
 	runVmTests(t, tests, false, false)

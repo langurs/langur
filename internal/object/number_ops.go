@@ -151,9 +151,10 @@ func (left *Number) Multiply(o2 Object) Object {
 		}
 		return numberFromDecimal(left.ToDecimal().Mul(right.ToDecimal()))
 
+	case *Complex:
+		return right.Multiply(left)
 	case *String:
 		return right.Multiply(left)
-
 	case *List:
 		return right.Multiply(left)
 
