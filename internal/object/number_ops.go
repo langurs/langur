@@ -178,6 +178,9 @@ func (left *Number) Divide(o2 Object) Object {
 			}
 		}
 		return numberFromDecimal(left.ToDecimal().DivWithMinMaxScale(right.ToDecimal()))
+	
+	case *Complex:
+		return NewComplex(left, Zero).Divide(right)
 	}
 
 	return nil

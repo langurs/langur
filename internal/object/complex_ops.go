@@ -54,7 +54,7 @@ func (left *Complex) Multiply(o2 Object) Object {
 	case *Complex:
 		// https://www.mathsisfun.com/algebra/complex-number-multiply.html
 		// simplified from the FOIL method for quicker/simpler application
-		// ... that is, since i squared == -1 ...
+		// ... that is, since i^2 == -1 ...
 		// (a+bi)(c+di) = (ac−bd) + (ad+bc)i
 
 		// real: (ac−bd)
@@ -75,11 +75,35 @@ func (left *Complex) Multiply(o2 Object) Object {
 	return nil
 }
 
-// func (left *Complex) Divide(o2 Object) Object {
-// 	switch right := o2.(type) {}
+func (left *Complex) Divide(o2 Object) Object {
+	switch right := o2.(type) {
+	case *Complex:
+		// https://www.cuemath.com/numbers/division-of-complex-numbers/
+		// ((ac+bd) / (c^2+d^2)) + ((bc−ad) / (c^2+d^2))i
 
-// 	return nil
-// }
+		// denominator: c^2+d^2
+		denominator := right.real.Multiply(right.real).(*Number).
+			Add(right.imaginary.Multiply(right.imaginary)).(*Number)
+
+		// real: ((ac+bd) / (c^2+d^2))
+		real := left.real.Multiply(right.real).(*Number).				// ac
+			Add(left.imaginary.Multiply(right.imaginary)).(*Number).	// +bd
+				Divide(denominator).(*Number)
+
+		// imaginary: ((bc−ad) / (c^2+d^2))i
+		imaginary := left.imaginary.Multiply(right.real).(*Number).	// bc
+			Subtract(left.real.Multiply(right.imaginary)).(*Number).	// -ad
+				Divide(denominator).(*Number)
+
+		return NewComplex(real, imaginary)
+
+	case *Number:
+		// convert number to complex and call self
+		return left.Divide(NewComplex(right, Zero))
+	}
+
+	return nil
+}
 
 // func (left *Complex) Power(o2 Object) Object {
 // 	switch right := o2.(type) {
