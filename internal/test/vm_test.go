@@ -170,6 +170,12 @@ func TestComplexMath(t *testing.T) {
 		{"1 / (1+1i)", "0.5-0.5i", object.COMPLEX_OBJ},
 		{"1 / (1+2i)", "0.2-0.4i", object.COMPLEX_OBJ},
 		{"1 / (4-3i)", "0.16+0.12i", object.COMPLEX_OBJ},
+		{"2 / (4-3i)", "0.32+0.24i", object.COMPLEX_OBJ},
+		{"3 / (4-3i)", "0.48+0.36i", object.COMPLEX_OBJ},
+		{"(4-3i) / 1", "4-3i", object.COMPLEX_OBJ},
+		{"(4-3i) / 2", "2-1.5i", object.COMPLEX_OBJ},
+		{"(4-3i) / 3", "1.333333333333333333333333333333333-1i", object.COMPLEX_OBJ},
+		{"(4-3i) / (2+0i)", "2-1.5i", object.COMPLEX_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
