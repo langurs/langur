@@ -6,6 +6,13 @@ func (left *Complex) Negate() Object {
 	return NewComplex(left.real.Negate().(*Number), left.imaginary.Negate().(*Number))
 }
 
+func (left *Complex) Abs() Object {
+	// (real * real + imaginary * imaginary) ^/ 2
+	return left.real.Multiply(left.real).(*Number).
+		Add(left.imaginary.Multiply(left.imaginary)).(*Number).
+			Root(Two)
+}
+
 func (left *Complex) Add(o2 Object) Object {
 	switch right := o2.(type) {
 	case *Complex:

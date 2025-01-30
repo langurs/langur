@@ -33,6 +33,7 @@ type IHashKey interface {
 type INumericNegation interface {
 	Object
 	Negate() Object
+	Abs() Object
 }
 
 type IGreaterThan interface {

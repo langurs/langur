@@ -66,6 +66,12 @@ func TestMath(t *testing.T) {
 		{"-(1+1i)", "-1-1i", object.COMPLEX_OBJ},
 		{"-(-1-1i)", "1+1i", object.COMPLEX_OBJ},
 
+		{"abs(1)", "1", object.NUMBER_OBJ},
+		{"abs(-1)", "1", object.NUMBER_OBJ},
+		{"abs(1+1i)", "1.414213562373095048801688724209699", object.NUMBER_OBJ},
+		{"abs(1.5+3i)", "3.354101966249684544613760503096915", object.NUMBER_OBJ},
+		{"abs(1+2i)", "2.236067977499789696409173668731277", object.NUMBER_OBJ},
+
 		{"1 + 2", "3", object.NUMBER_OBJ},
 		{"1 + 2.2", "3.2", object.NUMBER_OBJ},
 		{"3.2 + 3.8", "7.0", object.NUMBER_OBJ},

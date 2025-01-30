@@ -17,6 +17,27 @@ func (left *Number) Negate() Object {
 	return numberFromDecimal(left.ToDecimal().Neg())
 }
 
+func (left *Number) Abs() Object {
+	if left.usingIntOptimization {
+		if left.integer < 0 {
+			n, ok := native.NegateInt64(left.integer)
+			if ok {
+				return NumberFromInt64(n)
+			}
+			// failed; use decimal
+			left = left.UseDecimal()
+
+		} else {
+			return left
+		}
+	}
+
+	if left.decimal.IsNegative() {
+		return numberFromDecimal(left.decimal.Neg())
+	}
+	return left
+}
+
 func (left *Number) Append(o2 Object) Object {
 	var s *String
 

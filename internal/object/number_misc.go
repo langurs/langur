@@ -6,30 +6,8 @@ import (
 	"fmt"
 	dec "langur/decimal"
 	"langur/modes"
-	"langur/native"
 	"math"
 )
-
-func (left *Number) Abs() *Number {
-	if left.usingIntOptimization {
-		if left.integer < 0 {
-			n, ok := native.NegateInt64(left.integer)
-			if ok {
-				return NumberFromInt64(n)
-			}
-			// failed; use decimal
-			left = left.UseDecimal()
-
-		} else {
-			return left
-		}
-	}
-
-	if left.decimal.IsNegative() {
-		return numberFromDecimal(left.decimal.Neg())
-	}
-	return left
-}
 
 func (l *Number) Tangent() *Number {
 	return numberFromDecimal(l.ToDecimal().Tan())

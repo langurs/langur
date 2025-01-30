@@ -26,10 +26,11 @@ var bi_abs = &object.BuiltIn{
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		switch num := args[0].(type) {
-		case *object.Number:
+		case object.INumericNegation:
 			return num.Abs()
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, "abs", fmt.Sprintf("Cannot find absolute value of type %s", num.TypeString()))
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "abs", "Expected a number")
 	},
 }
 
@@ -105,7 +106,7 @@ var bi_gcd = &object.BuiltIn{
 			if a.IsZero() {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
 			}
-			numbers[i] = a.Abs()
+			numbers[i] = a.Abs().(*object.Number)
 		}
 
 		var b *object.Number
@@ -170,7 +171,7 @@ var bi_lcm = &object.BuiltIn{
 			if a.IsZero() {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
 			}
-			numbers[i] = a.Abs()
+			numbers[i] = a.Abs().(*object.Number)
 		}
 
 		var b *object.Number
