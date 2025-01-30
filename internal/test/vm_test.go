@@ -137,6 +137,36 @@ func TestMath(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
+func TestMoreMath(t *testing.T) {
+	tests := []vmTestCase{
+		// exponents right associative
+		{"2 ^ 3 ^ 4", "2417851639229258349412352", object.NUMBER_OBJ},
+		{"2 ^ (1.5 * 2) ^ 4", "2417851639229258349412352", object.NUMBER_OBJ},
+
+		// exponents relative to the negative sign
+		{"-5^2", "-25", object.NUMBER_OBJ},   // changed result as of 0.12
+		{"-(5)^2", "-25", object.NUMBER_OBJ}, // changed result as of 0.12
+		{"(-5)^2", "25", object.NUMBER_OBJ},
+		{"-(5^2)", "-25", object.NUMBER_OBJ},
+		{"-5^3", "-125", object.NUMBER_OBJ},
+		{"-(5)^3", "-125", object.NUMBER_OBJ},
+		{"(-5)^3", "-125", object.NUMBER_OBJ},
+		{"-(5^3)", "-125", object.NUMBER_OBJ},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
+func TestMathBeyondIntOptimization(t *testing.T) {
+	tests := []vmTestCase{
+		{"9223372036854775807 + 1", "9223372036854775808", object.NUMBER_OBJ},
+		{"-9223372036854775808 - 1", "-9223372036854775809", object.NUMBER_OBJ},
+		{"9223372036854775807 * 2", "18446744073709551614", object.NUMBER_OBJ},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestComplexMath(t *testing.T) {
 	tests := []vmTestCase{
 		{"-(1+1i)", "-1-1i", object.COMPLEX_OBJ},
@@ -176,36 +206,6 @@ func TestComplexMath(t *testing.T) {
 		{"(4-3i) / 2", "2-1.5i", object.COMPLEX_OBJ},
 		{"(4-3i) / 3", "1.333333333333333333333333333333333-1i", object.COMPLEX_OBJ},
 		{"(4-3i) / (2+0i)", "2-1.5i", object.COMPLEX_OBJ},
-	}
-
-	runVmTests(t, tests, false, false)
-}
-
-func TestMoreMath(t *testing.T) {
-	tests := []vmTestCase{
-		// exponents right associative
-		{"2 ^ 3 ^ 4", "2417851639229258349412352", object.NUMBER_OBJ},
-		{"2 ^ (1.5 * 2) ^ 4", "2417851639229258349412352", object.NUMBER_OBJ},
-
-		// exponents relative to the negative sign
-		{"-5^2", "-25", object.NUMBER_OBJ},   // changed result as of 0.12
-		{"-(5)^2", "-25", object.NUMBER_OBJ}, // changed result as of 0.12
-		{"(-5)^2", "25", object.NUMBER_OBJ},
-		{"-(5^2)", "-25", object.NUMBER_OBJ},
-		{"-5^3", "-125", object.NUMBER_OBJ},
-		{"-(5)^3", "-125", object.NUMBER_OBJ},
-		{"(-5)^3", "-125", object.NUMBER_OBJ},
-		{"-(5^3)", "-125", object.NUMBER_OBJ},
-	}
-
-	runVmTests(t, tests, false, false)
-}
-
-func TestMathBeyondIntOptimization(t *testing.T) {
-	tests := []vmTestCase{
-		{"9223372036854775807 + 1", "9223372036854775808", object.NUMBER_OBJ},
-		{"-9223372036854775808 - 1", "-9223372036854775809", object.NUMBER_OBJ},
-		{"9223372036854775807 * 2", "18446744073709551614", object.NUMBER_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
