@@ -824,6 +824,11 @@ func TestTruthiness(t *testing.T) {
 		{"not not 1", true, object.BOOLEAN_OBJ},
 		{"not not -1", true, object.BOOLEAN_OBJ},
 
+		{"not not 0+0i", false, object.BOOLEAN_OBJ},
+		{"not not 1+0i", true, object.BOOLEAN_OBJ},
+		{"not not 0+1i", true, object.BOOLEAN_OBJ},
+		{"not not 1+1i", true, object.BOOLEAN_OBJ},
+
 		{`not not zls`, false, object.BOOLEAN_OBJ},
 		{`not not "A"`, true, object.BOOLEAN_OBJ},
 
@@ -6411,6 +6416,19 @@ func TestIsAndIsNotOperators(t *testing.T) {
 			true, object.BOOLEAN_OBJ},
 		{`val x = 123
 			x is not number`,
+			false, object.BOOLEAN_OBJ},
+
+		{`123+1i is complex`,
+			true, object.BOOLEAN_OBJ},
+		{`123+1i is not complex`,
+			false, object.BOOLEAN_OBJ},
+		{`123+1i is list`,
+			false, object.BOOLEAN_OBJ},
+		{`val x = 123+1i
+			x is complex`,
+			true, object.BOOLEAN_OBJ},
+		{`val x = 123+1i
+			x is not complex`,
 			false, object.BOOLEAN_OBJ},
 
 		{`1..2 is range`,

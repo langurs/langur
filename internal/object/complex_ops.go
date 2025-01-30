@@ -7,7 +7,7 @@ func (left *Complex) Negate() Object {
 }
 
 func (left *Complex) Abs() Object {
-	// (real * real + imaginary * imaginary) ^/ 2
+	// (real^2 + imaginary^2) ^/ 2
 	return left.real.Multiply(left.real).(*Number).
 		Add(left.imaginary.Multiply(left.imaginary)).(*Number).
 			Root(Two)

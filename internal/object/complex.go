@@ -50,7 +50,7 @@ func (l *Complex) Same(n2 Object) bool {
 }
 
 func (c *Complex) IsTruthy() bool {
-	return c.real.IsTruthy() && c.imaginary.IsTruthy()
+	return c.real.IsTruthy() || c.imaginary.IsTruthy()
 }
 
 func (c *Complex) String() string {
