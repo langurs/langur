@@ -32,8 +32,11 @@ func TestNumberLiterals(t *testing.T) {
 		{"2", 2, object.NUMBER_OBJ},
 		{"16xff", 255, object.NUMBER_OBJ},
 		{"-2x0011_0000_0011_1011", -12347, object.NUMBER_OBJ},
+		
 		{"2i", "0+2i", object.COMPLEX_OBJ},
+		{"-2i", "0-2i", object.COMPLEX_OBJ},
 		{"2 + 2i", "2+2i", object.COMPLEX_OBJ},
+		{"2 - 2i", "2-2i", object.COMPLEX_OBJ},
 
 		// with continuation
 		{`6._
@@ -3971,6 +3974,9 @@ func TestIndexExpressions(t *testing.T) {
 		{`(7+21i)[2]`, 21, object.NUMBER_OBJ},
 		{`(7+21i)[1; 4]`, 7, object.NUMBER_OBJ},
 		{`(7+21i)[3; 4]`, 4, object.NUMBER_OBJ},
+
+		{`val conjugate = fn c:complex(c[1], -c[2])
+			conjugate(1+1i)`, "1-1i", object.COMPLEX_OBJ},
 
 		// alternate index
 		{`{1: 2, 3: 4}[3; "123"]`, "4", object.NUMBER_OBJ},
