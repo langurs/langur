@@ -38,6 +38,7 @@ var BuiltIns = []*object.BuiltIn{
 	// type conversion functions
 	bi_string,
 	bi_number,
+	bi_complex,
 	bi_hash,
 	bi_datetime,
 	bi_duration,

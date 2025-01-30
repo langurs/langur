@@ -90,6 +90,34 @@ var bi_number = &object.BuiltIn{
 	},
 }
 
+var bi_complex = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name: common.ComplexType,
+
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "real"},
+			object.Parameter{ExternalName: "imag"},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = common.ComplexType
+
+		real, imaginary := args[0], args[1]
+
+		switch real.(type) {
+		case *object.Number:
+			switch imaginary.(type) {
+			case *object.Number:
+				return object.NewComplex(real.(*object.Number), imaginary.(*object.Number))
+			default:
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument imag")
+			}
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument real")
+		}
+	},
+}
+
 var bi_hash = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name: common.HashType,

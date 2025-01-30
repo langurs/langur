@@ -2922,6 +2922,9 @@ func TestStringInterpolations(t *testing.T) {
 		{`val x = 123; "{{x}}"`, "123", object.STRING_OBJ},
 		{`val x = 123; "{{x}}=123"`, "123=123", object.STRING_OBJ},
 
+		{`val x = 123 + 12i; "{{x}}"`, "123+12i", object.STRING_OBJ},
+		{`"{{123 + 12i}}"`, "123+12i", object.STRING_OBJ},
+
 		{`val x = 123; "abc {{x}} yo"`, "abc 123 yo", object.STRING_OBJ},
 		{`val x = 123; val y = 17; "abc {{x + y}} yo"`, "abc 140 yo", object.STRING_OBJ},
 
@@ -3000,6 +3003,7 @@ func TestStringInterpolationModifiers(t *testing.T) {
 
 		// type string
 		{`val x = 255; "{{x:T}}"`, common.NumberTypeName, object.STRING_OBJ},
+		{`val x = 255+1i; "{{x:T}}"`, common.ComplexTypeName, object.STRING_OBJ},
 		{`val x = 1 .. 255; "{{x : T }}"`, common.RangeTypeName, object.STRING_OBJ},
 		{`val x = fn{+}; "{{x:T}}"`, common.FuntionTypeName, object.STRING_OBJ},
 		{`val x = len; "{{x:T}}"`, common.BuiltInTypeName, object.STRING_OBJ},
@@ -6559,6 +6563,8 @@ func TestTypeConversion(t *testing.T) {
 			"123", object.STRING_OBJ},
 		{`number("123.45")`,
 			"123.45", object.NUMBER_OBJ},
+		{`complex(123.45, 7)`,
+			"123.45+7i", object.COMPLEX_OBJ},
 
 		{`string(65519, fmt=16)`,
 			"ffef", object.STRING_OBJ},
