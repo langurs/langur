@@ -38,14 +38,14 @@ func (left *Complex) Subtract(o2 Object) Object {
 			left.real.Subtract(right.real).(*Number), 
 			left.imaginary.Subtract(right.imaginary).(*Number),
 		)
-		
+
 	case *Number:
 		return NewComplex(
 			left.real.Subtract(right).(*Number), 
 			left.imaginary,
 		)
 	}
-	
+
 	return nil
 }
 
@@ -105,9 +105,32 @@ func (left *Complex) Divide(o2 Object) Object {
 	return nil
 }
 
-// func (left *Complex) Power(o2 Object) Object {
-// 	switch right := o2.(type) {
-// 	}
+func (left *Complex) Power(o2 Object) Object {
+	switch right := o2.(type) {
+	case *Number:
+		power, err := right.ToInt()
+		if err != nil {
+			return NewError(ERR_MATH, "^", err.Error())
+		}
+		inverse := power < 0
+		if inverse {
+			power = -power
+		}
 
-// 	return nil
-// }
+		result := NewComplex(One, Zero)
+		for i := 0; i < power; i++ {
+			result = result.Multiply(left).(*Complex)
+		}
+
+		if inverse {
+			result = NewComplex(One, Zero).Divide(result).(*Complex)
+		}
+		return result
+
+	// case *Complex:
+		// need a log function?
+		// return Exp(power * Log(a))		
+	}
+
+	return nil
+}

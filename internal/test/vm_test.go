@@ -77,6 +77,11 @@ func TestMath(t *testing.T) {
 
 		{"2 * 2", "4", object.NUMBER_OBJ},
 
+		{`2 ^ 0`, "1", object.NUMBER_OBJ},
+		{`2 ^ 1`, "2", object.NUMBER_OBJ},
+		{`2 ^ 2`, "4", object.NUMBER_OBJ},
+		{`2 ^ 3`, "8", object.NUMBER_OBJ},
+
 		{"5 / 2", "2.5", object.NUMBER_OBJ},
 
 		{`5 \ 2`, "2", object.NUMBER_OBJ},
@@ -194,6 +199,8 @@ func TestComplexMath(t *testing.T) {
 		{"(3+2i) * 2", "6+4i", object.COMPLEX_OBJ},
 		{"2 * (3+2i)", "6+4i", object.COMPLEX_OBJ},
 		{"2 * (3-2i)", "6-4i", object.COMPLEX_OBJ},
+		{"1 * (3-2i)", "3-2i", object.COMPLEX_OBJ},
+		{"0 * (3-2i)", "0+0i", object.COMPLEX_OBJ},
 
 		{"(1.5+3i) / (1.5+1.5i)", "1.50+0.50i", object.COMPLEX_OBJ},
 		{"(5+3i) / (4-3i)", "0.44+1.08i", object.COMPLEX_OBJ},
@@ -206,6 +213,20 @@ func TestComplexMath(t *testing.T) {
 		{"(4-3i) / 2", "2-1.5i", object.COMPLEX_OBJ},
 		{"(4-3i) / 3", "1.333333333333333333333333333333333-1i", object.COMPLEX_OBJ},
 		{"(4-3i) / (2+0i)", "2-1.5i", object.COMPLEX_OBJ},
+
+		{"(4-3i) ^ 0", "1+0i", object.COMPLEX_OBJ},
+
+		{"(4-3i) ^ 1", "4-3i", object.COMPLEX_OBJ},
+		{"1 / (4-3i)", "0.16+0.12i", object.COMPLEX_OBJ},
+		{"(4-3i) ^ -1", "0.16+0.12i", object.COMPLEX_OBJ},
+
+		{"(4-3i) * (4-3i)", "7-24i", object.COMPLEX_OBJ},
+		{"(4-3i) ^ 2", "7-24i", object.COMPLEX_OBJ},
+		{"1 / (7-24i)", "0.0112+0.0384i", object.COMPLEX_OBJ},
+		{"(4-3i) ^ -2", "0.0112+0.0384i", object.COMPLEX_OBJ},
+
+		{"(4-3i) * (4-3i) * (4-3i)", "-44-117i", object.COMPLEX_OBJ},
+		{"(4-3i) ^ 3", "-44-117i", object.COMPLEX_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
