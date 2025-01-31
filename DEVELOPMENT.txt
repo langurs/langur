@@ -1,5 +1,5 @@
 # langur development
-2025-01-28
+2025-01-31
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -51,7 +51,6 @@ other things to consider...
     no inheritance - I don't like inheritance in programming.
     I also don't like "everything is an object."
 - optional explicit typing
-- complex numbers
 - sets
 - bitwise operations
     at least on explicit types
