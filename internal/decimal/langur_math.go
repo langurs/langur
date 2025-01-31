@@ -33,7 +33,7 @@ func (x Decimal) Root(y Decimal) Decimal {
 		return Zero
 	}
 
-	r, ok := y.ToInt64(false)
+	r, ok := y.ToInt64(true)
 	if !ok {
 		decThrow("Cannot calculate non-integer root in the current implementation")
 		return Zero
@@ -164,8 +164,29 @@ func (d Decimal) ToFraction() (numerator Decimal, denominator Decimal) {
 	}
 	numerator = RequireFromString(parts[0]+parts[1])
 	denominator = RequireFromString("1"+strings.Repeat("0", len(parts[1])))
+	
+	// simplify fraction with greatest common divisor
+	gcd := Gcd(numerator, denominator).Abs()
+	if !gcd.Equal(One) {
+		numerator = numerator.DivTruncate(gcd, 0)
+		denominator = denominator.DivTruncate(gcd, 0)
+	}
+	
 	return
-	// TODO: ? simplify fractions
+}
+
+// greatest common divisor
+// use the Euclidian method for fast calculation with large numbers
+func Gcd(d1, d2 Decimal) Decimal {
+	for !d1.IsZero() {
+		d1, d2 = d2.Mod(d1), d1
+	}
+	return d2
+}
+
+// least common muliple
+func Lcm(d1, d2 Decimal) Decimal {
+	return d1.Mul(d2).DivTruncate(Gcd(d1, d2), 0)
 }
 
 // Why Pow2()?: The decimal library Pow() function is short-changing fractional exponents.

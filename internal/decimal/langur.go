@@ -27,7 +27,7 @@ func (d Decimal) ToInt64(trimTrailingZeros bool) (int64, bool) {
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
 		return i, true
-	}
+	}	
 	return 0, false
 }
 

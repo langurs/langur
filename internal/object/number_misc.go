@@ -72,37 +72,14 @@ func (n *Number) Truncate(max int, addTrailingZeroes, trimTrailingZeroes bool) (
 	return numberFromDecimal(n.ToDecimal().TruncateWithZeroes(int32(max), addTrailingZeroes, trimTrailingZeroes)), nil
 }
 
+// greatest common divisor
 func Gcd(a, b *Number) (*Number, error) {
-	// greatest common divisor
-	// use the Euclidian method for fast calculation with large numbers
-	for !a.IsZero() {
-		newA := b.Remainder(a)
-		if newA == nil {
-			return b, fmt.Errorf("failure determining remainder in calculating GCD")
-		}
-		a, b = newA.(*Number), a
-	}
-	return b, nil
+	return numberFromDecimal(dec.Gcd(a.ToDecimal(), b.ToDecimal())), nil
 }
 
+// least common multiple
 func Lcm(a, b *Number) (*Number, error) {
-	// least common multiple
-	if gt, _ := b.GreaterThan(a); gt {
-		a, b = b, a
-	}
-	gcd, err := Gcd(a, b)
-	if err != nil {
-		return a, err
-	}
-	result := a.Multiply(b)
-	if result == nil {
-		return a, fmt.Errorf("failure multiplying in calculating LCM")
-	}
-	result = result.(*Number).DivideTruncate(gcd)
-	if result == nil {
-		return nil, fmt.Errorf("failure division in calculating LCM")
-	}
-	return result.(*Number), nil
+	return numberFromDecimal(dec.Lcm(a.ToDecimal(), b.ToDecimal())), nil
 }
 
 func (n *Number) Simplify() *Number {

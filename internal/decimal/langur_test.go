@@ -152,12 +152,12 @@ func TestToFraction(t *testing.T) {
 		d2 string
 	}{
 		{"0", "0", "1"},
-		{"0.0", "0", "10"},
+		{"0.0", "0", "1"},
 
 		{"0.1", "1", "10"},
 		{"-0.1", "-1", "10"},
-		{"0.12", "12", "100"},
-		{"-0.12", "-12", "100"},
+		{"0.12", "3", "25"},	// with simplified fraction, 3/25 instead of 12/100
+		{"-0.12", "-3", "25"},
 
 		{"1", "1", "1"},
 		{"-1", "-1", "1"},
@@ -165,10 +165,10 @@ func TestToFraction(t *testing.T) {
 		{"-123", "-123", "1"},
 		{"1.1", "11", "10"},
 		{"-1.1", "-11", "10"},
-		{"123.4", "1234", "10"},
-		{"-123.4", "-1234", "10"},
-		{"123.45", "12345", "100"},
-		{"-123.45", "-12345", "100"},
+		{"123.4", "617", "5"},
+		{"-123.4", "-617", "5"},
+		{"123.45", "2469", "20"},
+		{"-123.45", "-2469", "20"},
 		{"0.123", "123", "1000"},
 		{"-0.123", "-123", "1000"},
 		{"1.456789", "1456789", "1000000"},
@@ -205,6 +205,53 @@ func TestPow2(t *testing.T) {
 		if result.String() != tt.result {
 			t.Errorf("Pow2() failed: expected=%s, received=%s",
 				tt.result, result)
+		}
+	}
+}
+
+func TestGcd(t *testing.T) {
+	tests := []struct {
+		d1 string
+		d2 string
+		gcd string
+	}{
+		{"2", "3", "1"},
+		{"35", "10", "5"},
+		{"12", "4", "4"},
+		{"11", "3", "1"},
+	}
+
+	for _, tt := range tests {
+		d1 := RequireFromString(tt.d1)
+		d2 := RequireFromString(tt.d2)
+		gcd := Gcd(d1, d2)
+
+		if gcd.String() != tt.gcd {
+			t.Errorf("Gcd() failed: expected=%s, received=%s",
+				tt.gcd, gcd)
+		}
+	}
+}
+
+func TestLcm(t *testing.T) {
+	tests := []struct {
+		d1 string
+		d2 string
+		lcm string
+	}{
+		{"2", "1", "2"},
+		{"3", "9", "9"},
+		{"3", "7", "21"},
+	}
+
+	for _, tt := range tests {
+		d1 := RequireFromString(tt.d1)
+		d2 := RequireFromString(tt.d2)
+		lcm := Lcm(d1, d2)
+
+		if lcm.String() != tt.lcm {
+			t.Errorf("Lcm() failed: expected=%s, received=%s",
+				tt.lcm, lcm)
 		}
 	}
 }
