@@ -50,6 +50,10 @@ const (
 	precedence_AFTER // function call () or indexing []
 )
 
+var prefixPrecedences = map[token.Type]precedence{
+	token.NOT: precedence_LOGICAL_NEGATION,
+}
+
 var infixPrecedences = map[token.Type]precedence{
 	token.DOT:      precedence_AFTER,
 	token.LPAREN:   precedence_AFTER,
@@ -91,8 +95,8 @@ var infixPrecedences = map[token.Type]precedence{
 	token.ROOT:        precedence_POWER,
 
 	token.AND:  precedence_LOGICAL_AND,
-	token.OR:   precedence_LOGICAL_OR,
 	token.NAND: precedence_LOGICAL_AND,
+	token.OR:   precedence_LOGICAL_OR,
 	token.NOR:  precedence_LOGICAL_OR,
 	token.XOR:  precedence_LOGICAL_EQUIVALENCE,
 	token.NXOR: precedence_LOGICAL_EQUIVALENCE,
@@ -103,10 +107,6 @@ func getInfixPrecedence(tt token.Type) precedence {
 		return p
 	}
 	return precedence_LOWEST
-}
-
-var prefixPrecedences = map[token.Type]precedence{
-	token.NOT: precedence_LOGICAL_NEGATION,
 }
 
 func getPrefixPrecedence(tt token.Type) precedence {
