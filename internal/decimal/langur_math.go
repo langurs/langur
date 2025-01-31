@@ -2,6 +2,11 @@
 
 package decimal
 
+import (
+	"fmt"
+	"strings"
+)
+
 // bʸ = x
 // root: have x and y; find b (determine base)
 // NOTE(davis): I tried calculation, following an example from rosettacode.org for the nth root, ...
@@ -61,7 +66,7 @@ func (x Decimal) Root(y Decimal) Decimal {
 	}
 	b := useX.DivWithMinMaxScale(Two)
 
-	maxIterations := DivisionPrecision * 10 // ?
+	maxIterations := DivisionPrecision * 100 // ?
 
 	for i := 1; ; i++ {
 		if i > 100 {
@@ -96,7 +101,7 @@ func (x Decimal) Root(y Decimal) Decimal {
 
 		if i > maxIterations {
 			// This is to prevent a runaway.
-			decThrow("Failed to calculate root; too many iterations")
+			decThrow(fmt.Sprintf("Failed to calculate root; too many iterations (%d)", maxIterations))
 			return Zero
 		}
 	}
@@ -149,4 +154,27 @@ func Mean(nums ...Decimal) Decimal {
 		total = total.Add(n)
 	}
 	return total.DivWithMinMaxScale(NewFromInt(int64(len(nums))))
+}
+
+func (d Decimal) ToFraction() (numerator Decimal, denominator Decimal) {
+	parts := d.StringParts()
+	if parts[1] == "" {
+		// done; no fractional; whole number over 1
+		return d, One
+	}
+	numerator = RequireFromString(parts[0]+parts[1])
+	denominator = RequireFromString("1"+strings.Repeat("0", len(parts[1])))
+	return
+	// TODO: ? simplify fractions
+}
+
+// Why Pow2()?: The decimal library Pow() function is short-changing fractional exponents.
+// Since we have a Root() function, we can create a fraction and do this in 2 steps to get a better result.
+// 2 ^ 3.5 == (2 ^ 35) ^/ 10
+func (d Decimal) Pow2(exp Decimal) Decimal {
+	if exp.IsInteger() {
+		return d.Pow(exp)
+	}
+	expNumerator, expDenominator := exp.ToFraction()
+	return d.Pow(expNumerator).Root(expDenominator)
 }

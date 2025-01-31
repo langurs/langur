@@ -144,3 +144,67 @@ func TestScientificNotation(t *testing.T) {
 		}
 	}
 }
+
+func TestToFraction(t *testing.T) {
+	tests := []struct {
+		from     string
+		d1 string
+		d2 string
+	}{
+		{"0", "0", "1"},
+		{"0.0", "0", "10"},
+
+		{"0.1", "1", "10"},
+		{"-0.1", "-1", "10"},
+		{"0.12", "12", "100"},
+		{"-0.12", "-12", "100"},
+
+		{"1", "1", "1"},
+		{"-1", "-1", "1"},
+		{"123", "123", "1"},
+		{"-123", "-123", "1"},
+		{"1.1", "11", "10"},
+		{"-1.1", "-11", "10"},
+		{"123.4", "1234", "10"},
+		{"-123.4", "-1234", "10"},
+		{"123.45", "12345", "100"},
+		{"-123.45", "-12345", "100"},
+		{"0.123", "123", "1000"},
+		{"-0.123", "-123", "1000"},
+		{"1.456789", "1456789", "1000000"},
+		{"-1.456789", "-1456789", "1000000"},
+	}
+
+	for _, tt := range tests {
+		d1, d2 := RequireFromString(tt.from).ToFraction()
+
+		if d1.String() != tt.d1 || d2.String() != tt.d2 {
+			t.Errorf("ToFraction() failed: expected=%s and %s, received=%s and %s",
+				tt.d1, tt.d2, d1, d2)
+		}
+	}
+}
+
+func TestPow2(t *testing.T) {
+	tests := []struct {
+		base string
+		exp string
+		result string
+	}{
+		{"2", "3", "8"},
+		{"2", "3.5", "11.313708498984760390413509793677585"},
+		{"1.5", "34", "970739.7373664756887592375278472900390625"},
+		{"1.5", "34.33", "1109718.748389653202836265514985705560694"},
+	}
+
+	for _, tt := range tests {
+		base := RequireFromString(tt.base)
+		exp := RequireFromString(tt.exp)
+		result := base.Pow2(exp)
+
+		if result.String() != tt.result {
+			t.Errorf("Pow2() failed: expected=%s, received=%s",
+				tt.result, result)
+		}
+	}
+}
