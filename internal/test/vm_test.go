@@ -83,9 +83,13 @@ func TestMath(t *testing.T) {
 		{`2 ^ 3`, "8", object.NUMBER_OBJ},
 
 		// {`2 ^ -3`, "0.125", object.NUMBER_OBJ},
+		// {`2 ^ -1`, "0.5", object.NUMBER_OBJ},
 
 		{`2 ^ 3.5`, "11.313708498984760390413509793677585", object.NUMBER_OBJ},
 		{`2 ^ -3.5`, "0.088388347648318440550105545263106", object.NUMBER_OBJ},
+
+		{`-2 ^ 1`, "-2", object.NUMBER_OBJ},
+		{`-2 ^ -3.5`, "-0.088388347648318440550105545263106", object.NUMBER_OBJ},
 
 		{"5 / 2", "2.5", object.NUMBER_OBJ},
 

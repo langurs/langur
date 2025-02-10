@@ -110,7 +110,7 @@ func (left *Complex) Power(o2 Object) Object {
 	case *Number:
 		power, err := right.ToInt()
 		if err != nil {
-			return NewError(ERR_MATH, "^", err.Error())
+			return NewError(ERR_MATH, "^", "Cannot calculate non-integer power on complex")
 		}
 		inverse := power < 0
 		if inverse {

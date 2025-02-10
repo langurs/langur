@@ -198,4 +198,31 @@ func (d Decimal) Pow2(exp Decimal) Decimal {
 	}
 	expNumerator, expDenominator := exp.ToFraction()
 	return d.Pow(expNumerator).Root(expDenominator)
+
+	// if exp.IsInteger() {
+	// 	// integer denominator
+	// 	power, ok := exp.ToInt(true)
+	// 	if !ok {
+	// 		decThrow("Cannot calculate integer power outside range of int")
+	// 	}
+	// 	inverse := power < 0
+	// 	if inverse {
+	// 		power = -power
+	// 	}
+
+	// 	result := One
+	// 	for i := 0; i < power; i++ {
+	// 		result = result.Mul(d)
+	// 	}
+
+	// 	if inverse {			
+	// 		result = One.Div(result)
+	// 	}
+	// 	return result
+
+	// } else {
+	// 	// convert to fraction and call self...
+	// 	expNumerator, expDenominator := exp.ToFraction()
+	// 	return d.Pow2(expNumerator).Root(expDenominator)
+	// }
 }
