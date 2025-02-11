@@ -33,7 +33,6 @@ backlog
 other things to consider...
 - efficiency
     While we couldn't expect performance like C, Go, or Rust, it could be improved.
-    Append is way too slow.
 - resource management
     close resources when finished, even if there's an exception
 - dependency management

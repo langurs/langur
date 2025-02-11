@@ -7,7 +7,7 @@ https://langurlang.org
 - added decimal ToFraction() to create numerator/denominator pair from a Decimal
 - added decimal IsEvenInteger() and IsOddInteger() functions
 - for decimal.Root() function, increased maxIterations on calculating root so it will work with large numbers
-- for decimal.Root() function, fixed bug in not working with large roots (beyond int64)
+- for decimal.Root() function, fixed bug in testing if root is an even integer
 - moved gcd and lcm calculations from object package to decimal
 
 
