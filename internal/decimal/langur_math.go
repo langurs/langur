@@ -39,7 +39,7 @@ func (x Decimal) Root(y Decimal) Decimal {
 	}
 	isNegX := x.LessThan(Zero)
 	if isNegX && y.IsEvenInteger() {
-		decThrow("Cannot calculate an even root on a negative number (without complex numbers)")
+		decThrow("Cannot calculate an even root on a negative number")
 		return Zero
 	}
 
