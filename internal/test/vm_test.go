@@ -75,8 +75,10 @@ func TestMath(t *testing.T) {
 
 		{"1 - 2", "-1", object.NUMBER_OBJ},
 
+		// multiply
 		{"2 * 2", "4", object.NUMBER_OBJ},
 
+		// power
 		{`2 ^ 0`, "1", object.NUMBER_OBJ},
 		{`2 ^ 1`, "2", object.NUMBER_OBJ},
 		{`2 ^ 2`, "4", object.NUMBER_OBJ},
@@ -91,6 +93,12 @@ func TestMath(t *testing.T) {
 		{`-2 ^ 1`, "-2", object.NUMBER_OBJ},
 		{`-2 ^ -3.5`, "-0.088388347648318440550105545263106", object.NUMBER_OBJ},
 
+		// root
+		{`16 ^/ 2`, "4", object.NUMBER_OBJ},
+		{`144 ^/ 2`, "12", object.NUMBER_OBJ},
+		{`8 ^/ 3`, "2", object.NUMBER_OBJ},
+
+		// divide
 		{"5 / 2", "2.5", object.NUMBER_OBJ},
 
 		{`5 \ 2`, "2", object.NUMBER_OBJ},
