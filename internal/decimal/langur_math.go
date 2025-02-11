@@ -12,9 +12,6 @@ import (
 // NOTE(davis): I tried calculation, following an example from rosettacode.org for the nth root, ...
 // ... but the following proved to be faster and more useful.
 
-// NOTE(davis): This was faster with fixed precision decimal, but now that we have arbitrary precision, ...
-// ... we might test another method again.
-
 // This takes a divide and conquer approach. There might be a name for that, but I don't know.
 // The simplest case is the square root of 4. Divide 4 by 2 and you already have the result.
 // With 34 digits of precision, it typically takes about 111 iterations to find the result.
@@ -34,6 +31,8 @@ func (x Decimal) Root(y Decimal) Decimal {
 	}
 
 	if !y.IsInteger() {
+		// return x.Pow(One.Div(y))
+		
 		decThrow("Cannot calculate non-integer root in the current implementation")
 		return Zero
 	}
