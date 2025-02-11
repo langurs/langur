@@ -4,9 +4,10 @@ https://langurlang.org
 ... - 0.19.1
 - added decimal.Pow2() for greater precision when using fractional exponents
 - updated power operator ^ to use decimal.Pow2()
-- added decimal.ToFraction() to create numerator/denominator pair from a Decimal
+- added decimal ToFraction() to create numerator/denominator pair from a Decimal
+- added decimal IsEvenInteger() and IsOddInteger() functions
 - for decimal.Root() function, increased maxIterations on calculating root so it will work with large numbers
-- for decimal.Root() function, fixed bug in not removing trailing zeroes from the exponent
+- for decimal.Root() function, fixed bug in not working with large roots (beyond int64)
 - moved gcd and lcm calculations from object package to decimal
 
 
