@@ -1390,6 +1390,20 @@ func (d Decimal) IsZero() bool {
 	return d.Sign() == 0
 }
 
+func (d Decimal) IsEvenInteger() bool {
+	// NOTE(davis): might be made more efficient
+	s := d.string(true)
+	if strings.ContainsRune(s, '.') {
+		return false
+	}
+	last := s[len(s)-1]
+	switch last {
+	case '0', '2', '4', '6', '8':
+		return true
+	}
+	return false
+}
+
 // Exponent returns the exponent, or scale component of the decimal.
 func (d Decimal) Exponent() int32 {
 	return d.exp

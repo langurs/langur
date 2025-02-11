@@ -33,13 +33,13 @@ func (x Decimal) Root(y Decimal) Decimal {
 		return Zero
 	}
 
-	r, ok := y.ToInt64(true)
+	root, ok := y.ToInt64(true)
 	if !ok {
 		decThrow("Cannot calculate non-integer root in the current implementation")
 		return Zero
 	}
 	isNegX := x.LessThan(Zero)
-	if isNegX && r%2 == 0 {
+	if isNegX && root%2 == 0 {
 		decThrow("Cannot calculate an even root on a negative number (without complex numbers)")
 		return Zero
 	}
