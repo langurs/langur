@@ -264,7 +264,7 @@ func (left *Number) Modulus(o2 Object) Object {
 func (left *Number) Power(o2 Object) Object {
 	switch right := o2.(type) {
 	case *Number:
-		return numberFromDecimal(left.ToDecimal().Pow2(right.ToDecimal()))
+		return numberFromDecimal(left.ToDecimal().Pow(right.ToDecimal()))
 	}
 
 	return nil
