@@ -7434,7 +7434,7 @@ func TestDateTimeComparisons(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestdatetimeFunction(t *testing.T) {
+func TestDateTimeFunction(t *testing.T) {
 	tests := []vmTestCase{
 		{`dt/2020-03-13/ == datetime("2020-03-13")`,
 			// no format string: defaults to local time zone, just as date-time literal does
