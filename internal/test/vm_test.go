@@ -84,10 +84,8 @@ func TestMath(t *testing.T) {
 		{`2 ^ 2`, "4", object.NUMBER_OBJ},
 		{`2 ^ 3`, "8", object.NUMBER_OBJ},
 
-		// FIXME: added zeroes on results from negative exponents
-
-		// {`2 ^ -3`, "0.125", object.NUMBER_OBJ},
-		// {`2 ^ -1`, "0.5", object.NUMBER_OBJ},
+		{`2 ^ -3`, "0.125", object.NUMBER_OBJ},
+		{`2 ^ -1`, "0.5", object.NUMBER_OBJ},
 
 		// FIXME: unsatisfactory results from fractional exponents
 
