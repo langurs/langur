@@ -1,4 +1,4 @@
-// /langur/native/native_convert.go
+// native_convert.go
 
 package native
 

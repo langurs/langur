@@ -1,4 +1,4 @@
-// /native/native_int64.go
+// native_int64.go
 
 package native
 
@@ -56,36 +56,39 @@ func MultiplyInt64(x, y int64) (int64, bool) {
 		return 0, true
 	case 1:
 		return y, true
+	case -1:
+		return NegateInt64(y)
 	}
 	switch y {
 	case 0:
 		return 0, true
 	case 1:
 		return x, true
+	case -1:
+		return NegateInt64(x)
 	}
 
 	// working based on the fact that multiplication can be done with addition
 	var base, times, product int64
-	var negatives int
-	var ok bool
+	var negate, ok bool
 
 	// to work only with positive numbers
 	if x < 0 {
-		negatives++
+		negate = true
 		x, ok = NegateInt64(x)
 		if !ok {
 			return 0, false
 		}
 	}
 	if y < 0 {
-		negatives++
+		negate = !negate
 		y, ok = NegateInt64(y)
 		if !ok {
 			return 0, false
 		}
 	}
 
-	// do the fewest calculations, using the smaller number as times
+	// To do the fewest calculations, using the smaller number as times.
 	// It would work either way, but if you have 50 x 10000 would you rather do 50 calculations or 10000?
 	if x > y {
 		base, times = x, y
@@ -95,17 +98,16 @@ func MultiplyInt64(x, y int64) (int64, bool) {
 
 	var i int64
 	for i = 0; i < times; i++ {
-		// product inititalized to 0 by go
+		// product already inititalized to 0 by go
 		product, ok = AddInt64(product, base)
 		if !ok {
 			return 0, false
 		}
 	}
-	if negatives == 1 {
-		product, ok = NegateInt64(product)
-		if !ok {
-			return 0, false
-		}
+
+	if negate {
+		// 1 operand was negative (not 0 or 2 operands)
+		return NegateInt64(product)
 	}
 
 	return product, true

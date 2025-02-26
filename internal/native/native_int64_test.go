@@ -1,4 +1,4 @@
-// /native/native_int64_test.go
+// native_int64_test.go
 
 package native
 

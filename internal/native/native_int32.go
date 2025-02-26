@@ -1,4 +1,4 @@
-// /native/native_int32.go
+// native_int32.go
 
 package native
 

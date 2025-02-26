@@ -77,6 +77,8 @@ func TestMath(t *testing.T) {
 
 		// multiply
 		{"2 * 2", "4", object.NUMBER_OBJ},
+		{"2 * -1", "-2", object.NUMBER_OBJ},
+		{"-2 * -1", "2", object.NUMBER_OBJ},
 
 		// power
 		{`2 ^ 0`, "1", object.NUMBER_OBJ},
