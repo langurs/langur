@@ -2,13 +2,14 @@ langur revision history
 https://langurlang.org
 
 ... - 0.19.1
-- patched root operator to remove extraneous trailing zeroes (added when using negative exponent)
+- patched root operator to remove extraneous trailing zeroes added when using negative exponent
 - for decimal.Root() function, increased maxIterations on calculating root so it will work with large numbers
-- for decimal.Root() function, fixed bug in testing if root is an even integer
+- for decimal.Root() function, fixed means of testing if root is an even integer
 - moved gcd and lcm calculations from object package to decimal
 - added decimal.Pow2() for greater precision when using fractional exponents; not in use b/c sometimes way too slow (when a fraction cannot be simplified enough)
 - added decimal ToFraction() to create numerator/denominator pair from a Decimal
 - added decimal IsEvenInteger() and IsOddInteger() functions
+- minor edits to native package
 
 
 2025-01-31 - 0.19.0
