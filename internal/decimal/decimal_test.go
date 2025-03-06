@@ -3114,7 +3114,6 @@ func didPanic(f func()) bool {
 	}()
 
 	return ret
-
 }
 
 func TestDecimal_Coefficient(t *testing.T) {

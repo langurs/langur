@@ -41,6 +41,8 @@ func TestAsSame(t *testing.T) {
 		d1, d2      string
 		shouldMatch bool
 	}{
+		{"0.5", "0.5", true},
+		{"0.5", "0.05", false},
 		{"1", "1", true},
 		{"1", "1.0", false},
 		{"1.23", "1.23", true},

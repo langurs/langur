@@ -6,6 +6,7 @@ https://langurlang.org
 - for decimal.Root() function, increased maxIterations on calculating root so it will work with large numbers
 - for decimal.Root() function, fixed means of testing if root is an even integer
 - moved gcd and lcm calculations from object package to decimal
+- changed decimal.Same() to compare exponent, then digits; possibly faster
 - added decimal.Pow2() for greater precision when using fractional exponents; not in use b/c sometimes way too slow (when a fraction cannot be simplified enough)
 - added decimal ToFraction() to create numerator/denominator pair from a Decimal
 - added decimal IsEvenInteger() and IsOddInteger() functions

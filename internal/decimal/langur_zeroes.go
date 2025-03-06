@@ -23,7 +23,7 @@ func (d Decimal) Same(d2 Decimal) bool {
 	// Same different than Equal
 	// 1 == 1.0 but they are not the same.
 	// same meaning the precision is also the same
-	return d.string(false) == d2.string(false)
+	return d.exp == d2.exp && d.value.Cmp(d2.value) == 0
 }
 
 func (d Decimal) DivTruncate(d2 Decimal, places int32) Decimal {
