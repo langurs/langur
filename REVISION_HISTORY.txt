@@ -10,6 +10,7 @@ https://langurlang.org
 - added decimal.Pow2() for greater precision when using fractional exponents; not in use b/c sometimes way too slow (when a fraction cannot be simplified enough)
 - added decimal ToFraction() to create numerator/denominator pair from a Decimal
 - added decimal IsEvenInteger() and IsOddInteger() functions
+- renamed sine() as sin() - matching normal math abbreviations for trig functions; not representing transgression
 - minor edits to native package
 
 

@@ -6,7 +6,7 @@ import (
 	"langur/object"
 )
 
-// tan, atan, sine, cos
+// tan, atan, sin, cos
 
 var bi_tan = &object.BuiltIn{
 	FnSignature: &object.Signature{
@@ -48,9 +48,9 @@ var bi_atan = &object.BuiltIn{
 	},
 }
 
-var bi_sine = &object.BuiltIn{
+var bi_sin = &object.BuiltIn{
 	FnSignature: &object.Signature{
-		Name:        "sine",
+		Name:        "sin",
 		Description: "return sine of a number given in radians",
 
 		ParamPositional: []object.Parameter{
@@ -58,7 +58,7 @@ var bi_sine = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		const fnName = "sine"
+		const fnName = "sin"
 
 		switch n := args[0].(type) {
 		case *object.Number:
