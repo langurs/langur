@@ -63,9 +63,17 @@ func CompileModesFromArgs(args []string, useSlash bool) (m *CompileModes, err er
 
 		case "-c", "/c":
 			m.TestCompile = true
+			if m.Help {
+				err = fmt.Errorf("Invalid mix of command line flags")
+				return
+			}
 
 		case "--help", "/?":
 			m.Help = true
+			if m.TestCompile || m.ExecuteScriptStringInsteadOfFile {
+				err = fmt.Errorf("Invalid mix of command line flags")
+				return
+			}
 
 		default:
 			err = fmt.Errorf(

@@ -20,6 +20,7 @@ import (
 	"langur/str"
 	"langur/system"
 	"langur/vm"
+	"langur/repl"
 	"os"
 )
 
@@ -71,9 +72,11 @@ func main() {
 	}
 
 	if file == "" {
-		fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
-		fmt.Println(use)
-		os.Exit(system.GetExitStatus("noscript"))
+		opts := &repl.InteractiveOptions{
+			Prompt: ">> ", PrintVmResultRaw: true,
+		}
+		repl.Interactive(opts)
+		os.Exit(0)
 	}
 
 	scriptString := ""

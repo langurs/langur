@@ -5,7 +5,10 @@
 // See LICENSE file.
 // This constitutes notice for all appropriate source files.
 
-package main
+// allowing REPL to be used "locally" with special settings (for testing) or ...
+// to be run from langur command as "interactive," with more restricted set of possibilities
+
+package repl
 
 import (
 	"bufio"
@@ -29,8 +32,8 @@ import (
 	"strings"
 )
 
-type replOptions struct{
-	PROMPT string
+type InteractiveOptions struct{
+	Prompt string
 
 	printLexTokens bool
 
@@ -41,13 +44,16 @@ type replOptions struct{
 	printCompiledInstructions  bool
 	printCompiledConstants     bool
 
-	printVmResultEscaped    bool
-	printVmResultGoEscaped  bool
-	printVmResultRaw        bool
+	PrintVmResultEscaped    bool
+	PrintVmResultGoEscaped  bool
+	PrintVmResultRaw        bool
+
+	PrintVmResultDescriptions bool
 }
 
-var options = &replOptions{
-	PROMPT : ">> ",
+// options for local run; not applied to running from langur command
+var options = &InteractiveOptions{
+	Prompt : ">> ",
 
 	printLexTokens : false,
 
@@ -58,9 +64,10 @@ var options = &replOptions{
 	printCompiledInstructions : false,
 	printCompiledConstants    : false,
 
-	printVmResultEscaped   : true,
-	printVmResultGoEscaped : false,
-	printVmResultRaw       : false,	
+	PrintVmResultEscaped   : true,
+	PrintVmResultGoEscaped : false,
+	PrintVmResultRaw       : false,	
+	PrintVmResultDescriptions: true,
 }
 
 // with a 2-byte operand on OpGetGlobal and OpSetGlobal...
@@ -108,7 +115,8 @@ func readLine(in io.Reader, fixNewLines bool) string {
 	return text
 }
 
-func REPL(in io.Reader, out io.Writer, opts *replOptions) {
+// for REPL not run from langur command
+func REPL(in io.Reader, out io.Writer, opts *InteractiveOptions) {
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Fprintf(out, object.UnhandledPanicString(p))
@@ -139,14 +147,24 @@ func REPL(in io.Reader, out io.Writer, opts *replOptions) {
 		firstRun = false
 	}
 
-	fmt.Printf("This is the REPL for langur %s (langurlang.org).\n", bytecode.LangurRev)
+	loop(in, out, opts)
+}
+
+// run from langur command, not local
+func Interactive(opts *InteractiveOptions) {
+	loop(os.Stdin, os.Stdout, opts)
+}
+
+// for either local run or from langur command
+func loop(in io.Reader, out io.Writer, opts *InteractiveOptions) {
+	fmt.Printf("This is langur %s (langurlang.org).\n", bytecode.LangurRev)
 	fmt.Fprintf(out, "Type “exit()” to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
 
 	resetEnvironment()
 
 	for {
-		fmt.Fprintf(out, opts.PROMPT)
+		fmt.Fprintf(out, opts.Prompt)
 		line := readLine(in, true)
 
 		switch line {
@@ -172,7 +190,7 @@ func REPL(in io.Reader, out io.Writer, opts *replOptions) {
 	}
 }
 
-func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
+func repl(source string, out io.Writer, firstRun bool, opts *InteractiveOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
 	var program *ast.Program
@@ -204,7 +222,7 @@ func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
 
 	if opts.printParseTokenRepresentation || opts.printParseNodes ||
 		opts.printCompiledConstants || opts.printCompiledInstructions ||
-		opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
+		opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 
 		p = parser.New(lex, compileModes)
 		program, err = p.ParseProgram()
@@ -247,7 +265,7 @@ func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
 	}
 
 	if opts.printCompiledInstructions || opts.printCompiledConstants ||
-		opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
+		opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 
 		comp, err = compiler.NewWithState(symbolTable, constants, compileModes)
 		if err != nil {
@@ -282,7 +300,7 @@ func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
 		constants = byteCode.Constants
 	}
 
-	if opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
+	if opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 		machine = vm.NewWithGlobalStore(byteCode, globals, vmModes)
 
 		err = machine.Run()
@@ -298,20 +316,26 @@ func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
 			io.WriteString(out, "VM Result Nil (bug?)\n")
 			return
 		}
-		if opts.printVmResultEscaped {
-			io.WriteString(out, "langur escaped result: ")
+		if opts.PrintVmResultEscaped {
+			if opts.PrintVmResultDescriptions {
+				io.WriteString(out, "langur escaped result: ")
+			}
 			io.WriteString(out, str.Escape(result.String()))
 			io.WriteString(out, "\n")
 		}
 
-		if opts.printVmResultGoEscaped {
-			io.WriteString(out, "Go escaped result: ")
+		if opts.PrintVmResultGoEscaped {
+			if opts.PrintVmResultDescriptions {
+				io.WriteString(out, "Go escaped result: ")
+			}
 			io.WriteString(out, str.EscapeGo(result.String()))
 			io.WriteString(out, "\n")
 		}
 
-		if opts.printVmResultRaw {
-			io.WriteString(out, "raw result string: ")
+		if opts.PrintVmResultRaw {
+			if opts.PrintVmResultDescriptions {
+				io.WriteString(out, "raw result string: ")
+			}
 			io.WriteString(out, result.String())
 			io.WriteString(out, "\n")
 		}
