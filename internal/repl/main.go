@@ -31,22 +31,39 @@ import (
 	"strings"
 )
 
-const (
-	PROMPT = ">> "
+type replOptions struct{
+	PROMPT string
 
-	printLexTokens = false
+	printLexTokens bool
 
-	printParseTokenRepresentation = false
-	printParseNodes               = false
-	printParsedVarNames           = false
+	printParseTokenRepresentation bool
+	printParseNodes               bool
+	printParsedVarNames           bool
 
-	printCompiledInstructions = false
-	printCompiledConstants    = false
+	printCompiledInstructions  bool
+	printCompiledConstants     bool
 
-	printVmResultEscaped   = true
-	printVmResultGoEscaped = false
-	printVmResultRaw       = false
-)
+	printVmResultEscaped    bool
+	printVmResultGoEscaped  bool
+	printVmResultRaw        bool
+}
+
+var options = &replOptions{
+	PROMPT : ">> ",
+
+	printLexTokens : false,
+
+	printParseTokenRepresentation : false,
+	printParseNodes               : false,
+	printParsedVarNames           : false,
+
+	printCompiledInstructions : false,
+	printCompiledConstants    : false,
+
+	printVmResultEscaped   : true,
+	printVmResultGoEscaped : false,
+	printVmResultRaw       : false,	
+}
 
 // with a 2-byte operand on OpGetGlobal and OpSetGlobal...
 const GlobalStackMax = 65536
@@ -58,13 +75,23 @@ var (
 	symbolTable  *symbol.SymbolTable
 	vmModes      *modes.VmModes
 	compileModes *modes.CompileModes
+	firstRun 	 bool
 )
+
+func resetEnvironment() {
+	constants = []object.Object{}
+	globals = make([]object.Object, GlobalStackMax)
+	symbolTable = symbol.NewSymbolTable(nil, modes.NewCompileModes())
+	vmModes = modes.NewVmModes()
+	compileModes = modes.NewCompileModes()
+	firstRun = true
+}
 
 const loadFile = ""
 
 func main() {
 	fmt.Printf("This is the REPL for langur %s (langurlang.org).\n", bytecode.LangurRev)
-	Start(os.Stdin, os.Stdout)
+	Start(os.Stdin, os.Stdout, options)
 }
 
 func readLine(in io.Reader) string {
@@ -82,7 +109,7 @@ func readLine(in io.Reader) string {
 	return text
 }
 
-func Start(in io.Reader, out io.Writer) {
+func Start(in io.Reader, out io.Writer, opts *replOptions) {
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Fprintf(out, object.UnhandledPanicString(p))
@@ -99,23 +126,14 @@ func Start(in io.Reader, out io.Writer) {
 		}
 	}()
 
-	firstRun := true
-
-	resetEnvironment := func() {
-		constants = []object.Object{}
-		globals = make([]object.Object, GlobalStackMax)
-		symbolTable = symbol.NewSymbolTable(nil, modes.NewCompileModes())
-		firstRun = true
-		vmModes = modes.NewVmModes()
-		compileModes = modes.NewCompileModes()
-	}
+	firstRun = true
 
 	if loadFile != "" {
 		fmt.Fprintf(out, "loading file (%s)...\n", loadFile)
 		b, err := ioutil.ReadFile(loadFile)
 
 		if err == nil {
-			repl(string(b), out, true)
+			repl(string(b), out, true, opts)
 		} else {
 			fmt.Fprintf(out, "failed to load file: %s\n", err.Error())
 		}
@@ -129,7 +147,7 @@ func Start(in io.Reader, out io.Writer) {
 	resetEnvironment()
 
 	for {
-		fmt.Fprintf(out, PROMPT)
+		fmt.Fprintf(out, opts.PROMPT)
 		line := readLine(in)
 
 		switch line {
@@ -166,12 +184,12 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		repl(line, out, firstRun)
+		repl(line, out, firstRun, opts)
 		firstRun = false
 	}
 }
 
-func repl(source string, out io.Writer, firstRun bool) {
+func repl(source string, out io.Writer, firstRun bool, opts *replOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
 	var program *ast.Program
@@ -180,7 +198,7 @@ func repl(source string, out io.Writer, firstRun bool) {
 	var machine *vm.VM
 	var err error
 
-	if printLexTokens {
+	if opts.printLexTokens {
 		// print lexical tokens
 		lex, err = lexer.New(source, "RLPL", compileModes)
 		if err == nil {
@@ -201,9 +219,9 @@ func repl(source string, out io.Writer, firstRun bool) {
 		return
 	}
 
-	if printParseTokenRepresentation || printParseNodes ||
-		printCompiledConstants || printCompiledInstructions ||
-		printVmResultRaw || printVmResultEscaped || printVmResultGoEscaped {
+	if opts.printParseTokenRepresentation || opts.printParseNodes ||
+		opts.printCompiledConstants || opts.printCompiledInstructions ||
+		opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
 
 		p = parser.New(lex, compileModes)
 		program, err = p.ParseProgram()
@@ -219,21 +237,21 @@ func repl(source string, out io.Writer, firstRun bool) {
 		}
 	}
 
-	if printParseTokenRepresentation {
+	if opts.printParseTokenRepresentation {
 		io.WriteString(out, "Parsed Token Representation\n")
 
 		io.WriteString(out, program.TokenRepresentation())
 		io.WriteString(out, "\n")
 	}
 
-	if printParseNodes {
+	if opts.printParseNodes {
 		io.WriteString(out, "Nodes\n")
 
 		io.WriteString(out, program.String())
 		io.WriteString(out, "\n")
 	}
 
-	if printParsedVarNames {
+	if opts.printParsedVarNames {
 		io.WriteString(out, "Variable Names Used\n")
 		for i := range program.VarNamesUsed {
 			io.WriteString(out, program.VarNamesUsed[i])
@@ -245,8 +263,8 @@ func repl(source string, out io.Writer, firstRun bool) {
 		return
 	}
 
-	if printCompiledInstructions || printCompiledConstants ||
-		printVmResultRaw || printVmResultEscaped || printVmResultGoEscaped {
+	if opts.printCompiledInstructions || opts.printCompiledConstants ||
+		opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
 
 		comp, err = compiler.NewWithState(symbolTable, constants, compileModes)
 		if err != nil {
@@ -263,11 +281,11 @@ func repl(source string, out io.Writer, firstRun bool) {
 		}
 
 		byteCode = comp.ByteCode()
-		if printCompiledInstructions {
+		if opts.printCompiledInstructions {
 			fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
 				InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
 		}
-		if printCompiledConstants {
+		if opts.printCompiledConstants {
 			fmt.Fprintf(out, "ByteCode Constants\n")
 			for i := range byteCode.Constants {
 				fmt.Fprintf(out, "%d: %s\n", i, byteCode.Constants[i].ReplString())
@@ -281,7 +299,7 @@ func repl(source string, out io.Writer, firstRun bool) {
 		constants = byteCode.Constants
 	}
 
-	if printVmResultRaw || printVmResultEscaped || printVmResultGoEscaped {
+	if opts.printVmResultRaw || opts.printVmResultEscaped || opts.printVmResultGoEscaped {
 		machine = vm.NewWithGlobalStore(byteCode, globals, vmModes)
 
 		err = machine.Run()
@@ -297,19 +315,19 @@ func repl(source string, out io.Writer, firstRun bool) {
 			io.WriteString(out, "VM Result Nil (bug?)\n")
 			return
 		}
-		if printVmResultEscaped {
+		if opts.printVmResultEscaped {
 			io.WriteString(out, "langur escaped result: ")
 			io.WriteString(out, str.Escape(result.String()))
 			io.WriteString(out, "\n")
 		}
 
-		if printVmResultGoEscaped {
+		if opts.printVmResultGoEscaped {
 			io.WriteString(out, "Go escaped result: ")
 			io.WriteString(out, str.EscapeGo(result.String()))
 			io.WriteString(out, "\n")
 		}
 
-		if printVmResultRaw {
+		if opts.printVmResultRaw {
 			io.WriteString(out, "raw result string: ")
 			io.WriteString(out, result.String())
 			io.WriteString(out, "\n")
