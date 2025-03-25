@@ -25,9 +25,7 @@ import (
 	"langur/symbol"
 	"langur/token"
 	"langur/vm"
-	"langur/vm/process"
 	"os"
-	"sort"
 	"strings"
 )
 
@@ -90,11 +88,10 @@ func resetEnvironment() {
 const loadFile = ""
 
 func main() {
-	fmt.Printf("This is the REPL for langur %s (langurlang.org).\n", bytecode.LangurRev)
-	Start(os.Stdin, os.Stdout, options)
+	REPL(os.Stdin, os.Stdout, options)
 }
 
-func readLine(in io.Reader) string {
+func readLine(in io.Reader, fixNewLines bool) string {
 	scanner := bufio.NewScanner(in)
 	scanned := scanner.Scan()
 	if !scanned {
@@ -103,13 +100,15 @@ func readLine(in io.Reader) string {
 	text := scanner.Text()
 
 	// allow input from plain text editor, which seems to insist on using Unicode line endings for copying even when no Unicode line endings present in the original text
-	text = strings.Replace(text, "\u2029", "\n", -1)
-	text = strings.Replace(text, "\u2028", "\n", -1)
+	if fixNewLines {
+		text = strings.Replace(text, "\u2029", "\n", -1)
+		text = strings.Replace(text, "\u2028", "\n", -1)
+	}
 
 	return text
 }
 
-func Start(in io.Reader, out io.Writer, opts *replOptions) {
+func REPL(in io.Reader, out io.Writer, opts *replOptions) {
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Fprintf(out, object.UnhandledPanicString(p))
@@ -117,7 +116,7 @@ func Start(in io.Reader, out io.Writer, opts *replOptions) {
 
 			// NOTE: since not a command line REPL (so far), okay to print a stack trace
 			fmt.Fprintf(out, "Print stack trace? y/n: ")
-			answer := readLine(in)
+			answer := readLine(in, false)
 			if answer == "y" || answer == "Y" {
 				panic(p)
 			} else {
@@ -140,15 +139,15 @@ func Start(in io.Reader, out io.Writer, opts *replOptions) {
 		firstRun = false
 	}
 
+	fmt.Printf("This is the REPL for langur %s (langurlang.org).\n", bytecode.LangurRev)
 	fmt.Fprintf(out, "Type “exit()” to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
-	fmt.Fprintf(out, "Type “list()” to list built-in functions.\n")
 
 	resetEnvironment()
 
 	for {
 		fmt.Fprintf(out, opts.PROMPT)
-		line := readLine(in)
+		line := readLine(in, true)
 
 		switch line {
 		case "":
@@ -165,22 +164,6 @@ func Start(in io.Reader, out io.Writer, opts *replOptions) {
 		case "reset()":
 			resetEnvironment()
 			fmt.Fprintf(out, "Environment Reset\n")
-			continue
-
-		case "list()":
-			var keys []string
-			for _, k := range process.BuiltIns {
-				// leave out internal built-ins
-				if k.FnSignature.Name[0] != '_' {
-					keys = append(keys, k.FnSignature.Name)
-				}
-			}
-			sort.Strings(keys)
-			fmt.Fprintf(out, "%d Built-in Functions\n", len(keys))
-			for _, k := range keys {
-				bi := process.GetBuiltInByName(k)
-				fmt.Fprintf(out, " %s: %s\n", bi.FnSignature.Name, strings.Replace(bi.FnSignature.Description, "\n", "\n\t", -1))
-			}
 			continue
 		}
 
