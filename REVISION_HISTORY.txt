@@ -1,6 +1,11 @@
 langur revision history
 https://langurlang.org
 
+... - 0.19.2
+- now runs in interactive mode if no command line options
+- dropped "list()" from REPL/interactive mode
+
+
 2025-03-06 - 0.19.1
 - renamed sine() as sin() - matching normal math abbreviations for trig functions; not representing transgression
 - patched root operator to remove extraneous trailing zeroes added when using negative exponent
