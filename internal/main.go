@@ -13,6 +13,7 @@ import (
 	"langur/ast"
 	"langur/bytecode"
 	"langur/compiler"
+	"langur/interactive"
 	"langur/lexer"
 	"langur/modes"
 	"langur/object"
@@ -20,7 +21,6 @@ import (
 	"langur/str"
 	"langur/system"
 	"langur/vm"
-	"langur/repl"
 	"os"
 )
 
@@ -72,10 +72,10 @@ func main() {
 	}
 
 	if file == "" {
-		opts := &repl.InteractiveOptions{
+		opts := &interactive.InteractiveOptions{
 			Prompt: ">> ", PrintVmResultRaw: true,
 		}
-		repl.Interactive(opts)
+		interactive.Interactive(opts)
 		os.Exit(0)
 	}
 

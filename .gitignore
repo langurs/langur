@@ -8,7 +8,7 @@
 
 # blacklist these (compiled code)
 internal/langur
-internal/repl/repl
+internal/interactive/interactive
 
 # whitelist the following
 !/.gitignore

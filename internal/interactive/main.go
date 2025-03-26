@@ -1,5 +1,4 @@
-// langur/repl/main.go
-// langur REPL
+// langur/interactive/main.go
 
 // Copyright 2025 Anthony Davis
 // See LICENSE file.
@@ -8,7 +7,13 @@
 // allowing REPL to be used "locally" with special settings (for testing) or ...
 // to be run from langur command as "interactive," with more restricted set of possibilities
 
-package repl
+// NOTE: Go allows a package be either executable or importable (not both).
+// Use only one of the following package names (normally set to interactive).
+// for local REPL, use...
+// package main			/// executable
+
+// for interactive mode, use...
+package interactive		/// importable
 
 import (
 	"bufio"
@@ -157,7 +162,7 @@ func Interactive(opts *InteractiveOptions) {
 
 // for either local run or from langur command
 func loop(in io.Reader, out io.Writer, opts *InteractiveOptions) {
-	fmt.Printf("This is langur %s (langurlang.org).\n", bytecode.LangurRev)
+	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
 	fmt.Fprintf(out, "Type “exit()” to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
 
