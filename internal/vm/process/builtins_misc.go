@@ -38,7 +38,7 @@ var bi_exit = &object.BuiltIn{
 			code, err = codeArg.ToInt()
 			if err != nil {
 				// failure to convert to native integer
-				code = system.GetExitStatus("argtoexitBad")
+				code = system.GetExitStatus(system.ExitStatusArgToExitBad)
 			}
 			code = system.FixExitStatus(code)
 
@@ -46,12 +46,12 @@ var bi_exit = &object.BuiltIn{
 			//  true: success (code 0)
 			// false: general failure
 			if !codeArg.Value {
-				code = system.GetExitStatus("")
+				code = system.GetExitStatus(system.ExitStatusGeneral)
 			}
 
 		default:
 			// invalid code argument to exit()
-			code = system.GetExitStatus("argtoexitBad")
+			code = system.GetExitStatus(system.ExitStatusArgToExitBad)
 		}
 
 		if code != 0 && strArg.IsTruthy() {

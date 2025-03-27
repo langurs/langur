@@ -40,7 +40,7 @@ func main() {
 					panic(p)
 				}
 			}
-			os.Exit(system.GetExitStatus("failedrun"))
+			os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
 		}
 	}()
 
@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Println(err)
-		os.Exit(system.GetExitStatus("failedargs"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	compile_modes, err = modes.CompileModesFromArgs(langurArgs, system.OnWindows)
@@ -61,14 +61,14 @@ func main() {
 		fmt.Println(err)
 		fmt.Println()
 		fmt.Println(use)
-		os.Exit(system.GetExitStatus("failedargs"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	if compile_modes.Help {
 		fmt.Printf("langur %s (langurlang.org)\n\n %s\n%s",
 			bytecode.LangurRev, use, args.GetArgsDescription())
 
-		os.Exit(system.GetExitStatus("help"))
+		os.Exit(system.GetExitStatus(system.ExitStatusHelp))
 	}
 
 	if file == "" {
@@ -91,7 +91,7 @@ func main() {
 				fmt.Print("langur: ")
 				fmt.Printf("error reading from file (%s): %s\n", s, err.Error())
 			}
-			os.Exit(system.GetExitStatus("failedreadfile"))
+			os.Exit(system.GetExitStatus(system.ExitStatusFailedReadFile))
 		}
 		scriptString = string(b)
 	}
@@ -102,7 +102,7 @@ func main() {
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Println("lexer error: " + err.Error())
-		os.Exit(system.GetExitStatus("failedparse"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
 	}
 	p := parser.New(lex, compile_modes)
 
@@ -121,7 +121,7 @@ func main() {
 				fmt.Printf("\t" + msg.Error() + "\n")
 			}
 		}
-		os.Exit(system.GetExitStatus("failedparse"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
 	}
 
 	comp, err := compiler.New(compile_modes)
@@ -136,13 +136,13 @@ func main() {
 			fmt.Print("langur: ")
 			fmt.Printf("compilation errors\n%s\n", err)
 		}
-		os.Exit(system.GetExitStatus("failedcompile"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
 	}
 
 	if compile_modes.TestCompile {
 		fmt.Print("langur: ")
 		fmt.Println("no errors (parse and compile success)")
-		os.Exit(system.GetExitStatus("test"))
+		os.Exit(system.GetExitStatus(system.ExitStatusTest))
 	}
 
 	byteCode := comp.ByteCode()
@@ -153,7 +153,7 @@ func main() {
 			fmt.Print("langur: ")
 			fmt.Printf("vm errors\n%s\n", err)
 		}
-		os.Exit(system.GetExitStatus("failedrun"))
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
 	}
 
 	os.Exit(0)

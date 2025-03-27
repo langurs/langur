@@ -4,6 +4,7 @@ https://langurlang.org
 ... - 0.19.2
 - now runs in interactive mode if no command line options
 - dropped "list()" from REPL/interactive mode
+- updated system/exitstatus to use constants instead of strings
 
 
 2025-03-06 - 0.19.1

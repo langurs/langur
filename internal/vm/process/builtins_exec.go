@@ -102,11 +102,11 @@ var getExitStatusRegex = regexp.MustCompile("^exit status (-?\\d+)")
 func getExitStatusFromExecError(over string) int {
 	ns := getExitStatusRegex.FindStringSubmatch(over)
 	if len(ns) == 0 || ns[1] == "" {
-		return system.GetExitStatus("")
+		return system.GetExitStatus(system.ExitStatusGeneral)
 	}
 	code, err := str.StrToInt(ns[1], 10)
 	if err != nil {
-		return system.GetExitStatus("")
+		return system.GetExitStatus(system.ExitStatusGeneral)
 	}
 	return code
 }

@@ -6,24 +6,38 @@ import (
 	"math"
 )
 
+const (
+	ExitStatusGeneral = iota
+	ExitStatusNoScript
+	ExitStatusHelp
+	ExitStatusTest
+	ExitStatusFailedArgs
+	ExitStatusFailedReadFile
+	ExitStatusFailedParse
+	ExitStatusFailedCompile
+	ExitStatusFailedRun
+	ExitStatusArgToExitBad
+	ExitStatusArgToExitOutOfRange
+)
+
 // Linux exit status codes (specifically bash)
 // https://tldp.org/LDP/abs/html/exitcodes.html
 // https://www.gnu.org/software/bash/manual/html_node/Exit-Status.html
 // https://www.redhat.com/sysadmin/exit-codes-demystified
 const generalStatusError = 1
 
-var exitStatus = map[string]int{
-	"":                    generalStatusError,
-	"noscript":            0,
-	"help":                0,
-	"test":                0,
-	"failedargs":          2,
-	"failedreadfile":      127,
-	"failedparse":         126,
-	"failedcompile":       126,
-	"failedrun":           1,
-	"argtoexitBad":        128,
-	"argtoexitOutofrange": 255,
+var exitStatus = map[int]int{
+	ExitStatusGeneral:             generalStatusError,
+	ExitStatusNoScript:            0,
+	ExitStatusHelp:                0,
+	ExitStatusTest:                0,
+	ExitStatusFailedArgs:          2,
+	ExitStatusFailedReadFile:      127,
+	ExitStatusFailedParse:         126,
+	ExitStatusFailedCompile:       126,
+	ExitStatusFailedRun:           1,
+	ExitStatusArgToExitBad:        128,
+	ExitStatusArgToExitOutOfRange: 255,
 }
 
 // Windows exit status codes
@@ -31,23 +45,23 @@ var exitStatus = map[string]int{
 // It may be that there are better codes to use on Windows, so that these could be revised.
 const generalStatusErrorWindows = 574
 
-var exitStatusWindows = map[string]int{
-	"":                    generalStatusErrorWindows,
-	"noscript":            0,
-	"help":                0,
-	"test":                0,
-	"failedargs":          160,
-	"failedreadfile":      2,
-	"failedparse":         575,
-	"failedcompile":       575,
-	"failedrun":           574,
-	"argtoexitBad":        574,
-	"argtoexitOutofrange": 574,
+var exitStatusWindows = map[int]int{
+	ExitStatusGeneral:             generalStatusErrorWindows,
+	ExitStatusNoScript:            0,
+	ExitStatusHelp:                0,
+	ExitStatusTest:                0,
+	ExitStatusFailedArgs:          160,
+	ExitStatusFailedReadFile:      2,
+	ExitStatusFailedParse:         575,
+	ExitStatusFailedCompile:       575,
+	ExitStatusFailedRun:           574,
+	ExitStatusArgToExitBad:        574,
+	ExitStatusArgToExitOutOfRange: 574,
 }
 
 // NOTE: These functions should not panic.
 
-func GetExitStatus(s string) int {
+func GetExitStatus(s int) int {
 	switch Type {
 	case WINDOWS:
 		status, ok := exitStatusWindows[s]
@@ -74,7 +88,7 @@ func FixExitStatus(n int) int {
 		min, max = 0, 255
 	}
 	if n < min || n > max {
-		n = GetExitStatus("argtoexitOutofrange")
+		n = GetExitStatus(ExitStatusArgToExitOutOfRange)
 	}
 	return n
 }
