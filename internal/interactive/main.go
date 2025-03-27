@@ -9,10 +9,10 @@
 
 // NOTE: Go allows a package be either executable or importable (not both).
 // Use only one of the following package names (normally set to interactive).
-// for local REPL, use...
+// for local REPL only, use...
 // package main			/// executable
 
-// for interactive mode, use...
+// for interactive mode (normal), use...
 package interactive		/// importable
 
 import (
@@ -56,7 +56,8 @@ type InteractiveOptions struct{
 	PrintVmResultDescriptions bool
 }
 
-// options for local run; not applied to running from langur command
+// options for local REPL; may freely change them here for testing
+// NOT applied to running from langur command
 var options = &InteractiveOptions{
 	Prompt : ">> ",
 
@@ -97,39 +98,20 @@ func resetEnvironment() {
 	firstRun = true
 }
 
-const loadFile = ""
+var in, out = os.Stdin, os.Stdout
 
+// for REPL not run from langur command (not "interactive")
 func main() {
-	REPL(os.Stdin, os.Stdout, options)
-}
-
-func readLine(in io.Reader, fixNewLines bool) string {
-	scanner := bufio.NewScanner(in)
-	scanned := scanner.Scan()
-	if !scanned {
-		panic("failed to scan input text")
-	}
-	text := scanner.Text()
-
-	// allow input from plain text editor, which seems to insist on using Unicode line endings for copying even when no Unicode line endings present in the original text
-	if fixNewLines {
-		text = strings.Replace(text, "\u2029", "\n", -1)
-		text = strings.Replace(text, "\u2028", "\n", -1)
-	}
-
-	return text
-}
-
-// for REPL not run from langur command
-func REPL(in io.Reader, out io.Writer, opts *InteractiveOptions) {
+	const loadFile = ""
+	
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Fprintf(out, object.UnhandledPanicString(p))
 			fmt.Fprintln(out)
 
-			// NOTE: since not a command line REPL (so far), okay to print a stack trace
+			// NOTE: since not a command line REPL, okay to print a stack trace
 			fmt.Fprintf(out, "Print stack trace? y/n: ")
-			answer := readLine(in, false)
+			answer, _ := readLine(in, false)
 			if answer == "y" || answer == "Y" {
 				panic(p)
 			} else {
@@ -145,23 +127,18 @@ func REPL(in io.Reader, out io.Writer, opts *InteractiveOptions) {
 		b, err := ioutil.ReadFile(loadFile)
 
 		if err == nil {
-			repl(string(b), out, true, opts)
+			repl(string(b), out, true, options)
 		} else {
 			fmt.Fprintf(out, "failed to load file: %s\n", err.Error())
 		}
 		firstRun = false
 	}
 
-	loop(in, out, opts)
+	Interactive(options)
 }
 
-// run from langur command, not local
+// for either local run or from langur command ("interactive")
 func Interactive(opts *InteractiveOptions) {
-	loop(os.Stdin, os.Stdout, opts)
-}
-
-// for either local run or from langur command
-func loop(in io.Reader, out io.Writer, opts *InteractiveOptions) {
 	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
 	fmt.Fprintf(out, "Type “exit()” to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
@@ -170,7 +147,10 @@ func loop(in io.Reader, out io.Writer, opts *InteractiveOptions) {
 
 	for {
 		fmt.Fprintf(out, opts.Prompt)
-		line := readLine(in, true)
+		line, ok := readLine(in, true)
+		if !ok {
+			return
+		}
 
 		switch line {
 		case "":
@@ -374,4 +354,22 @@ func InstructionsString(ins opcode.Instructions, constants []object.Object) stri
 	}
 
 	return out.String()
+}
+
+func readLine(in io.Reader, fixNewLines bool) (text string, scanned bool) {
+	scanner := bufio.NewScanner(in)
+	scanned = scanner.Scan()
+	if !scanned {
+		return
+		// panic("failed to scan input text")
+	}
+	text = scanner.Text()
+
+	// allow input from plain text editor, which seems to insist on using Unicode line endings for copying even when no Unicode line endings present in the original text
+	if fixNewLines {
+		text = strings.Replace(text, "\u2029", "\n", -1)
+		text = strings.Replace(text, "\u2028", "\n", -1)
+	}
+
+	return
 }
