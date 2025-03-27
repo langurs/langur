@@ -140,7 +140,7 @@ func main() {
 // for either local run or from langur command ("interactive")
 func Interactive(opts *InteractiveOptions) {
 	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
-	fmt.Fprintf(out, "Type “exit()” to quit.\n")
+	fmt.Fprintf(out, "Type “exit()” or press ctrl-D to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
 
 	resetEnvironment()
