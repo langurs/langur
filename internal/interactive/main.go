@@ -56,8 +56,9 @@ type InteractiveOptions struct{
 	PrintVmResultDescriptions bool
 }
 
-// options for local REPL; may freely change them here for testing
-// NOT applied to running from langur command
+// NOTE: options for local REPL; may freely change them here for testing
+// These are NOT applied to running from the langur command ("interactive"), ... 
+// ... which will use a different set of options.
 var options = &InteractiveOptions{
 	Prompt : ">> ",
 
@@ -95,7 +96,6 @@ func resetEnvironment() {
 	symbolTable = symbol.NewSymbolTable(nil, modes.NewCompileModes())
 	vmModes = modes.NewVmModes()
 	compileModes = modes.NewCompileModes()
-	firstRun = true
 }
 
 var in, out = os.Stdin, os.Stdout
@@ -127,18 +127,23 @@ func main() {
 		b, err := ioutil.ReadFile(loadFile)
 
 		if err == nil {
-			repl(string(b), out, true, options)
+			repl(string(b), options)
 		} else {
 			fmt.Fprintf(out, "failed to load file: %s\n", err.Error())
 		}
 		firstRun = false
 	}
 
-	Interactive(options)
+	loop(options)
 }
 
-// for either local run or from langur command ("interactive")
+// from langur command ("interactive")
 func Interactive(opts *InteractiveOptions) {
+	firstRun = true
+	loop(opts)
+}
+
+func loop(opts *InteractiveOptions) {
 	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
 	fmt.Fprintf(out, "Type “exit()” or press ctrl-D to quit.\n")
 	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
@@ -164,18 +169,23 @@ func Interactive(opts *InteractiveOptions) {
 			// exit(): normally requires a parameter, but okay without for REPL
 			return
 
+		case "reset":
+			fmt.Fprintf(out, "Type reset() to reset the environment.\n")
+			continue
+
 		case "reset()":
 			resetEnvironment()
+			firstRun = true
 			fmt.Fprintf(out, "Environment Reset\n")
 			continue
 		}
 
-		repl(line, out, firstRun, opts)
+		repl(line, opts)
 		firstRun = false
 	}
 }
 
-func repl(source string, out io.Writer, firstRun bool, opts *InteractiveOptions) {
+func repl(source string, opts *InteractiveOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
 	var program *ast.Program
@@ -361,11 +371,12 @@ func readLine(in io.Reader, fixNewLines bool) (text string, scanned bool) {
 	scanned = scanner.Scan()
 	if !scanned {
 		return
-		// panic("failed to scan input text")
 	}
 	text = scanner.Text()
 
-	// allow input from plain text editor, which seems to insist on using Unicode line endings for copying even when no Unicode line endings present in the original text
+	// allow input from plain text editor, ...
+	// ... which seems to insist on using Unicode line endings for copying ...
+	// ... even when no Unicode line endings present in the original text
 	if fixNewLines {
 		text = strings.Replace(text, "\u2029", "\n", -1)
 		text = strings.Replace(text, "\u2028", "\n", -1)
