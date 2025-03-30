@@ -156,6 +156,7 @@ func loop(opts *InteractiveOptions) {
 		if !ok {
 			return
 		}
+		line = strings.TrimSpace(line)
 
 		switch line {
 		case "":
