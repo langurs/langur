@@ -14,7 +14,7 @@ The revision history is in a separate file.
 
 ## requirements
 
-I've compiled langur on Linux, using LiteIDE with Go 1.22. I've also compiled it on Windows using LiteIDE.
+I've compiled langur on Linux, using LiteIDE with Go 1.24. I've also compiled it on Windows using LiteIDE.
 
 See installation instructions on the langurlang.org website.
 

@@ -52,7 +52,7 @@ other things to consider...
 - optional explicit typing
 - sets
 - bitwise operations
-    at least on explicit types
+    on explicit types
 - pointers
     using strict left-to-right syntax; none of the left/right business you see in C
 - concurrency
