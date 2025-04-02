@@ -7,7 +7,7 @@
 // allowing REPL to be used "locally" with special settings (for testing) or ...
 // to be run from langur command as "interactive," with more restricted set of possibilities
 
-// NOTE: Go allows a package be either executable or importable (not both).
+// NOTE: Go allows a package to be either executable or importable (not both).
 // Use only one of the following package names (normally set to interactive).
 // for local REPL only, use...
 // package main			/// executable
