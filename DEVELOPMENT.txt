@@ -1,5 +1,5 @@
 # langur development
-2025-01-31
+2025-04-14
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -11,6 +11,16 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
+- compile on AST node instead of having a seperate compile package
+    Work was started toward this, but not finished.
+- compile with metadata that can be used in VM to traceback errors to source code
+    Work was started toward this, but not finished.
+
+- PEG grammar
+- log (math) function
+- atan2(), acos(), etc.
+- duration string formatting, including weeks
+- engineering notation (almost like scientific notation) interpolation modifier
 - value forwarding syntax with one or multiple uses of forwarding variable _fwd
     instead of writing ...
         join(filter(mapX(wordsets..., by=amb)), by="\n")
@@ -18,17 +28,6 @@ backlog
         mapX(wordsets..., by=amb) -> filter -> join(_fwd, by="\n")
 
     If there are multiple uses of the forwarded value after an operator, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
-
-- PEG grammar
-- use VCS (github likely)
-- compile on AST node instead of having a seperate compile package
-    Work was started toward this, but not finished.
-- compile with metadata that can be used in VM to traceback errors to source code
-    Work was started toward this, but not finished.
-- log (math) function
-- atan2(), acos(), etc.
-- duration string formatting, including weeks
-- engineering notation (almost like scientific notation) interpolation modifier
 
 other things to consider...
 - efficiency
@@ -58,5 +57,6 @@ other things to consider...
 - concurrency
     maybe using go/conc library
     must trap/account for exceptions
+    trap ctrl-C
 - testing mechanisms
 
