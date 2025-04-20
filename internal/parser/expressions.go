@@ -88,6 +88,7 @@ func (p *Parser) parseIdentifier() ast.Node {
 
 var identifierRegex = regexp.MustCompile(common.IdentifierRegexString)
 
+// a word token that may be an identifier or may be something else
 func (p *Parser) parseWord() (*ast.IdentNode, bool) {
 	if !identifierRegex.MatchString(p.tok.Literal) {
 		return nil, false

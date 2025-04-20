@@ -234,9 +234,14 @@ func (p *Parser) parseBreakStatement() *ast.BreakNode {
 	stmt := &ast.BreakNode{Token: p.tok}
 	p.advanceToken()
 
-	if p.tok.Type == token.ASSIGN {
+	if p.tok.Literal == "val" && p.peekTok.Type == token.ASSIGN {
+		p.advanceToken()
 		p.advanceToken()
 		stmt.Value = p.parseExpression(precedence_LOWEST)
+	}
+
+	if p.tok.Type == token.ASSIGN {
+		p.addError("Expected parameter token before assignment in break statement (such as break val=7)")
 	}
 	return stmt
 }

@@ -4603,7 +4603,7 @@ func TestForLoopBreak(t *testing.T) {
 		{`var sum = 0
 		  for x = -3; x < 10; x += 1 {
 		      sum += 1 / (x rem 2)
-			  catch { break = 144 }
+			  catch { break val=144 }
 		  }
 		  `,
 			"144", object.NUMBER_OBJ,
@@ -4612,7 +4612,7 @@ func TestForLoopBreak(t *testing.T) {
 		{`var sum = 0
 		  for x = -3; x < 10; x += 1 {
 		      sum += 1 / (x rem 2)
-			  catch { 50 } else { break = 124 }
+			  catch { 50 } else { break val=124 }
 		  }
 		  `,
 			"124", object.NUMBER_OBJ,
@@ -4803,29 +4803,29 @@ func TestForLoopValue(t *testing.T) {
 			object.NULL_OBJ,
 		},
 
-		{`for of 10 { break = 3.5 * 2 }`,
+		{`for of 10 { break val=3.5 * 2 }`,
 			"7.0",
 			object.NUMBER_OBJ,
 		},
 
 		{`for i of 10 {
 			 if i > 3 {
-			     break = i * 2
+			     break val=i * 2
 			 }
 		  }`,
 			"8",
 			object.NUMBER_OBJ,
 		},
 
-		{`7 + for of 10 { break = 13 }`,
+		{`7 + for of 10 { break val=13 }`,
 			"20",
 			object.NUMBER_OBJ,
 		},
-		{`7 + for i of 10 { if val x = i > 3 { break = i } }`,
+		{`7 + for i of 10 { if val x = i > 3 { break val=i } }`,
 			"11",
 			object.NUMBER_OBJ,
 		},
-		{`7 + for i of 10 { if i > 3 { val x = i; break = x } }`,
+		{`7 + for i of 10 { if i > 3 { val x = i; break val=x } }`,
 			"11",
 			object.NUMBER_OBJ,
 		},
@@ -4835,7 +4835,7 @@ func TestForLoopValue(t *testing.T) {
 				val x = 3
 				if i > 7 {
 					val y = 789
-					break = i  # i == 9
+					break val=i  # i == 9
 				}
 			 }
 		  }`,
@@ -4868,7 +4868,7 @@ func TestForLoopValue(t *testing.T) {
 			10,
 			object.NUMBER_OBJ,
 		},
-		{`for[f=0] i of 7 { f += i; break = 7 }`,
+		{`for[f=0] i of 7 { f += i; break val=7 }`,
 			7,
 			object.NUMBER_OBJ,
 		},
