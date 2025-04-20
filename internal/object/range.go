@@ -99,107 +99,66 @@ func WithinValueRange(value, start, end Object) (bool, error) {
 	return true, nil
 }
 
-func (right *Range) ToList() (*List, error) {
-	// NOTE: would need to change to using the decimal library for bigger numbers
-	ints, err := right.toInt64Slice()
+func (r *Range) ToList() (*List, error) {
+	ints, err := r.toInt64Slice()
 	if err != nil {
-		return nil, err
+		// try using the decimal library for bigger numbers
+		list, err := r.toSlice()
+		if err != nil {
+			return nil, err
+		}
+		return &List{Elements: list}, nil
 	}
 	return ListFromInt64Slice(ints), nil
 }
 
 func (r *Range) toInt64Slice() ([]int64, error) {
-	var start, end, num int64
+	var start, end int64
 	var err error
 
 	switch e := r.Start.(type) {
 	case *Number:
 		start, err = e.ToInt64()
 		if err != nil {
-			return nil, fmt.Errorf("Expected integer range")
+			return nil, fmt.Errorf("Expected int64 range")
 		}
 	}
 	switch e := r.End.(type) {
 	case *Number:
 		end, err = e.ToInt64()
 		if err != nil {
-			return nil, fmt.Errorf("Expected integer range")
+			return nil, fmt.Errorf("Expected int64 range")
 		}
 	}
 
-	num = start
-	if start > end {
-		// descending range
-		numbers := make([]int64, 0, start-end+1)
-		for {
-			numbers = append(numbers, num)
-			num--
-			if num < end {
-				break
-			}
-		}
-
-		return numbers, nil
-
-	} else {
-		numbers := make([]int64, 0, end-start+1)
-		for {
-			numbers = append(numbers, num)
-			num++
-			if num > end {
-				break
-			}
-		}
-
-		return numbers, nil
-	}
+	return int64PairToSlice(start, end), nil
 }
 
-func (r *Range) toIntSlice() ([]int, error) {
-	var start, end, num int
-	var err error
-
+// convert to slice using Object types from start
+// presently limited to integers, but not to int64 values
+func (r *Range) toSlice() ([]Object, error) {
+	var start, end *Number
+ 
 	switch e := r.Start.(type) {
 	case *Number:
-		start, err = e.ToInt()
-		if err != nil {
+		if !e.IsInteger() {
 			return nil, fmt.Errorf("Expected integer range")
 		}
+		start = e
+	default:
+		return nil, fmt.Errorf("Expected integer range")
 	}
 	switch e := r.End.(type) {
 	case *Number:
-		end, err = e.ToInt()
-		if err != nil {
+		if !e.IsInteger() {
 			return nil, fmt.Errorf("Expected integer range")
 		}
+		end = e
+	default:
+		return nil, fmt.Errorf("Expected integer range")
 	}
 
-	num = start
-	if start > end {
-		// descending range
-		numbers := make([]int, 0, start-end+1)
-		for {
-			numbers = append(numbers, num)
-			num--
-			if num < end {
-				break
-			}
-		}
-
-		return numbers, nil
-
-	} else {
-		numbers := make([]int, 0, end-start+1)
-		for {
-			numbers = append(numbers, num)
-			num++
-			if num > end {
-				break
-			}
-		}
-
-		return numbers, nil
-	}
+	return numberPairToSlice(start, end), nil
 }
 
 func (right *Range) ToNumber() (*Number, bool) {

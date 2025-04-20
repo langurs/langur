@@ -6,6 +6,7 @@ https://langurlang.org
   break val=7
   ... instead of ...
   break = 7
+- made possible to create lists from range numbers outside values of int64
 
 
 2025-03-30 - 0.19.2

@@ -74,7 +74,6 @@ var bi__values = &object.BuiltIn{
 		const fnName = "for_in"
 
 		var start, end, num int64
-		var err error
 
 		switch over := args[0].(type) {
 		case *object.List, *object.String:
@@ -89,43 +88,18 @@ var bi__values = &object.BuiltIn{
 
 		case *object.Number:
 			// number as implicit ascending range
-			end, err = over.ToInt64()
+			list, err := over.ToList()
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
-
-			if end == 0 {
-				// done
-				return &object.List{}
-
-			} else if end < 0 {
-				// negative number
-				start = end
-				end = -1
-
-			} else {
-				start = 1
-			}
+			return list
 
 		case *object.Range:
-			switch e := over.Start.(type) {
-			case *object.Number:
-				start, err = e.ToInt64()
-				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
-				}
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
+			list, err := over.ToList()
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
-			switch e := over.End.(type) {
-			case *object.Number:
-				end, err = e.ToInt64()
-				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
-				}
-			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
-			}
+			return list
 
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, integer, integer range, or string")

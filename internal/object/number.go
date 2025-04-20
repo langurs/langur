@@ -492,3 +492,119 @@ func (n *Number) Reverse() *Number {
 	num, _ := NumberFromString(newStr)
 	return num
 }
+
+func (n *Number) ToList() (*List, error) {
+	ints, err := n.toInt64Slice()
+	if err != nil {
+		// try using the decimal library for bigger numbers
+		list, err := n.toSlice()
+		if err != nil {
+			return nil, err
+		}
+		return &List{Elements: list}, nil
+	}
+	return ListFromInt64Slice(ints), nil
+}
+
+func (n *Number) toSlice() ([]Object, error) {
+	var start, end *Number
+
+	if n.IsZero() {
+		return nil, nil
+	}
+ 
+	if !n.IsInteger() {
+		return nil, fmt.Errorf("Expected integer")
+	}
+
+	if n.IsPositive() {
+		start = One
+		end = n
+
+	} else {
+		start = n
+		end = NegOne
+	}
+
+	return numberPairToSlice(start, end), nil
+}
+
+func (n *Number) toInt64Slice() ([]int64, error) {
+	var start, end int64
+	var err error
+
+	start, err = n.ToInt64()
+	if err != nil {
+		return nil, fmt.Errorf("Expected int64")
+	}
+	if start == 0 {
+		return nil, nil
+	}
+	if start < 0 {
+		end = -1
+	} else {
+		end = start
+		start = 1
+	}
+
+	return int64PairToSlice(start, end), nil
+}
+
+func int64PairToSlice(start, end int64) []int64 {
+	var num int64
+
+	num = start
+	if start > end {
+		// descending range
+		numbers := make([]int64, 0, start-end+1)
+		for {
+			numbers = append(numbers, num)
+			num--
+			if num < end {
+				break
+			}
+		}
+		return numbers
+
+	} else {
+		// ascending range
+		numbers := make([]int64, 0, end-start+1)
+		for {
+			numbers = append(numbers, num)
+			num++
+			if num > end {
+				break
+			}
+		}
+		return numbers
+	}	
+}
+
+func numberPairToSlice(start, end *Number) []Object {
+	numbers := []Object{}
+	
+	num := start
+	gt, _ := start.GreaterThan(end)
+	if gt {
+		for {
+			numbers = append(numbers, num)
+			num.Subtract(One)
+			gt, _ = end.GreaterThan(num)
+			if gt {
+				break
+			}
+		}
+
+	} else {
+		for {
+			numbers = append(numbers, num)
+			num.Add(One)
+			gt, _ = num.GreaterThan(end)
+			if gt {
+				break
+			}
+		}
+	}
+
+	return numbers
+}
