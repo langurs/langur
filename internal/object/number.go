@@ -582,13 +582,14 @@ func int64PairToSlice(start, end int64) []int64 {
 
 func numberPairToSlice(start, end *Number) []Object {
 	numbers := []Object{}
-	
+
 	num := start
 	gt, _ := start.GreaterThan(end)
 	if gt {
+		// descending range
 		for {
 			numbers = append(numbers, num)
-			num.Subtract(One)
+			num = num.Subtract(One).(*Number)
 			gt, _ = end.GreaterThan(num)
 			if gt {
 				break
@@ -596,9 +597,10 @@ func numberPairToSlice(start, end *Number) []Object {
 		}
 
 	} else {
+		// ascending range
 		for {
 			numbers = append(numbers, num)
-			num.Add(One)
+			num = num.Add(One).(*Number)
 			gt, _ = num.GreaterThan(end)
 			if gt {
 				break

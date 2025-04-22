@@ -4229,6 +4229,24 @@ func TestForInLoops(t *testing.T) {
 			"10", object.NUMBER_OBJ,
 		},
 
+		// over range with giant numbers
+		{
+			`var sum = 0
+			for x in 9223372036854775809 .. 9223372036854775810 {
+				sum += x
+			}
+			sum`,
+			"18446744073709551619", object.NUMBER_OBJ,
+		},
+		{
+			`var sum = 0
+			for x in 9223372036854775810 .. 9223372036854775809 {
+				sum += x
+			}
+			sum`,
+			"18446744073709551619", object.NUMBER_OBJ,
+		},
+
 		// over number (implicit range)
 		{
 			`var sum = 0
@@ -4316,6 +4334,24 @@ func TestForOfLoops(t *testing.T) {
 		  for i of rng { sum += 10 }
 		  sum`,
 			"0", object.NUMBER_OBJ,
+		},
+
+		// over range with giant numbers
+		{
+			`var sum = 0
+			for x of 9223372036854775809 .. 9223372036854775810 {
+				sum += x
+			}
+			sum`,
+			"3", object.NUMBER_OBJ,
+		},
+		{
+			`var sum = 0
+			for x of 9223372036854775810 .. 9223372036854775809 {
+				sum += x
+			}
+			sum`,
+			"3", object.NUMBER_OBJ,
 		},
 
 		// over number variable (implicit range)

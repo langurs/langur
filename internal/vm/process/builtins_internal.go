@@ -27,6 +27,14 @@ var bi__limit = &object.BuiltIn{
 		case *object.Number:
 			count, ok = object.NumberToInt(over)
 			if !ok {
+				// conversion to int failed; try as number object
+				if over.IsInteger() {
+					if over.IsPositive() {
+						return over
+					} else {
+						return object.Zero
+					}
+				}
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer")
 			}
 
@@ -36,14 +44,26 @@ var bi__limit = &object.BuiltIn{
 		case *object.Range:
 			var start, end int
 			start, ok = object.NumberToInt(over.Start)
+			if ok {
+				end, ok = object.NumberToInt(over.End)
+				if ok {
+					count = end - start + 1
+				}
+			}
 			if !ok {
+				// int failed; try objects for very large numbers
+				startN, ok := over.Start.(*object.Number)
+				if ok {
+					endN, ok := over.End.(*object.Number)
+					if ok {
+						if endN.IsInteger() && startN.IsInteger() {
+							diff := endN.Subtract(startN).(*object.Number)
+							return diff.Abs().(*object.Number).Add(object.One)
+						}
+					}
+				}
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
 			}
-			end, ok = object.NumberToInt(over.End)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
-			}
-			count = end - start + 1
 
 		case *object.String:
 			count = len(over.String())
