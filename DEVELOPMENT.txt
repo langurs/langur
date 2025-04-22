@@ -1,5 +1,5 @@
 # langur development
-2025-04-20
+2025-04-22
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -11,12 +11,12 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
-- compile on AST node instead of having a seperate compile package
+- compile on AST node instead of having a seperate compile package (davis)
     Work was started toward this, but not finished.
-- compile with metadata that can be used in VM to traceback errors to source code
+- compile with metadata that can be used in VM to traceback errors to source code (davis)
     Work was started toward this, but not finished.
 
-- break out decimal library
+- write custom decimal library (davis?)
   make safe for concurrency
   simplify and other changes
 - PEG grammar
@@ -49,8 +49,8 @@ other things to consider...
         presently parses module and compiles declarations in reverse order
 - structures
 - OOP with composition
-    no inheritance - I don't like inheritance in programming.
-    I also don't like "everything is an object."
+    no inheritance - I don't like inheritance in programming (Davis).
+    I also don't like "everything is an object" (Davis).
 - optional explicit typing
 - sets
 - bitwise operations
@@ -58,8 +58,10 @@ other things to consider...
 - pointers
     using strict left-to-right syntax; none of the left/right business you see in C
 - concurrency
-    maybe using go/conc library
+    updated decimal library that is safe for concurrency
     must trap/account for exceptions
-    trap ctrl-C
+    trap ctrl-C at times
+    looks promising: github.com/sourcegraph/conc
 - testing mechanisms
+- scoped modes, not just global modes
 
