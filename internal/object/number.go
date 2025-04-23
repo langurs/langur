@@ -494,10 +494,10 @@ func (n *Number) Reverse() *Number {
 }
 
 func (n *Number) ToList() (*List, error) {
-	ints, err := n.toInt64Slice()
+	ints, err := n.toInt64Slice(1)
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := n.toSlice()
+		list, err := n.toSlice(One)
 		if err != nil {
 			return nil, err
 		}
@@ -506,7 +506,7 @@ func (n *Number) ToList() (*List, error) {
 	return ListFromInt64Slice(ints), nil
 }
 
-func (n *Number) toSlice() ([]Object, error) {
+func (n *Number) toSlice(inc *Number) ([]Object, error) {
 	var start, end *Number
 
 	if n.IsZero() {
@@ -526,10 +526,10 @@ func (n *Number) toSlice() ([]Object, error) {
 		end = NegOne
 	}
 
-	return numberPairToSlice(start, end), nil
+	return numberPairToSlice(start, end, inc), nil
 }
 
-func (n *Number) toInt64Slice() ([]int64, error) {
+func (n *Number) toInt64Slice(inc int64) ([]int64, error) {
 	var start, end int64
 	var err error
 
@@ -547,10 +547,10 @@ func (n *Number) toInt64Slice() ([]int64, error) {
 		start = 1
 	}
 
-	return int64PairToSlice(start, end), nil
+	return int64PairToSlice(start, end, inc), nil
 }
 
-func int64PairToSlice(start, end int64) []int64 {
+func int64PairToSlice(start, end, inc int64) []int64 {
 	var num int64
 
 	num = start
@@ -559,7 +559,7 @@ func int64PairToSlice(start, end int64) []int64 {
 		numbers := make([]int64, 0, start-end+1)
 		for {
 			numbers = append(numbers, num)
-			num--
+			num -= inc
 			if num < end {
 				break
 			}
@@ -571,7 +571,7 @@ func int64PairToSlice(start, end int64) []int64 {
 		numbers := make([]int64, 0, end-start+1)
 		for {
 			numbers = append(numbers, num)
-			num++
+			num += inc
 			if num > end {
 				break
 			}
@@ -580,7 +580,7 @@ func int64PairToSlice(start, end int64) []int64 {
 	}	
 }
 
-func numberPairToSlice(start, end *Number) []Object {
+func numberPairToSlice(start, end, inc *Number) []Object {
 	numbers := []Object{}
 
 	num := start
@@ -589,7 +589,7 @@ func numberPairToSlice(start, end *Number) []Object {
 		// descending range
 		for {
 			numbers = append(numbers, num)
-			num = num.Subtract(One).(*Number)
+			num = num.Subtract(inc).(*Number)
 			gt, _ = end.GreaterThan(num)
 			if gt {
 				break
@@ -600,7 +600,7 @@ func numberPairToSlice(start, end *Number) []Object {
 		// ascending range
 		for {
 			numbers = append(numbers, num)
-			num = num.Add(One).(*Number)
+			num = num.Add(inc).(*Number)
 			gt, _ = num.GreaterThan(end)
 			if gt {
 				break
