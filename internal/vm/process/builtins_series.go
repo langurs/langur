@@ -34,6 +34,7 @@ var bi_series = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument asconly")
 		}
 		forAscendingSeries := ascendingOnly.Value
+		correctIncrementSign := false
 
 		// check increment
 		var inc *object.Number
@@ -42,6 +43,7 @@ var bi_series = &object.BuiltIn{
 		case nil:
 			// no increment specified; default 1
 			inc = object.One
+			correctIncrementSign = true
 
 		case *object.Number:
 			if e.IsZero() {
@@ -60,11 +62,11 @@ var bi_series = &object.BuiltIn{
 			if forAscendingSeries && !arg.IsFlatOrAscending() {
 				return &object.List{}
 			}
-			result, err = arg.ToList(inc)
+			result, err = arg.ToList(inc, correctIncrementSign)
 			
 		case *object.Number:
 			// number as implicit range
-			result, err = arg.ToList(inc)
+			result, err = arg.ToList(inc, correctIncrementSign)
 			
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or number for argument from")

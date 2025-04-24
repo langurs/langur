@@ -5845,16 +5845,18 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`series(4..0, asconly=true, inc=-2)`, []int{}, object.LIST_OBJ},
 
 		{`string(series(1..3, inc=0.5))`, "[1, 1.5, 2.0, 2.5, 3.0]", object.STRING_OBJ},
-		{`string(series(3..1, inc=0.5))`, "[3, 2.5, 2.0, 1.5, 1.0]", object.STRING_OBJ},
+		{`string(series(3..1, inc=-0.5))`, "[3, 2.5, 2.0, 1.5, 1.0]", object.STRING_OBJ},
+
+		{`string(series(3.1..3.5, inc=0.1))`, "[3.1, 3.2, 3.3, 3.4, 3.5]", object.STRING_OBJ},
 
 		// with large numbers (outside int64)
 		{`string(series(9223372036854775808 .. 9223372036854775812, inc=2))`, 
 			"[9223372036854775808, 9223372036854775810, 9223372036854775812]", object.STRING_OBJ},
-		{`string(series(9223372036854775812 .. 9223372036854775808, inc=2))`, 
+		{`string(series(9223372036854775812 .. 9223372036854775808, inc=-2))`, 
 			"[9223372036854775812, 9223372036854775810, 9223372036854775808]", object.STRING_OBJ},
 		{`string(series(-9223372036854775812 .. -9223372036854775808, inc=2))`, 
 			"[-9223372036854775812, -9223372036854775810, -9223372036854775808]", object.STRING_OBJ},
-		{`string(series(-9223372036854775808 .. -9223372036854775812, inc=2))`, 
+		{`string(series(-9223372036854775808 .. -9223372036854775812, inc=-2))`, 
 			"[-9223372036854775808, -9223372036854775810, -9223372036854775812]", object.STRING_OBJ},
 
 		// sort using implied operator function

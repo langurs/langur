@@ -99,15 +99,15 @@ func WithinValueRange(value, start, end Object) (bool, error) {
 	return true, nil
 }
 
-func (r *Range) ToList(inc *Number) (*List, error) {
+func (r *Range) ToList(inc *Number, correctIncrementSign bool) (*List, error) {
 	var ints []int64
 	i, err := inc.ToInt64()
 	if err == nil {
-		ints, err = r.toInt64Slice(i)
+		ints, err = r.toInt64Slice(i, correctIncrementSign)
 	}
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := r.toSlice(inc)
+		list, err := r.toSlice(inc, correctIncrementSign)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +116,7 @@ func (r *Range) ToList(inc *Number) (*List, error) {
 	return ListFromInt64Slice(ints), nil
 }
 
-func (r *Range) toInt64Slice(inc int64) ([]int64, error) {
+func (r *Range) toInt64Slice(inc int64, correctIncrementSign bool) ([]int64, error) {
 	var start, end int64
 	var err error
 
@@ -135,34 +135,27 @@ func (r *Range) toInt64Slice(inc int64) ([]int64, error) {
 		}
 	}
 
-	return int64PairToSlice(start, end, inc), nil
+	return int64PairToSlice(start, end, inc, correctIncrementSign)
 }
 
 // convert to slice using Object types from start
-// presently limited to integers, but not to int64 values
-func (r *Range) toSlice(inc *Number) ([]Object, error) {
+func (r *Range) toSlice(inc *Number, correctIncrementSign bool) ([]Object, error) {
 	var start, end *Number
  
 	switch e := r.Start.(type) {
 	case *Number:
-		if !e.IsInteger() {
-			return nil, fmt.Errorf("Expected integer range")
-		}
 		start = e
 	default:
-		return nil, fmt.Errorf("Expected integer range")
+		return nil, fmt.Errorf("Expected numeric range")
 	}
 	switch e := r.End.(type) {
 	case *Number:
-		if !e.IsInteger() {
-			return nil, fmt.Errorf("Expected integer range")
-		}
 		end = e
 	default:
-		return nil, fmt.Errorf("Expected integer range")
+		return nil, fmt.Errorf("Expected numeric range")
 	}
 
-	return numberPairToSlice(start, end, inc), nil
+	return numberPairToSlice(start, end, inc, correctIncrementSign)
 }
 
 func (right *Range) ToNumber() (*Number, bool) {

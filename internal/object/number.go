@@ -365,7 +365,7 @@ func CodePointsToFlatRuneSlice(cp Object) ([]rune, error) {
 		return rSlc, nil
 
 	case *Range:
-		from, err := arg.ToList(One)
+		from, err := arg.ToList(One, true)
 		if err != nil {
 			return nil, err
 		}
@@ -493,15 +493,15 @@ func (n *Number) Reverse() *Number {
 	return num
 }
 
-func (n *Number) ToList(inc *Number) (*List, error) {
+func (n *Number) ToList(inc *Number, correctIncrementSign bool) (*List, error) {
 	var ints []int64
 	i, err := inc.ToInt64()
 	if err == nil {
-		ints, err = n.toInt64Slice(i)
+		ints, err = n.toInt64Slice(i, correctIncrementSign)
 	}
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := n.toSlice(inc)
+		list, err := n.toSlice(inc, correctIncrementSign)
 		if err != nil {
 			return nil, err
 		}
@@ -510,7 +510,7 @@ func (n *Number) ToList(inc *Number) (*List, error) {
 	return ListFromInt64Slice(ints), nil
 }
 
-func (n *Number) toSlice(inc *Number) ([]Object, error) {
+func (n *Number) toSlice(inc *Number, correctIncrementSign bool) ([]Object, error) {
 	var start, end *Number
 
 	if n.IsZero() {
@@ -530,10 +530,10 @@ func (n *Number) toSlice(inc *Number) ([]Object, error) {
 		end = NegOne
 	}
 
-	return numberPairToSlice(start, end, inc), nil
+	return numberPairToSlice(start, end, inc, correctIncrementSign)
 }
 
-func (n *Number) toInt64Slice(inc int64) ([]int64, error) {
+func (n *Number) toInt64Slice(inc int64, correctIncrementSign bool) ([]int64, error) {
 	var start, end int64
 	var err error
 
@@ -551,37 +551,55 @@ func (n *Number) toInt64Slice(inc int64) ([]int64, error) {
 		start = 1
 	}
 
-	return int64PairToSlice(start, end, inc), nil
+	return int64PairToSlice(start, end, inc, correctIncrementSign)
 }
 
-func int64PairToSlice(start, end, inc int64) []int64 {
+func int64PairToSlice(start, end, inc int64, correctIncrementSign bool) ([]int64, error) {
 	var num int64
+	var numbers []int64
 
-	if inc < 0 {
-		// take absolute value of increment
-		inc = -inc
-		
-	} else if inc == 0 {
+	if inc == 0 {
 		// no increment
-		return []int64{start, end}
+		return []int64{start, end}, nil
+	}
+
+	if start == end {
+		return []int64{start}, nil
 	}
 
 	num = start
 	if start > end {
 		// descending range
-		numbers := make([]int64, 0, start-end+1)
+		if inc > 0 {
+			// increment should be negative
+			if correctIncrementSign {
+				inc = -inc
+			} else {
+				return numbers, fmt.Errorf("Expected ascending range with positive increment, or descending range with negative increment")
+			}
+		}
+		
+		numbers = make([]int64, 0, start-end+1)
 		for {
 			numbers = append(numbers, num)
-			num -= inc
+			num += inc
 			if num < end {
 				break
 			}
 		}
-		return numbers
 
 	} else {
 		// ascending range
-		numbers := make([]int64, 0, end-start+1)
+		if inc < 0 {
+			// increment should be positive
+			if correctIncrementSign {
+				inc = -inc
+			} else {
+				return numbers, fmt.Errorf("Expected ascending range with positive increment, or descending range with negative increment")
+			}
+		}
+
+		numbers = make([]int64, 0, end-start+1)
 		for {
 			numbers = append(numbers, num)
 			num += inc
@@ -589,30 +607,40 @@ func int64PairToSlice(start, end, inc int64) []int64 {
 				break
 			}
 		}
-		return numbers
 	}	
+
+	return numbers, nil
 }
 
-func numberPairToSlice(start, end, inc *Number) []Object {
+func numberPairToSlice(start, end, inc *Number, correctIncrementSign bool) ([]Object, error) {
 	numbers := []Object{}
 
-	gt, _ := Zero.GreaterThan(inc)
-	if gt {
-		// take absolute value of increment
-		inc = inc.Abs().(*Number)
-
-	} else if inc.IsZero() {
+	if inc.IsZero() {
 		// no increment
-		return []Object{start, end}
+		return []Object{start, end}, nil
+	}
+
+	if start.Equal(end) {
+		return []Object{start}, nil
 	}
 
 	num := start
-	gt, _ = start.GreaterThan(end)
+	gt, _ := start.GreaterThan(end)
 	if gt {
 		// descending range
+		gt, _ = inc.GreaterThan(Zero)
+		if gt {
+			// increment should be negative
+			if correctIncrementSign {
+				inc = inc.Negate().(*Number)
+			} else {
+				return numbers, fmt.Errorf("Expected ascending range with positive increment, or descending range with negative increment")
+			}
+		}
+
 		for {
 			numbers = append(numbers, num)
-			num = num.Subtract(inc).(*Number)
+			num = num.Add(inc).(*Number)
 			gt, _ = end.GreaterThan(num)
 			if gt {
 				break
@@ -621,6 +649,16 @@ func numberPairToSlice(start, end, inc *Number) []Object {
 
 	} else {
 		// ascending range
+		gt, _ = Zero.GreaterThan(inc)
+		if gt {
+			// increment should be positive
+			if correctIncrementSign {
+				inc = inc.Negate().(*Number)
+			} else {
+				return numbers, fmt.Errorf("Expected ascending range with positive increment, or descending range with negative increment")
+			}
+		}
+
 		for {
 			numbers = append(numbers, num)
 			num = num.Add(inc).(*Number)
@@ -631,5 +669,5 @@ func numberPairToSlice(start, end, inc *Number) []Object {
 		}
 	}
 
-	return numbers
+	return numbers, nil
 }
