@@ -3,10 +3,9 @@ https://langurlang.org
 
 ... - 0.19.3
 - changed break with assignment to use parameter token
-  break val=7
-  ... instead of ...
-  break = 7
-- made possible to use values for *for in/of loops* from numbers outside values of int64
+  break val=7  ... instead of ...  break = 7
+- updated *for in/of loops* to be able to use numbers outside values of int64
+- updated series() function to use same methods, reducing duplication of effort
 
 
 2025-03-30 - 0.19.2
