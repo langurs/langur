@@ -108,14 +108,14 @@ var bi__values = &object.BuiltIn{
 
 		case *object.Number:
 			// number as implicit ascending range
-			list, err := over.ToList()
+			list, err := over.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return list
 
 		case *object.Range:
-			list, err := over.ToList()
+			list, err := over.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}

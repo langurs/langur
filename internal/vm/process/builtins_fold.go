@@ -54,7 +54,7 @@ var bi_fold = &object.BuiltIn{
 				list = arg
 
 			case *object.Range:
-				from, err := arg.ToList()
+				from, err := arg.ToList(object.One)
 				if err != nil {
 					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 				}
@@ -126,7 +126,7 @@ func foldBetweenLists(
 			length = len(arg.Elements)
 
 		case *object.Range:
-			from, err := arg.ToList()
+			from, err := arg.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -214,7 +214,7 @@ var bi_zip = &object.BuiltIn{
 				length = len(arg.Elements)
 
 			case *object.Range:
-				from, err := arg.ToList()
+				from, err := arg.ToList(object.One)
 				if err != nil {
 					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 				}

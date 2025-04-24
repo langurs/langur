@@ -99,11 +99,15 @@ func WithinValueRange(value, start, end Object) (bool, error) {
 	return true, nil
 }
 
-func (r *Range) ToList() (*List, error) {
-	ints, err := r.toInt64Slice(1)
+func (r *Range) ToList(inc *Number) (*List, error) {
+	var ints []int64
+	i, err := inc.ToInt64()
+	if err == nil {
+		ints, err = r.toInt64Slice(i)
+	}
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := r.toSlice(One)
+		list, err := r.toSlice(inc)
 		if err != nil {
 			return nil, err
 		}

@@ -5844,6 +5844,19 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`series(0..4, asconly=true, inc=2)`, []int{0, 2, 4}, object.LIST_OBJ},
 		{`series(4..0, asconly=true, inc=-2)`, []int{}, object.LIST_OBJ},
 
+		{`string(series(1..3, inc=0.5))`, "[1, 1.5, 2.0, 2.5, 3.0]", object.STRING_OBJ},
+		{`string(series(3..1, inc=0.5))`, "[3, 2.5, 2.0, 1.5, 1.0]", object.STRING_OBJ},
+
+		// with large numbers (outside int64)
+		{`string(series(9223372036854775808 .. 9223372036854775812, inc=2))`, 
+			"[9223372036854775808, 9223372036854775810, 9223372036854775812]", object.STRING_OBJ},
+		{`string(series(9223372036854775812 .. 9223372036854775808, inc=2))`, 
+			"[9223372036854775812, 9223372036854775810, 9223372036854775808]", object.STRING_OBJ},
+		{`string(series(-9223372036854775812 .. -9223372036854775808, inc=2))`, 
+			"[-9223372036854775812, -9223372036854775810, -9223372036854775808]", object.STRING_OBJ},
+		{`string(series(-9223372036854775808 .. -9223372036854775812, inc=2))`, 
+			"[-9223372036854775808, -9223372036854775810, -9223372036854775812]", object.STRING_OBJ},
+
 		// sort using implied operator function
 		{"sort([16, 14, 16, 13, 12, 25, 36, 42, 29, 49], by=fn{<})",
 			[]int{12, 13, 14, 16, 16, 25, 29, 36, 42, 49}, object.LIST_OBJ,

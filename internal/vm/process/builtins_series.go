@@ -24,8 +24,8 @@ var bi_series = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "series"
 
-		var start, end *object.Number
-		var ok bool
+		var err error
+		var result object.Object
 
 		from, increment := args[0], args[1]
 
@@ -35,66 +35,13 @@ var bi_series = &object.BuiltIn{
 		}
 		forAscendingSeries := ascendingOnly.Value
 
-		switch arg := from.(type) {
-		case *object.Range:
-			start, ok = arg.Start.(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for start of range")
-			}
-			end, ok = arg.End.(*object.Number)
-			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for end of range")
-			}
-
-		case *object.Number:
-			// number as implicit range
-			end = arg
-
-			if end.Equal(object.Zero) {
-				// done
-				return &object.List{}
-
-			} else {
-				gt, ok := object.GreaterThan(object.One, end)
-				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Error checking arguments")
-				}
-				if gt {
-					// negative number
-					if forAscendingSeries {
-						// done; "positive" series only
-						return &object.List{}
-					}
-					start = end
-					end = object.NumberFromInt(-1)
-
-				} else {
-					start = object.NumberFromInt(1)
-				}
-			}
-
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or integer for argument from")
-		}
-
-		descending, _ := start.GreaterThan(end)
-
-		if descending && forAscendingSeries {
-			// done; ascending series only
-			return &object.List{}
-		}
-
 		// check increment
 		var inc *object.Number
 
 		switch e := increment.(type) {
 		case nil:
-			// no increment specified; default 1 or -1
-			if descending {
-				inc = object.NegOne
-			} else {
-				inc = object.One
-			}
+			// no increment specified; default 1
+			inc = object.One
 
 		case *object.Number:
 			if e.IsZero() {
@@ -107,47 +54,26 @@ var bi_series = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument inc")
 		}
 
-		// start and end the same
-		if start.Equal(end) {
-			return &object.List{Elements: []object.Object{start}}
-		}
-
-		if descending == inc.IsPositive() {
-			return object.NewError(object.ERR_ARGUMENTS, fnName,
-				"Expected ascending range with positive increment, or descending range with negative increment")
-		}
-
-		elements := []object.Object{}
-
-		num := start
-
-		if descending {
-			for {
-				elements = append(elements, num)
-				n2 := num.Add(inc)
-				if n2 == nil {
-					return object.NewError(object.ERR_MATH, fnName, "Error decrementing series")
-				}
-				num = n2.(*object.Number)
-				if gt, _ := end.GreaterThan(num); gt {
-					break
-				}
+		// check source
+		switch arg := from.(type) {
+		case *object.Range:
+			if forAscendingSeries && !arg.IsFlatOrAscending() {
+				return &object.List{}
 			}
-
-		} else {
-			for {
-				elements = append(elements, num)
-				n2 := num.Add(inc)
-				if n2 == nil {
-					return object.NewError(object.ERR_MATH, fnName, "Error incrementing series")
-				}
-				num = n2.(*object.Number)
-				if gt, _ := num.GreaterThan(end); gt {
-					break
-				}
-			}
+			result, err = arg.ToList(inc)
+			
+		case *object.Number:
+			// number as implicit range
+			result, err = arg.ToList(inc)
+			
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or number for argument from")
 		}
 
-		return &object.List{Elements: elements}
+		if err != nil {
+			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		}
+
+		return result
 	},
 }

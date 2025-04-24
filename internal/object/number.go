@@ -365,7 +365,7 @@ func CodePointsToFlatRuneSlice(cp Object) ([]rune, error) {
 		return rSlc, nil
 
 	case *Range:
-		from, err := arg.ToList()
+		from, err := arg.ToList(One)
 		if err != nil {
 			return nil, err
 		}
@@ -493,11 +493,15 @@ func (n *Number) Reverse() *Number {
 	return num
 }
 
-func (n *Number) ToList() (*List, error) {
-	ints, err := n.toInt64Slice(1)
+func (n *Number) ToList(inc *Number) (*List, error) {
+	var ints []int64
+	i, err := inc.ToInt64()
+	if err == nil {
+		ints, err = n.toInt64Slice(i)
+	}
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := n.toSlice(One)
+		list, err := n.toSlice(inc)
 		if err != nil {
 			return nil, err
 		}
@@ -553,6 +557,15 @@ func (n *Number) toInt64Slice(inc int64) ([]int64, error) {
 func int64PairToSlice(start, end, inc int64) []int64 {
 	var num int64
 
+	if inc < 0 {
+		// take absolute value of increment
+		inc = -inc
+		
+	} else if inc == 0 {
+		// no increment
+		return []int64{start, end}
+	}
+
 	num = start
 	if start > end {
 		// descending range
@@ -583,8 +596,18 @@ func int64PairToSlice(start, end, inc int64) []int64 {
 func numberPairToSlice(start, end, inc *Number) []Object {
 	numbers := []Object{}
 
+	gt, _ := Zero.GreaterThan(inc)
+	if gt {
+		// take absolute value of increment
+		inc = inc.Abs().(*Number)
+
+	} else if inc.IsZero() {
+		// no increment
+		return []Object{start, end}
+	}
+
 	num := start
-	gt, _ := start.GreaterThan(end)
+	gt, _ = start.GreaterThan(end)
 	if gt {
 		// descending range
 		for {

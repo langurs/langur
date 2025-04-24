@@ -141,7 +141,7 @@ var bi_hash = &object.BuiltIn{
 			list1 = arg
 
 		case *object.Range:
-			list1, err = arg.ToList()
+			list1, err = arg.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -181,7 +181,7 @@ var bi_hash = &object.BuiltIn{
 		case *object.List:
 			list2 = arg2
 		case *object.Range:
-			list2, err = arg2.ToList()
+			list2, err = arg2.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}

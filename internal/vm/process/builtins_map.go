@@ -89,7 +89,7 @@ var bi_map = &object.BuiltIn{
 			return mapToList(arg.Elements)
 
 		case *object.Range:
-			from, err := arg.ToList()
+			from, err := arg.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -150,7 +150,7 @@ func mapBetween(
 			if hashes != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
 			}
-			arr, err := o.(*object.Range).ToList()
+			arr, err := o.(*object.Range).ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -293,7 +293,7 @@ func crossMap(
 
 		case *object.Range:
 			// ranges converted to lists
-			arr, err := o.ToList()
+			arr, err := o.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
