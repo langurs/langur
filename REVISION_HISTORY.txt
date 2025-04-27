@@ -1,7 +1,7 @@
 langur revision history
 https://langurlang.org
 
-2025-04-24 - 0.19.3
+2025-04-27 - 0.19.3
 - changed break with assignment to use parameter token
   break val=7  ... instead of ...  break = 7
 - updated *for in/of loops* to be able to use numbers outside values of int64
