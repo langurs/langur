@@ -66,7 +66,7 @@ var bi_series = &object.BuiltIn{
 			
 		case *object.Number:
 			// number as implicit range
-			result, err = arg.ToList(inc, correctIncrementSign)
+			result, err = arg.ToList(inc)
 			
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or number for argument from")

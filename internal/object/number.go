@@ -493,15 +493,15 @@ func (n *Number) Reverse() *Number {
 	return num
 }
 
-func (n *Number) ToList(inc *Number, correctIncrementSign bool) (*List, error) {
+func (n *Number) ToList(inc *Number) (*List, error) {
 	var ints []int64
 	i, err := inc.ToInt64()
 	if err == nil {
-		ints, err = n.toInt64Slice(i, correctIncrementSign)
+		ints, err = n.toInt64Slice(i)
 	}
 	if err != nil {
 		// try using the decimal library for bigger numbers
-		list, err := n.toSlice(inc, correctIncrementSign)
+		list, err := n.toSlice(inc)
 		if err != nil {
 			return nil, err
 		}
@@ -510,7 +510,7 @@ func (n *Number) ToList(inc *Number, correctIncrementSign bool) (*List, error) {
 	return ListFromInt64Slice(ints), nil
 }
 
-func (n *Number) toSlice(inc *Number, correctIncrementSign bool) ([]Object, error) {
+func (n *Number) toSlice(inc *Number) ([]Object, error) {
 	var start, end *Number
 
 	if n.IsZero() {
@@ -529,11 +529,16 @@ func (n *Number) toSlice(inc *Number, correctIncrementSign bool) ([]Object, erro
 		start = n
 		end = NegOne
 	}
+	
+	// reverse direction
+	if inc.IsNegative() {
+		start, end = end, start
+	}
 
-	return numberPairToSlice(start, end, inc, correctIncrementSign)
+	return numberPairToSlice(start, end, inc, true)
 }
 
-func (n *Number) toInt64Slice(inc int64, correctIncrementSign bool) ([]int64, error) {
+func (n *Number) toInt64Slice(inc int64) ([]int64, error) {
 	var start, end int64
 	var err error
 
@@ -551,7 +556,12 @@ func (n *Number) toInt64Slice(inc int64, correctIncrementSign bool) ([]int64, er
 		start = 1
 	}
 
-	return int64PairToSlice(start, end, inc, correctIncrementSign)
+	// reverse direction
+	if inc < 0 {
+		start, end = end, start
+	}
+
+	return int64PairToSlice(start, end, inc, true)
 }
 
 func int64PairToSlice(start, end, inc int64, correctIncrementSign bool) ([]int64, error) {

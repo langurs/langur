@@ -93,8 +93,6 @@ var bi__values = &object.BuiltIn{
 		// for for in loop values
 		const fnName = "for_in"
 
-		var start, end, num int64
-
 		switch over := args[0].(type) {
 		case *object.List, *object.String:
 			return over
@@ -108,7 +106,7 @@ var bi__values = &object.BuiltIn{
 
 		case *object.Number:
 			// number as implicit ascending range
-			list, err := over.ToList(object.One, true)
+			list, err := over.ToList(object.One)
 			if err != nil {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
@@ -124,31 +122,6 @@ var bi__values = &object.BuiltIn{
 		default:
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, integer, integer range, or string")
 		}
-
-		num = start
-		numbers := []object.Object{}
-
-		if start > end {
-			// descending range
-			for {
-				numbers = append(numbers, object.NumberFromInt64(num))
-				num--
-				if num < end {
-					break
-				}
-			}
-
-		} else {
-			for {
-				numbers = append(numbers, object.NumberFromInt64(num))
-				num++
-				if num > end {
-					break
-				}
-			}
-		}
-
-		return &object.List{Elements: numbers}
 	},
 }
 
