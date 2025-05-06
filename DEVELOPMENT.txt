@@ -11,12 +11,12 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
-- compile on AST node instead of having a seperate compile package (davis)
+- compile on AST node instead of having a seperate compile package
     Work was started toward this, but not finished.
-- compile with metadata that can be used in VM to traceback errors to source code (davis)
+- compile with metadata that can be used in VM to traceback errors to source code
     Work was started toward this, but not finished.
 
-- write custom decimal library (davis?)
+- write custom decimal library
   make safe for concurrency
   simplify and other changes
 - PEG grammar
