@@ -2,6 +2,8 @@ langur revision history
 https://langurlang.org
 
 ... - 0.19.4
+- added modifier "frac" to indicate whether to include fractional seconds in "now" datetime literal instead of using a mode
+- removed mode nowIncludesNano
 
 
 2025-04-27 - 0.19.3
