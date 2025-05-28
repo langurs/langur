@@ -12,12 +12,8 @@ type Token struct {
 	Type    Type
 	Literal string
 
-	// Code: so far has 4 uses
-	// 1a. On an operator, this can indicate a database operation (not database op by default).
-	// 1b. ... and combination operator such as += *= etc.
-	// 2. indicates to implicitly escape interpolations
-	// 3. passes object type integer for type token
-	// 4. may indicate an imaginary number
+	// Code: so far has multiple uses
+	// see the token code flags enumeration
 	Code int
 
 	// Code2
@@ -90,7 +86,15 @@ func InTypeSlice(tokType Type, tokTypes []Type) bool {
 }
 
 const (
-	// token code flags 0x01, 0x02, 0x04, 0x08, ...
+	// token code flags enumeration
+	// 1a. On an operator, this can indicate a database operation (not database op by default).
+	// 1b. ... and combination operator such as += *= etc.
+	// 2. indicates to implicitly escape interpolations
+	// 3. passes object type integer for type token
+	// 4. indicate an imaginary number
+	// 5. indicate to include fractional seconds in a "now" datetime literal
+
+	// 0x01, 0x02, 0x04, 0x08, ...
 	CODE_DEFAULT                         = 0
 	CODE_DB_OPERATOR                     = 1 << iota
 	CODE_COMBINATION_ASSIGNMENT_OPERATOR
