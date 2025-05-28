@@ -72,10 +72,10 @@ func (lex *Lexer) readFreeWordList(tok *token.Token) (err error) {
 	return
 }
 
+// re2 regex literal, such as re(some re2 regex using parentheses as quote marks)
+// re: allowing langur escape codes
+// RE: without langur escape codes
 func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
-	// re2 regex literal, such as re(some re2 regex using parentheses as quote marks)
-	// re: allowing langur escape codes
-	// RE: without langur escape codes
 	allowEsc := token.InterpretEscapeSequences(tok.Literal)
 	allowNewLines := true
 
@@ -198,6 +198,55 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 		}
 	}
 
+	if lex.cp != ',' && blockQuoteMarker != "" {
+		lex.queueImpliedSemicolon()
+	}
+
+	return
+}
+
+// date-time literal
+// using same quoting mechanism as strings
+// might include interpolation
+func (lex *Lexer) readDateTimeLiteral(tok *token.Token) (err error) {
+	modifiers, blockQuoteMarker, err2 := lex.readStringModifiers()
+	if err2 != nil {
+		err = err2
+		return
+	}
+	if blockQuoteMarker != "" {
+		err = fmt.Errorf("Cannot use blockquote marker for datetime literal")
+		return
+	}
+
+	includeFractionalSecondsInNowDateTime := false
+
+	for _, mod := range modifiers {
+		switch mod {
+		case "frac":
+			if includeFractionalSecondsInNowDateTime {
+				err = fmt.Errorf(`Unexpected repeat of "frac" modifier`)
+				return
+			}
+			includeFractionalSecondsInNowDateTime = true
+
+		default:
+			err = fmt.Errorf("Invalid datetime modifier: %s", str.ReformatInput(mod))
+			return
+		}
+	}
+
+	tok.Literal, _, tok.Attachments, _, err =
+		lex.readStringLiteral(false, true, false, false, false, false, blockQuoteMarker)
+
+	if includeFractionalSecondsInNowDateTime {
+		tok.Code = token.CODE_FRACTIONAL_SECONDS
+	}
+
+	if err != nil {
+		return
+	}
+	
 	if lex.cp != ',' && blockQuoteMarker != "" {
 		lex.queueImpliedSemicolon()
 	}

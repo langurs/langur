@@ -48,7 +48,7 @@ func (tok Token) Copy() Token {
 		Type:            tok.Type,
 		Literal:         tok.Literal,
 		Code:            tok.Code,
-		Code2: 			tok.Code2,
+		Code2:           tok.Code2,
 		Where:           tok.Where.Copy(),
 		NewLinePrecedes: tok.NewLinePrecedes,
 		CpDiff:          tok.CpDiff,
@@ -92,10 +92,11 @@ func InTypeSlice(tokType Type, tokTypes []Type) bool {
 const (
 	// token code flags 0x01, 0x02, 0x04, 0x08, ...
 	CODE_DEFAULT                         = 0
-	CODE_DB_OPERATOR                     = 0x01
-	CODE_COMBINATION_ASSIGNMENT_OPERATOR = 0x02
-	CODE_ESC_ALL_INTERPOLATION           = 0x04
-	CODE_IMAGINARY_NUMBER = 0x08
+	CODE_DB_OPERATOR                     = 1 << iota
+	CODE_COMBINATION_ASSIGNMENT_OPERATOR
+	CODE_ESC_ALL_INTERPOLATION
+	CODE_IMAGINARY_NUMBER
+	CODE_FRACTIONAL_SECONDS
 )
 
 func New(line, linePosition int) Token {
