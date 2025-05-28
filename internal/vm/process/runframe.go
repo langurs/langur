@@ -425,7 +425,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			code := int(ins[ip+1])
 			ip += 1
 
-			// nowIncludesFractionalSeconds := pr.Modes.NowIncludesNano
 			nowIncludesFractionalSeconds := 0 != code&opcode.OC_Fractional_Seconds
 			
 			obj := pr.pop()

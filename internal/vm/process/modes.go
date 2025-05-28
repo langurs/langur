@@ -57,13 +57,6 @@ func (pr *Process) setMode(code int, setting object.Object) error {
 		}
 		pr.Modes.NewFilePermissions = os.FileMode(i)
 
-	case modes.MODE_NOW_INCLUDES_NANO:
-		b, ok := setting.(*object.Boolean)
-		if !ok {
-			return fmt.Errorf("Expected Boolean for mode now includes nanoseconds")
-		}
-		pr.Modes.NowIncludesNano = b.Value
-
 	default:
 		bug("setMode", fmt.Sprintf("Unknown mode setting %d", code))
 		return fmt.Errorf("Unknown mode setting %d", code)

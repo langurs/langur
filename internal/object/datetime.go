@@ -249,11 +249,11 @@ func StringForNowDateTime(s string, literal bool) bool {
 	return !dtRegexTZ.MatchString(s)
 }
 
-func NewDateTimeFromLiteralString(s string, nowIncludesNano bool) (dt *DateTime, err error) {
-	return NewDateTimeFromString(s, nowIncludesNano, true)
+func NewDateTimeFromLiteralString(s string, nowIncludesFractionalSeconds bool) (dt *DateTime, err error) {
+	return NewDateTimeFromString(s, nowIncludesFractionalSeconds, true)
 }
 
-func NewDateTimeFromString(s string, nowIncludesNano, literal bool) (dt *DateTime, err error) {
+func NewDateTimeFromString(s string, nowIncludesFractionalSeconds, literal bool) (dt *DateTime, err error) {
 	var loc *time.Location
 
 	dt = &DateTime{}
@@ -263,7 +263,7 @@ func NewDateTimeFromString(s string, nowIncludesNano, literal bool) (dt *DateTim
 		// one case for "now" but not the only one
 		dt.Time = time.Now().In(loc)
 
-		if !nowIncludesNano {
+		if !nowIncludesFractionalSeconds {
 			// set nanoseconds to 0
 			dt.Time = dt.Time.Truncate(time.Second)
 		}
@@ -297,7 +297,7 @@ func NewDateTimeFromString(s string, nowIncludesNano, literal bool) (dt *DateTim
 		}
 		dt.Time = time.Now().In(time.FixedZone("", offset))
 
-		if !nowIncludesNano {
+		if !nowIncludesFractionalSeconds {
 			// set nanoseconds to 0
 			dt.Time = dt.Time.Truncate(time.Second)
 		}

@@ -18,7 +18,6 @@ const (
 	MODE_NEW_FILE_PERMISSIONS
 	MODE_CONSOLE_TEXT_MODE
 	MODE_ROUNDING
-	MODE_NOW_INCLUDES_NANO
 )
 
 var ModeNames = map[string]ModeNumber{
@@ -26,21 +25,18 @@ var ModeNames = map[string]ModeNumber{
 	"consoleText":     MODE_CONSOLE_TEXT_MODE,
 	"newFilePerm":     MODE_NEW_FILE_PERMISSIONS,
 	"rounding":        MODE_ROUNDING,
-	"nowIncludesNano": MODE_NOW_INCLUDES_NANO,
 }
 
 const Default_DivisionMaxScale = 33
 const Default_ConsoleTextMode = false
 const Default_NewFilePerm os.FileMode = 0664 // in langur, 8x664
 const Default_Rounding = RoundHalfAwayFromZero
-const Default_NowIncludesNano = false
 
 var DefaultSubLexString = map[ModeNumber]string{
 	MODE_DIVISION_MAX_SCALE:   "33",
 	MODE_CONSOLE_TEXT_MODE:    "false",
 	MODE_NEW_FILE_PERMISSIONS: "8x664",
 	MODE_ROUNDING:             RoundHashName + "'" + RoundHashModeNames[Default_Rounding],
-	MODE_NOW_INCLUDES_NANO:    "false",
 }
 
 // modes not settable from source code so far
@@ -54,7 +50,6 @@ type VmModes struct {
 	ConsoleTextMode          bool
 	DivisionMaxScale         int
 	Rounding                 RoundingMode
-	NowIncludesNano          bool
 }
 
 func NewVmModes() *VmModes {
@@ -64,7 +59,6 @@ func NewVmModes() *VmModes {
 		ConsoleTextMode:          Default_ConsoleTextMode,
 		DivisionMaxScale:         Default_DivisionMaxScale,
 		Rounding:                 Default_Rounding,
-		NowIncludesNano:          Default_NowIncludesNano,
 	}
 }
 
@@ -75,6 +69,5 @@ func (m *VmModes) Copy() *VmModes {
 		ConsoleTextMode:          m.ConsoleTextMode,
 		DivisionMaxScale:         m.DivisionMaxScale,
 		Rounding:                 m.Rounding,
-		NowIncludesNano:          m.NowIncludesNano,
 	}
 }
