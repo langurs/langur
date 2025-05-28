@@ -56,7 +56,7 @@ func (tok Token) Copy() Token {
 		newTok.Attachments = make([]interface{}, len(tok.Attachments))
 		copy(newTok.Attachments, tok.Attachments)
 	}
-indicates to implicitly escape interpolations
+
 	if len(tok.Errs) > 0 {
 		newTok.Errs = make([]tokenErr, len(tok.Errs))
 		copy(newTok.Errs, tok.Errs)
