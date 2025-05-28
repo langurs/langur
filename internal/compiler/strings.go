@@ -31,11 +31,13 @@ func (c *Compiler) compileDateTimeNode(node *ast.DateTimeNode) (ins opcode.Instr
 	}
 
 	// built at run-time (either contains interpolations or is a "now" date-time)
+	code, _, _ := opcode.TokenCodeToOcCode(node.Token.Code)
+
 	ins, err = c.compileString(patternNode, regex.NONE)
 	if err != nil {
 		return
 	}
-	ins = append(ins, opcode.Make(opcode.OpDateTime)...)
+	ins = append(ins, opcode.Make(opcode.OpDateTime, code)...)
 
 	return
 }

@@ -20,9 +20,10 @@ var OP_JUMP_LEN = len(Make(OpJump, 0))
 var OP_JUMP_RELAY_LEN = len(Make(OpJumpRelay, 0, 0))
 
 const (
-	// 8 bit flags (0x01, 0x02, 0x04, 0x08, ...)
+	// up to 8 bit flags (0x01, 0x02, 0x04, 0x08, ...)
 	OC_Database_Op = 1 << iota
 	OC_Combination_Op
+	OC_Fractional_Seconds
 )
 
 const (
@@ -218,7 +219,7 @@ var definitions = map[OpCode]*Definition{
 	OpAppend:   {Name: "Append", OperandWidths: []int{1}},
 	OpString:   {Name: "String", OperandWidths: []int{2}},
 	OpRegex:    {Name: "Regex", OperandWidths: []int{1}},
-	OpDateTime: {Name: "DateTime"},
+	OpDateTime: {Name: "DateTime", OperandWidths: []int{OperandWidth_Code}},
 	OpDuration: {Name: "Duration"},
 	OpFormat:   {Name: "Format", OperandWidths: []int{1}},
 
@@ -364,6 +365,9 @@ func TokenCodeToOcCode(code int) (c int, isDataBaseOp, isComboOp bool) {
 	if 0 != code&token.CODE_COMBINATION_ASSIGNMENT_OPERATOR {
 		c |= OC_Combination_Op
 		isComboOp = true
+	}
+	if 0 != code&token.CODE_FRACTIONAL_SECONDS {
+		c |= OC_Fractional_Seconds
 	}
 	return
 }

@@ -422,10 +422,16 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 
 		case opcode.OpDateTime:
+			code := int(ins[ip+1])
+			ip += 1
+
+			// nowIncludesFractionalSeconds := pr.Modes.NowIncludesNano
+			nowIncludesFractionalSeconds := 0 != code&opcode.OC_Fractional_Seconds
+			
 			obj := pr.pop()
 			strObj, ok := obj.(*object.String)
 			if ok {
-				result, err = object.NewDateTimeFromLiteralString(strObj.String(), pr.Modes.NowIncludesNano)
+				result, err = object.NewDateTimeFromLiteralString(strObj.String(), nowIncludesFractionalSeconds)
 				if err == nil {
 					err = pr.push(result)
 				}
