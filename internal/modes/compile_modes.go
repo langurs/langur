@@ -15,11 +15,11 @@ type CompileModes struct {
 	Help                                  bool
 }
 
-const Default_WarnOnIntegerLiteralsStartingWithZero = true
-const Default_WarnOnSurrogateCodes = true
-
 // Integer literals starting with 0 might be confused for base 8 numbers.
 // Base 8 literals in langur start with 8x, such as 8x123, not 0123.
+const Default_WarnOnIntegerLiteralsStartingWithZero = true
+
+const Default_WarnOnSurrogateCodes = true
 
 func NewCompileModes() *CompileModes {
 	return &CompileModes{

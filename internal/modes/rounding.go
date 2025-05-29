@@ -29,7 +29,12 @@ func LangurRoundingModeToDecimalRoundingMode(mode RoundingMode) decimal.Rounding
 	case RoundHalfEven:
 		return decimal.RoundingMode_Bank
 	default:
-		// assuming function will be used properly; not returning error
-		panic("Unknown langur rounding mode")
+		bug("LangurRoundingModeToDecimalRoundingMode", "Unknown langur rounding mode")
+		// uneccesary code here to satisfy the Go compiler...
+		return decimal.RoundingMode_Default
 	}
+}
+
+func bug(fnName, s string) {
+	panic("Mode bug: " + s)
 }
