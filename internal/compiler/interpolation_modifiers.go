@@ -55,7 +55,13 @@ var modifierRegexForFixed = regexp.MustCompile(`(?x)
 var modifierRegexForScientificNotation = regexp.MustCompile(`(?x)
 	^
 	(?P<sign>[+])?
-	(?:1(?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
+	(?:
+		# scientific notation without explicitly being engineering notation
+		(?P<first>1)(?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?
+		|
+		# engineering notation; parts after "3" optional; eng. notation not the default
+		(?P<first>3)((?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
+	)?
 	(?P<uc>[eE])
 	(?P<expsign>[+])?
 	(?P<scaleExp>\d+)?
@@ -444,7 +450,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		scale, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = c.makeErr(node, fmt.Sprintf("Error processing scale for e-notation interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing scale for scientific interpolation modifier: %s", err))
 		return
 	}
 
@@ -462,7 +468,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		scaleExp, err = object.NumberFromString(mm)
 	}
 	if err != nil {
-		err = c.makeErr(node, fmt.Sprintf("Error processing exponent scale for e-notation interpolation modifier: %s", err))
+		err = c.makeErr(node, fmt.Sprintf("Error processing exponent scale for scientific interpolation modifier: %s", err))
 		return
 	}
 
@@ -472,6 +478,15 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		ins = append(ins, opcode.Make(opcode.OpTrue)...)
 	} else {
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
+	}
+
+	// first digit; 3 indicating engineering notation
+	// 1 or nothing for standard scientific notation
+	first := subMatchByName("first", m, names)
+	switch first {
+	case "3":
+		err = c.makeErr(node, "Engineering notation not set up yet")
+		return
 	}
 
 	// decimal point
