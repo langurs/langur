@@ -1,5 +1,5 @@
 # langur development
-2025-05-06
+2025-05-30
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -11,12 +11,6 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
-- for "now" datetime, change from using mode nowIncludesNano to indicate to include fractions of seconds to using a modifier, such as "frac"
-  mode nowIncludesNano = true
-  dt//
-  ... to ...
-  dt:frac//
-
 - compile on AST node instead of having a seperate compile package
     Work was started toward this, but not finished.
 - compile with metadata that can be used in VM to traceback errors to source code
