@@ -60,7 +60,7 @@ var modifierRegexForScientificNotation = regexp.MustCompile(`(?x)
 		(?P<first>1)(?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?
 		|
 		# engineering notation; parts after "3" optional; eng. notation not the default
-		(?P<first>3)((?P<point>[.,])(?P<scale>\d+)(?P<trailingZeroes>[!\-])?)?
+		(?P<first>3)((?P<point>[.,])?(?P<trailingZeroes>[!\-])?)?
 	)?
 	(?P<uc>[eE])
 	(?P<expsign>[+])?
@@ -525,7 +525,9 @@ func (c *Compiler) compileModifierInsForScientificNotation(node ast.Node, m []st
 		ins = append(ins, opcode.Make(opcode.OpFalse)...)
 	}
 
+	// exponent scale
 	ins = append(ins, c.constantIns(scaleExp)...)
+	
 	ins = append(ins, opcode.Make(opcode.OpFormat, format.FORMAT_SCIENTIFIC_NOTATION)...)
 
 	return
