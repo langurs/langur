@@ -719,9 +719,9 @@ func (f *FunctionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	var body opcode.InsPackage
 
 	switch sig.Name {
-	case "_main":
+	case common.MainFnName:
 		if len(f.PositionalParameters) != 0 || len(f.ByNameParameters) != 0 {
-			err = c.makeErr(f, "Function _main() cannot have parameters")
+			err = c.makeErr(f, fmt.Sprintf("Function %s() cannot have parameters", common.MainFnName))
 			return
 		}
 

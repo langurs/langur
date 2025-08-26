@@ -4,6 +4,7 @@ package ast
 
 import (
 	"fmt"
+	"langur/common"
 	"langur/opcode"
 	"langur/str"
 )
@@ -196,7 +197,7 @@ func (c *Compiler) fixModuleDeclarations(declarations []*LineDeclarationNode) (
 				id, ok := a.Identifiers[0].(*IdentNode)
 				if ok {
 					switch id.Name {
-					case "_main":
+					case common.MainFnName:
 						// set to system to make it work
 						declarations[i].Assignment.(*AssignmentNode).Identifiers[0].(*IdentNode).System = true
 

@@ -262,7 +262,7 @@ func repl(source string, opts *InteractiveOptions) {
 	if opts.printCompiledInstructions || opts.printCompiledConstants ||
 		opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 
-		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes)
+		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, firstRun)
 		if err != nil {
 			io.WriteString(out, fmt.Sprintf("Compile Error: %s", err.Error()))
 		}

@@ -3,6 +3,7 @@
 package ast
 
 import (
+	"langur/common"
 	"langur/object"
 	"langur/token"
 	"langur/opcode"
@@ -14,7 +15,7 @@ func bug(fnName, s string) {
 
 var NoValue = &NullNode{}
 
-var ExecuteMain = &CallNode{Function: &IdentNode{Name: "_main", System: true}}
+var ExecuteMain = &CallNode{Function: &IdentNode{Name: common.MainFnName, System: true}}
 
 // NOTE: For error reporting, we attach tokens to the nodes (besides operators).
 // Besides the literal, tokens contain line numbers, etc.

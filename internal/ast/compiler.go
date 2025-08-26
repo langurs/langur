@@ -76,10 +76,10 @@ func NewCompiler(m *modes.CompileModes, doAllBindings bool) (compiler *Compiler,
 }
 
 func NewCompilerWithState(
-	s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes) (
+	s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes, doAllBindings bool) (
 	compiler *Compiler, err error) {
 
-	compiler, err = NewCompiler(m, false)
+	compiler, err = NewCompiler(m, doAllBindings)
 	compiler.symbolTable = s
 	compiler.constants = constants
 	return

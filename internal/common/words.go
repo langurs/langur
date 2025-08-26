@@ -57,4 +57,6 @@ const (
 	IsNotLiteral = "is not"
 	NotInLiteral = "not in"
 	NotOfLiteral = "not of"
+	
+	MainFnName = "_main"
 )
