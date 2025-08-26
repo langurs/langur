@@ -1226,13 +1226,16 @@ func (n *ForNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	body.Instructions = c.fixJumps(body.Instructions, false, opcode.OC_PlaceHolder_Next, &c.nextStmtCount, len(body.Instructions), 0, 0)
 	body.Instructions = c.fixJumps(body.Instructions, false, opcode.OC_PlaceHolder_Break, &c.breakStmtCount, len(body.Instructions)+len(increment.Instructions)+opcode.OP_JUMP_LEN, 0, 0)
 
+	jumptok := token.Token{}
 	if len(test.Instructions) > 0 {
 		test = test.Append(
 			opcode.MakePkg(n.Test.TokenInfo(), opcode.OpJumpIfNotTruthy,
 				len(body.Instructions)+len(increment.Instructions)+opcode.OP_JUMP_LEN))
+				
+		jumptok = n.Test.TokenInfo()
 	}
 	// after increment, jump back to start of test section (or body if there is no test)
-	jumpback := opcode.MakePkg(n.Test.TokenInfo(), opcode.OpJumpBack, len(test.Instructions)+len(body.Instructions)+len(increment.Instructions))
+	jumpback := opcode.MakePkg(jumptok, opcode.OpJumpBack, len(test.Instructions)+len(body.Instructions)+len(increment.Instructions))
 
 	pkg = pkg.Append(init).Append(test).Append(body).Append(increment).Append(jumpback)
 

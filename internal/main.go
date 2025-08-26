@@ -30,7 +30,7 @@ func main() {
 
 	// NOTE: printStackTrace should generally be false; might be abused otherwise?
 	printStackTrace := false
-
+	
 	defer func() {
 		if p := recover(); p != nil {
 			if printErrors {

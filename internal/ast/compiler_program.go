@@ -49,6 +49,10 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 			}
 			pkg = pkg.Append(bSlc)
 
+		case nil:
+			err = c.makeErr(node, "Unexpected nil node")
+			return
+
 		default:
 			// not a module or import node
 			importsDone = true
@@ -115,6 +119,10 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 
 			declarations = append(declarations, flatten...)
 
+		case nil:
+			err = c.makeErr(node, "Unexpected nil node")
+			return
+
 		default:
 			err = c.makeErr(node, fmt.Sprintf("Expected imports/modes/declarations, not %T", node))
 			return
@@ -178,7 +186,7 @@ func (c *Compiler) fixModuleDeclarations(declarations []*LineDeclarationNode) (
 			// disallow module var declarations for now
 			// Within a function, the variables would be closures.
 			// Since we can't mutate them anyway, allowing mutable declarations is confusing.
-			return nil, c.makeErr(declarations[i], "Cannot use var declarations in module context")
+			return nil, c.makeErr(declarations[i], "Cannot use var declarations in module context in this implementation/version")
 		}
 
 		// fix function declarations that won't pass as system functions

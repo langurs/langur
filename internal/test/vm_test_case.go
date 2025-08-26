@@ -33,13 +33,10 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 
 	program := parse(t, input)
 
-	// comp, err := compiler.New(nil)
-	
 	comp, err := ast.NewCompiler(nil, false)
 	if err != nil {
 		t.Fatalf("Test %d: (%q) compiler error on New: %s", testno, input, err)
 	}
-	// err = comp.Compile(program, false)
 	
 	_, err = program.Compile(comp)
 	if err != nil {
@@ -66,7 +63,6 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 
 	return machine.LastValue()
 }
-
 
 func testExpectedObject(
 	t *testing.T,
