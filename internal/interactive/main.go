@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"langur/ast"
 	"langur/bytecode"
-	"langur/compiler"
 	"langur/lexer"
 	"langur/modes"
 	"langur/object"
@@ -190,7 +189,7 @@ func repl(source string, opts *InteractiveOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
 	var program *ast.Program
-	var comp *compiler.Compiler
+	var comp *ast.Compiler
 	var byteCode *bytecode.ByteCode
 	var machine *vm.VM
 	var err error
@@ -263,15 +262,15 @@ func repl(source string, opts *InteractiveOptions) {
 	if opts.printCompiledInstructions || opts.printCompiledConstants ||
 		opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 
-		comp, err = compiler.NewWithState(symbolTable, constants, compileModes)
+		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes)
 		if err != nil {
 			io.WriteString(out, fmt.Sprintf("Compile Error: %s", err.Error()))
 		}
 
 		if firstRun {
-			err = comp.Compile(program, true)
+			_, err = program.Compile(comp)
 		} else {
-			err = comp.CompileAnother(program)
+			_, err = program.CompileAnother(comp)
 		}
 		if err != nil {
 			fmt.Fprintf(out, "Compile Errors\n%s\n", err)

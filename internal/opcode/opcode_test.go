@@ -3,6 +3,7 @@
 package opcode
 
 import (
+	"langur/token"
 	"testing"
 )
 
@@ -33,6 +34,61 @@ func TestMake(t *testing.T) {
 				t.Errorf("Wrong byte at pos %d, expected=%d, received=%d",
 					i, b, instruction[i])
 			}
+		}
+	}
+}
+
+// TODO: test with trace information
+func TestMakePkg(t *testing.T) {
+	tests := []struct {
+		op        OpCode
+		operands  []int
+		expected InsPackage
+	}{
+		{OpConstant, []int{65534}, InsPackage{Instructions: []byte{byte(OpConstant), 255, 254}}},
+		{OpAdd, []int{}, InsPackage{Instructions: []byte{byte(OpAdd)}}},
+		{OpFunction, []int{65534, 255, 4}, InsPackage{Instructions: []byte{byte(OpFunction), 255, 254, 255, 4}}},
+	}
+
+	tok := token.Token{}
+
+	for _, tt := range tests {
+		pkg, err := MakePkgWithErrTest(tok, tt.op, tt.operands...)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+
+		if len(pkg.Instructions) != len(tt.expected.Instructions) {
+			t.Fatalf("Instruction has wrong length, expected=%d, received=%d",
+				len(tt.expected.Instructions), len(pkg.Instructions))
+		}
+
+		for i, b := range tt.expected.Instructions {
+			if pkg.Instructions[i] != tt.expected.Instructions[i] {
+				t.Errorf("Wrong byte at pos %d, expected=%d, received=%d",
+					i, b, pkg.Instructions[i])
+			}
+		}
+	}
+}
+
+// TODO: test with trace information
+func TestAppendPkg(t *testing.T) {
+	pkg1 := InsPackage{Instructions: []byte{byte(OpConstant), 255, 254}}
+	pkg2 := InsPackage{Instructions: []byte{byte(OpConstant), 250, 250, byte(OpAdd)}}
+	expect := InsPackage{Instructions: []byte{byte(OpConstant), 255, 254, byte(OpConstant), 250, 250, byte(OpAdd)}}
+
+	pkg3 := pkg1.Append(pkg2)
+
+	if len(pkg3.Instructions) != len(expect.Instructions) {
+		t.Fatalf("Instruction has wrong length, expected=%d, received=%d",
+			len(expect.Instructions), len(pkg3.Instructions))
+	}
+
+	for i, b := range expect.Instructions {
+		if pkg3.Instructions[i] != expect.Instructions[i] {
+			t.Errorf("Wrong byte at pos %d, expected=%d, received=%d",
+				i, b, pkg3.Instructions[i])
 		}
 	}
 }

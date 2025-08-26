@@ -12,7 +12,6 @@ import (
 	"langur/args"
 	"langur/ast"
 	"langur/bytecode"
-	"langur/compiler"
 	"langur/interactive"
 	"langur/lexer"
 	"langur/modes"
@@ -124,13 +123,13 @@ func main() {
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
 	}
 
-	comp, err := compiler.New(compile_modes)
+	comp, err := ast.NewCompiler(compile_modes, true)
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Printf("compilation error: %s", err.Error())
 	}
 
-	err = comp.Compile(program, false)
+	_, err = program.Compile(comp)
 	if err != nil {
 		if printErrors {
 			fmt.Print("langur: ")

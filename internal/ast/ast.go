@@ -5,6 +5,7 @@ package ast
 import (
 	"langur/object"
 	"langur/token"
+	"langur/opcode"
 )
 
 func bug(fnName, s string) {
@@ -20,7 +21,7 @@ var ExecuteMain = &CallNode{Function: &IdentNode{Name: "_main", System: true}}
 type Node interface {
 	Copy() Node
 	Evaluate() object.Object
-	// Compile(*Compiler) (opcode.InsPackage, error)
+	Compile(*Compiler) (opcode.InsPackage, error)
 	String() string
 	TokenRepresentation() string
 	TokenInfo() token.Token

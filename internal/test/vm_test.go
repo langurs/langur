@@ -3,8 +3,8 @@
 package test
 
 import (
+	"langur/ast"
 	"langur/common"
-	"langur/compiler"
 	"langur/object"
 	"langur/system"
 	"langur/vm"
@@ -4959,11 +4959,12 @@ func TestIntRangeExpressions(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(nil)
+		comp, err := ast.NewCompiler(nil, false)
 		if err != nil {
 			t.Fatalf("(%q) compiler error on New: %s", tt.input, err)
 		}
-		err = comp.Compile(program, false)
+
+		_, err = program.Compile(comp)
 		if err != nil {
 			t.Fatalf("(%q) compiler error: %s", tt.input, err)
 		}
@@ -5511,11 +5512,12 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := compiler.New(nil)
+		comp, err := ast.NewCompiler(nil, false)
 		if err != nil {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}
-		err = comp.Compile(program, false)
+
+		_, err = program.Compile(comp)
 		if err != nil {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}

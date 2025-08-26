@@ -27,9 +27,6 @@ type Token struct {
 
 	// for error reporting
 	Where trace.Where
-	// DEPRECATED
-	// Line         int
-	// LinePosition int
 
 	NewLinePrecedes              bool
 	CpDiff                       int  // number of code points from previous token

@@ -9,7 +9,11 @@ import (
 	"langur/object"
 	"langur/regex"
 	"langur/str"
+	"langur/symbol"
 	"langur/token"
+	"langur/modes"
+	"langur/opcode"
+	"langur/vm/process"
 	"strings"
 )
 
@@ -30,8 +34,48 @@ func (p *Program) Evaluate() object.Object {
 	return nil
 }
 
-// func (p *Program) Compile() Node {
-// }
+func (node *Program) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			err = object.PanicToError(p)
+		}
+	}()
+
+	var temp opcode.InsPackage
+
+	temp, err = c.generateBindings(early, c.lateIDs, node.VarNamesUsed, c.doAllBindings)
+	if err != nil {
+		return
+	}
+	c.InsPackage = c.InsPackage.Append(temp)
+
+	temp, err = c.compileProgram(node, true)
+	c.InsPackage = c.InsPackage.Append(temp)
+
+	if err == nil {
+		err = c.checkStatementCounts()
+	}
+
+	return
+}
+
+// helps with the REPL not to try to set early/late bindings every time
+// also for running compiler tests, so we don't get extra opcodes
+func (node *Program) CompileAnother(c *Compiler) (pkg opcode.InsPackage, err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			err = object.PanicToError(p)
+		}
+	}()
+
+	c.InsPackage, err = c.compileProgram(node, true)
+
+	if err == nil {
+		err = c.checkStatementCounts()
+	}
+
+	return	
+}
 
 func (p *Program) String() string {
 	var out bytes.Buffer
@@ -75,6 +119,10 @@ func (m *ModuleNode) Copy() Node {
 
 func (m *ModuleNode) Evaluate() object.Object {
 	return nil
+}
+
+func (m *ModuleNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ModuleNode")
 }
 
 func (m *ModuleNode) TokenRepresentation() string {
@@ -148,6 +196,10 @@ func (i *ImportNode) Evaluate() object.Object {
 	return nil
 }
 
+func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ImportNode")
+}
+
 func (i *ImportNode) TokenRepresentation() string {
 	var out bytes.Buffer
 	out.WriteString("import ")
@@ -218,6 +270,19 @@ func (r *ReturnNode) Evaluate() object.Object {
 	return nil
 }
 
+func (r *ReturnNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if c.functionLevel == 0 {
+		err = c.makeErr(r, "Cannot use return outside of function")
+		return
+	}
+	pkg, err = r.ReturnValue.Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(opcode.MakePkg(r.Token, opcode.OpReturnValue))
+	return	
+}
+
 func (r *ReturnNode) TokenRepresentation() string {
 	return "return " + tokenRepOrNil(r.ReturnValue)
 }
@@ -257,6 +322,10 @@ func (d *LineDeclarationNode) Copy() Node {
 
 func (d *LineDeclarationNode) Evaluate() object.Object {
 	return nil
+}
+
+func (d *LineDeclarationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	return c.compileDeclarationAndAssignments(d)
 }
 
 func (d *LineDeclarationNode) TokenRepresentation() string {
@@ -309,6 +378,10 @@ func (a *AssignmentNode) Copy() Node {
 
 func (a *AssignmentNode) Evaluate() object.Object {
 	return nil
+}
+
+func (a *AssignmentNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	return c.compileAssignment(a)
 }
 
 func (a *AssignmentNode) TokenRepresentation() string {
@@ -401,6 +474,10 @@ func (es *ExpressionStatementNode) Evaluate() object.Object {
 	return es.Evaluate()
 }
 
+func (es *ExpressionStatementNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	return es.Expression.Compile(c)
+}
+
 func (es *ExpressionStatementNode) TokenRepresentation() string {
 	return tokenRepOrNil(es.Expression)
 }
@@ -442,6 +519,92 @@ func (fc *CallNode) Copy() Node {
 
 func (fc *CallNode) Evaluate() object.Object {
 	return nil
+}
+
+func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	hasExpansion := false
+
+	// Compiling the function first ...
+	// ... but we add it to the instructions after the arguments.
+	var fn opcode.InsPackage
+	fn, err = fc.Function.Compile(c)
+	if err != nil {
+		return
+	}
+
+	var bslc opcode.InsPackage
+
+	for _, arg := range fc.PositionalArgs {
+		if hasExpansion {
+			// already set hasExpansion and have another positional argument
+			err = c.makeErr(arg, fmt.Sprintf("Argument expansion only possible on last positional argument"))
+			return
+		}
+
+		switch post := arg.(type) {
+		case *PostfixExpressionNode:
+			if post.Operator.Type == token.EXPANSION {
+				arg = post.Left
+				hasExpansion = true
+			}
+		}
+
+		bslc, err = arg.Compile(c)
+		if err != nil {
+			return
+		}
+
+		pkg = pkg.Append(bslc)
+	}
+
+	var externalNames []string
+
+	for _, arg := range fc.ByNameArgs {
+		externalName := ""
+
+		if assign, ok := arg.(*AssignmentNode); ok {
+			externalName = assign.Identifiers[0].TokenRepresentation()
+			name := &StringNode{
+				Token: assign.Token, Values: []string{externalName}}
+			bslc, err = name.Compile(c)
+			if err != nil {
+				return
+			}
+
+			// compiling to name/value object (internally used for argument by name)
+			var value opcode.InsPackage
+			value, err = assign.Values[0].Compile(c)
+			if err != nil {
+				return
+			}
+			pkg = pkg.Append(bslc.Append(value).Append(opcode.MakePkg(assign.Token, opcode.OpNameValue)))
+
+			// check for duplicate external (argument) names
+			if externalName != "" {
+				if str.IsInSlice(externalName, externalNames) {
+					err = c.makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))
+					return
+				}
+				externalNames = append(externalNames, externalName)
+			}
+
+		} else {
+			// not an assignment node
+			err = c.makeErr(arg, fmt.Sprintf("Expected assignment node for argument by name (%s)", str.ReformatInput(externalName)))
+			return
+		}
+	}
+
+	// NOTE: putting function to call onto stack after arguments and will be popped first
+	pkg = pkg.Append(fn)
+
+	op := opcode.OpCall
+	if hasExpansion {
+		op = opcode.OpCallWithExpansion
+	}
+	pkg = pkg.Append(opcode.MakePkg(fc.Token, op, len(fc.PositionalArgs), len(fc.ByNameArgs)))
+
+	return
 }
 
 func (fc *CallNode) TokenRepresentation() string {
@@ -528,6 +691,109 @@ func (f *FunctionNode) Copy() Node {
 
 func (f *FunctionNode) Evaluate() object.Object {
 	return nil
+}
+
+func (f *FunctionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if f.ReturnType != nil {
+		err = c.makeErr(f, "This revision of langur not able to compile explicit return type")
+		return
+	}
+
+	c.pushVariableScope() // pop scope in deferred function below
+	c.symbolTable.IsFunction = true
+	c.functionLevel++
+
+	sig := &object.Signature{Name: f.Name}
+
+	sig.ImpureEffects = f.ImpureEffects // self-declared impure; to be tested later...
+	defer func() {
+		c.popVariableScope()
+		c.functionLevel--
+
+		// Impurity is transitive.
+		if sig.ImpureEffects {
+			c.addToImpureEffectsList(f.Name)
+		}
+	}()
+
+	var body opcode.InsPackage
+
+	switch sig.Name {
+	case "_main":
+		if len(f.PositionalParameters) != 0 || len(f.ByNameParameters) != 0 {
+			err = c.makeErr(f, "Function _main() cannot have parameters")
+			return
+		}
+
+	case "":
+		// no name ... no defining self
+
+	default:
+		c.symbolTable.DefineSelf(sig.Name)
+	}
+
+	// compile parameters before function body so that each is added to the symbol table
+	var defaultInsTotal opcode.InsPackage
+	var defaultCount int
+	defaultInsTotal, defaultCount, err = c.compileFunctionNodeParameters(f, sig)
+	if err != nil {
+		return
+	}
+
+	if f.Body != nil {
+		body, err = f.Body.Compile(c)
+		if err != nil {
+			return
+		}
+	}
+
+	if len(body.Instructions) == 0 {
+		// no body; return no value
+		
+		body = c.noValueIns.Append(opcode.MakePkg(f.Token, opcode.OpReturnValue))
+
+	} else if !EndsWithDefiniteJump(f.Body.(*BlockNode).Statements) {
+		// append return if doesn't already end with return
+		body = body.Append(opcode.MakePkg(f.Token, opcode.OpReturnValue))
+	}
+
+	freeSymbols := c.symbolTable.FreeSymbols
+	localsCount := c.symbolTable.DefinitionCount
+
+	// may be self-declared or proven impure
+	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.ImpureEffects != nil
+
+	if sig.ImpureEffects && !f.ImpureEffects {
+		if f.Name == "" {
+			err = c.makeErr(f, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
+		} else {
+			err = c.makeErr(f, fmt.Sprintf("Impure function (%s) not declared as impure; use a * to declare impurity, such as fn*() { }", str.ReformatInput(f.Name)))
+		}
+		return
+	}
+
+	compiledFn := &object.CompiledCode{
+		FnSignature:        sig,
+		InsPackage:         body,
+		LocalBindingsCount: localsCount,
+	}
+	fnIndex := c.addConstant(compiledFn)
+
+	if len(freeSymbols) != 0 || defaultCount != 0 {
+		// a closure or has optional parameter defaults that are to be determined at run-time
+		pkg, err = c.instructionsForSymbols(f, freeSymbols)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(defaultInsTotal)
+		pkg = pkg.Append(opcode.MakePkg(f.Token, opcode.OpFunction, fnIndex, len(freeSymbols), defaultCount))
+
+	} else {
+		// not a closure and has all optional parameter defaults already determined
+		pkg = opcode.MakePkg(f.Token, opcode.OpConstant, fnIndex)
+	}
+
+	return
 }
 
 func (f *FunctionNode) TokenRepresentation() string {
@@ -629,6 +895,10 @@ func (pe *ExpansionNode) Evaluate() object.Object {
 	return nil
 }
 
+func (pe *ExpansionNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ExpansionNode")
+}
+
 func (pe *ExpansionNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -677,6 +947,10 @@ func (s *SelfNode) Copy() Node {
 
 func (s *SelfNode) Evaluate() object.Object {
 	return nil
+}
+
+func (s *SelfNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	return c.compileSelfRef(s)
 }
 
 func (s *SelfNode) TokenRepresentation() string {
@@ -736,6 +1010,26 @@ func (i *IdentNode) Evaluate() object.Object {
 	return nil
 }
 
+func (i *IdentNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if i.Type != nil {
+		err = c.makeErr(i, "This revision of langur not able to accept explicit variable type")
+		return
+	}
+
+	bi := process.GetBuiltInByName(i.Name)
+	if bi == nil {
+		// not a built-in; must be a variable
+		return c.resolveAndGetInstructions(i, i.Name)
+	}
+
+	if process.GetBuiltInImpurityStatus(i.Name) {
+		c.addToImpureEffectsList(i.Name)
+	}
+
+	pkg = c.constantIns(bi)
+	return
+}
+
 func (i *IdentNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -790,6 +1084,26 @@ func (m *ModeNode) Evaluate() object.Object {
 	return nil
 }
 
+func (m *ModeNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if c.symbolTable.Outer != nil {
+		err = c.makeErr(m, "Current implementation can only set modes in global context")
+		return
+		// The idea is that modes will have scope like variables. ...
+		// ... Therefore, if set, they have to be reset when exiting scope.
+	}
+	pkg, err = m.Setting.Compile(c)
+	if err != nil {
+		return
+	}
+	code, ok := modes.ModeNames[m.Name]
+	if !ok {
+		err = c.makeErr(m, fmt.Sprintf("Unknown mode setting %s", m.Name))
+		return
+	}
+	pkg = pkg.Append(opcode.MakePkg(m.Token, opcode.OpMode, code))
+	return
+}
+
 func (m *ModeNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -840,6 +1154,97 @@ func (n *ForNode) Copy() Node {
 
 func (n *ForNode) Evaluate() object.Object {
 	return nil
+}
+
+func (n *ForNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var init, test, body, increment opcode.InsPackage
+
+	c.pushVariableScope()
+	defer func() {
+		pkg = c.wrapInstructionsWithExecute(pkg, n.Token)
+		c.popVariableScope()
+	}()
+
+	// The sections are...
+	// 1. init
+	// 2. test
+	//	(conditionally jump out)
+	// 3. body
+	// 4. increment
+	//	(jump back to test)
+	// ... (as of 0.7+ ...)
+	// 5. for loop value
+
+	// Prior to 0.7, we would use init = c.noValueIns here to make sure something is on the stack.
+	// Now, we set the for loop value a different way.
+
+	for _, each := range n.Init {
+		var i opcode.InsPackage
+		i, err = c.compileNodeWithPopIfExprStmt(each)
+		if err != nil {
+			return
+		}
+		init = init.Append(i)
+	}
+
+	var loopValueInit opcode.InsPackage
+	loopValueInit, err = c.compileNodeWithPopIfExprStmt(n.LoopValueInit)
+	if err != nil {
+		return
+	}
+	init = init.Append(loopValueInit)
+
+	loopValueVar := n.LoopValueInit.(*ExpressionStatementNode).Expression.(*LineDeclarationNode).Assignment.(*AssignmentNode).Identifiers[0]
+	// for setting break value when not specified as something else
+	c.loopVarStack = append(c.loopVarStack, loopValueVar)
+	defer func() {
+		c.loopVarStack = c.loopVarStack[:len(c.loopVarStack)-1]
+	}()
+
+	if n.Test != nil {
+		test, err = n.Test.Compile(c)
+		if err != nil {
+			return
+		}
+	}
+
+	body, err = c.compileNodeWithPopIfExprStmt(n.Body)
+	if err != nil {
+		return
+	}
+
+	for _, each := range n.Increment {
+		var i opcode.InsPackage
+		i, err = c.compileNodeWithPopIfExprStmt(each)
+		if err != nil {
+			return
+		}
+		increment = increment.Append(i)
+	}
+
+	// fix jumps for next and break, replacing placeholders
+	body.Instructions = c.fixJumps(body.Instructions, false, opcode.OC_PlaceHolder_Next, &c.nextStmtCount, len(body.Instructions), 0, 0)
+	body.Instructions = c.fixJumps(body.Instructions, false, opcode.OC_PlaceHolder_Break, &c.breakStmtCount, len(body.Instructions)+len(increment.Instructions)+opcode.OP_JUMP_LEN, 0, 0)
+
+	if len(test.Instructions) > 0 {
+		test = test.Append(
+			opcode.MakePkg(n.Test.TokenInfo(), opcode.OpJumpIfNotTruthy,
+				len(body.Instructions)+len(increment.Instructions)+opcode.OP_JUMP_LEN))
+	}
+	// after increment, jump back to start of test section (or body if there is no test)
+	jumpback := opcode.MakePkg(n.Test.TokenInfo(), opcode.OpJumpBack, len(test.Instructions)+len(body.Instructions)+len(increment.Instructions))
+
+	pkg = pkg.Append(init).Append(test).Append(body).Append(increment).Append(jumpback)
+
+	// append loop value to very end; vm will push onto stack before exiting frame
+	var loopValue opcode.InsPackage
+	loopValue, err = c.loopVarStack[len(c.loopVarStack)-1].Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(loopValue)
+
+	return	
 }
 
 func (n *ForNode) TokenRepresentation() string {
@@ -949,6 +1354,10 @@ func (n *ForInOfNode) Evaluate() object.Object {
 	return nil
 }
 
+func (n *ForInOfNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ForInOfNode")
+}
+
 func (n *ForInOfNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -1013,6 +1422,28 @@ func (n *BreakNode) Evaluate() object.Object {
 	return nil
 }
 
+func (n *BreakNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	c.breakStmtCount++
+
+	if len(c.loopVarStack) < 1 {
+		err = c.makeErr(n, "Break declared outside of loop")
+		return
+	}
+
+	if n.Value == nil {
+		// break with current for loop value
+		pkg, err = c.loopVarStack[len(c.loopVarStack)-1].Compile(c)
+
+	} else {
+		// break with specified value
+		// FIXME: ? redundancy when embedded in scope (no need to set variable)
+		pkg, err = MakeAssignmentExpression(c.loopVarStack[len(c.loopVarStack)-1], n.Value, false).Compile(c)
+	}
+
+	pkg = pkg.Append(opcode.MakePkg(n.Token, opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_Break))
+	return
+}
+
 func (n *BreakNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -1054,6 +1485,16 @@ func (n *NextNode) Evaluate() object.Object {
 	return nil
 }
 
+func (n *NextNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	c.nextStmtCount++
+	pkg = opcode.MakePkg(n.Token, opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_Next)
+
+	// FIXME: ? redundancy for OpJumpRelay; don't need to push a value here
+	pkg = c.noValueIns.Append(pkg)
+
+	return
+}
+
 func (n *NextNode) TokenRepresentation() string {
 	return "next"
 }
@@ -1078,6 +1519,15 @@ func (b *BooleanNode) Copy() Node {
 
 func (b *BooleanNode) Evaluate() object.Object {
 	return object.NativeBoolToObject(b.Value)
+}
+
+func (b *BooleanNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if b.Value {
+		pkg = opcode.MakePkg(b.Token, opcode.OpTrue)
+	} else {
+		pkg = opcode.MakePkg(b.Token, opcode.OpFalse)
+	}
+	return
 }
 
 func (b *BooleanNode) TokenRepresentation() string {
@@ -1106,6 +1556,11 @@ func (n *NullNode) Evaluate() object.Object {
 	return object.NativeBoolToObject(false)
 }
 
+func (n *NullNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	pkg = opcode.MakePkg(n.Token, opcode.OpNull)
+	return
+}
+
 func (n *NullNode) TokenRepresentation() string {
 	return "null"
 }
@@ -1117,7 +1572,7 @@ func (n *NullNode) TokenInfo() token.Token {
 	return n.Token
 }
 
-// NONE, THAT IS _ (UNDERSCORE) SOMEASTERISK
+// NONE, THAT IS _ (UNDERSCORE)
 func IsNoOp(node Node) bool {
 	switch node.(type) {
 	case *NoneNode:
@@ -1138,6 +1593,17 @@ func (no *NoneNode) Copy() Node {
 
 func (no *NoneNode) Evaluate() object.Object {
 	return nil
+}
+
+func (no *NoneNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if no.Token.Literal == "_" {
+		// must be interpreted by context
+		err = c.makeErr(no, "Underscore no-op literal not dealt with in this context")
+		return
+	}
+	// no-op by keyword...
+	pkg = c.constantIns(object.NONE)
+	return
 }
 
 func (no *NoneNode) TokenRepresentation() string {
@@ -1174,6 +1640,10 @@ func (s *StringNode) Evaluate() object.Object {
 		return object.NewString(s.Values[0])
 	}
 	return nil
+}
+
+func (s *StringNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return c.compileString(s, regex.NONE)
 }
 
 func (s *StringNode) TokenRepresentation() string {
@@ -1254,6 +1724,10 @@ func (i *InterpolatedNode) Evaluate() object.Object {
 	return nil
 }
 
+func (i *InterpolatedNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type InterpolatedNode")
+}
+
 func (i *InterpolatedNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
@@ -1312,6 +1786,44 @@ func (r *RegexNode) Evaluate() object.Object {
 	}
 
 	return nil
+}
+
+func (node *RegexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	patternNode, ok := node.Pattern.(*StringNode)
+	if !ok {
+		err = c.makeErr(node, fmt.Sprintf("Expected String Node within Regex Node"))
+		return
+	}
+
+	var code int
+	if node.RegexType == regex.RE2 {
+		code = opcode.OC_Regex_Re2
+
+	} else {
+		bug("RegexNode.Compile", "Unknown regex type")
+		err = c.makeErr(node, fmt.Sprintf("Unknown regex type"))
+		return
+	}
+
+	if len(patternNode.Interpolations) == 0 {
+		// optimize by compiling a regex pattern now, rather than having the VM compile it
+		var re object.Object
+
+		re, err = object.NewRegex(patternNode.Values[0], node.RegexType)
+		if err != nil {
+			return
+		}
+		pkg = c.constantIns(re)
+
+	} else {
+		pkg, err = c.compileString(patternNode, node.RegexType)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpRegex, code))
+	}
+
+	return
 }
 
 func (r *RegexNode) TokenRepresentation() string {
@@ -1376,6 +1888,39 @@ func (d *DateTimeNode) Evaluate() object.Object {
 	return nil
 }
 
+func (node *DateTimeNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	dt := node.Evaluate()
+	if dt != nil {
+		pkg = c.constantIns(dt)
+		return
+	}
+
+	patternNode, ok := node.Pattern.(*StringNode)
+	if !ok {
+		err = c.makeErr(node, fmt.Sprintf("Expected String Node within DateTime Node"))
+		return
+	}
+	s := patternNode.Values[0]
+
+	if len(patternNode.Interpolations) == 0 {
+		if !object.IsValidDateTimeString(s, true) {
+			err = c.makeErr(node, "Invalid date-time literal string")
+			return
+		}
+	}
+
+	// built at run-time (either contains interpolations or is a "now" date-time)
+	code, _, _ := opcode.TokenCodeToOcCode(node.Token.Code)
+
+	pkg, err = c.compileString(patternNode, regex.NONE)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpDateTime, code))
+
+	return
+}
+
 func (dt *DateTimeNode) TokenRepresentation() string {
 	return common.DateTimeTokenLiteral + "/" + tokenRepOrNil(dt.Pattern) + "/"
 }
@@ -1417,6 +1962,29 @@ func (d *DurationNode) Evaluate() object.Object {
 	return nil
 }
 
+func (node *DurationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	dur := node.Evaluate()
+	if dur != nil {
+		pkg = c.constantIns(dur)
+		return
+	}
+
+	patternNode, ok := node.Pattern.(*StringNode)
+	if !ok {
+		err = c.makeErr(node, fmt.Sprintf("Expected String Node within Duration Node"))
+		return
+	}
+
+	// built at run-time (contains interpolations)
+	pkg, err = c.compileString(patternNode, regex.NONE)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpDuration))
+
+	return
+}
+
 func (d *DurationNode) TokenRepresentation() string {
 	return common.DurationTokenLiteral + "/" + tokenRepOrNil(d.Pattern) + "/"
 }
@@ -1456,6 +2024,22 @@ func (n *NumberNode) Evaluate() object.Object {
 		}
 	}
 	return nil
+}
+
+func (node *NumberNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) { 
+	if node.Imaginary {
+		// stand-alone imaginary number compiled to complex
+		pkg, err = c.compileComplexNumber(nil, node, false)
+		return
+	}
+
+	var number *object.Number
+	number, err = c.compileNumberObject(node)
+	if err == nil {
+		pkg = c.constantIns(number)
+	}
+
+	return
 }
 
 func (n *NumberNode) TokenRepresentation() string {
@@ -1530,6 +2114,30 @@ func (a *ListNode) Evaluate() object.Object {
 	return nil
 }
 
+func (node *ListNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if len(node.Elements) == 0 {
+		// no elements; return empty list constant
+		pkg = c.constantIns(object.EmptyList)
+		return
+	}
+
+	var b opcode.InsPackage
+	for _, e := range node.Elements {
+		if IsNoOp(e) {
+			b = c.constantIns(object.NONE)
+
+		} else {
+			b, err = e.Compile(c)
+			if err != nil {
+				return
+			}
+		}
+		pkg = pkg.Append(b)
+	}
+	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpList, len(node.Elements)))
+	return
+}
+
 func (a *ListNode) TokenRepresentation() string {
 	elements := []string{}
 
@@ -1573,6 +2181,40 @@ func (i *IndexNode) Copy() Node {
 
 func (i *IndexNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *IndexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var b opcode.InsPackage
+
+	// Get "left" node
+	b, err = node.Left.Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = b
+
+	// Get the index
+	b, err = node.Index.Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(b)
+
+	if node.Alternate == nil {
+		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpIndex, 0))
+
+	} else {
+		// alternate for an invalid index
+		var alt opcode.InsPackage
+		alt, err = node.Alternate.Compile(c)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpIndex, len(alt.Instructions)))
+		pkg = pkg.Append(alt)
+	}
+
+	return
 }
 
 func (i *IndexNode) TokenRepresentation() string {
@@ -1635,6 +2277,31 @@ func (d *HashNode) Evaluate() object.Object {
 	return nil
 }
 
+func (node *HashNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if len(node.Pairs) == 0 {
+		// no entries; return empty hash constant
+		pkg = c.constantIns(object.EmptyHash)
+		return
+	}
+
+	var b opcode.InsPackage
+	for _, kv := range node.Pairs {
+		b, err = kv.Key.Compile(c)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(b)
+
+		b, err = kv.Value.Compile(c)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(b)
+	}
+	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpHash, len(node.Pairs)*2))
+	return
+}
+
 func (d *HashNode) TokenRepresentation() string {
 	if len(d.Pairs) == 0 {
 		return "{:}"
@@ -1681,6 +2348,27 @@ func (pe *PrefixExpressionNode) Copy() Node {
 
 func (pe *PrefixExpressionNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *PrefixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var b opcode.InsPackage
+	b, err = node.Right.Compile(c)
+	if err != nil {
+		return
+	}
+
+	code, _, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
+
+	switch node.Operator.Type {
+	case token.NOT:
+		pkg = b.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, code))
+	case token.MINUS:
+		pkg = b.Append(opcode.MakePkg(node.Token, opcode.OpNumericNegation))
+	default:
+		err = c.makeErr(node, fmt.Sprintf("Unknown prefix operator %s", token.TypeDescription(node.Operator.Type)))
+	}
+
+	return
 }
 
 func (pe *PrefixExpressionNode) TokenRepresentation() string {
@@ -1733,6 +2421,11 @@ func (pe *PostfixExpressionNode) Copy() Node {
 
 func (pe *PostfixExpressionNode) Evaluate() object.Object {
 	return nil
+}
+
+func (pe *PostfixExpressionNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	// FIXME:
+	return opcode.InsPackage{}, nil
 }
 
 func (pe *PostfixExpressionNode) TokenRepresentation() string {
@@ -1798,6 +2491,152 @@ func (ie *InfixExpressionNode) Evaluate() object.Object {
 // 	return nil, false
 // }
 
+func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var left, right opcode.InsPackage
+
+	code, isDatabaseOperation, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
+
+	// NOTE: negated in present form, ...
+	// may not work and play well with database operation but so far not mixed
+	op, negated, ok := opcode.InfixTokenToOpCode(node.Operator)
+	if !ok {
+		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
+		return
+	}
+
+	if !negated && node.Operator.Code == 0 {
+		pkg, err = c.checkForComplexNumber(node, op)
+		if pkg.Instructions != nil || err != nil {
+			return
+		}
+	}
+
+	left, err = node.Left.Compile(c)
+	if err != nil {
+		return
+	}
+
+	rightTypeCode := NodeToLangurTypeCode(node.Right)
+	rightIsType := rightTypeCode != 0
+
+	if !rightIsType || node.Operator.Type != token.IS {
+		right, err = node.Right.Compile(c)
+		if err != nil {
+			return
+		}
+	}
+
+	plain := func() (pkg opcode.InsPackage, err error) {
+		pkg = left.Append(right)
+		pkg = pkg.Append(opcode.MakePkg(node.Token, op))
+		if negated {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
+		}
+		return
+	}
+
+	plainWithCode := func() (pkg opcode.InsPackage, err error) {
+		pkg = left.Append(right)
+		pkg = pkg.Append(opcode.MakePkg(node.Token, op, code))
+		if negated {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
+		}
+		return
+	}
+
+	nonShortCircuiting := func() (pkg opcode.InsPackage, err error) {
+		pkg = left.Append(right)
+		pkg = pkg.Append(opcode.MakePkg(node.Token, op, code, 0))
+		if negated {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
+		}
+		return
+	}
+
+	shortCircuiting := func() (pkg opcode.InsPackage, err error) {
+		evalWithRight := opcode.MakePkg(node.Token, op, code, 0)
+
+		// len(right)+len(evalWithRight) == opcodes to jump if left gives the answer
+		pkg = left.Append(opcode.MakePkg(node.Token, op, code, len(right.Instructions)+len(evalWithRight.Instructions)))
+
+		// if we didn't short-circuit, must evaluate here...
+		pkg = pkg.Append(right)
+		pkg = pkg.Append(evalWithRight)
+
+		if negated {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
+		}
+
+		return
+	}
+
+	either := func() (pkg opcode.InsPackage, err error) {
+		// either: for operations that could have short-circuiting
+		// but only when used as "database" (null propagating) operators
+		if isDatabaseOperation {
+			return shortCircuiting()
+		}
+		return nonShortCircuiting()
+	}
+
+	withTypeCode := func() (pkg opcode.InsPackage, err error) {
+		tcode := 0 // 0 indicates requirement for right operand
+		pkg = left
+
+		if rightIsType {
+			tcode = int(rightTypeCode)
+		} else {
+			pkg = pkg.Append(right)
+		}
+
+		pkg = pkg.Append(opcode.MakePkg(node.Token, op, tcode))
+
+		if negated {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
+		}
+
+		return
+	}
+
+	switch op {
+	case opcode.OpAppend:
+		return plainWithCode()
+
+	case opcode.OpIs:
+		return withTypeCode()
+
+	case opcode.OpRange,
+		opcode.OpAdd, opcode.OpSubtract,
+		opcode.OpMultiply, opcode.OpDivide,
+		opcode.OpTruncateDivide, opcode.OpFloorDivide,
+		opcode.OpRemainder, opcode.OpModulus,
+		opcode.OpPower, opcode.OpRoot,
+		opcode.OpForward,
+		opcode.OpIn, opcode.OpOf:
+
+		return plain()
+
+	case opcode.OpLogicalAnd, opcode.OpLogicalNAnd,
+		opcode.OpLogicalOr, opcode.OpLogicalNOr:
+
+		return shortCircuiting()
+
+	case opcode.OpEqual, opcode.OpNotEqual,
+		opcode.OpGreaterThan, opcode.OpGreaterThanOrEqual,
+		opcode.OpLessThan, opcode.OpLessThanOrEqual,
+		opcode.OpDivisibleBy, opcode.OpNotDivisibleBy,
+
+		opcode.OpLogicalXor, opcode.OpLogicalNXor:
+
+		return either()
+
+	default:
+		err = c.makeErr(node, fmt.Sprintf("unknown operator (%s)", token.TypeDescription(node.Operator.Type)))
+	}
+
+	return
+}
+
 func (ie *InfixExpressionNode) TokenRepresentation() string {
 	space := " "
 	if ie.Operator.Type == token.DOT {
@@ -1832,6 +2671,43 @@ func (b *BlockNode) Copy() Node {
 
 func (b *BlockNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *BlockNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	noValueIfEmpty := true
+
+	var ins1 opcode.InsPackage
+
+	if node.HasScope {
+		// only wrap expressions containing declarations (as an efficiency improvement)
+		if NodeContainsFirstScopeLevelDeclaration(node) {
+			defer func() {
+				pkg = c.wrapInstructionsWithExecute(pkg, node.Token)
+				c.popVariableScope()
+			}()
+			c.pushVariableScope()
+		}
+	}
+
+	if noValueIfEmpty && len(node.Statements) == 0 {
+		pkg = c.noValueIns
+
+	} else {
+		for i, s := range node.Statements {
+			if i < len(node.Statements)-1 {
+				ins1, err = c.compileNodeWithPopIfExprStmt(s)
+			} else {
+				// last node in Block; not to pop on last node of Block
+				ins1, err = s.Compile(c)
+			}
+			pkg = pkg.Append(ins1)
+
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
 }
 
 func (b *BlockNode) TokenRepresentation() string {
@@ -1927,6 +2803,188 @@ func (i *IfNode) Copy() Node {
 
 func (i *IfNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *IfNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	if node.TestsAndActions[len(node.TestsAndActions)-1].Test != nil {
+		// no else/default section; add implicit else/default section returning null
+		node.TestsAndActions = append(node.TestsAndActions,
+			TestDo{Test: nil, Do: &BlockNode{Statements: []Node{NoValue}}})
+	}
+
+	type compiled struct {
+		pkg opcode.InsPackage
+		st  *symbol.SymbolTable
+	}
+	compiledTests := make([]compiled, len(node.TestsAndActions))
+	compiledActions := make([]compiled, len(node.TestsAndActions))
+	compiledTA := make([]compiled, len(node.TestsAndActions))
+
+	/*
+		opCodes (except for the great complication of scope frames)...
+		test
+		jump to next test if not truthy
+		action
+		jump to end
+		...
+		(rinse, repeat)
+	*/
+
+	/*
+		Each section of if/else gets it's own scope. This compiles each to one of the following.
+		1. no scope wrapping (no declarations in test or action)
+		2. wrap scope over test and action (declarations in test and possibly in action)
+		3. wrap scope over action only (declarations in action, but none in test)
+	*/
+
+	jumpToEndOpCodeLen := func(i int) int {
+		// not adding a jump to the end if we already end with a fallthrough, break, or next
+		if EndsWithDefiniteJump(node.TestsAndActions[i].Do.(*BlockNode).Statements) {
+			return 0
+		} else {
+			return opcode.OP_JUMP_LEN
+		}
+	}
+
+	// Compile tests first.
+	for i, ta := range node.TestsAndActions {
+		lastOne := i == len(node.TestsAndActions)-1
+
+		compiledTests[i].st = nil
+
+		if ta.Test == nil {
+			if !lastOne {
+				// Houston, we have a bug.
+				if node.IsSwitchExpr {
+					bug("compileIfExpression", "Default not last part of switch expression")
+					err = c.makeErr(node, "Default not last part of switch expression")
+				} else {
+					bug("compileIfExpression", "Else not last part of if/else expression")
+					err = c.makeErr(node, "Else not last part of if/else expression")
+				}
+				return
+			}
+
+		} else {
+			if NodeContainsFirstScopeLevelDeclaration(ta.Test) {
+				// push and pop and save symbol table; wrap test/action together later
+				c.pushVariableScope()
+				compiledTests[i].pkg, err = ta.Test.Compile(c)
+				compiledTests[i].st = c.symbolTable // save table for re-use
+				c.popVariableScope()
+			} else {
+				// no scope on test
+				compiledTests[i].pkg, err = ta.Test.Compile(c)
+			}
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	// Now compile the actions.
+	for i, ta := range node.TestsAndActions {
+		compiledActions[i].st = nil
+
+		// push scope?
+		if compiledTests[i].st != nil {
+			// declarations in the test section and possibly in the action
+			// using saved symbol table
+			c.pushVariableScopeWithTable(compiledTests[i].st)
+			compiledActions[i].st = c.symbolTable
+
+		} else if NodeContainsFirstScopeLevelDeclaration(ta.Do) {
+			// declarations in the action, but not the test section
+			// using new symbol table
+			c.pushVariableScope()
+			compiledActions[i].st = c.symbolTable
+		}
+
+		compiledActions[i].pkg, err = ta.Do.Compile(c)
+		if err != nil {
+			return
+		}
+
+		if compiledActions[i].st != nil {
+			if compiledTests[i].st == nil {
+				// wrap only action into scope, not the test
+				compiledActions[i].pkg = c.wrapInstructionsWithExecute(compiledActions[i].pkg, ta.Do.TokenInfo())
+			}
+			c.popVariableScope()
+		}
+
+		// set conditional jump over action
+		if len(compiledTests[i].pkg.Instructions) > 0 {
+			// not "else" or "default"
+			if compiledTests[i].st == nil {
+				compiledTests[i].pkg = compiledTests[i].pkg.Append(
+					opcode.MakePkg(ta.Do.TokenInfo(), opcode.OpJumpIfNotTruthy, len(compiledActions[i].pkg.Instructions)+jumpToEndOpCodeLen(i)))
+
+			} else {
+				// going to have to add an OpJumpRelayIfNotTruthy b/c of test being buried in scope
+				compiledTests[i].pkg = compiledTests[i].pkg.Append(
+					opcode.MakePkg(ta.Do.TokenInfo(), opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_IfElse_TestFailed))
+			}
+		}
+	}
+
+	// put it together
+	for i := range node.TestsAndActions {
+		lastOne := i == len(node.TestsAndActions)-1
+
+		if node.IsSwitchExpr {
+			// fix fallthrough on switch expressions only
+
+			if compiledTests[i].st != nil {
+				// If we allowed declarations within case statements, they would have to be included...
+				// ...in scope wrapping, making it impossible to set a jump for fallthrough.
+				err = c.makeErr(node, "Cannot use declarations in case statement of switch expression")
+				return
+			}
+
+			// not looking for fallthrough in default section
+			if !lastOne {
+				compiledActions[i].pkg.Instructions = c.fixJumps(
+					compiledActions[i].pkg.Instructions, false,
+					opcode.OC_PlaceHolder_Fallthrough, &c.fallthroughStmtCount,
+
+					len(compiledActions[i].pkg.Instructions)+ // over current action
+						jumpToEndOpCodeLen(i)+ // over jump to end
+						len(compiledTests[i+1].pkg.Instructions), // over next test
+
+					0, 0)
+			}
+		}
+
+		// put together test and action
+		compiledTA[i].pkg = compiledTests[i].pkg.Append(compiledActions[i].pkg)
+		compiledTA[i].st = compiledActions[i].st
+
+		if compiledTests[i].st != nil {
+			// wrap test and action into scope together
+			c.pushVariableScopeWithTable(compiledTests[i].st)
+			compiledTA[i].pkg = c.wrapInstructionsWithExecute(compiledTA[i].pkg, node.TestsAndActions[i].Test.TokenInfo())
+			c.popVariableScope()
+
+			compiledTA[i].pkg.Instructions = c.fixJumps(
+				compiledTA[i].pkg.Instructions, true,
+				opcode.OC_PlaceHolder_IfElse_TestFailed, nil,
+				len(compiledTA[i].pkg.Instructions), jumpToEndOpCodeLen(i), 0)
+		}
+
+		// jump to end
+		if !lastOne {
+			if jumpToEndOpCodeLen(i) > 0 {
+				compiledTA[i].pkg = compiledTA[i].pkg.Append(
+					opcode.MakePkg(node.TestsAndActions[i].Test.TokenInfo(), opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_IfElse_Exit))
+			}
+		}
+
+		pkg = pkg.Append(compiledTA[i].pkg)
+	}
+
+	pkg.Instructions = c.fixJumps(pkg.Instructions, false, opcode.OC_PlaceHolder_IfElse_Exit, nil, len(pkg.Instructions), 0, 0)
+	return
 }
 
 func (i *IfNode) TokenRepresentation() string {
@@ -2034,6 +3092,10 @@ func (g *SwitchNode) Copy() Node {
 
 func (g *SwitchNode) Evaluate() object.Object {
 	return nil
+}
+
+func (g *SwitchNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type SwitchNode")
 }
 
 func (g *SwitchNode) TokenRepresentation() string {
@@ -2199,6 +3261,12 @@ func (f *FallThroughNode) Evaluate() object.Object {
 	return nil
 }
 
+func (node *FallThroughNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	c.fallthroughStmtCount++
+	pkg = opcode.MakePkg(node.Token, opcode.OpJumpPlaceHolder, opcode.OC_PlaceHolder_Fallthrough)
+	return
+}
+
 func (f *FallThroughNode) TokenRepresentation() string {
 	return "fallthrough"
 }
@@ -2233,6 +3301,59 @@ func (t *TryCatchNode) Copy() Node {
 
 func (t *TryCatchNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *TryCatchNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var try, catch, tcelse opcode.InsPackage
+
+	// The try frame doesn't have scope, but catch and else frames do.
+	c.pushNonScope()
+	try, err = node.Try.Compile(c)
+	c.popVariableScope()
+	if err != nil {
+		return
+	}
+	tryIndex := c.addConstant(&object.CompiledCode{InsPackage: try})
+
+	// push scope for the catch frame, including the exception variable
+	c.pushVariableScope()
+	defer c.popVariableScope()
+
+	var setException opcode.InsPackage
+	if node.ExceptionVar != nil {
+		setException, err = c.compileNodeWithPopIfExprStmt(
+			MakeDeclarationAssignmentStatement(node.ExceptionVar, nil, true, false),
+		)
+
+		if err != nil {
+			return
+		}
+	}
+
+	catch, err = node.Catch.Compile(c)
+	if err != nil {
+		return
+	}
+	if node.ExceptionVar != nil {
+		catch = setException.Append(catch)
+	}
+	catchIndex := c.wrapInstructions(catch)
+
+	elseIndex := 0
+	if node.Else != nil {
+		// pop scope from catch; else with different scope
+		c.popVariableScope()
+		c.pushVariableScope()
+
+		tcelse, err = node.Else.Compile(c)
+		elseIndex = c.wrapInstructions(tcelse)
+		if elseIndex == 0 {
+			bug("compileTryCatch", "elseIndex 0 (0 used as indicator for no else section)")
+		}
+	}
+
+	pkg = opcode.MakePkg(node.Token, opcode.OpTryCatch, tryIndex, catchIndex, elseIndex)
+	return
 }
 
 func (t *TryCatchNode) TokenRepresentation() string {
@@ -2296,6 +3417,15 @@ func (t *ThrowNode) Copy() Node {
 
 func (t *ThrowNode) Evaluate() object.Object {
 	return nil
+}
+
+func (node *ThrowNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	pkg, err = node.Exception.Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpThrow))
+	return
 }
 
 func (t *ThrowNode) TokenRepresentation() string { return "throw " + tokenRepOrNil(t.Exception) }

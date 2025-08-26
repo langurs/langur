@@ -5,11 +5,7 @@ package test
 import (
 	"fmt"
 	"langur/ast"
-	"langur/compiler"
-	"langur/lexer"
 	"langur/object"
-	"langur/parser"
-	"langur/str"
 	"langur/vm"
 	"testing"
 	"time"
@@ -37,11 +33,15 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 
 	program := parse(t, input)
 
-	comp, err := compiler.New(nil)
+	// comp, err := compiler.New(nil)
+	
+	comp, err := ast.NewCompiler(nil, false)
 	if err != nil {
 		t.Fatalf("Test %d: (%q) compiler error on New: %s", testno, input, err)
 	}
-	err = comp.Compile(program, false)
+	// err = comp.Compile(program, false)
+	
+	_, err = program.Compile(comp)
 	if err != nil {
 		t.Fatalf("Test %d: (%q)\ncompiler error: %s", testno, input, err)
 	}
@@ -67,35 +67,6 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 	return machine.LastValue()
 }
 
-func parse(t *testing.T, input string) *ast.Program {
-	l, err := lexer.New(input, "test", nil)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	p := parser.New(l, nil)
-	var program *ast.Program
-	program, err = p.ParseProgram()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	checkParseErrors(t, p, input)
-	return program
-}
-
-func checkParseErrors(t *testing.T, p *parser.Parser, input string) {
-	t.Helper()
-
-	errors := p.Errs
-	if len(errors) == 0 {
-		return
-	}
-
-	t.Errorf("(%q)\nParser has %d errors.", input, len(errors))
-	for _, msg := range errors {
-		t.Errorf("Parser error: %q", msg)
-	}
-	t.FailNow()
-}
 
 func testExpectedObject(
 	t *testing.T,
@@ -112,13 +83,17 @@ func testExpectedObject(
 		switch expected.(type) {
 		case string:
 			// might be a Go string to represent a langur decimal floating point number
-			err := testNumberObject(expected.(string), actual)
+			num, err := object.NumberFromString(expected.(string))
+			if err != nil {
+				t.Errorf("Test %d: (%q) testNumberObject failed: %s", testno, input, err)
+			}
+			err = testNumberObject(num, actual)
 			if err != nil {
 				t.Errorf("Test %d: (%q) testNumberObject failed: %s", testno, input, err)
 			}
 
 		case int:
-			err := testNumberObject(str.IntToStr(expected.(int), 10), actual)
+			err := testNumberObject(object.NumberFromInt(expected.(int)), actual)
 			if err != nil {
 				t.Errorf("Test %d: (%q) testNumberObject failed: %s", testno, input, err)
 			}
@@ -224,15 +199,15 @@ func testExpectedObject(
 
 func testObject(expected, actual object.Object) error {
 	var err error
-	switch expected.(type) {
+	switch e := expected.(type) {
 	case *object.List:
-		err = testListObject(expected.(*object.List), actual)
+		err = testListObject(e, actual)
 		if err != nil {
 			return fmt.Errorf("testListObject failed: %s", err)
 		}
 
 	case *object.Number:
-		err = testNumberObject(expected.String(), actual)
+		err = testNumberObject(e, actual)
 		if err != nil {
 			return fmt.Errorf("testNumberObject failed: %s", err)
 		}
@@ -252,21 +227,6 @@ func testObject(expected, actual object.Object) error {
 	default:
 		return fmt.Errorf("No test for %T by testObject", expected)
 	}
-	return nil
-}
-
-func testNumberObject(expected string, actual object.Object) error {
-	result, ok := actual.(*object.Number)
-	if !ok {
-		return fmt.Errorf("object not a Number, received=%T (%+v)", actual, actual)
-	}
-
-	n, _ := object.NumberFromString(expected)
-
-	if !result.Same(n) {
-		return fmt.Errorf("object value wrong\nexpected=%q\nreceived=%q", expected, result.String())
-	}
-
 	return nil
 }
 
@@ -354,12 +314,12 @@ func testRangeOfIntObject(expectLeft, expectRight int64, actual object.Object) e
 		return fmt.Errorf("object not a range, received=%T (%+v)", actual, actual)
 	}
 
-	err := testNumberObject(str.Int64ToStr(expectLeft, 10), r.Start)
+	err := testNumberObject(object.NumberFromInt64(expectLeft), r.Start)
 	if err != nil {
 		return fmt.Errorf("Start of range test failed: %s", err)
 	}
 
-	err = testNumberObject(str.Int64ToStr(expectRight, 10), r.End)
+	err = testNumberObject(object.NumberFromInt64(expectRight), r.End)
 	if err != nil {
 		return fmt.Errorf("End of range test failed: %s", err)
 	}
@@ -393,7 +353,7 @@ func testListOfIntObject(expected []int, actual object.Object) error {
 		return fmt.Errorf("object list length received=%d, expected=%d", len(list.Elements), len(expected))
 	}
 	for i, e := range expected {
-		err := testNumberObject(str.IntToStr(e, 10), list.Elements[i])
+		err := testNumberObject(object.NumberFromInt(e), list.Elements[i])
 		if err != nil {
 			return fmt.Errorf("testNumberObject failed: %s", err)
 		}

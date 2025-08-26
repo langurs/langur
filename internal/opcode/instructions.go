@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"langur/trace"
-	// "langur/token"
+	"langur/token"
 )
 
 type Instructions []byte
@@ -18,7 +18,7 @@ func (ins Instructions) Copy() Instructions {
 	return newIns
 }
 
-// TODO: use InsPackage instead of just Instructions, allowing meta-data to be included
+// NOTE: use InsPackage instead of just Instructions, allowing meta-data to be included
 type InsPackage struct {
 	Instructions Instructions
 	Where        trace.WhereSlice
@@ -37,16 +37,25 @@ func (ip InsPackage) Append(ip2 InsPackage) InsPackage {
 	return InsPackage{Instructions: ins, Where: where}
 }
 
-// TODO: TEST
-// func MakePkg(op OpCode, tok token.Token, operands ...int) (pkg InsPackage) {
-// 	pkg = InsPackage{}
-// 	ins := Make(op, operands...)
+func MakePkg(tok token.Token, op OpCode, operands ...int) (pkg InsPackage) {
+	var err error
+	pkg, err = MakePkgWithErrTest(tok, op, operands...)
+	if err != nil {
+		bug("MakePkg", err.Error())
+	}
+	return
+}
 
-// 	pkg.Where = make(trace.WhereSlice, len(ins))
-// 	pkg.Where[0] = &(tok.Where)
+func MakePkgWithErrTest(tok token.Token, op OpCode, operands ...int) (pkg InsPackage, err error) {
+	var ins Instructions
+	ins, err = MakeWithErrTest(op, operands...)
 
-// 	return pkg
-// }
+	pkg.Instructions = ins
+	pkg.Where = make(trace.WhereSlice, len(ins))
+	pkg.Where[0] = &(tok.Where)
+
+	return
+}
 
 func Make(op OpCode, operands ...int) (ins Instructions) {
 	// added make with error test as of 0.5.4, for things that are not a bug but a limitation, such as too many local variables
