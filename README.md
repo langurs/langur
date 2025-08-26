@@ -1,6 +1,6 @@
 # langur 0.19
 
-[Langur](https://langurlang.org) is an open-source imperative/functional scripting language written in Go.
+[Langur](https://langurlang.org) is an open-source imperative/functional programming language written in Go.
 
 Langur source code is always UTF-8, with Linux line returns, no BOM, and no surrogate codes.
 

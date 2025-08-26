@@ -1,5 +1,5 @@
 # langur development
-2025-05-30
+2025-08-26
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -11,14 +11,11 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
-- compile on AST node instead of having a seperate compile package
+- use metadata in VM for traceback errors to source code
     Work was started toward this, but not finished.
-- compile with metadata that can be used in VM to traceback errors to source code
-    Work was started toward this, but not finished.
-
-- write custom decimal library
-  make safe for concurrency
-  simplify and other changes
+- write custom decimal library (Davis) - likely to be a separate project
+    make safe for concurrency
+    simplify and other changes
 - PEG grammar
 - log (math) function
 - atan2(), acos(), etc.
