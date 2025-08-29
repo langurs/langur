@@ -3,6 +3,7 @@
 package test
 
 import (
+	"fmt"
 	"langur/ast"
 	"langur/common"
 	"langur/object"
@@ -5505,7 +5506,16 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 		},
 		{
 			input:    `fn(a, c, ... b) { }(1);`,
-			expected: `args: Positional argument/parameter count mismatch, expected=2..-1, received=1 ()`,
+			expected: fmt.Sprintf(`args: Positional argument/parameter count mismatch, expected=2..%d, received=1 ()`, common.ArgCountMax),
+		},
+
+		{
+			input:    `fn(a, c, ...[1..3] b) { }(1, 2, 3, 4, 5, 6, 7);`,
+			expected: `Parameter expansion max (3) exceeded (5)`,
+		},
+		{
+			input:    `fn(a, c, ...[1..3] b) { }(1, 2, [3, 4, 5, 6]...);`,
+			expected: `Parameter expansion max (3) exceeded (4)`,
 		},
 	}
 
@@ -7992,7 +8002,7 @@ func TestParameterExpansionMinMax(t *testing.T) {
 	tests := []vmTestCase{
 		{`val f = fn(... x) { x }
 		  max(f)`,
-			-1, object.NUMBER_OBJ,
+			common.ArgCountMax, object.NUMBER_OBJ,
 		},
 		{`val f = fn(... x) { x }
 		  min(f)`,
@@ -8000,12 +8010,12 @@ func TestParameterExpansionMinMax(t *testing.T) {
 		},
 		{`val f = fn(... x) { x }
 		  minmax(f)`,
-			[]int64{0, -1}, object.RANGE_OBJ,
+			[]int64{0, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
 		{`val f = fn(a, ... x) { x }
 		  max(f)`,
-			-1, object.NUMBER_OBJ,
+			common.ArgCountMax, object.NUMBER_OBJ,
 		},
 		{`val f = fn(a, ... x) { x }
 		  min(f)`,
@@ -8013,12 +8023,12 @@ func TestParameterExpansionMinMax(t *testing.T) {
 		},
 		{`val f = fn(a, ... x) { x }
 		  minmax(f)`,
-			[]int64{1, -1}, object.RANGE_OBJ,
+			[]int64{1, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
 		{`val f = fn(...[0..] x) { x }
 		  max(f)`,
-			-1, object.NUMBER_OBJ,
+			common.ArgCountMax, object.NUMBER_OBJ,
 		},
 		{`val f = fn(...[0..] x) { x }
 		  min(f)`,
@@ -8026,12 +8036,12 @@ func TestParameterExpansionMinMax(t *testing.T) {
 		},
 		{`val f = fn(...[0..] x) { x }
 		  minmax(f)`,
-			[]int64{0, -1}, object.RANGE_OBJ,
+			[]int64{0, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
 		{`val f = fn(a, b, ...[0..] x) { x }
 		  max(f)`,
-			-1, object.NUMBER_OBJ,
+			common.ArgCountMax, object.NUMBER_OBJ,
 		},
 		{`val f = fn(a, b, ...[0..] x) { x }
 		  min(f)`,
@@ -8039,7 +8049,7 @@ func TestParameterExpansionMinMax(t *testing.T) {
 		},
 		{`val f = fn(a, b, ...[0..] x) { x }
 		  minmax(f)`,
-			[]int64{2, -1}, object.RANGE_OBJ,
+			[]int64{2, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
 		{`val f = fn(...[2..10] x) { x }

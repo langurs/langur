@@ -4,6 +4,7 @@ package ast
 
 import (
 	"fmt"
+	"langur/common"
 	"langur/opcode"
 	"langur/object"
 	"langur/str"
@@ -34,6 +35,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 
 	var param object.Parameter
 
+	// POSITIONAL PARAMETERS
 	for i, p := range node.PositionalParameters {
 		lastPositional := i == len(node.PositionalParameters)-1
 
@@ -53,8 +55,23 @@ func (c *Compiler) compileFunctionNodeParameters(
 		sig.ParamPositional = append(sig.ParamPositional, param)
 	}
 
-	// External names are not registered in a symbol table.
-	// check for duplicates to prevent confusion and chaos
+	// CHECK MAX COUNTS
+	cnt := len(node.PositionalParameters) - len(node.ByNameParameters)
+	maxExpansionMax := common.ArgCountMax - cnt + 1
+
+	if sig.ParamExpansionMax == -1 {
+		sig.ParamExpansionMax = maxExpansionMax
+	}
+
+	if sig.ParamExpansionMax < 0 ||
+		sig.ParamExpansionMax > maxExpansionMax ||
+		cnt > common.ArgCountMax {
+
+		err = c.makeErr(node, fmt.Sprintf("Max parameter/argument count (%d) exceeded", common.ArgCountMax))
+		return
+	}		
+
+	// PARAMETERS BY NAME
 	var externalNames []string
 
 	for i, p := range node.ByNameParameters {
@@ -73,7 +90,8 @@ func (c *Compiler) compileFunctionNodeParameters(
 			defaultCount++
 		}
 
-		// check for duplicate external names (not registered in symbol tables)
+		// External names are not registered in a symbol table.
+		// Therefore, we check for duplicates to prevent confusion and chaos.
 		if param.ExternalName != "" {
 			if str.IsInSlice(param.ExternalName, externalNames) {
 				err = c.makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for parameters by name", str.ReformatInput(param.ExternalName)))
