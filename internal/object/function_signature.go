@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// signatures to be used for both compiled functions and built-in functions
+// signatures used for both compiled functions and built-in functions
 type Signature struct {
 	Name              string
 	Description       string
@@ -137,10 +137,11 @@ func (s *Signature) String() string {
 
 type Parameter struct {
 	InternalName string // variable name within function; may change without affecting API
-	ExternalName string // API / call name for optional parameter
+	ExternalName string // API / call name for parameter by name
 	Mutable      bool
 
-	// default value for optional parameter; sometimes determined at compile-time, sometimes at run-time when function is defined
+	// default value for optional parameter
+	// sometimes determined at compile-time, sometimes at run-time when function is defined
 	DefaultValue Object
 
 	// for required by name parameter; not used with positional parameters, as they're always required

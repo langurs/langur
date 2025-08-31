@@ -69,7 +69,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 
 		err = c.makeErr(node, fmt.Sprintf("Max parameter/argument count (%d) exceeded", common.ArgCountMax))
 		return
-	}		
+	}
 
 	// PARAMETERS BY NAME
 	var externalNames []string
@@ -277,7 +277,7 @@ func (c *Compiler) assessParameterByName(assign *AssignmentNode) (
 	return
 }
 
-func (c *Compiler) instructionsForSymbols(node Node, symbols []symbol.Symbol) (ins opcode.InsPackage, err error) {
+func (c *Compiler) instructionsForSymbols(node Node, symbols []symbol.Symbol) (pkg opcode.InsPackage, err error) {
 	var temp opcode.InsPackage
 	for _, sym := range symbols {
 		// add opcodes to push "free" values onto the stack so they can be picked up when the VM hits OpFunction
@@ -285,7 +285,7 @@ func (c *Compiler) instructionsForSymbols(node Node, symbols []symbol.Symbol) (i
 		if err != nil {
 			return
 		}
-		ins = ins.Append(temp)
+		pkg = pkg.Append(temp)
 	}
 	return
 }
