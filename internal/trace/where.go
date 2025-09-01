@@ -68,12 +68,6 @@ func FindLocation(wSlc WhereSlice, from int) Where {
 	return NewWhere(0, 0)
 }
 
-// from: position in WhereSlice/Instructions opcodes
-func TraceStringFromSlice(wSlc WhereSlice, from int, source string) string {
-	where := FindLocation(wSlc, from)
-	return "[" + where.String() + "]\n" + where.Trace(source)		// ???
-}
-
 func CopyWhereSlice(wSlc WhereSlice) WhereSlice {
 	newSlc := make(WhereSlice, len(wSlc))
 	for i := range wSlc {

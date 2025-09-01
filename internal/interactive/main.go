@@ -31,6 +31,7 @@ import (
 	"langur/str"
 	"langur/symbol"
 	"langur/token"
+	"langur/trace"
 	"langur/vm"
 	"os"
 	"strings"
@@ -38,6 +39,8 @@ import (
 
 type InteractiveOptions struct{
 	Prompt string
+
+	PrintCodeLocationTrace bool
 
 	printLexTokens bool
 
@@ -60,6 +63,8 @@ type InteractiveOptions struct{
 // ... which will use a different set of options.
 var options = &InteractiveOptions{
 	Prompt : ">> ",
+
+	PrintCodeLocationTrace: false,  // TODO
 
 	printLexTokens : false,
 
@@ -99,10 +104,10 @@ func resetEnvironment() {
 
 var in, out = os.Stdin, os.Stdout
 
-// for REPL not run from langur command (not "interactive")
+// for REPL not run from langur command (not "interactive" mode)
 func main() {
 	const loadFile = ""
-	
+
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Fprintf(out, object.UnhandledPanicString(p))
@@ -169,6 +174,7 @@ func loop(opts *InteractiveOptions) {
 			// exit(): normally requires a parameter, but okay without for REPL
 			return
 
+		// FIXME: "reset" not a reserved keyword; therefore could potentially conflict with variable name
 		case "reset":
 			fmt.Fprintf(out, "Type reset() to reset the environment.\n")
 			continue
@@ -185,6 +191,13 @@ func loop(opts *InteractiveOptions) {
 	}
 }
 
+func printLocationTrace(where *trace.Where, source string) {
+	if where != nil {
+		fmt.Printf("\n")
+		fmt.Printf(where.Trace(source))
+	}
+}
+
 func repl(source string, opts *InteractiveOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
@@ -193,6 +206,14 @@ func repl(source string, opts *InteractiveOptions) {
 	var byteCode *bytecode.ByteCode
 	var machine *vm.VM
 	var err error
+
+	var where *trace.Where // TODO: pass back position of error
+
+	defer func() {
+		if err != nil && opts.PrintCodeLocationTrace {
+			printLocationTrace(where, source)
+		}
+	}()
 
 	if opts.printLexTokens {
 		// print lexical tokens
@@ -264,27 +285,28 @@ func repl(source string, opts *InteractiveOptions) {
 
 		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, firstRun)
 		if err != nil {
-			io.WriteString(out, fmt.Sprintf("Compile Error: %s", err.Error()))
-		}
+			io.WriteString(out, fmt.Sprintf("New Compiler Error: %s", err.Error()))
 
-		if firstRun {
-			_, err = program.Compile(comp)
 		} else {
-			_, err = program.CompileAnother(comp)
-		}
-		if err != nil {
-			fmt.Fprintf(out, "Compile Errors\n%s\n", err)
-		}
-
-		byteCode = comp.NewByteCode()
-		if opts.printCompiledInstructions {
-			fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
-				InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
-		}
-		if opts.printCompiledConstants {
-			fmt.Fprintf(out, "ByteCode Constants\n")
-			for i := range byteCode.Constants {
-				fmt.Fprintf(out, "%d: %s\n", i, byteCode.Constants[i].ReplString())
+			if firstRun {
+				_, err = program.Compile(comp)
+			} else {
+				_, err = program.CompileAnother(comp)
+			}
+			if err != nil {
+				fmt.Fprintf(out, "Compile Errors\n%s\n", err)
+			}
+	
+			byteCode = comp.NewByteCode()
+			if opts.printCompiledInstructions {
+				fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
+					InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
+			}
+			if opts.printCompiledConstants {
+				fmt.Fprintf(out, "ByteCode Constants\n")
+				for i := range byteCode.Constants {
+					fmt.Fprintf(out, "%d: %s\n", i, byteCode.Constants[i].ReplString())
+				}
 			}
 		}
 

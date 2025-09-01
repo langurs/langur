@@ -19,20 +19,31 @@ import (
 	"langur/parser"
 	"langur/str"
 	"langur/system"
-	// "langur/trace"
+	"langur/trace"
 	"langur/vm"
 	"os"
 )
 
-const use = "use: langur [OPTION, ...] SCRIPT [SCRIPTARG, ...]"
-
-func main() {
-	printErrors := true
-	// printCodeLocationTrace := true	  //TODO
+const (
+	use = "use: langur [OPTION, ...] SCRIPT [SCRIPTARG, ...]"
+	
+	printErrors = true
+	printCodeLocationTrace = false   // TODO
 
 	// NOTE: printStackTrace should generally be false; might be abused otherwise?
-	printStackTrace := false
-	
+	printStackTrace = false
+)
+
+func printLocationTrace(where *trace.Where, source string) {
+	if where != nil {
+		fmt.Printf("\n")
+		fmt.Printf(where.Trace(source))
+	}
+}
+
+func main() {
+	var where *trace.Where // TODO: pass back position of error
+
 	defer func() {
 		if p := recover(); p != nil {
 			if printErrors {
@@ -75,6 +86,7 @@ func main() {
 	if file == "" {
 		opts := &interactive.InteractiveOptions{
 			Prompt: ">> ", PrintVmResultRaw: true,
+			PrintCodeLocationTrace: printCodeLocationTrace,
 		}
 		interactive.Interactive(opts)
 		os.Exit(0)
@@ -127,8 +139,15 @@ func main() {
 
 	comp, err := ast.NewCompiler(compile_modes, true)
 	if err != nil {
-		fmt.Print("langur: ")
-		fmt.Printf("compilation error: %s", err.Error())
+		if printErrors {
+			fmt.Print("langur: ")
+			fmt.Printf("new compiler error: %s", err.Error())
+
+			if printCodeLocationTrace {
+				printLocationTrace(where, source)
+			}
+		}
+		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
 	}
 
 	_, err = program.Compile(comp)
@@ -136,6 +155,10 @@ func main() {
 		if printErrors {
 			fmt.Print("langur: ")
 			fmt.Printf("compilation errors\n%s\n", err)
+
+			if printCodeLocationTrace {
+				printLocationTrace(where, source)
+			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
 	}
@@ -154,11 +177,9 @@ func main() {
 			fmt.Print("langur: ")
 			fmt.Printf("vm errors\n%s\n", err)
 
-			// ip := 0	// TODO: pass back instruction pointer position of error
-			// if printCodeLocationTrace {
-			// 	fmt.Printf("\n\n")
-			// 	fmt.Printf(trace.TraceStringFromSlice(comp.InsPackage.Where, ip, source))
-			// }
+			if printCodeLocationTrace {
+				printLocationTrace(where, source)
+			}
 		}
 
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
