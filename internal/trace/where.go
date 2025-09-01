@@ -53,6 +53,7 @@ func NewWhereAddress(line, linePosition int) *Where {
 }
 
 // work back to first non-nil entry
+// from: position in WhereSlice/Instructions opcodes
 func FindLocation(wSlc WhereSlice, from int) Where {
 	if len(wSlc) > from {
 		for i := from; i > -1; i-- {
@@ -65,6 +66,12 @@ func FindLocation(wSlc WhereSlice, from int) Where {
 		return *(wSlc[0])
 	}
 	return NewWhere(0, 0)
+}
+
+// from: position in WhereSlice/Instructions opcodes
+func TraceStringFromSlice(wSlc WhereSlice, from int, source string) string {
+	where := FindLocation(wSlc, from)
+	return "[" + where.String() + "]\n" + where.Trace(source)		// ???
 }
 
 func CopyWhereSlice(wSlc WhereSlice) WhereSlice {

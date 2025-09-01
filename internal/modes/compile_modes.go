@@ -9,7 +9,7 @@ import (
 
 type CompileModes struct {
 	WarnOnIntegerLiteralsStartingWithZero bool
-	ExecuteScriptStringInsteadOfFile      bool
+	ExecuteSourceStringInsteadOfFile      bool
 	TestCompile                           bool
 	WarnOnSurrogateCodes                  bool
 	Help                                  bool
@@ -59,7 +59,7 @@ func CompileModesFromArgs(args []string, useSlash bool) (m *CompileModes, err er
 			if i != len(args)-1 {
 				err = fmt.Errorf("Execute flag must be last")
 			}
-			m.ExecuteScriptStringInsteadOfFile = true
+			m.ExecuteSourceStringInsteadOfFile = true
 
 		case "-c", "/c":
 			m.TestCompile = true
@@ -70,7 +70,7 @@ func CompileModesFromArgs(args []string, useSlash bool) (m *CompileModes, err er
 
 		case "--help", "/?":
 			m.Help = true
-			if m.TestCompile || m.ExecuteScriptStringInsteadOfFile {
+			if m.TestCompile || m.ExecuteSourceStringInsteadOfFile {
 				err = fmt.Errorf("Invalid mix of command line flags")
 				return
 			}

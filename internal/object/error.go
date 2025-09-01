@@ -22,9 +22,7 @@ var ERR_HASHKEY_SOURCE = NewString("src")
 var ERR_HASHKEY_MESSAGE = NewString("msg")
 var ERR_HASHKEY_HISTORY = NewString("hst")
 
-// var err_HASHKEY_FILE = NewString("fil")
-// var err_HASHKEY_LINE = NewString("lin")
-// var err_HASHKEY_LINE_POS = NewString("pos")
+// var ERR_HASHKEY_WHERE = NewString("pos")
 
 // fulfilling the Object interface...
 type Error struct {
@@ -137,9 +135,6 @@ func NewError(category, source, message string) *Error {
 	hash.WritePair(ERR_HASHKEY_CATEGORY, NewString(category))
 	hash.WritePair(ERR_HASHKEY_SOURCE, NewString(source))
 	hash.WritePair(ERR_HASHKEY_MESSAGE, NewString(message))
-	// hash.WritePair(err_HASHKEY_FILE, ZLS)
-	// hash.WritePair(err_HASHKEY_LINE, NumberFromInt(unknownLinePos))
-	// hash.WritePair(err_HASHKEY_LINE_POS, NumberFromInt(unknownLinePos))
 	hash.WritePair(ERR_HASHKEY_HISTORY, noErrorHistory)
 	return &Error{Contents: hash}
 }
@@ -152,9 +147,6 @@ func NewErrorFromHash(hash *Hash) *Error {
 	enforceHashString(hash, ERR_HASHKEY_CATEGORY, NewString(ERR_GENERAL))
 	enforceHashString(hash, ERR_HASHKEY_SOURCE, ZLS)
 	enforceHashString(hash, ERR_HASHKEY_MESSAGE, NewString("Unknown Error"))
-	// enforceHashString(hash, err_HASHKEY_FILE, ZLS)
-	// enforceHashNumber(hash, err_HASHKEY_LINE, NumberFromInt(unknownLinePos))
-	// enforceHashNumber(hash, err_HASHKEY_LINE_POS, NumberFromInt(unknownLinePos))
 	enforceHashErrorHistory(hash, ERR_HASHKEY_HISTORY)
 	return &Error{Contents: hash}
 }

@@ -19,6 +19,7 @@ import (
 	"langur/parser"
 	"langur/str"
 	"langur/system"
+	// "langur/trace"
 	"langur/vm"
 	"os"
 )
@@ -27,6 +28,7 @@ const use = "use: langur [OPTION, ...] SCRIPT [SCRIPTARG, ...]"
 
 func main() {
 	printErrors := true
+	// printCodeLocationTrace := true	  //TODO
 
 	// NOTE: printStackTrace should generally be false; might be abused otherwise?
 	printStackTrace := false
@@ -78,9 +80,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	scriptString := ""
-	if compile_modes.ExecuteScriptStringInsteadOfFile {
-		scriptString, file = file, "-e"
+	source := ""
+	if compile_modes.ExecuteSourceStringInsteadOfFile {
+		source, file = file, "-e"
 
 	} else {
 		b, err := ioutil.ReadFile(file)
@@ -92,12 +94,12 @@ func main() {
 			}
 			os.Exit(system.GetExitStatus(system.ExitStatusFailedReadFile))
 		}
-		scriptString = string(b)
+		source = string(b)
 	}
 
 	// Note: must check the parser and compiler for errors
 	// Most lexer errors are passed to the parser, so they don't have to be checked here.
-	lex, err := lexer.New(scriptString, file, compile_modes)
+	lex, err := lexer.New(source, file, compile_modes)
 	if err != nil {
 		fmt.Print("langur: ")
 		fmt.Println("lexer error: " + err.Error())
@@ -144,14 +146,21 @@ func main() {
 		os.Exit(system.GetExitStatus(system.ExitStatusTest))
 	}
 
-	byteCode := comp.ByteCode()
+	byteCode := comp.NewByteCode()
 	machine := vm.New(byteCode, vm_modes)
 	err = machine.Run()
 	if err != nil {
 		if printErrors {
 			fmt.Print("langur: ")
 			fmt.Printf("vm errors\n%s\n", err)
+
+			// ip := 0	// TODO: pass back instruction pointer position of error
+			// if printCodeLocationTrace {
+			// 	fmt.Printf("\n\n")
+			// 	fmt.Printf(trace.TraceStringFromSlice(comp.InsPackage.Where, ip, source))
+			// }
 		}
+
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
 	}
 

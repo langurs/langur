@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"langur/object"
 	"langur/opcode"
+	// "langur/trace"
 )
 
 // The fnReturn propogates langur return values out of frames and is handled by executeFunctionCall().

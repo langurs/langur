@@ -276,7 +276,7 @@ func repl(source string, opts *InteractiveOptions) {
 			fmt.Fprintf(out, "Compile Errors\n%s\n", err)
 		}
 
-		byteCode = comp.ByteCode()
+		byteCode = comp.NewByteCode()
 		if opts.printCompiledInstructions {
 			fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
 				InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
