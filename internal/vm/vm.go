@@ -3,6 +3,7 @@
 package vm
 
 import (
+	"langur/trace"
 	"fmt"
 	"langur/args"
 	"langur/bytecode"
@@ -43,15 +44,18 @@ func NewWithGlobalStore(byteCode *bytecode.ByteCode, globals []object.Object, m 
 	return vm
 }
 
-func (vm *VM) Run() error {
+func (vm *VM) Run() (err error, where *trace.Where) {
 	// to push late-binding assignments onto the stack before executing the global frame, ...
 	// ... which should already contain the opcodes to retrieve them
-	late, err := vm.gatherLateBindings()
+	var late []object.Object
+	
+	late, err = vm.gatherLateBindings()
 	if err != nil {
-		return err
+		return
 	}
+	
 	_, _, err = vm.process.RunFrame(nil, late)
-	return err
+	return
 }
 
 func (vm *VM) gatherLateBindings() (late []object.Object, err error) {

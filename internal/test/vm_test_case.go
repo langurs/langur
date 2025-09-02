@@ -3,6 +3,7 @@
 package test
 
 import (
+	"langur/trace"
 	"fmt"
 	"langur/ast"
 	"langur/object"
@@ -31,6 +32,9 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 		fmt.Printf("Test %d: %q\n", testno, input)
 	}
 
+	var where *trace.Where
+	printCodeLocationTrace := true
+
 	program := parse(t, input)
 
 	comp, err := ast.NewCompiler(nil, false)
@@ -51,9 +55,14 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 		start = time.Now().UnixNano()
 	}
 
-	err = machine.Run()
+	err, where = machine.Run()
 	if err != nil {
-		t.Fatalf("Test %d: (%q)\nvm error: %s", testno, input, err)
+		tr := ""
+		if printCodeLocationTrace && where != nil {
+			tr = "\n" + where.Trace(input)
+		}
+		
+		t.Fatalf("Test %d: (%q)\nvm error: %s%s", testno, input, err, tr)
 	}
 
 	if testPrintSpeed {

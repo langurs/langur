@@ -20,6 +20,10 @@ func (w Where) Copy() Where {
 	}
 }
 
+func (w Where) Equal(w2 Where) bool {
+	return w.Line == w2.Line && w.LinePosition == w2.LinePosition
+}
+
 func (w Where) String() string {
 	if w.Line == 0 {
 		return "?"

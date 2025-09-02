@@ -4971,7 +4971,7 @@ func TestIntRangeExpressions(t *testing.T) {
 		}
 
 		machine := vm.New(comp.ByteCode(), nil)
-		err = machine.Run()
+		err, _ = machine.Run()
 		if err != nil {
 			t.Fatalf("(%q) vm error: %s", tt.input, err)
 		}
@@ -5533,7 +5533,7 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 		}
 
 		machine := vm.New(comp.ByteCode(), nil)
-		err = machine.Run()
+		err, _ = machine.Run()
 		if err == nil {
 			t.Fatalf("(%s)\nexpected VM error but resulted in none.", tt.input)
 		}

@@ -42,7 +42,7 @@ func printLocationTrace(where *trace.Where, source string) {
 }
 
 func main() {
-	var where *trace.Where // TODO: pass back position of error
+	var where *trace.Where
 
 	defer func() {
 		if p := recover(); p != nil {
@@ -169,9 +169,9 @@ func main() {
 		os.Exit(system.GetExitStatus(system.ExitStatusTest))
 	}
 
-	byteCode := comp.NewByteCode()
+	byteCode := comp.ByteCode()
 	machine := vm.New(byteCode, vm_modes)
-	err = machine.Run()
+	err, where = machine.Run()
 	if err != nil {
 		if printErrors {
 			fmt.Print("langur: ")

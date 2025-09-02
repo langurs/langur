@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"langur/common"
 	"langur/str"
+	"langur/trace"
 )
 
 const (
@@ -22,15 +23,14 @@ var ERR_HASHKEY_SOURCE = NewString("src")
 var ERR_HASHKEY_MESSAGE = NewString("msg")
 var ERR_HASHKEY_HISTORY = NewString("hst")
 
-// var ERR_HASHKEY_WHERE = NewString("pos")
-
-// fulfilling the Object interface...
+// fulfils the Object interface...
 type Error struct {
 	Contents *Hash
+	Where    trace.Where
 }
 
 func (e *Error) Copy() Object {
-	return &Error{Contents: e.Contents.Copy().(*Hash)}
+	return &Error{Contents: e.Contents.Copy().(*Hash), Where: e.Where.Copy()}
 }
 
 // fulfilling the Object interface; not necessarily to be called
@@ -39,7 +39,7 @@ func (l *Error) Equal(eo2 Object) bool {
 	if !ok {
 		return false
 	}
-	return l.Contents.Equal(r.Contents)
+	return l.Contents.Equal(r.Contents) && l.Where.Equal(r.Where)
 }
 
 func (e *Error) Type() ObjectType {
