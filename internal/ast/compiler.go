@@ -13,7 +13,7 @@ import (
 )
 
 // to pass from compiler to VM
-func (c *Compiler) NewByteCode() *bytecode.ByteCode {
+func (c *Compiler) ByteCode() *bytecode.ByteCode {
 	return &bytecode.ByteCode{
 		StartCode: &object.CompiledCode{
 			InsPackage:         c.InsPackage,

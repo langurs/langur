@@ -24,10 +24,10 @@ func (w Where) String() string {
 	if w.Line == 0 {
 		return "?"
 	}
-	return fmt.Sprintf("%d %d", w.Line, w.LinePosition)
+	return fmt.Sprintf("%d, %d", w.Line, w.LinePosition)
 }
 
-var splitLines = regexp.MustCompile("\n")
+var splitLines = regexp.MustCompile("\r\n|\r|\n")
 
 func (w Where) Trace(source string) string {
 	lines := splitLines.Split(source, -1)
