@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"langur/object"
 	"langur/opcode"
-	// "langur/trace"
+	"langur/trace"
 )
 
 // The fnReturn propogates langur return values out of frames and is handled by executeFunctionCall().
@@ -15,6 +15,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 	relay *jumpRelay,
 	err error) {
 
+	var errIP int
 	var result object.Object
 	retainLastValue := false
 
@@ -37,12 +38,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 		// catch panics and convert them to langur exceptions
 		if pr.Modes.GoPanicToLangurException {
 			if p := recover(); p != nil {
-				name, ok := fr.getFnName()
-				if ok {
-					err = object.NewErrorFromAnything(p, "panic:"+name)
-				} else {
-					err = object.NewErrorFromAnything(p, "panic:")
-				}
+				name, _ := fr.getFnName()
+				err = object.NewErrorFromAnything(p, "panic:"+name)
 			}
 		}
 
@@ -61,9 +58,27 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// reset the stack without adding to it
 			pr.stack = pr.stack[:sp]
 		}
+
+		// to ensure to return an Error Object with Where field set...
+		if err != nil {
+			if e, isErrObj := err.(*object.Error); isErrObj {
+				// only set Where field of Error Object if not already set
+				// with 0 not being a valid line number (1-based)
+				if e.Where.Line == 0 {
+					e.Where = trace.FindLocation(fr.code.InsPackage.Where, errIP)
+				}
+
+			} else {
+				// not an Error Object; create one so we can attach the location
+				fnName, _ := fr.getFnName()
+				err = object.NewErrorFromAnything(err, fnName)
+				err.(*object.Error).Where = trace.FindLocation(fr.code.InsPackage.Where, errIP)
+			}
+		}
 	}()
 
 	for ip := 0; ip < len(ins); ip++ {
+		errIP = ip	// in case of error, where did it happen?
 		op := opcode.OpCode(ins[ip])
 
 		switch op {

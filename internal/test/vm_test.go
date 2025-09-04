@@ -5501,7 +5501,7 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 		// with parameter expansion
 		{
 			input:    `fn(a, ...[1..] b) { }(1);`,
-			expected: `Parameter expansion min (1) not met (0)`,
+			expected: `args: Parameter expansion min (1) not met (0) ()`,
 			//`args: argument/parameter count mismatch, expected=2..-1, received=1 (fn)`,
 		},
 		{
@@ -5511,11 +5511,11 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 
 		{
 			input:    `fn(a, c, ...[1..3] b) { }(1, 2, 3, 4, 5, 6, 7);`,
-			expected: `Parameter expansion max (3) exceeded (5)`,
+			expected: `args: Parameter expansion max (3) exceeded (5) ()`,
 		},
 		{
 			input:    `fn(a, c, ...[1..3] b) { }(1, 2, [3, 4, 5, 6]...);`,
-			expected: `Parameter expansion max (3) exceeded (4)`,
+			expected: `args: Parameter expansion max (3) exceeded (4) ()`,
 		},
 	}
 

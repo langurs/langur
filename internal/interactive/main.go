@@ -64,7 +64,7 @@ type InteractiveOptions struct{
 var options = &InteractiveOptions{
 	Prompt : ">> ",
 
-	PrintCodeLocationTrace: false,  // TODO
+	PrintCodeLocationTrace: true,
 
 	printLexTokens : false,
 
@@ -193,7 +193,7 @@ func loop(opts *InteractiveOptions) {
 
 func printLocationTrace(where *trace.Where, source string) {
 	if where != nil {
-		fmt.Printf("\n")
+		fmt.Printf("\n[%s] trace...\n", where.String())
 		fmt.Printf(where.Trace(source))
 	}
 }
@@ -207,7 +207,7 @@ func repl(source string, opts *InteractiveOptions) {
 	var machine *vm.VM
 	var err error
 
-	var where *trace.Where // TODO: pass back position of error
+	var where *trace.Where
 
 	defer func() {
 		if err != nil && opts.PrintCodeLocationTrace {
@@ -320,7 +320,7 @@ func repl(source string, opts *InteractiveOptions) {
 	if opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 		machine = vm.NewWithGlobalStore(byteCode, globals, vmModes)
 
-		err = machine.Run()
+		err, where = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "VM Errors\n%s\n", err)
 			return

@@ -28,7 +28,7 @@ const (
 	use = "use: langur [OPTION, ...] SCRIPT [SCRIPTARG, ...]"
 	
 	printErrors = true
-	printCodeLocationTrace = false   // TODO
+	printCodeLocationTrace = true
 
 	// NOTE: printStackTrace should generally be false; might be abused otherwise?
 	printStackTrace = false
@@ -36,7 +36,7 @@ const (
 
 func printLocationTrace(where *trace.Where, source string) {
 	if where != nil {
-		fmt.Printf("\n")
+		fmt.Printf("\n[%s] trace...\n", where.String())
 		fmt.Printf(where.Trace(source))
 	}
 }

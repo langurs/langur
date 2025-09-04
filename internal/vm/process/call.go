@@ -116,8 +116,11 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 
 	// type assertion required on interface{} here
 	result = bi.Fn.(BuiltInFunction)(pr, args...)
-	if result.Type() == object.ERROR_OBJ {
-		return nil, result.(*object.Error)
+	
+	// if received an Error Object (from a built-in function), ... 
+	// ... swap so that error is second value returned from this function
+	if r, isErrObj := result.(*object.Error); isErrObj {
+		return nil, r // result.(*object.Error)
 	} else {
 		return result, nil
 	}
@@ -219,7 +222,8 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 			params = append(positional[:len(sig.ParamPositional)-1], &object.List{Elements: last})
 
 			if sig.ParamExpansionMax != -1 && len(last) > sig.ParamExpansionMax {
-				err = fmt.Errorf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last))
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
+					fmt.Sprintf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last)))
 			}
 
 		} else if diff == 0 && sig.ParamExpansionMin == 0 {
@@ -228,7 +232,8 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 		}
 
 		if len(last) < sig.ParamExpansionMin {
-			err = fmt.Errorf("Parameter expansion min (%d) not met (%d)", sig.ParamExpansionMin, len(last))
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
+					fmt.Sprintf("Parameter expansion min (%d) not met (%d)", sig.ParamExpansionMin, len(last)))
 		}
 	}
 

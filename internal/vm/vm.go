@@ -55,6 +55,14 @@ func (vm *VM) Run() (err error, where *trace.Where) {
 	}
 	
 	_, _, err = vm.process.RunFrame(nil, late)
+
+	// extract location of error
+	if err != nil {
+		if e, isErrObj := err.(*object.Error); isErrObj && e.Where.Line != 0 {
+			where = &e.Where
+		}		
+	}
+
 	return
 }
 

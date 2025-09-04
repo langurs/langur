@@ -2,8 +2,8 @@ langur revision history
 https://langurlang.org
 
 ... - 0.19.6
+- added tracing for VM error messages
 - added common.ArgCountMax; use to account for parameter expansion max when set to "infinite" (-1)
-
 
 2025-08-26 - 0.19.5
 - moved compiler from compiler package to ast package

@@ -9,6 +9,8 @@ import (
 	"langur/trace"
 )
 
+// The Error type fulfils the Error interface and the langur Object interface.
+
 const (
 	// categories
 	ERR_GENERAL   = "general"
@@ -23,7 +25,6 @@ var ERR_HASHKEY_SOURCE = NewString("src")
 var ERR_HASHKEY_MESSAGE = NewString("msg")
 var ERR_HASHKEY_HISTORY = NewString("hst")
 
-// fulfils the Object interface...
 type Error struct {
 	Contents *Hash
 	Where    trace.Where
