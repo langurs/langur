@@ -11,8 +11,6 @@ y[1][2] = 123   # doesn't work
 --Anthony Davis
 
 backlog
-- use metadata in VM for traceback errors to source code
-    Work was started toward this, but not finished.
 - write custom decimal library (Davis) - likely to be a separate project
     make safe for concurrency
     simplify and other changes
