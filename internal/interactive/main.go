@@ -1,14 +1,12 @@
 // langur/interactive/main.go
 
-// Copyright 2025 Anthony Davis
-// See LICENSE file.
-// This constitutes notice for all appropriate source files.
+// See copyright notice at langur/internal/main.go.
 
 // allowing REPL to be used "locally" with special settings (for testing) or ...
-// to be run from langur command as "interactive," with more restricted set of possibilities
+// to be run from langur command as "interactive," with a more restricted set of possibilities
 
 // NOTE: Go allows a package to be either executable or importable (not both).
-// Use only one of the following package names (normally set to interactive).
+// Use only one of the following package names (normally set to interactive, not main).
 // for local REPL only, use...
 // package main			/// executable
 
@@ -36,6 +34,13 @@ import (
 	"os"
 	"strings"
 )
+
+func PrintLocationTrace(where *trace.Where, source, file string) {
+	if where != nil {
+		fmt.Printf("\ntraced to [%s] in file \"%s\"...\n", where.String(), file)
+		fmt.Printf(where.Trace(source))
+	}
+}
 
 type InteractiveOptions struct{
 	Prompt string
@@ -191,13 +196,6 @@ func loop(opts *InteractiveOptions) {
 	}
 }
 
-func printLocationTrace(where *trace.Where, source string) {
-	if where != nil {
-		fmt.Printf("\n[%s] trace...\n", where.String())
-		fmt.Printf(where.Trace(source))
-	}
-}
-
 func repl(source string, opts *InteractiveOptions) {
 	var lex *lexer.Lexer
 	var p *parser.Parser
@@ -211,7 +209,7 @@ func repl(source string, opts *InteractiveOptions) {
 
 	defer func() {
 		if err != nil && opts.PrintCodeLocationTrace {
-			printLocationTrace(where, source)
+			PrintLocationTrace(where, source, "")
 		}
 	}()
 

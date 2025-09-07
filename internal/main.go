@@ -34,13 +34,6 @@ const (
 	printStackTrace = false
 )
 
-func printLocationTrace(where *trace.Where, source string) {
-	if where != nil {
-		fmt.Printf("\n[%s] trace...\n", where.String())
-		fmt.Printf(where.Trace(source))
-	}
-}
-
 func main() {
 	var where *trace.Where
 
@@ -144,7 +137,7 @@ func main() {
 			fmt.Printf("new compiler error: %s", err.Error())
 
 			if printCodeLocationTrace {
-				printLocationTrace(where, source)
+				interactive.PrintLocationTrace(where, source, file)
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
@@ -157,7 +150,7 @@ func main() {
 			fmt.Printf("compilation errors\n%s\n", err)
 
 			if printCodeLocationTrace {
-				printLocationTrace(where, source)
+				interactive.PrintLocationTrace(where, source, file)
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
@@ -178,7 +171,7 @@ func main() {
 			fmt.Printf("vm errors\n%s\n", err)
 
 			if printCodeLocationTrace {
-				printLocationTrace(where, source)
+				interactive.PrintLocationTrace(where, source, file)
 			}
 		}
 
