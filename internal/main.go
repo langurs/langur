@@ -1,7 +1,7 @@
 // langur/main.go
 
 // Copyright 2025 Anthony Davis
-// See LICENSE file.
+// See LICENSE.txt.
 // This constitutes notice for all appropriate source files.
 
 package main

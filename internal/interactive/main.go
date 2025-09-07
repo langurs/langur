@@ -1,6 +1,7 @@
 // langur/interactive/main.go
 
 // See copyright notice at langur/internal/main.go.
+// See LICENSE.txt.
 
 // allowing REPL to be used "locally" with special settings (for testing) or ...
 // to be run from langur command as "interactive," with a more restricted set of possibilities
