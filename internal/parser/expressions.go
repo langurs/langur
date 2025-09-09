@@ -100,6 +100,17 @@ func (p *Parser) parseWord() (*ast.IdentNode, bool) {
 	return identifier, true
 }
 
+func (p *Parser) parseType() (ast.Node, int) {
+	tt := p.tok.Type
+	t, ok := p.parseWord()
+	if !ok || tt != token.IDENT {
+		p.addError("Expected identifier token")
+		p.advanceToken()
+		return t, 0
+	}
+	return t, ast.NodeToLangurTypeCode(t)
+}
+
 func (p *Parser) parseList() ast.Node {
 	if p.tok.CpDiff == 0 && !token.MayPrecedeOpeningBracketWithoutSpacing(p.prevTok) {
 		// disallow len[1, 2] without a space

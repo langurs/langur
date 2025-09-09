@@ -72,11 +72,13 @@ func (p *Parser) parseFunction() ast.Node {
 
 	if longForm {
 		// optional explicit return type here
-		// fn(x, y) string { ... }
+		// fn(x, y) : string { ... }
 
-		if p.tok.Type == token.IDENT {
-			lit.ReturnType = p.parseIdentifier()
-			if ast.NodeToLangurTypeCode(lit.ReturnType) != 0 {
+		if p.tok.Type == token.COLON && p.peekTok.Type == token.IDENT {
+			p.advanceToken()  // past the colon
+			var code int
+			lit.ReturnType, code = p.parseType()
+			if code == 0 {
 				p.addError("Unexpected identifier token; not a return type for function")
 			}
 		}
@@ -130,6 +132,16 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (
 func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 	var value, alias ast.Node
 	var aliasTok token.Token
+
+	// potential parts of parameter
+	// 1. ... operator to indicate parameter expansion
+	// 		[] brackets to indicate details of parameter expansion
+	// 2. var keyword
+	// 3. internal name (required)
+	// 4. as keyword followed by external name
+	// 5. : operator followed by explicit type
+	// 6. = operator followed by default value
+	// ex.: var x as y : string = "asdf"
 
 	parseIdentAliasAndAssignment := func() {
 		param = p.parseIdentifier()
