@@ -135,17 +135,19 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 
 	// potential parts of parameter
 	// 1. ... operator to indicate parameter expansion
-	// 		[] brackets to indicate details of parameter expansion
-	// 2. var keyword
-	// 3. internal name (required)
-	// 4. as keyword followed by external name
-	// 5. : operator followed by explicit type
-	// 6. = operator followed by default value
+	// 2.	[] brackets to indicate details of parameter expansion
+	// 3. var keyword
+	// 4. internal name (required)
+	// 5. as keyword followed by external name
+	// 6. : operator followed by explicit type
+	// 7. = operator followed by default value
 	// ex.: var x as y : string = "asdf"
 
 	parseIdentAliasAndAssignment := func() {
 		param = p.parseIdentifier()
+
 		if p.tok.Type == token.AS {
+			// external name specified after as keyword
 			isByName = true
 			if level != 0 {
 				p.addError("Unexpected alias on parameter expansion")
@@ -168,7 +170,19 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			}
 		}
 
+		if p.tok.Type == token.COLON {
+			// explicit type
+			p.advanceToken() // past the colon
+			t, code := p.parseType()
+			if code != 0 {
+				
+			} else {
+				p.addError("Expected parameter type following colon")
+			}
+		}
+
 		if p.tok.Type == token.ASSIGN {
+			// default value
 			isByName = true
 			if level != 0 {
 				p.addError("Unexpected assignment on parameter expansion")

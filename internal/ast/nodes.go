@@ -817,6 +817,7 @@ func (f *FunctionNode) TokenRepresentation() string {
 	sb.WriteString(strings.Join(params, ", ") + ") ")
 
 	if f.ReturnType != nil {
+		sb.WriteString(": ")
 		sb.WriteString(f.ReturnType.TokenRepresentation())
 		sb.WriteByte(' ')
 	}
@@ -861,6 +862,7 @@ func (f *FunctionNode) String() string {
 	sb.WriteString(") ")
 
 	if f.ReturnType != nil {
+		sb.WriteString(": ")
 		sb.WriteString(f.ReturnType.String())
 		sb.WriteByte(' ')
 	}
@@ -1036,7 +1038,7 @@ func (i *IdentNode) TokenRepresentation() string {
 	out.WriteString(i.Name)
 
 	if i.Type != nil {
-		out.WriteByte(' ')
+		out.WriteString(": ")
 		out.WriteString(i.Type.TokenRepresentation())
 	}
 
@@ -1052,7 +1054,7 @@ func (i *IdentNode) String() string {
 	out.WriteString(i.Name)
 
 	if i.Type != nil {
-		out.WriteByte(' ')
+		out.WriteString(": ")
 		out.WriteString(i.Type.String())
 	}
 
