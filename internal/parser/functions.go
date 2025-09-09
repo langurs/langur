@@ -71,8 +71,15 @@ func (p *Parser) parseFunction() ast.Node {
 	}
 
 	if longForm {
-		// NOTE: potential optional explicit return type here
+		// optional explicit return type here
 		// fn(x, y) string { ... }
+
+		if p.tok.Type == token.IDENT {
+			lit.ReturnType = p.parseIdentifier()
+			if ast.NodeToLangurTypeCode(lit.ReturnType) != 0 {
+				p.addError("Unexpected identifier token; not a return type for function")
+			}
+		}
 
 		if p.tok.Type != token.LBRACE {
 			p.addError("Expected left brace { to start function body for long form")

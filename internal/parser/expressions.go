@@ -455,11 +455,10 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 
 		expr.Right = p.parseExpression(getInfixPrecedence(expr.Operator.Type))
 
-		rightTypeCode := ast.NodeToLangurTypeCode(expr.Right)
-		rightIsType := rightTypeCode != 0
+		rightIsType := ast.NodeToLangurTypeCode(expr.Right) != 0
 
 		if rightIsType && expr.Operator.Type == token.FORWARD {
-			// change to call node (call on type, such as 123 -> string)
+			// change to call node - call on type, such as 123 -> string, meaning string(123)
 			return &ast.CallNode{Token: expr.Token,
 				Function: expr.Right, PositionalArgs: []ast.Node{expr.Left}}
 		}
