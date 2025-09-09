@@ -58,7 +58,7 @@ func (p *Parser) parseFunction() ast.Node {
 			return p.finishSelfReferenceCall()
 		}
 
-		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
+		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN}, longForm)
 
 	} else if p.tok.Type == token.COLON {
 		// no parameters
@@ -67,11 +67,11 @@ func (p *Parser) parseFunction() ast.Node {
 
 	} else {
 		// fn x, y: ...
-		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON})
+		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON}, longForm)
 	}
 
 	if longForm {
-		// optional explicit return type here
+		// optional explicit return type here (long form only)
 		// fn(x, y) : string { ... }
 
 		if p.tok.Type == token.COLON && p.peekTok.Type == token.IDENT {
@@ -97,11 +97,11 @@ func (p *Parser) parseFunction() ast.Node {
 	return lit
 }
 
-func (p *Parser) parseFunctionParameters(until []token.Type) (
+func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
 	positional, byname []ast.Node) {
 
 	for !token.InTypeSlice(p.tok.Type, until) {
-		param, isByName := p.parseParameter(0)
+		param, isByName := p.parseParameter(0, longForm)
 
 		if isByName {
 			byname = append(byname, param)
@@ -129,7 +129,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (
 	return
 }
 
-func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
+func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByName bool) {
 	var value, alias ast.Node
 	var aliasTok token.Token
 
@@ -139,7 +139,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 	// 3. var keyword
 	// 4. internal name (required)
 	// 5. as keyword followed by external name
-	// 6. : operator followed by explicit type
+	// 6. : operator followed by explicit type (long form only)
 	// 7. = operator followed by default value
 	// ex.: var x as y : string = "asdf"
 
@@ -154,7 +154,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			}
 
 			aliasTok = p.tok
-			p.advanceToken()
+			p.advanceToken() // past as keyword
 			var ok bool
 			alias, ok = p.parseWord()
 			if !ok {
@@ -170,11 +170,12 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			}
 		}
 
-		if p.tok.Type == token.COLON {
+		if longForm && p.tok.Type == token.COLON {
 			// explicit type
 			p.advanceToken() // past the colon
-			t, code := p.parseType()
+			_, code := p.parseType()
 			if code != 0 {
+				p.addError("This version of langur not set up to parse explicit parameter type")
 				
 			} else {
 				p.addError("Expected parameter type following colon")
@@ -225,7 +226,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 			p.advanceToken()
 			return
 		}
-		param = p.parseParameterExpansion(level)
+		param = p.parseParameterExpansion(level, longForm)
 		return
 
 	default:
@@ -234,7 +235,7 @@ func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 	return
 }
 
-func (p *Parser) parseParameterExpansion(level int) ast.Node {
+func (p *Parser) parseParameterExpansion(level int, longForm bool) ast.Node {
 	exp := p.tok
 	p.advanceToken() // past ... expansion token
 
@@ -248,7 +249,7 @@ func (p *Parser) parseParameterExpansion(level int) ast.Node {
 		}
 		p.advanceToken()
 	}
-	continuation, isByName := p.parseParameter(level + 1)
+	continuation, isByName := p.parseParameter(level + 1, longForm)
 
 	if isByName {
 		p.addError("Cannot use parameter expansion on parameter by name")
