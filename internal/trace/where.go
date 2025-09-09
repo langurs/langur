@@ -46,6 +46,25 @@ func (w Where) Trace(source string) string {
 	return ""
 }
 
+func LocationTrace(where *Where, source, file string) string {
+	var sb strings.Builder
+
+	if where != nil {
+		sb.WriteString("traced to [" + where.String() + "] ")
+	}
+	if file != "" {
+		sb.WriteString("in file \"" + file + "\"")
+	}
+	if where != nil || file != "" {
+		sb.WriteRune('\n')
+	}
+	if where != nil && source != "" {
+		sb.WriteString(where.Trace(source))
+	}
+	
+	return sb.String()
+}
+
 func NewWhere(line, linePosition int) Where {
 	return Where{Line: line, LinePosition: linePosition}
 }

@@ -9,9 +9,9 @@ import (
 
 type CompileModes struct {
 	WarnOnIntegerLiteralsStartingWithZero bool
+	WarnOnSurrogateCodes                  bool
 	ExecuteSourceStringInsteadOfFile      bool
 	TestCompile                           bool
-	WarnOnSurrogateCodes                  bool
 	Help                                  bool
 }
 
@@ -19,6 +19,7 @@ type CompileModes struct {
 // Base 8 literals in langur start with 8x, such as 8x123, not 0123.
 const Default_WarnOnIntegerLiteralsStartingWithZero = true
 
+// Surrogate codes (used for UTF-16) should probably not be present.
 const Default_WarnOnSurrogateCodes = true
 
 func NewCompileModes() *CompileModes {

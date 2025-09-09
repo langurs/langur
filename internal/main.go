@@ -34,13 +34,20 @@ const (
 	printStackTrace = false
 )
 
+func printErr(s string) {
+	fmt.Fprint(os.Stderr, s)
+}
+func printLnErr(s string) {
+	printErr(s + "\n")
+}
+
 func main() {
 	var where *trace.Where
 
 	defer func() {
 		if p := recover(); p != nil {
 			if printErrors {
-				fmt.Println(object.UnhandledPanicString(p))
+				printLnErr(object.UnhandledPanicString(p))
 				if printStackTrace {
 					panic(p)
 				}
@@ -55,28 +62,25 @@ func main() {
 	// langur, langurArgs, file, fileArgs, err := args.OsArgsToArgs()
 	_, langurArgs, file, _, err := args.OsArgsToArgs()
 	if err != nil {
-		fmt.Print("langur: ")
-		fmt.Println(err)
+		printLnErr("langur: " + err.Error())
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	compile_modes, err = modes.CompileModesFromArgs(langurArgs, system.OnWindows)
 	if err != nil {
-		fmt.Print("langur: ")
-		fmt.Println(err)
-		fmt.Println()
-		fmt.Println(use)
+		printLnErr("langur: " + err.Error() + "\n\n" + use)
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	if compile_modes.Help {
-		fmt.Printf("langur %s (langurlang.org)\n\n %s\n%s",
-			bytecode.LangurRev, use, args.GetArgsDescription())
+		printLnErr(fmt.Sprintf("langur %s (langurlang.org)\n\n %s\n%s",
+			bytecode.LangurRev, use, args.GetArgsDescription()))
 
 		os.Exit(system.GetExitStatus(system.ExitStatusHelp))
 	}
 
 	if file == "" {
+		// interactive mode
 		opts := &interactive.InteractiveOptions{
 			Prompt: ">> ", PrintVmResultRaw: true,
 			PrintCodeLocationTrace: printCodeLocationTrace,
@@ -87,15 +91,14 @@ func main() {
 
 	source := ""
 	if compile_modes.ExecuteSourceStringInsteadOfFile {
-		source, file = file, "-e"
+		source, file = file, ""
 
 	} else {
 		b, err := ioutil.ReadFile(file)
 		if err != nil {
 			if printErrors {
 				s := str.Limit(file, 100, "...")
-				fmt.Print("langur: ")
-				fmt.Printf("error reading from file (%s): %s\n", s, err.Error())
+				printLnErr(fmt.Sprintf("langur: error reading from file (%s): %s", s, err.Error()))
 			}
 			os.Exit(system.GetExitStatus(system.ExitStatusFailedReadFile))
 		}
@@ -106,8 +109,7 @@ func main() {
 	// Most lexer errors are passed to the parser, so they don't have to be checked here.
 	lex, err := lexer.New(source, file, compile_modes)
 	if err != nil {
-		fmt.Print("langur: ")
-		fmt.Println("lexer error: " + err.Error())
+		printLnErr("langur: lexer error: " + err.Error())
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
 	}
 	p := parser.New(lex, compile_modes)
@@ -115,16 +117,14 @@ func main() {
 	var program *ast.Program
 	program, err = p.ParseProgram()
 	if err != nil {
-		fmt.Print("langur: ")
-		fmt.Println("parsing error: " + err.Error())
+		printLnErr("langur: parsing error: " + err.Error())
 	}
 
 	if len(p.Errs) != 0 {
 		if printErrors {
-			fmt.Print("langur: ")
-			fmt.Println("parsing errors")
+			printLnErr("langur: parsing errors")
 			for _, msg := range p.Errs {
-				fmt.Printf("\t" + msg.Error() + "\n")
+				printLnErr("\t" + msg.Error())
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
@@ -133,11 +133,13 @@ func main() {
 	comp, err := ast.NewCompiler(compile_modes, true)
 	if err != nil {
 		if printErrors {
-			fmt.Print("langur: ")
-			fmt.Printf("new compiler error: %s", err.Error())
+			printLnErr("langur: new compiler error: " + err.Error())
 
 			if printCodeLocationTrace {
-				interactive.PrintLocationTrace(where, source, file)
+				tr := trace.LocationTrace(where, source, file)
+				if tr != "" {
+					printLnErr("\n" + tr)
+				}
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
@@ -146,19 +148,20 @@ func main() {
 	_, err = program.Compile(comp)
 	if err != nil {
 		if printErrors {
-			fmt.Print("langur: ")
-			fmt.Printf("compilation errors\n%s\n", err)
+			printLnErr("langur: compilation errors\n" + err.Error())
 
 			if printCodeLocationTrace {
-				interactive.PrintLocationTrace(where, source, file)
+				tr := trace.LocationTrace(where, source, file)
+				if tr != "" {
+					printLnErr("\n" + tr)
+				}
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedCompile))
 	}
 
 	if compile_modes.TestCompile {
-		fmt.Print("langur: ")
-		fmt.Println("no errors (parse and compile success)")
+		printLnErr("langur: no errors (parse and compile success)")
 		os.Exit(system.GetExitStatus(system.ExitStatusTest))
 	}
 
@@ -167,14 +170,15 @@ func main() {
 	err, where = machine.Run()
 	if err != nil {
 		if printErrors {
-			fmt.Print("langur: ")
-			fmt.Printf("vm errors\n%s\n", err)
+			printLnErr("langur: vm errors\n" + err.Error())
 
 			if printCodeLocationTrace {
-				interactive.PrintLocationTrace(where, source, file)
+				tr := trace.LocationTrace(where, source, file)
+				if tr != "" {
+					printLnErr("\n" + tr)
+				}
 			}
 		}
-
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
 	}
 

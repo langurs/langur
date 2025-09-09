@@ -36,13 +36,6 @@ import (
 	"strings"
 )
 
-func PrintLocationTrace(where *trace.Where, source, file string) {
-	if where != nil {
-		fmt.Printf("\ntraced to [%s] in file \"%s\"...\n", where.String(), file)
-		fmt.Printf(where.Trace(source))
-	}
-}
-
 type InteractiveOptions struct{
 	Prompt string
 
@@ -210,7 +203,10 @@ func repl(source string, opts *InteractiveOptions) {
 
 	defer func() {
 		if err != nil && opts.PrintCodeLocationTrace {
-			PrintLocationTrace(where, source, "")
+			tr := trace.LocationTrace(where, source, "")
+			if tr != "" {
+				fmt.Printf("\n" + tr)
+			}
 		}
 	}()
 

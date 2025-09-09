@@ -1,5 +1,5 @@
 # langur development
-2025-08-26
+2025-09-07
 
 I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
 
@@ -10,43 +10,26 @@ y[1][2] = 123   # doesn't work
 
 --Anthony Davis
 
-backlog
-- write custom decimal library (Davis) - likely to be a separate project
-    make safe for concurrency
-    simplify and other changes
-- PEG grammar
-- log (math) function
-- atan2(), acos(), etc.
-- duration string formatting, including weeks
-- engineering notation (almost like scientific notation) interpolation modifier
-- value forwarding syntax with one or multiple uses of forwarding variable _fwd
-    instead of writing ...
-        join(filter(mapX(wordsets..., by=amb)), by="\n")
-    one could write ...
-        mapX(wordsets..., by=amb) -> filter -> join(_fwd, by="\n")
 
-    If there are multiple uses of the forwarded value after an operator, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
-
-other things to consider...
-- efficiency
-    While we couldn't expect performance like C, Go, or Rust, it could be improved.
-- resource management
-    close resources when finished, even if there's an exception
-- dependency management
+things to consider...
 - import modules
-    presently parsed, but not compiled
+    presently not compiled as modules (only as stand-alone scripts)
     must account for global modes
     maybe move some built-in functions to be imports or pseudo-imports, uncluttering the global namespace
-        use more descriptive names, which a programmer could alias to short names if he wants to
-- module compile
+ - module compile
     global modes
     order irrelevant for module compiled declarations
         presently parses module and compiles declarations in reverse order
-- structures
 - OOP with composition
     no inheritance - I don't like inheritance in programming (Davis).
     I also don't like "everything is an object" (Davis).
 - optional explicit typing
+- resource management
+    close resources when finished, even if there's an exception
+- dependency management
+- efficiency
+    While we couldn't expect performance like C, Go, or Rust, it could be improved.
+- structures
 - sets
 - bitwise operations
     on explicit types
@@ -59,4 +42,20 @@ other things to consider...
     looks promising: github.com/sourcegraph/conc
 - testing mechanisms
 - scoped modes, not just global modes
+- log (math) function
+- atan2(), acos(), etc.
+- PEG grammar
+- duration string formatting, including weeks
+- engineering notation (almost like scientific notation) interpolation modifier
+- value forwarding syntax with one or multiple uses of forwarding variable _fwd
+    instead of writing ...
+        join(filter(mapX(wordsets..., by=amb)), by="\n")
+    one could write ...
+        mapX(wordsets..., by=amb) -> filter -> join(_fwd, by="\n")
+
+    If there are multiple uses of the forwarded value after an operator, the compiler could assign it to a temporary internal variable first, so that it is evaluated once.
+
+- write custom decimal library - likely to be a separate project
+    make safe for concurrency
+    simplify and other changes
 
