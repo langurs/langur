@@ -5,7 +5,7 @@ https://langurlang.org
 - use metadata in VM for traceback errors to source code
 - added common.ArgCountMax; use to account for parameter expansion max when set to "infinite" (-1)
 - fixed error output from main to use standard error instead of standard out
-
+- moving toward parsing optional explicit typing for function return type and parameters
 
 2025-08-26 - 0.19.5
 - moved compiler from compiler package to ast package
