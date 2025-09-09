@@ -116,8 +116,8 @@ func (p *Parser) finishParsingHash(firstKey ast.Node) ast.Node {
 			firstKey = nil
 		}
 
-		if p.tok.Type != token.COLON {
-			p.addError("Expected colon between key and value in hash literal")
+		if p.tok.Type != tokenTypeBetweenVarNameAndType {
+			p.addError("Not the expected token between key and value in hash literal")
 			return hash
 		}
 		p.advanceToken()

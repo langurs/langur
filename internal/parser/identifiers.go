@@ -9,6 +9,8 @@ import (
 	"langur/token"
 )
 
+const tokenTypeBetweenVarNameAndType = token.COLON
+
 func (p *Parser) parseIdentifier() ast.Node {
 	tt := p.tok.Type
 	identifier, ok := p.parseWord()
@@ -52,11 +54,11 @@ func (p *Parser) parseType() (ast.Node, int) {
 func (p *Parser) parseIdentifierWithPossibleType() ast.Node {
 	ident := p.parseIdentifier()
 
-	if p.tok.Type == token.COLON {
+	if p.tok.Type == tokenTypeBetweenVarNameAndType {
 		p.advanceToken()
 		t, code := p.parseType()
 		if code == 0 {
-			p.addError("Expected type after colon after new identifier")
+			p.addError("Expected type after delimiting token after new identifier")
 		}
 		
 		if _, ok := ident.(*ast.IdentNode); ok {

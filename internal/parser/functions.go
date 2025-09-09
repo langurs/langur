@@ -74,7 +74,7 @@ func (p *Parser) parseFunction() ast.Node {
 		// optional explicit return type here (long form only)
 		// fn(x, y) : string { ... }
 
-		if p.tok.Type == token.COLON && p.peekTok.Type == token.IDENT {
+		if p.tok.Type == tokenTypeBetweenVarNameAndType && p.peekTok.Type == token.IDENT {
 			p.advanceToken()  // past the colon
 			var code int
 			lit.ReturnType, code = p.parseType()
@@ -170,9 +170,9 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 			}
 		}
 
-		if longForm && p.tok.Type == token.COLON {
+		if longForm && p.tok.Type == tokenTypeBetweenVarNameAndType {
 			// explicit type
-			p.advanceToken() // past the colon
+			p.advanceToken()
 			_, code := p.parseType()
 			if code != 0 {
 				p.addError("This version of langur not set up to parse explicit parameter type")
