@@ -24,6 +24,10 @@ func (left *Complex) Index(index Object, returnOtherObjType bool) (result Object
 }
 
 func (left *Complex) index(index Object, returnOtherObjType bool) (result Object, err error) {
+	if returnOtherObjType {
+		return left, fmt.Errorf("No alternate return type for Complex")
+	}
+	
 	switch idx := index.(type) {
 	case nil:
 		return left, nil

@@ -28,6 +28,10 @@ func (left *Hash) Index(index Object, returnOtherObjType bool) (result Object, e
 }
 
 func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, err error, isPoly bool) {
+	if returnOtherObjType {
+		return left, fmt.Errorf("No alternate return type for Hash"), false
+	}
+
 	switch idx := index.(type) {
 	case *List:
 		arr := &List{}

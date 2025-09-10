@@ -26,6 +26,10 @@ func (left *List) Index(index Object, returnOtherObjType bool) (result Object, e
 func (left *List) index(index Object, returnOtherObjType bool) (
 	result Object, err error) {
 
+	if returnOtherObjType {
+		return left, fmt.Errorf("No alternate return type for List")
+	}
+
 	switch idx := index.(type) {
 	case *Number:
 		n, ok := left.IndexNativeInt(idx)
