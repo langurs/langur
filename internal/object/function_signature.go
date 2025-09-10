@@ -139,6 +139,7 @@ type Parameter struct {
 	InternalName string // variable name within function; may change without affecting API
 	ExternalName string // API / call name for parameter by name
 	Mutable      bool
+	Type         ObjectType
 
 	// default value for optional parameter
 	// sometimes determined at compile-time, sometimes at run-time when function is defined
@@ -153,6 +154,7 @@ func (p Parameter) Copy() Parameter {
 		InternalName: p.InternalName,
 		ExternalName: p.ExternalName,
 		Mutable:      p.Mutable,
+		Type:         p.Type,
 		DefaultValue: CopyOrNil(p.DefaultValue),
 		Required:     p.Required,
 	}
@@ -190,6 +192,11 @@ func (p Parameter) String() string {
 				sb.WriteString(p.ExternalName)
 			}
 		}
+	}
+
+	if p.Type != 0 {
+		sb.WriteString(": ")
+		sb.WriteString(TypeToTypeName(p.Type))
 	}
 
 	if p.DefaultValue != nil {

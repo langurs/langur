@@ -14,7 +14,7 @@ const INTERNAL_OBJECT_ONLY = "INTERNAL OBJECT"
 type ObjectType byte
 
 const (
-	// 0 used as code to indicate type unknown, so it is skipped here
+	// 0 used as code to indicate type unknown or not specified, so it is skipped here
 	_ ObjectType = iota
 
 	NUMBER_OBJ
@@ -57,7 +57,7 @@ func AutoString(o Object) (Object, error) {
 
 var TypeNameToType = map[string]ObjectType{
 	common.NumberType:   NUMBER_OBJ,
-	common.ComplexType: COMPLEX_OBJ,
+	common.ComplexType:  COMPLEX_OBJ,
 	common.RangeType:    RANGE_OBJ,
 	common.BooleanType:  BOOLEAN_OBJ,
 	common.StringType:   STRING_OBJ,
@@ -66,6 +66,15 @@ var TypeNameToType = map[string]ObjectType{
 	common.DurationType: DURATION_OBJ,
 	common.ListType:     LIST_OBJ,
 	common.HashType:     HASH_OBJ,
+}
+
+func TypeToTypeName(t ObjectType) string {
+	for name, ot := range TypeNameToType {
+		if ot == t {
+			return name
+		}
+	}
+	return ""
 }
 
 func Is(obj Object, otype Object) (bool, error) {

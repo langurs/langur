@@ -9,7 +9,7 @@ const IdentifierRegexString = "[_a-zA-Z][a-zA-Z0-9_]*$"
 
 const (
 	NumberType   = "number"
-	ComplexType = "complex"
+	ComplexType  = "complex"
 	RangeType    = "range"
 	BooleanType  = "bool"
 	StringType   = "string"
@@ -20,7 +20,7 @@ const (
 	HashType     = "hash"
 
 	NumberTypeName   = "Number"
-	ComplexTypeName = "Complex"
+	ComplexTypeName  = "Complex"
 	RangeTypeName    = "Range"
 	BooleanTypeName  = "Boolean"
 	StringTypeName   = "String"
