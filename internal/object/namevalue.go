@@ -15,7 +15,7 @@ type NameValue struct {
 }
 
 func (nv *NameValue) HasImpureEffects() bool {
-	d, ok := nv.Value.(IDefilable)
+	d, ok := nv.Value.(IDefilableEffects)
 	if ok {
 		return d.HasImpureEffects()
 	}

@@ -42,7 +42,7 @@ type IGreaterThan interface {
 	// The second Boolean indicates whether they were actually comparable or not.
 }
 
-type IDefilable interface {
+type IDefilableEffects interface {
 	Object
 	HasImpureEffects() bool
 }

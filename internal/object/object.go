@@ -136,7 +136,7 @@ func CopyAndReverseSlice(objSlc []Object) []Object {
 func SliceHasImpureEffects(objSlc ...Object) bool {
 	for i := range objSlc {
 		switch obj := objSlc[i].(type) {
-		case IDefilable:
+		case IDefilableEffects:
 			if obj.HasImpureEffects() {
 				return true
 			}
