@@ -238,6 +238,10 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 				return
 			}
 		}
+		if param.Mutable {
+			err = c.makeErr(node, "This version of langur cannot use a mutable parameter with an explicit type")
+			return
+		}
 	}
 
 	// DEFINE IN SYMBOL TABLE
