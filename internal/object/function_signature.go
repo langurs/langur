@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// NOTE: adding Type to Parameter struct and ReturnType to Signature struct, but as of yet, they are of no or limited functionality
+
 // signatures used for both compiled functions and built-in functions
 type Signature struct {
 	Name              string
@@ -17,6 +19,7 @@ type Signature struct {
 	ParamExpansionMin int
 	ParamExpansionMax int
 	ParamByName       []Parameter
+	ReturnType        ObjectType
 }
 
 func (s *Signature) SetParamDefault(name string, defaultValue Object) error {
@@ -72,6 +75,7 @@ func (s *Signature) Copy() *Signature {
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
 		ParamByName:       CopyParamList(s.ParamByName),
+		ReturnType:        s.ReturnType,
 	}
 }
 
@@ -132,6 +136,12 @@ func (s *Signature) String() string {
 	}
 
 	sb.WriteRune(')')
+	
+	if s.ReturnType != 0 {
+		sb.WriteString(": ")
+		sb.WriteString(TypeToTypeName(s.ReturnType))
+	}
+	
 	return sb.String()
 }
 
