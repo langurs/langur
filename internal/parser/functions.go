@@ -143,6 +143,42 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 	// 7. = operator followed by default value
 	// ex.: var x as y : string = "asdf"
 
+	addType := func(node, t ast.Node) {
+		out:
+		for {
+			switch n := node.(type) {
+			case *ast.IdentNode:
+				n.Type = t
+				break out
+			
+			case *ast.InfixExpressionNode:
+				// has alias (with *as* keyword)
+				node = n.Left
+				
+			case *ast.LineDeclarationNode:
+				node = n.Assignment
+				
+			case *ast.AssignmentNode:
+				if len(n.Identifiers) != 1 {
+					p.addError(fmt.Sprintf("Failure to add Type to parameters (%d)", len(n.Identifiers)))
+					break out
+				}
+				node = n.Identifiers[0]
+			
+			case *ast.ExpansionNode:
+				// NOTE: adding error to parser to avoid complication in compiler testing
+				p.addError("This version of langur cannot compile explicit type with parameter expansion")
+				break out
+				
+				// node = n.Continuation
+			
+			default:
+				p.addError("Failure to add Type to parameter")
+				break out
+			}
+		}
+	}
+
 	parseIdentAliasAndAssignment := func() {
 		param = p.parseIdentifier()
 
@@ -173,9 +209,9 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 		if longForm && p.tok.Type == tokenTypeBetweenVarNameAndType {
 			// explicit type
 			p.advanceToken()
-			_, code := p.parseType()
+			t, code := p.parseType()
 			if code != 0 {
-				p.addError("This version of langur not set up to parse explicit parameter type")
+				addType(param, t)
 				
 			} else {
 				p.addError("Expected parameter type following colon")

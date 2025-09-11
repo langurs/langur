@@ -217,6 +217,29 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 		return
 	}
 
+	// ADD EXPLICIT TYPE TO PARAMETER
+	// NOTE: This version of langur cannot compile explicit type with parameter expansion.
+	if _, exp := node.(*ExpansionNode); !exp {
+		err = addParameterType(&param, node)
+		if err != nil {
+			err = c.makeErr(node, err.Error())
+			return
+		}
+	}
+	
+	if param.Type != 0 {
+		if defaultIns.Instructions != nil {
+			err = c.makeErr(node, "Cannot compile explicit parameter type with default value not known at compile time")
+			return
+		}
+		if defaultIns.Instructions == nil && param.DefaultValue != nil {
+			if param.DefaultValue.Type() != param.Type {
+				err = c.makeErr(node, fmt.Sprintf("Parameter type does not match default value type"))
+				return
+			}
+		}
+	}
+
 	// DEFINE IN SYMBOL TABLE
 	// An external name (for an optional parameter) may shadow a keyword ...
 	// since the context makes the meaning clear, ...
@@ -228,6 +251,47 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 	}
 
 	return
+}
+
+func addParameterType(param *object.Parameter, pnode Node) error {
+	var ok bool
+	for {
+		switch p := pnode.(type) {
+		case nil:
+			return nil
+			
+		case *IdentNode:
+			if p.Type == nil {
+				// no type specified
+				return nil
+			}
+
+			tname := p.Type.TokenRepresentation()
+			param.Type, ok = object.TypeNameToType[tname]
+			if !ok {
+				return fmt.Errorf("Cannot compile node %q as a langur type", tname)
+			}
+			return nil
+			
+		case *InfixExpressionNode:
+			// alias with *as* keyword
+			pnode = p.Left
+			
+		case *LineDeclarationNode:
+			pnode = p.Assignment
+			
+		case *AssignmentNode:
+			pnode = p.Identifiers[0]
+			
+		case *ExpansionNode:
+			// pnode = p.Continuation
+			
+			return fmt.Errorf("This version of langur cannot compile explicit type with parameter expansion")
+			
+		default:
+			return fmt.Errorf("Failed to compile type for parameter")
+		}
+	}
 }
 
 func (c *Compiler) assessParameterByName(assign *AssignmentNode) (
