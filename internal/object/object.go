@@ -19,7 +19,7 @@ func (t ObjectType) Copy() ObjectType {
 }
 
 const (
-	// 0 used as code to indicate type unknown or not specified, so it is skipped here
+	// 0 used as code to indicate type unknown or not specified, so we start with 1 here
 	_ ObjectType = iota
 
 	NUMBER_OBJ
