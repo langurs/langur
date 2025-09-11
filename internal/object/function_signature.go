@@ -75,7 +75,7 @@ func (s *Signature) Copy() *Signature {
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
 		ParamByName:       CopyParamList(s.ParamByName),
-		ReturnType:        s.ReturnType,
+		ReturnType:        s.ReturnType.Copy(),
 	}
 }
 
@@ -164,7 +164,7 @@ func (p Parameter) Copy() Parameter {
 		InternalName: p.InternalName,
 		ExternalName: p.ExternalName,
 		Mutable:      p.Mutable,
-		Type:         p.Type,
+		Type:         p.Type.Copy(),
 		DefaultValue: CopyOrNil(p.DefaultValue),
 		Required:     p.Required,
 	}

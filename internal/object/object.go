@@ -13,6 +13,11 @@ const INTERNAL_OBJECT_ONLY = "INTERNAL OBJECT"
 
 type ObjectType byte
 
+// NOTE: why a Copy() method?; just a byte right now, but it could become more complex
+func (t ObjectType) Copy() ObjectType {
+	return t
+}
+
 const (
 	// 0 used as code to indicate type unknown or not specified, so it is skipped here
 	_ ObjectType = iota
