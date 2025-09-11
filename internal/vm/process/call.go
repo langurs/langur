@@ -144,6 +144,22 @@ func reformArgumentsBySignature(
 		return
 	}
 
+	// check positional parameters for adherance to explicit typing (in the signature)
+	// already checked counts
+	// NOTE: explicit typing not accepted on parameter expansion; If this changes, it will need to be accounted for.
+	for argPtr, param := range sig.ParamPositional {
+		if param.Type != 0 {
+			if param.Type != positional[argPtr].Type() {
+				argTypeName := object.TypeToTypeName(positional[argPtr].Type())
+				paramTypeName := object.TypeToTypeName(param.Type)
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+					fmt.Sprintf("Argument %s type (%s) does not match explicit typing (%s)", 
+						param.InternalName, argTypeName, paramTypeName))
+				return
+			}
+		}
+	}
+	
 	if byname == nil && sig.ParamByName == nil {
 		// no arguments passed by name and none expected
 		args = positional
@@ -154,6 +170,7 @@ func reformArgumentsBySignature(
 	args = make([]object.Object, len(positional)+len(sig.ParamByName))
 	copy(args, positional)
 
+	// parameters by name always following positional parameters
 	argPtr := len(positional)
 
 	// check / pick up parameter by name values in order listed in signature
@@ -169,6 +186,7 @@ func reformArgumentsBySignature(
 				break
 			}
 		}
+
 		if !found {
 			if param.Required {
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
@@ -183,6 +201,19 @@ func reformArgumentsBySignature(
 			// Use nil default for built-ins to check if passed a value.
 			// Compiled functions will use another means.
 		}
+
+		// While we're in this loop, we'll check parameters by name for adherance to explicit typing (in the signature).
+		if found && param.Type != 0 {
+			if param.Type != args[argPtr].Type() {
+				argTypeName := object.TypeToTypeName(args[argPtr].Type())
+				paramTypeName := object.TypeToTypeName(param.Type)
+				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+					fmt.Sprintf("Argument %s type (%s) does not match explicit typing (%s)", 
+						param.ExternalName, argTypeName, paramTypeName))
+				return
+			}
+		}
+
 		argPtr++
 	}
 
@@ -207,7 +238,7 @@ func reformArgumentsBySignature(
 	return
 }
 
-// may convert last positional arguments in a function call into a list
+// convert last positional arguments in a function call into a list
 func parameterCompression(sig *object.Signature, positional []object.Object) (
 	params []object.Object, err error) {
 
@@ -220,17 +251,17 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 			// must copy before use in append following
 			last = object.CopyRefSlice(positional[len(sig.ParamPositional)-1:])
 			params = append(positional[:len(sig.ParamPositional)-1], &object.List{Elements: last})
-
+	
 			if sig.ParamExpansionMax != -1 && len(last) > sig.ParamExpansionMax {
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
 					fmt.Sprintf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last)))
 			}
-
+	
 		} else if diff == 0 && sig.ParamExpansionMin == 0 {
 			// received 0 and none required; since it's missing, add the empty list
 			params = append(positional, object.EmptyList)
 		}
-
+	
 		if len(last) < sig.ParamExpansionMin {
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
 					fmt.Sprintf("Parameter expansion min (%d) not met (%d)", sig.ParamExpansionMin, len(last)))
