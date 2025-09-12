@@ -5,6 +5,7 @@ package parser
 import (
 	"fmt"
 	"langur/ast"
+	"langur/object"
 	"langur/token"
 )
 
@@ -72,11 +73,9 @@ func (p *Parser) parseFunction() ast.Node {
 
 	if longForm {
 		// optional explicit return type here (long form only)
-		// fn(x, y) : string { ... }
-
-		if p.tok.Type == tokenTypeBetweenVarNameAndType && p.peekTok.Type == token.IDENT {
-			p.advanceToken()  // past the colon
-			var code int
+		// fn(x, y) string { ... }
+		if p.tok.Type == token.IDENT {
+			var code object.ObjectType
 			lit.ReturnType, code = p.parseType()
 			if code == 0 {
 				p.addError("Unexpected identifier token; not a return type for function")
@@ -101,7 +100,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
 	positional, byname []ast.Node) {
 
 	for !token.InTypeSlice(p.tok.Type, until) {
-		param, isByName := p.parseParameter(0, longForm)
+		param, isByName := p.parseParameter(0)
 
 		if isByName {
 			byname = append(byname, param)
@@ -129,7 +128,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
 	return
 }
 
-func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByName bool) {
+func (p *Parser) parseParameter(level int) (param ast.Node, isByName bool) {
 	var value, alias ast.Node
 	var aliasTok token.Token
 
@@ -139,9 +138,9 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 	// 3. var keyword
 	// 4. internal name (required)
 	// 5. as keyword followed by external name
-	// 6. : operator followed by explicit type (long form only)
+	// 6. explicit type
 	// 7. = operator followed by default value
-	// ex.: var x as y : string = "asdf"
+	// ex.: var x as y string = "asdf"
 
 	addType := func(node, t ast.Node) {
 		out:
@@ -166,11 +165,7 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 				node = n.Identifiers[0]
 			
 			case *ast.ExpansionNode:
-				// NOTE: adding error to parser to avoid complication in compiler testing
-				p.addError("This version of langur cannot compile explicit type with parameter expansion")
-				break out
-				
-				// node = n.Continuation
+				node = n.Continuation
 			
 			default:
 				p.addError("Failure to add Type to parameter")
@@ -206,16 +201,12 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 			}
 		}
 
-		if longForm && p.tok.Type == tokenTypeBetweenVarNameAndType {
-			// explicit type
-			p.advanceToken()
-			t, code := p.parseType()
-			if code != 0 {
-				addType(param, t)
-				
-			} else {
-				p.addError("Expected parameter type following colon")
+		t, code := p.checkParseType()
+		if code != 0 {
+			if level != 0 {
+				p.addError("Unexpected type on parameter expansion")
 			}
+			addType(param, t)
 		}
 
 		if p.tok.Type == token.ASSIGN {
@@ -262,7 +253,7 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 			p.advanceToken()
 			return
 		}
-		param = p.parseParameterExpansion(level, longForm)
+		param = p.parseParameterExpansion(level)
 		return
 
 	default:
@@ -271,7 +262,7 @@ func (p *Parser) parseParameter(level int, longForm bool) (param ast.Node, isByN
 	return
 }
 
-func (p *Parser) parseParameterExpansion(level int, longForm bool) ast.Node {
+func (p *Parser) parseParameterExpansion(level int) ast.Node {
 	exp := p.tok
 	p.advanceToken() // past ... expansion token
 
@@ -285,7 +276,7 @@ func (p *Parser) parseParameterExpansion(level int, longForm bool) ast.Node {
 		}
 		p.advanceToken()
 	}
-	continuation, isByName := p.parseParameter(level + 1, longForm)
+	continuation, isByName := p.parseParameter(level + 1)
 
 	if isByName {
 		p.addError("Cannot use parameter expansion on parameter by name")

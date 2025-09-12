@@ -153,8 +153,8 @@ func reformArgumentsBySignature(
 				argTypeName := object.TypeToTypeName(positional[argPtr].Type())
 				paramTypeName := object.TypeToTypeName(param.Type)
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
-					fmt.Sprintf("Argument %s type (%s) does not match explicit typing (%s)", 
-						param.InternalName, argTypeName, paramTypeName))
+					fmt.Sprintf("Argument %d type (%s) does not match parameter %s type (%s)", 
+						argPtr+1, argTypeName, param.InternalName, paramTypeName))
 				return
 			}
 		}
@@ -208,8 +208,8 @@ func reformArgumentsBySignature(
 				argTypeName := object.TypeToTypeName(args[argPtr].Type())
 				paramTypeName := object.TypeToTypeName(param.Type)
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
-					fmt.Sprintf("Argument %s type (%s) does not match explicit typing (%s)", 
-						param.ExternalName, argTypeName, paramTypeName))
+					fmt.Sprintf("Argument %s type (%s) does not match parameter %s type (%s)", 
+						param.ExternalName, argTypeName, param.ExternalName, paramTypeName))
 				return
 			}
 		}

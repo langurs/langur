@@ -5458,9 +5458,15 @@ func TestParametersRequiredByName(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input: `
-		val mult = fn(a, b as b) { a + b }
-		mult(4, b=10)
-		`,
+				val add = fn(a, b as b) { a + b }
+				add(4, b=10)`,
+			expected:     14,
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+				val add = fn(a number, b as b number) { a + b }
+				add(4, b=10)`,
 			expected:     14,
 			expectedType: object.NUMBER_OBJ,
 		},
@@ -5469,7 +5475,7 @@ func TestParametersRequiredByName(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
+func TestCallingFunctionsWithWrongArgumentCountOrType(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input:    `fn() { }(1);`,
@@ -5516,6 +5522,37 @@ func TestCallingFunctionsWithWrongArgumentCount(t *testing.T) {
 		{
 			input:    `fn(a, c, ...[1..3] b) { }(1, 2, [3, 4, 5, 6]...);`,
 			expected: `args: Parameter expansion max (3) exceeded (4) ()`,
+		},
+
+		// wrong arg type
+		{
+			input:    `fn(a string) { }(123);`,
+			expected: `args: Argument 1 type (number) does not match parameter a type (string) ()`,
+		},
+		{
+			input:    `val x = fn(a string) { }; x(123);`,
+			expected: `args: Argument 1 type (number) does not match parameter a type (string) (x)`,
+		},
+		{
+			input:    `fn(a string, b number) { }(123, "");`,
+			expected: `args: Argument 1 type (number) does not match parameter a type (string) ()`,
+		},
+		{
+			input:    `fn(a string, b number) { }("", "");`,
+			expected: `args: Argument 2 type (string) does not match parameter b type (number) ()`,
+		},
+
+		{
+			input:    `fn(a string, b string = "") { }("yes", b=3);`,
+			expected: `args: Argument b type (number) does not match parameter b type (string) ()`,
+		},
+		{
+			input:    `fn(a number, b string = "") { }(132, b=3);`,
+			expected: `args: Argument b type (number) does not match parameter b type (string) ()`,
+		},
+		{
+			input:    `fn(a number, b string = "") { }("", b=3);`,
+			expected: `args: Argument 1 type (string) does not match parameter a type (number) ()`,
 		},
 	}
 

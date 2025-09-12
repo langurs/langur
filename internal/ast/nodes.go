@@ -695,7 +695,7 @@ func (f *FunctionNode) Evaluate() object.Object {
 
 func (f *FunctionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if f.ReturnType != nil {
-		err = c.makeErr(f, "This revision of langur not able to compile explicit return type")
+		err = c.makeErr(f, "This version of langur not able to compile explicit return type")
 		return
 	}
 
@@ -817,7 +817,6 @@ func (f *FunctionNode) TokenRepresentation() string {
 	sb.WriteString(strings.Join(params, ", ") + ") ")
 
 	if f.ReturnType != nil {
-		sb.WriteString(": ")
 		sb.WriteString(f.ReturnType.TokenRepresentation())
 		sb.WriteByte(' ')
 	}
@@ -862,7 +861,6 @@ func (f *FunctionNode) String() string {
 	sb.WriteString(") ")
 
 	if f.ReturnType != nil {
-		sb.WriteString(": ")
 		sb.WriteString(f.ReturnType.String())
 		sb.WriteByte(' ')
 	}
@@ -978,15 +976,14 @@ func NewBuiltInNode(tok token.Token, name string, sys bool) *IdentNode {
 }
 
 // returns langur Object type code as defined in object package, or 0 if not found
-func NodeToLangurTypeCode(node Node) int {
+func NodeToLangurType(node Node) object.ObjectType {
 	switch id := node.(type) {
 	case *IdentNode:
 		code, ok := object.TypeNameToType[id.Name]
 		if ok {
-			return int(code)
+			return code
 		}
 	}
-
 	return 0
 }
 
@@ -1014,7 +1011,7 @@ func (i *IdentNode) Evaluate() object.Object {
 
 func (i *IdentNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if i.Type != nil {
-		err = c.makeErr(i, "This revision of langur not able to accept explicit variable type")
+		err = c.makeErr(i, "This version of langur not able to accept explicit variable type")
 		return
 	}
 
@@ -1038,7 +1035,7 @@ func (i *IdentNode) TokenRepresentation() string {
 	out.WriteString(i.Name)
 
 	if i.Type != nil {
-		out.WriteString(": ")
+		out.WriteRune(' ')
 		out.WriteString(i.Type.TokenRepresentation())
 	}
 
@@ -1054,7 +1051,7 @@ func (i *IdentNode) String() string {
 	out.WriteString(i.Name)
 
 	if i.Type != nil {
-		out.WriteString(": ")
+		out.WriteRune(' ')
 		out.WriteString(i.Type.String())
 	}
 
@@ -2521,7 +2518,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		return
 	}
 
-	rightTypeCode := NodeToLangurTypeCode(node.Right)
+	rightTypeCode := byte(NodeToLangurType(node.Right))
 	rightIsType := rightTypeCode != 0
 
 	if !rightIsType || node.Operator.Type != token.IS {

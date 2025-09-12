@@ -116,7 +116,7 @@ func (p *Parser) finishParsingHash(firstKey ast.Node) ast.Node {
 			firstKey = nil
 		}
 
-		if p.tok.Type != tokenTypeBetweenVarNameAndType {
+		if p.tok.Type != token.COLON {
 			p.addError("Not the expected token between key and value in hash literal")
 			return hash
 		}
@@ -425,7 +425,7 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 
 		expr.Right = p.parseExpression(getInfixPrecedence(expr.Operator.Type))
 
-		rightIsType := ast.NodeToLangurTypeCode(expr.Right) != 0
+		rightIsType := ast.NodeToLangurType(expr.Right) != 0
 
 		if rightIsType && expr.Operator.Type == token.FORWARD {
 			// change to call node - call on type, such as 123 -> string, meaning string(123)

@@ -138,7 +138,7 @@ func (s *Signature) String() string {
 	sb.WriteRune(')')
 	
 	if s.ReturnType != 0 {
-		sb.WriteString(": ")
+		sb.WriteRune(' ')
 		sb.WriteString(TypeToTypeName(s.ReturnType))
 	}
 	
@@ -205,7 +205,7 @@ func (p Parameter) String() string {
 	}
 
 	if p.Type != 0 {
-		sb.WriteString(": ")
+		sb.WriteRune(' ')
 		sb.WriteString(TypeToTypeName(p.Type))
 	}
 

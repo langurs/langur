@@ -3,13 +3,12 @@
 package parser
 
 import (
+	"langur/object"
 	"langur/ast"
 	"langur/common"
 	"langur/regexp"
 	"langur/token"
 )
-
-const tokenTypeBetweenVarNameAndType = token.COLON
 
 func (p *Parser) parseIdentifier() ast.Node {
 	tt := p.tok.Type
@@ -40,7 +39,7 @@ func (p *Parser) parseWord() (*ast.IdentNode, bool) {
 	return identifier, true
 }
 
-func (p *Parser) parseType() (ast.Node, int) {
+func (p *Parser) parseType() (ast.Node, object.ObjectType) {
 	tt := p.tok.Type
 	t, ok := p.parseWord()
 	if !ok || tt != token.IDENT {
@@ -48,24 +47,13 @@ func (p *Parser) parseType() (ast.Node, int) {
 		p.advanceToken()
 		return t, 0
 	}
-	return t, ast.NodeToLangurTypeCode(t)
+	return t, ast.NodeToLangurType(t)
 }
 
-func (p *Parser) parseIdentifierWithPossibleType() ast.Node {
-	ident := p.parseIdentifier()
-
-	if p.tok.Type == tokenTypeBetweenVarNameAndType {
-		p.advanceToken()
-		t, code := p.parseType()
-		if code == 0 {
-			p.addError("Expected type after delimiting token after new identifier")
-		}
-		
-		if _, ok := ident.(*ast.IdentNode); ok {
-			// set type
-			ident.(*ast.IdentNode).Type = t
-		}
+func (p *Parser) checkParseType() (ast.Node, object.ObjectType) {
+	_, ok := object.TypeNameToType[p.tok.Literal]
+	if ok {
+		return p.parseType()
 	}
-	
-	return ident
+	return nil, 0
 }
