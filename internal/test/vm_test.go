@@ -1121,7 +1121,7 @@ func TestSwitchExpressions(t *testing.T) {
 			}`,
 			"1", object.NUMBER_OBJ,
 		},
-		// ... x == y
+		// x... == y
 		{`val x = 123; val y = 123;
 			switch x, y {
 				case 120, _: 1
@@ -5362,7 +5362,7 @@ func TestOptionalParameters(t *testing.T) {
 		// combined with parameter expansion
 		{
 			input: `
-		val add = fn(...a, b=12) {
+		val add = fn(a..., b=12) {
 			var sum = 0
 			for i in a {
 				sum += i
@@ -5376,7 +5376,7 @@ func TestOptionalParameters(t *testing.T) {
 		},
 		{
 			input: `
-		val add = fn(...a, b=12) {
+		val add = fn(a..., b=12) {
 			var sum = 0
 			for i in a {
 				sum += i
@@ -5390,7 +5390,7 @@ func TestOptionalParameters(t *testing.T) {
 		},
 		{
 			input: `
-		val add = fn(...a, b=12) {
+		val add = fn(a..., b=12) {
 			var sum = 0
 			for i in a {
 				sum += i
@@ -5404,7 +5404,7 @@ func TestOptionalParameters(t *testing.T) {
 		},
 		{
 			input: `
-		val add = fn(...a, b=12) {
+		val add = fn(a..., b=12) {
 			var sum = 0
 			for i in a {
 				sum += i
@@ -5420,7 +5420,7 @@ func TestOptionalParameters(t *testing.T) {
 		// parameter expansion, argument expansion, and optional parameters
 		{
 			input: `
-		val add = fn(...a, b=12) {
+		val add = fn(a..., b=12) {
 			var sum = 0
 			for i in a {
 				sum += i
@@ -5506,21 +5506,21 @@ func TestCallingFunctionsWithWrongArgumentCountOrType(t *testing.T) {
 
 		// with parameter expansion
 		{
-			input:    `fn(a, ...[1..] b) { }(1);`,
+			input:    `fn(a, b ...[1..]) { }(1);`,
 			expected: `args: Parameter expansion min (1) not met (0) ()`,
 			//`args: argument/parameter count mismatch, expected=2..-1, received=1 (fn)`,
 		},
 		{
-			input:    `fn(a, c, ... b) { }(1);`,
+			input:    `fn(a, c, b...) { }(1);`,
 			expected: fmt.Sprintf(`args: Positional argument/parameter count mismatch, expected=2..%d, received=1 ()`, common.ArgCountMax),
 		},
 
 		{
-			input:    `fn(a, c, ...[1..3] b) { }(1, 2, 3, 4, 5, 6, 7);`,
+			input:    `fn(a, c, b...[1..3]) { }(1, 2, 3, 4, 5, 6, 7);`,
 			expected: `args: Parameter expansion max (3) exceeded (5) ()`,
 		},
 		{
-			input:    `fn(a, c, ...[1..3] b) { }(1, 2, [3, 4, 5, 6]...);`,
+			input:    `fn(a, c, b...[1..3]) { }(1, 2, [3, 4, 5, 6]...);`,
 			expected: `args: Parameter expansion max (3) exceeded (4) ()`,
 		},
 
@@ -7901,27 +7901,27 @@ func TestMapFunction(t *testing.T) {
 
 func TestMapXFunction(t *testing.T) {
 	tests := []vmTestCase{
-		{`mapX([1, 2], [3, 4], by=fn ...x:x)`,
+		{`mapX([1, 2], [3, 4], by=fn x...:x)`,
 			[][]int{{1, 3}, {1, 4}, {2, 3}, {2, 4}},
 			object.LIST_OBJ,
 		},
-		{`mapX([1, 2, 3], 30, [500, 100], by=fn(... x) {x})`,
+		{`mapX([1, 2, 3], 30, [500, 100], by=fn(x...) {x})`,
 			[][]int{{1, 30, 500}, {1, 30, 100}, {2, 30, 500}, {2, 30, 100}, {3, 30, 500}, {3, 30, 100}},
 			object.LIST_OBJ,
 		},
-		{`mapX(fw/a b/, fw/c d/, by=fn(... x) {x})`,
+		{`mapX(fw/a b/, fw/c d/, by=fn(x...) {x})`,
 			[][]string{{"a", "c"}, {"a", "d"}, {"b", "c"}, {"b", "d"}},
 			object.LIST_OBJ,
 		},
-		{`mapX([1, 2], by=fn(... x) {x})`,
+		{`mapX([1, 2], by=fn(x...) {x})`,
 			[][]int{{1}, {2}},
 			object.LIST_OBJ,
 		},
-		{`mapX(7, by=fn(... x) {x})`,
+		{`mapX(7, by=fn(x...) {x})`,
 			[][]int{{7}},
 			object.LIST_OBJ,
 		},
-		{`mapX(7, [14, 21], by=fn(... x) {x})`,
+		{`mapX(7, [14, 21], by=fn(x...) {x})`,
 			[][]int{{7, 14}, {7, 21}},
 			object.LIST_OBJ,
 		},
@@ -7954,12 +7954,12 @@ func TestArgumentExpansion(t *testing.T) {
 			object.LIST_OBJ,
 		},
 
-		{`zip(mapX([7], [14, 21], by=fn(... x) {x})...)`,
+		{`zip(mapX([7], [14, 21], by=fn(x...) {x})...)`,
 			[]int{7, 7, 14, 21},
 			object.LIST_OBJ,
 		},
 
-		{`zip([1, 2], mapX([7], [14, 21], by=fn(... x) {x})...)`,
+		{`zip([1, 2], mapX([7], [14, 21], by=fn(x...) {x})...)`,
 			[]int{1, 7, 7, 2, 14, 21},
 			object.LIST_OBJ,
 		},
@@ -7976,57 +7976,57 @@ func TestArgumentExpansion(t *testing.T) {
 
 func TestParameterExpansion(t *testing.T) {
 	tests := []vmTestCase{
-		{`val f = fn(... x) { x }
+		{`val f = fn(x...) { x }
 		  f(1234)`,
 			[]int{1234}, object.LIST_OBJ,
 		},
-		{`val f = fn(... x) { x }
+		{`val f = fn(x...) { x }
 		  f(1234, 5678)`,
 			[]int{1234, 5678}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ... x) { x }
+		{`val f = fn(a, x...) { x }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ... x) { x ~ [a] }
+		{`val f = fn(a, x...) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[2..3] x) { x ~ [a] }
+		{`val f = fn(a, x...[2..3]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[3] x) { x ~ [a] }
+		{`val f = fn(a, x ...[3]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[1..4] x) { x ~ [a] }
+		{`val f = fn(a, x...[1..4]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[0..4] x) { x ~ [a] }
+		{`val f = fn(a, x...[0..4]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[1..] x) { x ~ [a] }
+		{`val f = fn(a, x...[1..]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
 
-		{`val f = fn(a, ...[0..] x) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x ~ [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, ...[0..] x) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x ~ [a] }
 		  f(7)`,
 			[]int{7}, object.LIST_OBJ,
 		},
 
-		{`val f = fn(a, ...[0..] x) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x ~ [a] }
 		  f(7)`,
 			[]int{7}, object.LIST_OBJ,
 		},
-		{`val f = fn(...[0..] x) { x }
+		{`val f = fn(x...[0..]) { x }
 		  f()`,
 			[]int{}, object.LIST_OBJ,
 		},
@@ -8037,80 +8037,80 @@ func TestParameterExpansion(t *testing.T) {
 
 func TestParameterExpansionMinMax(t *testing.T) {
 	tests := []vmTestCase{
-		{`val f = fn(... x) { x }
+		{`val f = fn(x...) { x }
 		  max(f)`,
 			common.ArgCountMax, object.NUMBER_OBJ,
 		},
-		{`val f = fn(... x) { x }
+		{`val f = fn(x...) { x }
 		  min(f)`,
 			0, object.NUMBER_OBJ,
 		},
-		{`val f = fn(... x) { x }
+		{`val f = fn(x...) { x }
 		  minmax(f)`,
 			[]int64{0, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
-		{`val f = fn(a, ... x) { x }
+		{`val f = fn(a, x...) { x }
 		  max(f)`,
 			common.ArgCountMax, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, ... x) { x }
+		{`val f = fn(a, x...) { x }
 		  min(f)`,
 			1, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, ... x) { x }
+		{`val f = fn(a, x...) { x }
 		  minmax(f)`,
 			[]int64{1, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
-		{`val f = fn(...[0..] x) { x }
+		{`val f = fn(x...[0..]) { x }
 		  max(f)`,
 			common.ArgCountMax, object.NUMBER_OBJ,
 		},
-		{`val f = fn(...[0..] x) { x }
+		{`val f = fn(x...[0..]) { x }
 		  min(f)`,
 			0, object.NUMBER_OBJ,
 		},
-		{`val f = fn(...[0..] x) { x }
+		{`val f = fn(x...[0..]) { x }
 		  minmax(f)`,
 			[]int64{0, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
-		{`val f = fn(a, b, ...[0..] x) { x }
+		{`val f = fn(a, b, x...[0..]) { x }
 		  max(f)`,
 			common.ArgCountMax, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, b, ...[0..] x) { x }
+		{`val f = fn(a, b, x...[0..]) { x }
 		  min(f)`,
 			2, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, b, ...[0..] x) { x }
+		{`val f = fn(a, b, x...[0..]) { x }
 		  minmax(f)`,
 			[]int64{2, common.ArgCountMax}, object.RANGE_OBJ,
 		},
 
-		{`val f = fn(...[2..10] x) { x }
+		{`val f = fn(x...[2..10]) { x }
 		  max(f)`,
 			10, object.NUMBER_OBJ,
 		},
-		{`val f = fn(...[2..10] x) { x }
+		{`val f = fn(x...[2..10]) { x }
 		  min(f)`,
 			2, object.NUMBER_OBJ,
 		},
-		{`val f = fn(...[2..10] x) { x }
+		{`val f = fn(x...[2..10]) { x }
 		  minmax(f)`,
 			[]int64{2, 10}, object.RANGE_OBJ,
 		},
 
-		{`val f = fn(a, b, ...[2..10] x) { x }
+		{`val f = fn(a, b, x...[2..10]) { x }
 		  max(f)`,
 			12, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, b, ...[2..10] x) { x }
+		{`val f = fn(a, b, x...[2..10]) { x }
 		  min(f)`,
 			4, object.NUMBER_OBJ,
 		},
-		{`val f = fn(a, b, ...[2..10] x) { x }
+		{`val f = fn(a, b, x...[2..10]) { x }
 		  minmax(f)`,
 			[]int64{4, 12}, object.RANGE_OBJ,
 		},

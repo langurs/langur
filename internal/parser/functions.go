@@ -133,14 +133,17 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	var aliasTok token.Token
 
 	// potential parts of parameter
-	// 1. ... operator to indicate parameter expansion
-	// 2.	[] brackets to indicate details of parameter expansion
-	// 3. var keyword
-	// 4. internal name (required)
-	// 5. as keyword followed by external name
+	// 1. var keyword
+	// 2. internal name (required)
+	// 3. as keyword followed by external name
+	// 4. ... operator to indicate parameter expansion
+	// 5.	[] brackets to indicate details of parameter expansion
 	// 6. explicit type
 	// 7. = operator followed by default value
 	// ex.: var x as y string = "asdf"
+	// ex.: x as y ...[4..7]
+
+	var expansion *ast.ExpansionNode
 
 	typeDeclared := false
 	addType := func(node, t ast.Node) {
@@ -176,7 +179,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 		}
 	}
 
-	parseIdentAliasAndAssignment := func() {
+	parseIdentEtc := func() {
 		param = p.parseIdentifier()
 
 		if p.tok.Type == token.AS {
@@ -199,6 +202,27 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 			}
 		}
 
+		if p.tok.Type == token.EXPANSION {
+			exp := p.tok
+			p.advanceToken() // past ... expansion token
+	
+			var limits ast.Node
+			switch p.tok.Type {
+			case token.LBRACKET:
+				p.advanceToken()
+				limits = p.parseExpression(precedence_LOWEST)
+				if p.tok.Type != token.RBRACKET {
+					p.addError("Expected closing bracket for expansion limit expression")
+				}
+				p.advanceToken()
+			}
+		
+			expansion = &ast.ExpansionNode{
+				Token:        exp,
+				Limits:       limits,
+			}
+		}
+
 		t, code := p.checkParseType()
 		if code != 0 {
 			addType(param, t)
@@ -212,31 +236,9 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 		}
 	}
 
-	var expansion *ast.ExpansionNode
-	if p.tok.Type == token.EXPANSION {
-		exp := p.tok
-		p.advanceToken() // past ... expansion token
-
-		var limits ast.Node
-		switch p.tok.Type {
-		case token.LBRACKET:
-			p.advanceToken()
-			limits = p.parseExpression(precedence_LOWEST)
-			if p.tok.Type != token.RBRACKET {
-				p.addError("Expected closing bracket for expansion limit expression")
-			}
-			p.advanceToken()
-		}
-	
-		expansion = &ast.ExpansionNode{
-			Token:        exp,
-			Limits:       limits,
-		}
-	}
-
 	switch p.tok.Type {
 	case token.IDENT:
-		parseIdentAliasAndAssignment()
+		parseIdentEtc()
 		if value != nil {
 			param = ast.MakeAssignmentExpression(param, value, false)
 			return
@@ -245,7 +247,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	case token.VAR:
 		mutable := true
 		p.advanceToken()
-		parseIdentAliasAndAssignment()
+		parseIdentEtc()
 
 		if value == nil {
 			param = &ast.LineDeclarationNode{
@@ -272,39 +274,12 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 			p.addError("Unexpected explicit type on parameter expansion")
 		}
 		
-		expansion.Continuation = param.Copy()
+		expansion.Continuation = param
 		param = expansion
 	}
 
 	return
 }
-
-// func (p *Parser) parseParameterExpansion(level int) ast.Node {
-// 	exp := p.tok
-// 	p.advanceToken() // past ... expansion token
-
-// 	var limits ast.Node
-// 	switch p.tok.Type {
-// 	case token.LBRACKET:
-// 		p.advanceToken()
-// 		limits = p.parseExpression(precedence_LOWEST)
-// 		if p.tok.Type != token.RBRACKET {
-// 			p.addError("Expected closing bracket for expansion limit expression")
-// 		}
-// 		p.advanceToken()
-// 	}
-// 	continuation, isByName := p.parseParameter(level + 1)
-
-// 	if isByName {
-// 		p.addError("Cannot use parameter expansion on parameter by name")
-// 	}
-
-// 	return &ast.ExpansionNode{
-// 		Token:        exp,
-// 		Limits:       limits,
-// 		Continuation: continuation,
-// 	}
-// }
 
 func (p *Parser) maybeParseSpecialFunction() ast.Node {
 	// already past fn token
