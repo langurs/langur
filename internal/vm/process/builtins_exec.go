@@ -19,18 +19,13 @@ var bi_execT = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "executes a command from a trusted source string, returning a result or throwing an exception",
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "source"},
+			object.Parameter{ExternalName: "source", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "execT"
 
-		cmd, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
-		}
-
-		out, err := execCmd(cmd.String())
+		out, err := execCmd(args[0].String())
 
 		// result or exception
 		if err == nil {
@@ -67,18 +62,13 @@ var bi_execTH = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "executes a command from a trusted source string, returning a hash",
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "source"},
+			object.Parameter{ExternalName: "source", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "execTH"
 
-		cmd, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for command to execute")
-		}
-
-		out, err := execCmd(cmd.String())
+		out, err := execCmd(args[0].String())
 
 		hash := &object.Hash{}
 

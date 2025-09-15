@@ -11,6 +11,16 @@ import (
 	"github.com/rivo/uniseg"
 )
 
+// preferably return a non-zero string
+func Nz(strSlc ...string) string {
+	for _, s := range strSlc {
+		if s != "" {
+			return s
+		}
+	}
+	return ""
+}
+
 func PadRight(s string, somuch int, with rune) string {
 	if len([]rune(s)) < somuch {
 		return s + strings.Repeat(string(with), somuch-len([]rune(s)))

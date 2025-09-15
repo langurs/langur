@@ -154,7 +154,7 @@ func reformArgumentsBySignature(
 				paramTypeName := object.TypeToTypeName(param.Type)
 				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
 					fmt.Sprintf("Argument %d type (%s) does not match parameter %s type (%s)", 
-						argPtr+1, argTypeName, param.InternalName, paramTypeName))
+						argPtr+1, argTypeName, str.Nz(param.InternalName, param.ExternalName), paramTypeName))
 				return
 			}
 		}

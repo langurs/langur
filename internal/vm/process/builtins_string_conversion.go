@@ -19,18 +19,12 @@ var bi_s2b = &object.BuiltIn{
 		Description: "returns list of UTF-8 bytes from a langur string",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		// langur string to UTF-8 bytes
-		const fnName = "s2b"
-
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument string")
-		}
-		bytes := s.ByteSlc()
+		bytes := args[0].(*object.String).ByteSlc()
 		arr := &object.List{Elements: make([]object.Object, len(bytes))}
 		for i, b := range bytes {
 			arr.Elements[i] = object.NumberFromInt(int(b))
@@ -123,7 +117,7 @@ var bi_s2cp = &object.BuiltIn{
 		Description: "indexes a string to a code point or a list of code points",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
@@ -135,10 +129,7 @@ var bi_s2cp = &object.BuiltIn{
 		// string to code point(s): indexes string and returns code point or list of code points
 		const fnName = "s2cp"
 
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-		}
+		s := args[0].(*object.String)
 		var result object.Object
 		var err error
 
@@ -162,18 +153,14 @@ var bi_s2gc = &object.BuiltIn{
 		Description: "converts string to grapheme clusters list",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		// string to grapheme clusters
 		const fnName = "s2gc"
 
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument string")
-		}
-
+		s := args[0].(*object.String)
 		var clusters []object.Object
 
 		graphemes := str.Graphemes(s.String())
@@ -205,7 +192,7 @@ var bi_s2s = &object.BuiltIn{
 		Description: "indexes a string to a string",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
@@ -217,10 +204,8 @@ var bi_s2s = &object.BuiltIn{
 		// string to string: indexes string and returns string
 		const fnName = "s2s"
 
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for first argument")
-		}
+		s := args[0].(*object.String)
+
 		var result object.Object
 		var err error
 

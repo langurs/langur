@@ -97,15 +97,11 @@ var bi_trim = &object.BuiltIn{
 		Description: "trims Unicode whitespace around a string",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "trim", "Expected string")
-		}
-		return object.NewString(strings.TrimFunc(s.String(), cpoint.IsTrimmable))
+		return object.NewString(strings.TrimFunc(args[0].String(), cpoint.IsTrimmable))
 	},
 }
 
@@ -115,15 +111,12 @@ var bi_ltrim = &object.BuiltIn{
 		Description: "trims left-most Unicode whitespace in a string",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "ltrim", "Expected string")
-		}
-		return object.NewString(strings.TrimLeftFunc(s.String(), cpoint.IsTrimmable))
+		return object.NewString(
+			strings.TrimLeftFunc(args[0].String(), cpoint.IsTrimmable))
 	},
 }
 
@@ -133,15 +126,12 @@ var bi_rtrim = &object.BuiltIn{
 		Description: "trims right-most Unicode whitespace in a string",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		s, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "rtrim", "Expected string")
-		}
-		return object.NewString(strings.TrimRightFunc(s.String(), cpoint.IsTrimmable))
+		return object.NewString(
+			strings.TrimRightFunc(args[0].String(), cpoint.IsTrimmable))
 	},
 }
 
@@ -151,29 +141,16 @@ var bi_join = &object.BuiltIn{
 		Description: "joins list into a single string; uses auto-stringification on all list elements",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "list"},
+			object.Parameter{ExternalName: "list", Type: object.LIST_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "by", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		var delim string
-		var list *object.List
-		var ok bool
-
-		list, ok = args[0].(*object.List)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "join", "Expected list of things to join for argument list")
-		}
-
-		switch d := args[1].(type) {
-		case *object.String:
-			delim = d.String()
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, "join", "Expected string for argument by")
-		}
+		list := args[0].(*object.List)
+		delim := args[1].String()
 
 		var sb strings.Builder
 		for i, e := range list.Elements {
@@ -201,15 +178,11 @@ var bi_nfc = &object.BuiltIn{
 		Description: "converts string to NFC form (Unicode normalization form)",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		strObj, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "nfc", "Expected string")
-		}
-		return object.NewString(norm.NFC.String(strObj.String()))
+		return object.NewString(norm.NFC.String(args[0].String()))
 	},
 }
 
@@ -219,15 +192,11 @@ var bi_nfd = &object.BuiltIn{
 		Description: "converts string to NFD form (Unicode normalization form)",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		strObj, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "nfd", "Expected string")
-		}
-		return object.NewString(norm.NFD.String(strObj.String()))
+		return object.NewString(norm.NFD.String(args[0].String()))
 	},
 }
 
@@ -237,15 +206,11 @@ var bi_nfkc = &object.BuiltIn{
 		Description: "converts string to NFKC form (Unicode normalization form)",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		strObj, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "nfkc", "Expected string")
-		}
-		return object.NewString(norm.NFKC.String(strObj.String()))
+		return object.NewString(norm.NFKC.String(args[0].String()))
 	},
 }
 
@@ -255,14 +220,10 @@ var bi_nfkd = &object.BuiltIn{
 		Description: "converts string to NFKD form (Unicode normalization form)",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "string"},
+			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		strObj, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "nfkd", "Expected string")
-		}
-		return object.NewString(norm.NFKD.String(strObj.String()))
+		return object.NewString(norm.NFKD.String(args[0].String()))
 	},
 }

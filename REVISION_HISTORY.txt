@@ -1,7 +1,7 @@
 langur revision history
 https://langurlang.org
 
-... - 0.19.7
+... - 0.20.0
 - added limited explicit typing for function parameters - checks type of argument passed without having to write your own code to do so
 - (internal) added Type field to Parameter struct and to Signature struct for function Signatures
 - (internal) return error when requesting alternate return type on index when there is no alternate return type

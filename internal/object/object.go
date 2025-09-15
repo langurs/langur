@@ -13,7 +13,7 @@ const INTERNAL_OBJECT_ONLY = "INTERNAL OBJECT"
 
 type ObjectType byte
 
-// NOTE: why a Copy() method?; just a byte right now, but it could become more complex
+// NOTE: methods?; just a byte right now, but it could become more complex
 func (t ObjectType) Copy() ObjectType {
 	return t
 }
