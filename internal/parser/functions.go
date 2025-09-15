@@ -129,9 +129,6 @@ func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
 }
 
 func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
-	var value, alias ast.Node
-	var aliasTok token.Token
-
 	// potential parts of parameter
 	// 1. var keyword
 	// 2. internal name (required)
@@ -140,105 +137,21 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	// 5.	[] brackets to indicate details of parameter expansion
 	// 6. explicit type
 	// 7. = operator followed by default value
-	// ex.: var x as y string = "asdf"
+	// ex.: var x as y string
+	// ex.: x as y string = "asdf"
 	// ex.: x as y ...[4..7]
 
 	var expansion *ast.ExpansionNode
-
-	typeDeclared := false
-	addType := func(node, t ast.Node) {
-		typeDeclared = true
-		out:
-		for {
-			switch n := node.(type) {
-			case *ast.IdentNode:
-				n.Type = t
-				break out
-			
-			case *ast.InfixExpressionNode:
-				// has alias (with *as* keyword)
-				node = n.Left
-				
-			case *ast.LineDeclarationNode:
-				node = n.Assignment
-				
-			case *ast.AssignmentNode:
-				if len(n.Identifiers) != 1 {
-					p.addError(fmt.Sprintf("Failure to add Type to parameters (%d)", len(n.Identifiers)))
-					break out
-				}
-				node = n.Identifiers[0]
-			
-			case *ast.ExpansionNode:
-				node = n.Continuation
-			
-			default:
-				p.addError("Failure to add Type to parameter")
-				break out
-			}
-		}
+	if p.tok.Type == token.EXPANSION {
+		p.advanceToken()
+		p.addError("Parameter expansion must be specified after the parameter name, not before")
 	}
 
-	parseIdentEtc := func() {
-		param = p.parseIdentifier()
-
-		if p.tok.Type == token.AS {
-			// external name specified after as keyword
-			isByName = true
-			aliasTok = p.tok
-			p.advanceToken() // past as keyword
-			var ok bool
-			alias, ok = p.parseWord()
-			if !ok {
-				p.addError("Error parsing alias for parameter (a as b)")
-			}
-			// param already set as ident
-			// having an alias, set param as infix expression, a as b
-			param = &ast.InfixExpressionNode{
-				Token:    param.TokenInfo(),
-				Left:     param,
-				Operator: aliasTok,
-				Right:    alias,
-			}
-		}
-
-		if p.tok.Type == token.EXPANSION {
-			exp := p.tok
-			p.advanceToken() // past ... expansion token
-	
-			var limits ast.Node
-			switch p.tok.Type {
-			case token.LBRACKET:
-				p.advanceToken()
-				limits = p.parseExpression(precedence_LOWEST)
-				if p.tok.Type != token.RBRACKET {
-					p.addError("Expected closing bracket for expansion limit expression")
-				}
-				p.advanceToken()
-			}
-		
-			expansion = &ast.ExpansionNode{
-				Token:        exp,
-				Limits:       limits,
-			}
-		}
-
-		t, code := p.checkParseType()
-		if code != 0 {
-			addType(param, t)
-		}
-
-		if p.tok.Type == token.ASSIGN {
-			// default value
-			isByName = true
-			p.advanceToken()
-			value = p.parseExpression(precedence_LOWEST)
-		}
-	}
+	var value, vtype ast.Node
 
 	switch p.tok.Type {
 	case token.IDENT:
-		parseIdentEtc()
+		param, isByName, expansion, vtype, value = p.parseIdentForParameter()
 		if value != nil {
 			param = ast.MakeAssignmentExpression(param, value, false)
 			return
@@ -247,7 +160,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	case token.VAR:
 		mutable := true
 		p.advanceToken()
-		parseIdentEtc()
+		param, isByName, expansion, vtype, value = p.parseIdentForParameter()
 
 		if value == nil {
 			param = &ast.LineDeclarationNode{
@@ -270,7 +183,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 		} else if isByName {
 			p.addError("Unexpected alias on parameter expansion")
 		}
-		if typeDeclared {
+		if vtype != nil {
 			p.addError("Unexpected explicit type on parameter expansion")
 		}
 		
@@ -279,6 +192,104 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	}
 
 	return
+}
+
+func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expansion *ast.ExpansionNode, vtype, value ast.Node) {
+	var alias ast.Node
+	var aliasTok token.Token
+
+	param = p.parseIdentifier()
+
+	if p.tok.Type == token.AS {
+		// external name specified after as keyword
+		isByName = true
+		aliasTok = p.tok
+		p.advanceToken() // past as keyword
+		var ok bool
+		alias, ok = p.parseWord()
+		if !ok {
+			p.addError("Error parsing alias for parameter (a as b)")
+		}
+		// param already set as ident
+		// having an alias, set param as infix expression, a as b
+		param = &ast.InfixExpressionNode{
+			Token:    param.TokenInfo(),
+			Left:     param,
+			Operator: aliasTok,
+			Right:    alias,
+		}
+	}
+
+	if p.tok.Type == token.EXPANSION {
+		exp := p.tok
+		p.advanceToken() // past ... expansion token
+
+		var limits ast.Node
+		switch p.tok.Type {
+		case token.LBRACKET:
+			if p.tok.CpDiff != 0 {
+				p.addError("Expected no space between expansion token and opening square bracket (expansion limits)")
+			}
+		
+			p.advanceToken()
+			limits = p.parseExpression(precedence_LOWEST)
+			if p.tok.Type != token.RBRACKET {
+				p.addError("Expected closing bracket for expansion limit expression")
+			}
+			p.advanceToken()
+		}
+	
+		expansion = &ast.ExpansionNode{
+			Token:        exp,
+			Limits:       limits,
+		}
+	}
+
+	vtype, code := p.checkParseType()
+	if code != 0 {
+		p.addTypeToIdent(param, vtype)
+	}
+
+	if p.tok.Type == token.ASSIGN {
+		// default value
+		isByName = true
+		p.advanceToken()
+		value = p.parseExpression(precedence_LOWEST)
+	}
+	
+	return
+}
+
+func (p *Parser) addTypeToIdent(node, t ast.Node) {
+	out:
+	for {
+		switch n := node.(type) {
+		case *ast.IdentNode:
+			n.Type = t
+			break out
+		
+		case *ast.InfixExpressionNode:
+			// has alias (with *as* keyword)
+			node = n.Left
+			
+		case *ast.LineDeclarationNode:
+			node = n.Assignment
+			
+		case *ast.AssignmentNode:
+			if len(n.Identifiers) != 1 {
+				p.addError(fmt.Sprintf("Failure to add Type to identifiers (%d)", len(n.Identifiers)))
+				break out
+			}
+			node = n.Identifiers[0]
+		
+		case *ast.ExpansionNode:
+			node = n.Continuation
+		
+		default:
+			p.addError("Failure to add Type to identifier")
+			break out
+		}
+	}
 }
 
 func (p *Parser) maybeParseSpecialFunction() ast.Node {
