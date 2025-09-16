@@ -123,28 +123,23 @@ var bi_read = &object.BuiltIn{
 		Description:   "reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "prompt", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "prompt", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
 			object.Parameter{ExternalName: "validation"},
-			object.Parameter{ExternalName: "errmsg", DefaultValue: object.ZLS},
-			object.Parameter{ExternalName: "maxattempts", DefaultValue: object.One},
+			object.Parameter{ExternalName: "errmsg", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "maxattempts", Type: object.NUMBER_OBJ, DefaultValue: object.One},
 			object.Parameter{ExternalName: "alt"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "read"
 
+		var ok bool
+
 		// Gather arguments.
 		// "prompt" argument
-		var prompt string
-		p, ok := args[0].(*object.String)
-		if ok {
-			prompt = p.String()
-			if pr.Modes.ConsoleTextMode {
-				prompt = str.ReplaceNewLinesWithSystem(prompt)
-			}
-
-		} else {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for prompt")
+		prompt := args[0].String()
+		if pr.Modes.ConsoleTextMode {
+			prompt = str.ReplaceNewLinesWithSystem(prompt)
 		}
 
 		// "validation" argument
@@ -165,16 +160,9 @@ var bi_read = &object.BuiltIn{
 		}
 
 		// "errmsg" argument
-		var errMsg string
-		e, ok := args[2].(*object.String)
-		if ok {
-			errMsg = e.String()
-			if pr.Modes.ConsoleTextMode {
-				errMsg = str.ReplaceNewLinesWithSystem(errMsg)
-			}
-
-		} else {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for error message")
+		errMsg := args[2].String()
+		if pr.Modes.ConsoleTextMode {
+			errMsg = str.ReplaceNewLinesWithSystem(errMsg)
 		}
 
 		// "maxattempts" argument

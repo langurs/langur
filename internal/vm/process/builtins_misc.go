@@ -115,7 +115,7 @@ var bi_nn = &object.BuiltIn{
 		Description: "returns the first non-null value from a list, unless there are no non-null values, in which case it returns the alternate or an exception",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "over"},
+			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
@@ -123,10 +123,7 @@ var bi_nn = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		list, ok := args[0].(*object.List)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "nn", "Expected list for first argument")
-		}
+		list := args[0].(*object.List)
 		for _, v := range list.Elements {
 			if v != object.NULL {
 				return v
@@ -148,7 +145,7 @@ var bi_sleep = &object.BuiltIn{
 		Description:   "waits for the specified number of milliseconds",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "ms"},
+			object.Parameter{ExternalName: "ms", Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

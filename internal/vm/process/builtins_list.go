@@ -101,6 +101,7 @@ var bi_more = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "more"
 
+		// with parameter expansion, add will always be a list
 		add := args[1].(*object.List).Elements
 
 		switch with := args[0].(type) {
@@ -209,8 +210,8 @@ var bi_rotate = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "distance"},
-			object.Parameter{ExternalName: "range"},
+			object.Parameter{ExternalName: "distance", Type: object.NUMBER_OBJ},
+			object.Parameter{ExternalName: "range", Type: object.RANGE_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

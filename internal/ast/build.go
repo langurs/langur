@@ -445,3 +445,35 @@ func SplitArgumentSliceToPositionalAndByName(args []Node) (
 	}
 	return
 }
+
+func AddTypeToIdent(node, t Node) error {
+	out:
+	for {
+		switch n := node.(type) {
+		case *IdentNode:
+			n.Type = t
+			break out
+		
+		case *InfixExpressionNode:
+			// has alias (with *as* keyword)
+			node = n.Left
+			
+		case *LineDeclarationNode:
+			node = n.Assignment
+			
+		case *AssignmentNode:
+			if len(n.Identifiers) != 1 {
+				return fmt.Errorf("Failure to add Type to identifiers (%d)", len(n.Identifiers))
+			}
+			node = n.Identifiers[0]
+		
+		case *ExpansionNode:
+			node = n.Continuation
+		
+		default:
+			return fmt.Errorf("Failure to add Type to identifier")
+		}
+	}
+
+	return nil
+}

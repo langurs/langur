@@ -16,7 +16,7 @@ var bi_cd = &object.BuiltIn{
 		ImpureEffects: true,
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "path"},
+			object.Parameter{ExternalName: "path", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -25,20 +25,14 @@ var bi_cd = &object.BuiltIn{
 		var err error
 		var pwd string
 
-		path := args[0]
+		pathObj := args[0]
 
-		switch arg := path.(type) {
-		case nil:
-		// okay; no change of directory
-
-		case *object.String:
-			err = os.Chdir(arg.String())
+		// nil okay; would be no change of directory
+		if pathObj != nil {
+			err = os.Chdir(pathObj.String())
 			if err != nil {
 				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 			}
-
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for new path")
 		}
 
 		// return the present working directory
@@ -57,22 +51,15 @@ var bi_prop = &object.BuiltIn{
 		ImpureEffects: true,
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "path"},
+			object.Parameter{ExternalName: "path", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "prop"
 
-		var s string
+		path := args[0].String()
 
-		switch arg := args[0].(type) {
-		case *object.String:
-			s = arg.String()
-		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string")
-		}
-
-		switch stat, err := os.Stat(s); {
+		switch stat, err := os.Stat(path); {
 		case err != nil:
 			return object.NULL
 		default:

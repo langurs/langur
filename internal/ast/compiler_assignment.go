@@ -270,6 +270,10 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 				return
 			}
 
+			if id.Limits != nil {
+				err = c.makeErr(node, "Expansion limits not expected on decoupling assignment")
+				return
+			}
 			expansionMin, expansionMax = implicitDecouplingExpansionMin, -1
 
 			temp, err = MakeAssignmentIndexValueStatement(variable, tempCompositeResultVarNode, i+1, true, expansionMin, expansionMax)
@@ -327,6 +331,11 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 		case *ExpansionNode:
 			if i < len(node.Identifiers)-1 {
 				err = c.makeErr(node, "Expansion possible on last variable of decoupling assignment only")
+				return
+			}
+
+			if id.Limits != nil {
+				err = c.makeErr(node, "Expansion limits not expected on decoupling assignment")
 				return
 			}
 			expansionMin, expansionMax = implicitDecouplingExpansionMin, -1

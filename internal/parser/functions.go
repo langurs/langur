@@ -130,7 +130,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
 
 func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	// potential parts of parameter
-	// 1. var keyword
+	// 1. var keyword for mutable parameter
 	// 2. internal name (required)
 	// 3. as keyword followed by external name
 	// 4. ... operator to indicate parameter expansion
@@ -227,7 +227,10 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 
 	vtype, code := p.checkParseType()
 	if code != 0 {
-		p.addTypeToIdent(param, vtype)
+		err := ast.AddTypeToIdent(param, vtype)
+		if err != nil {
+			p.addError(err.Error())
+		}
 	}
 
 	if p.tok.Type == token.ASSIGN {
@@ -240,7 +243,7 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 	return
 }
 
-// partial in that it does not set the Continuation field yet
+// partial in that it does not set the Continuation field yet (only sets Token and Limits)
 func (p *Parser) parseExpansionPartial() *ast.ExpansionNode {
 	expTok := p.tok
 	
@@ -267,38 +270,6 @@ func (p *Parser) parseExpansionPartial() *ast.ExpansionNode {
 		Token:        expTok,
 		Limits:       limits,
 	}	
-}
-
-func (p *Parser) addTypeToIdent(node, t ast.Node) {
-	out:
-	for {
-		switch n := node.(type) {
-		case *ast.IdentNode:
-			n.Type = t
-			break out
-		
-		case *ast.InfixExpressionNode:
-			// has alias (with *as* keyword)
-			node = n.Left
-			
-		case *ast.LineDeclarationNode:
-			node = n.Assignment
-			
-		case *ast.AssignmentNode:
-			if len(n.Identifiers) != 1 {
-				p.addError(fmt.Sprintf("Failure to add Type to identifiers (%d)", len(n.Identifiers)))
-				break out
-			}
-			node = n.Identifiers[0]
-		
-		case *ast.ExpansionNode:
-			node = n.Continuation
-		
-		default:
-			p.addError("Failure to add Type to identifier")
-			break out
-		}
-	}
 }
 
 func (p *Parser) maybeParseSpecialFunction() ast.Node {
