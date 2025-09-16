@@ -235,15 +235,6 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 				idents[len(idents)-1] = expansion
 			}
 
-		// case token.EXPANSION:
-		// 	p.advanceToken()
-		// 	idents = append(idents, &ast.ExpansionNode{
-		// 		Token:        p.prevTok,
-		// 		Continuation: parseIdent(),
-		// 		// Limits nil for now
-		// 	})
-		// 	includesExpansion = true
-
 		case token.NONE:
 			idents = append(idents, p.parseNone())
 
