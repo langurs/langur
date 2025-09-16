@@ -214,18 +214,35 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 			p.addError("Expansion not on last identifier in list")
 		}
 
+		if p.tok.Type == token.EXPANSION {
+			// position of expansion token changed (0.20)
+			p.addError("Expansion must be specified after the variable name, not before")
+			p.advanceToken()
+		}
+
 		switch p.tok.Type {
 		case token.IDENT:
 			idents = append(idents, parseIdent())
 
-		case token.EXPANSION:
-			p.advanceToken()
-			idents = append(idents, &ast.ExpansionNode{
-				Token:        p.prevTok,
-				Continuation: parseIdent(),
-				// Limits nil for now
-			})
-			includesExpansion = true
+			if p.tok.Type == token.EXPANSION {
+				includesExpansion = true
+				expansion := p.parseExpansionPartial()
+				if expansion.Limits != nil {
+					// cannot use limits at present on variable expansion
+					p.addError("Cannot set limits on variable expansion")
+				}
+				expansion.Continuation = idents[len(idents)-1]
+				idents[len(idents)-1] = expansion
+			}
+
+		// case token.EXPANSION:
+		// 	p.advanceToken()
+		// 	idents = append(idents, &ast.ExpansionNode{
+		// 		Token:        p.prevTok,
+		// 		Continuation: parseIdent(),
+		// 		// Limits nil for now
+		// 	})
+		// 	includesExpansion = true
 
 		case token.NONE:
 			idents = append(idents, p.parseNone())

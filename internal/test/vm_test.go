@@ -2273,45 +2273,45 @@ func TestDecouplingWithExpansion(t *testing.T) {
 		// using 2 variables
 		{
 			`var x, y
-			 x, ...y = [7, 14, 21]
+			 x, y... = [7, 14, 21]
 			 x`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 x, ...y = [7, 14, 21]
+			 x, y... = [7, 14, 21]
 			 y[1] + y[2]`,
 			35, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 x, ... y = [7, 14]
+			 x, y ... = [7, 14]
 			 y[1]`,
 			14, object.NUMBER_OBJ,
 		},
 
 		{
 			`var x, y
-			 x, ... y = [7, 14, 21]
+			 x, y ... = [7, 14, 21]
 			 len y`,
 			2, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 x, ... y = [7, 14]
+			 x, y ... = [7, 14]
 			 len y`,
 			1, object.NUMBER_OBJ,
 		},
 		{
 			// 0 minimum by default
 			`var x, y
-			 x, ... y = [7]
+			 x, y ... = [7]
 			 len y`,
 			0, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 x, ... y = []
+			 x, y ... = []
 			 y`,
 			nil, object.NULL_OBJ,
 		},
@@ -2320,21 +2320,21 @@ func TestDecouplingWithExpansion(t *testing.T) {
 		{
 			`var x
 			 var y = [1, 2, 3]
-			 x, ... y[2] = [7, 14, 21]
+			 x, y[2] ... = [7, 14, 21]
 			 x`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x
 			 var y = [1, 2, 3]
-			 x, ... y[2] = [7, 14, 21]
+			 x, y[2] ... = [7, 14, 21]
 			 y[1] + y[3]`,
 			4, object.NUMBER_OBJ,
 		},
 		{
 			`var x
 			 var y = [1, 2, 3]
-			 x, ... y[2] = [7, 14, 21]
+			 x, y[2] ... = [7, 14, 21]
 			 y[2][1] + y[2][2]`,
 			35, object.NUMBER_OBJ,
 		},
@@ -2342,103 +2342,103 @@ func TestDecouplingWithExpansion(t *testing.T) {
 		// 2 variables in if test
 		{
 			`var x, y
-			 if x, ... y = [7, 14, 21] { x } else { 0 }`,
+			 if x, y ... = [7, 14, 21] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7] { x } else { 0 }`,
+			 if x, y ... = [7] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [] { x } else { 0 }`,
+			 if x, y ... = [] { x } else { 0 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7, 14, 21] { y[1] + y[2] } else { 0 }`,
+			 if x, y ... = [7, 14, 21] { y[1] + y[2] } else { 0 }`,
 			35, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7, 14] { y[1] } else { 0 }`,
+			 if x, y ... = [7, 14] { y[1] } else { 0 }`,
 			14, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7, 14, 21] { len y } else { 0 }`,
+			 if x, y ... = [7, 14, 21] { len y } else { 0 }`,
 			2, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7, 14] { len y } else { 0 }`,
+			 if x, y ... = [7, 14] { len y } else { 0 }`,
 			1, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [7] { len y } else { -1 }`,
+			 if x, y ... = [7] { len y } else { -1 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y
-			 if x, ... y = [] { len y } else { -1 }`,
+			 if x, y ... = [] { len y } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 
 		// using 3 variables
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28, 35, 42]
+			 x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 x`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28, 35, 42]
+			 x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 y`,
 			14, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28, 35, 42]
+			 x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 z[1] + z[2] + z[3] + z[4]`,
 			126, object.NUMBER_OBJ,
 		},
 
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28, 35, 42]
+			 x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 len z`,
 			4, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28, 35]
+			 x, y, z ... = [7, 14, 21, 28, 35]
 			 len z`,
 			3, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21, 28]
+			 x, y, z ... = [7, 14, 21, 28]
 			 len z`,
 			2, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14, 21]
+			 x, y, z ... = [7, 14, 21]
 			 len z`,
 			1, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7, 14]
+			 x, y, z ... = [7, 14]
 			 len z`,
 			0, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 x, y, ... z = [7]
+			 x, y, z ... = [7]
 			 z`,
 			nil, object.NULL_OBJ,
 		},
@@ -2446,38 +2446,38 @@ func TestDecouplingWithExpansion(t *testing.T) {
 		// 3 variables in if test
 		{
 			`var x, y, z
-			 if x, y, ... z = [7, 14, 21] { x } else { 0 }`,
+			 if x, y, z ... = [7, 14, 21] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 if x, y, ... z = [7, 14, 21] { y } else { 0 }`,
+			 if x, y, z ... = [7, 14, 21] { y } else { 0 }`,
 			14, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 if x, y, ... z = [] { y } else { -1 }`,
+			 if x, y, z ... = [] { y } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 
 		{
 			`var x, y, z
-			 if x, y, ... z = [7, 14, 21, 28] { len z } else { 0 }`,
+			 if x, y, z ... = [7, 14, 21, 28] { len z } else { 0 }`,
 			2, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 if x, y, ... z = [7, 14, 21] { len z } else { 0 }`,
+			 if x, y, z ... = [7, 14, 21] { len z } else { 0 }`,
 			1, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 if x, y, ... z = [7, 14] { len z } else { 0 }`,
+			 if x, y, z ... = [7, 14] { len z } else { 0 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
 			`var x, y, z
-			 if x, y, ... z = [7] { x } else { -1 }`,
+			 if x, y, z ... = [7] { x } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 	}
@@ -2489,203 +2489,203 @@ func TestDecouplingDeclarationWithExpansion(t *testing.T) {
 	tests := []vmTestCase{
 		// using 2 variables
 		{
-			`val x, ... y = [7, 14, 21]
+			`val x, y ... = [7, 14, 21]
 			 x`,
 			7, object.NUMBER_OBJ,
 		},
 		{
-			`val x, ... y = [7, 14, 21]
+			`val x, y ... = [7, 14, 21]
 			 y[1] + y[2]`,
 			35, object.NUMBER_OBJ,
 		},
 		{
-			`val x, ... y = [7, 14]
+			`val x, y ... = [7, 14]
 			 y[1]`,
 			14, object.NUMBER_OBJ,
 		},
 
 		{
-			`val x, ... y = [7, 14, 21]
+			`val x, y ... = [7, 14, 21]
 			 len y`,
 			2, object.NUMBER_OBJ,
 		},
 		{
-			`val x, ... y = [7, 14]
+			`val x, y ... = [7, 14]
 			 len y`,
 			1, object.NUMBER_OBJ,
 		},
 		{
 			// 0 minimum by default
-			`val x, ... y = [7]
+			`val x, y ... = [7]
 			 len y`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`val x, ... y = []
+			`val x, y ... = []
 			 y`,
 			nil, object.NULL_OBJ,
 		},
 
 		// 2 variables in if test
 		{
-			`if val x, ... y = [7, 14, 21] { x } else { 0 }`,
+			`if val x, y ... = [7, 14, 21] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7] { x } else { 0 }`,
+			`if val x, y ... = [7] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [] { x } else { 0 }`,
+			`if val x, y ... = [] { x } else { 0 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7, 14, 21] { y[1] + y[2] } else { 0 }`,
+			`if val x, y ... = [7, 14, 21] { y[1] + y[2] } else { 0 }`,
 			35, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7, 14] { y[1] } else { 0 }`,
+			`if val x, y ... = [7, 14] { y[1] } else { 0 }`,
 			14, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7, 14, 21] { len y } else { 0 }`,
+			`if val x, y ... = [7, 14, 21] { len y } else { 0 }`,
 			2, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7, 14] { len y } else { 0 }`,
+			`if val x, y ... = [7, 14] { len y } else { 0 }`,
 			1, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [7] { len y } else { -1 }`,
+			`if val x, y ... = [7] { len y } else { -1 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, ... y = [] { len y } else { -1 }`,
+			`if val x, y ... = [] { len y } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 
 		// using 3 variables
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 x`,
 			7, object.NUMBER_OBJ,
 		}, // using 3 variables
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 x`,
 			7, object.NUMBER_OBJ,
 		},
 		{
-			`val x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`val x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 y`,
 			14, object.NUMBER_OBJ,
 		},
 		{
-			`val x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`val x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 z[1] + z[2] + z[3] + z[4]`,
 			126, object.NUMBER_OBJ,
 		},
 
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 len z`,
 			4, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35]
+			`var x, y, z ... = [7, 14, 21, 28, 35]
 			 len z`,
 			3, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28]
+			`var x, y, z ... = [7, 14, 21, 28]
 			 len z`,
 			2, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21]
+			`var x, y, z ... = [7, 14, 21]
 			 len z`,
 			1, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14]
+			`var x, y, z ... = [7, 14]
 			 len z`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7]
+			`var x, y, z ... = [7]
 			 z`,
 			nil, object.NULL_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 y`,
 			14, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 z[1] + z[2] + z[3] + z[4]`,
 			126, object.NUMBER_OBJ,
 		},
 
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35, 42]
+			`var x, y, z ... = [7, 14, 21, 28, 35, 42]
 			 len z`,
 			4, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28, 35]
+			`var x, y, z ... = [7, 14, 21, 28, 35]
 			 len z`,
 			3, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21, 28]
+			`var x, y, z ... = [7, 14, 21, 28]
 			 len z`,
 			2, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14, 21]
+			`var x, y, z ... = [7, 14, 21]
 			 len z`,
 			1, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7, 14]
+			`var x, y, z ... = [7, 14]
 			 len z`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`var x, y, ... z = [7]
+			`var x, y, z ... = [7]
 			 z`,
 			nil, object.NULL_OBJ,
 		},
 
 		// 3 variables in if test
 		{
-			`if val x, y, ... z = [7, 14, 21] { x } else { 0 }`,
+			`if val x, y, z ... = [7, 14, 21] { x } else { 0 }`,
 			7, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, y, ... z = [7, 14, 21] { y } else { 0 }`,
+			`if val x, y, z ... = [7, 14, 21] { y } else { 0 }`,
 			14, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, y, ... z = [] { y } else { -1 }`,
+			`if val x, y, z ... = [] { y } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 
 		{
-			`if val x, y, ... z = [7, 14, 21, 28] { len z } else { 0 }`,
+			`if val x, y, z ... = [7, 14, 21, 28] { len z } else { 0 }`,
 			2, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, y, ... z = [7, 14, 21] { len z } else { 0 }`,
+			`if val x, y, z ... = [7, 14, 21] { len z } else { 0 }`,
 			1, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, y, ... z = [7, 14] { len z } else { 0 }`,
+			`if val x, y, z ... = [7, 14] { len z } else { 0 }`,
 			0, object.NUMBER_OBJ,
 		},
 		{
-			`if val x, y, ... z = [7] { x } else { -1 }`,
+			`if val x, y, z ... = [7] { x } else { -1 }`,
 			-1, object.NUMBER_OBJ,
 		},
 	}

@@ -143,6 +143,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 
 	var expansion *ast.ExpansionNode
 	if p.tok.Type == token.EXPANSION {
+		// position of expansion token changed (0.20)
 		p.advanceToken()
 		p.addError("Parameter expansion must be specified after the parameter name, not before")
 	}
@@ -221,28 +222,7 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 	}
 
 	if p.tok.Type == token.EXPANSION {
-		exp := p.tok
-		p.advanceToken() // past ... expansion token
-
-		var limits ast.Node
-		switch p.tok.Type {
-		case token.LBRACKET:
-			if p.tok.CpDiff != 0 {
-				p.addError("Expected no space between expansion token and opening square bracket (expansion limits)")
-			}
-		
-			p.advanceToken()
-			limits = p.parseExpression(precedence_LOWEST)
-			if p.tok.Type != token.RBRACKET {
-				p.addError("Expected closing bracket for expansion limit expression")
-			}
-			p.advanceToken()
-		}
-	
-		expansion = &ast.ExpansionNode{
-			Token:        exp,
-			Limits:       limits,
-		}
+		expansion = p.parseExpansionPartial()
 	}
 
 	vtype, code := p.checkParseType()
@@ -258,6 +238,35 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 	}
 	
 	return
+}
+
+// partial in that it does not set the Continuation field yet
+func (p *Parser) parseExpansionPartial() *ast.ExpansionNode {
+	expTok := p.tok
+	
+	if expTok.Type != token.EXPANSION {
+		p.addError("Expected expansion token")
+	}
+	p.advanceToken() // past ... expansion token
+
+	var limits ast.Node
+	if p.tok.Type == token.LBRACKET {
+		if p.tok.CpDiff != 0 {
+			p.addError("Expected no space between expansion token and opening square bracket (expansion limits)")
+		}
+	
+		p.advanceToken()
+		limits = p.parseExpression(precedence_LOWEST)
+		if p.tok.Type != token.RBRACKET {
+			p.addError("Expected closing bracket for expansion limit expression")
+		}
+		p.advanceToken()
+	}
+
+	return &ast.ExpansionNode{
+		Token:        expTok,
+		Limits:       limits,
+	}	
 }
 
 func (p *Parser) addTypeToIdent(node, t ast.Node) {
