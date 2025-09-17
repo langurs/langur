@@ -17,8 +17,8 @@ var bi_series = &object.BuiltIn{
 			object.Parameter{ExternalName: "from"},
 		},
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "inc"},
-			object.Parameter{ExternalName: "asconly", DefaultValue: object.FALSE},
+			object.Parameter{ExternalName: "inc", Type: object.NUMBER_OBJ},
+			object.Parameter{ExternalName: "asconly", DefaultValue: object.FALSE, Type: object.BOOLEAN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -29,11 +29,7 @@ var bi_series = &object.BuiltIn{
 
 		from, increment := args[0], args[1]
 
-		ascendingOnly, ok := args[2].(*object.Boolean)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument asconly")
-		}
-		forAscendingSeries := ascendingOnly.Value
+		forAscendingSeries := args[2].(*object.Boolean).Value
 		correctIncrementSign := false
 
 		// check increment

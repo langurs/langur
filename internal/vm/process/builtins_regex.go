@@ -65,7 +65,7 @@ var bi_match = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "alt"},
 		},
 	},
@@ -73,11 +73,7 @@ var bi_match = &object.BuiltIn{
 		const fnName = "match"
 
 		s := args[0].String()
-
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
+		re := args[1].(*object.Regex)
 
 		result, err := object.RegexMatchOnce(re, s)
 		if err != nil {
@@ -104,26 +100,17 @@ var bi_matches = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "matches"
 
 		s := args[0].String()
+		re := args[1].(*object.Regex)
 
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
-
-		var err error
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		max, err := count.ToInt()
+		max, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
@@ -146,18 +133,14 @@ var bi_submatch = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatch"
 
 		s := args[0].String()
-
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
+		re := args[1].(*object.Regex)
 
 		result, err := object.RegexSubMatches(re, s)
 		if err != nil {
@@ -177,18 +160,14 @@ var bi_submatchH = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchH"
 
 		s := args[0].String()
-
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
+		re := args[1].(*object.Regex)
 
 		result, err := object.RegexSubMatchesHash(re, s)
 		if err != nil {
@@ -208,25 +187,17 @@ var bi_submatches = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatches"
 
 		s := args[0].String()
+		re := args[1].(*object.Regex)
 
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
-
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		cnt, err := count.ToInt()
+		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
@@ -249,25 +220,17 @@ var bi_submatchesH = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchesH"
 
 		s := args[0].String()
+		re := args[1].(*object.Regex)
 
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
-
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		cnt, err := count.ToInt()
+		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
@@ -291,7 +254,7 @@ var bi_split = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by", DefaultValue: object.ZLS},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -322,7 +285,7 @@ var bi_split = &object.BuiltIn{
 
 		count, ok := args[2].(*object.Number)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for third argument")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
 		}
 		max, err := count.ToInt()
 		if err != nil {
@@ -413,7 +376,7 @@ var bi_indices = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -432,11 +395,7 @@ var bi_indices = &object.BuiltIn{
 			}
 		}
 
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		cnt, err := count.ToInt()
+		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -464,18 +423,14 @@ var bi_subindex = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindex"
 
 		s := args[0].String()
-
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
+		re := args[1].(*object.Regex)
 
 		result, err := object.RegexSubMatchesIndices(re, s)
 		if err != nil {
@@ -495,25 +450,17 @@ var bi_subindices = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindices"
 
 		s := args[0].String()
+		re := args[1].(*object.Regex)
 
-		re, ok := args[1].(*object.Regex)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex for argument by")
-		}
-
-		count, ok := args[2].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		cnt, err := count.ToInt()
+		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 		}

@@ -76,7 +76,7 @@ var bi_gcd = &object.BuiltIn{
 		Description: "returns the greatest common divisor of 2 or more integers",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "over"},
+			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -87,11 +87,7 @@ var bi_gcd = &object.BuiltIn{
 		var numbers []*object.Number
 		var err error
 
-		arr, ok := args[0].(*object.List)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of numbers")
-		}
-		elements = arr.Elements
+		elements = args[0].(*object.List).Elements
 
 		numbers = make([]*object.Number, len(elements))
 		for i, v := range elements {
@@ -142,7 +138,7 @@ var bi_lcm = &object.BuiltIn{
 		Description: "returns the least common multiple of 2 or more integers",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "over"},
+			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -153,11 +149,7 @@ var bi_lcm = &object.BuiltIn{
 		var numbers []*object.Number
 		var err error
 
-		arr, ok := args[0].(*object.List)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of numbers")
-		}
-		elements = arr.Elements
+		elements = args[0].(*object.List).Elements
 
 		numbers = make([]*object.Number, len(elements))
 		for i, v := range elements {
@@ -507,11 +499,11 @@ var bi_round = &object.BuiltIn{
 		Description: "rounds number to specified digits after decimal point; mode from the " + modes.RoundHashName + " hash",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "num"},
+			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "places", DefaultValue: object.Zero, Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 			object.Parameter{ExternalName: "mode"},
 		},
@@ -519,10 +511,7 @@ var bi_round = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "round"
 
-		n, ok := args[0].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number")
-		}
+		n := args[0].(*object.Number)
 
 		places, ok := object.NumberToInt(args[1])
 		if !ok {
@@ -540,7 +529,7 @@ var bi_round = &object.BuiltIn{
 		case object.FALSE:
 			trimTrailingZeroes = true
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
 		}
 
 		var mode modes.RoundingMode
@@ -571,21 +560,18 @@ var bi_trunc = &object.BuiltIn{
 		Description: "truncate number to specified digits after decimal point",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "num"},
+			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "places", DefaultValue: object.Zero},
+			object.Parameter{ExternalName: "places", DefaultValue: object.Zero, Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "trunc"
 
-		n, ok := args[0].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for first argument")
-		}
+		n := args[0].(*object.Number)
 
 		places, ok := object.NumberToInt(args[1])
 		if !ok {
@@ -603,7 +589,7 @@ var bi_trunc = &object.BuiltIn{
 		case object.FALSE:
 			trimTrailingZeroes = true
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool for argument zeroes")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
 		}
 
 		num, err := n.Truncate(places, addTrailingZeroes, trimTrailingZeroes)
@@ -622,14 +608,10 @@ var bi_simplify = &object.BuiltIn{
 		Description: "simplifies number, removing trailing zeros",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "num"},
+			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		n, ok := args[0].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "simplify", "Expected number")
-		}
-		return n.Simplify()
+		return args[0].(*object.Number).Simplify()
 	},
 }

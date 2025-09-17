@@ -17,15 +17,11 @@ var bi_reCompile = &object.BuiltIn{
 		Description: "compiles string pattern into re2 regex",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "from"},
+			object.Parameter{ExternalName: "from", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		pattern, ok := args[0].(*object.String)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, "reCompile", "Expected string for pattern")
-		}
-		re, err := object.NewRegex(pattern.String(), regex.RE2)
+		re, err := object.NewRegex(args[0].String(), regex.RE2)
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, "reCompile", err.Error())
 		}

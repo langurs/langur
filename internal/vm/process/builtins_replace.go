@@ -27,7 +27,7 @@ var bi_replace = &object.BuiltIn{
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "with", DefaultValue: object.ZLS},
-			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax},
+			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -77,11 +77,7 @@ var bi_replace = &object.BuiltIn{
 				"Expected string or function or list of functions for argument with")
 		}
 
-		count, ok := args[3].(*object.Number)
-		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
-		}
-		max, err := count.ToInt()
+		max, err := args[3].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}

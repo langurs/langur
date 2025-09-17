@@ -5,6 +5,7 @@ package symbol
 import (
 	"fmt"
 	"langur/modes"
+	"langur/object"
 	"langur/str"
 	"langur/token"
 	"langur/vm/process"
@@ -27,6 +28,7 @@ const (
 
 type Symbol struct {
 	Name    string
+	Type    object.ObjectType
 	Scope   symbolScope
 	Index   int
 	Mutable bool
@@ -76,7 +78,7 @@ func (st *SymbolTable) DefineUserVariable(name string, mutable bool) (sym Symbol
 		err = fmt.Errorf("User-defined variable names cannot start with underscore")
 		return
 	}
-	return st.defineSymbol(name, mutable)
+	return st.defineSymbol(name, mutable, 0)
 }
 
 func (st *SymbolTable) DefineSystemVariable(name string, mutable bool) (sym Symbol, err error) {
@@ -85,7 +87,7 @@ func (st *SymbolTable) DefineSystemVariable(name string, mutable bool) (sym Symb
 		err = fmt.Errorf("System variable names start with underscore")
 		return
 	}
-	return st.defineSymbol(name, mutable)
+	return st.defineSymbol(name, mutable, 0)
 }
 
 // to check if identifier name allowed for declaration
@@ -101,11 +103,11 @@ func isNonShadowedWord(name string) bool {
 	return false
 }
 
-func (st *SymbolTable) defineSymbol(name string, mutable bool) (Symbol, error) {
+func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.ObjectType) (Symbol, error) {
 	if st.IsNonScope {
 		// safe to do this blindly (without checking for null), ...
 		// ... as the root table will never be a non-scope table
-		return st.Outer.defineSymbol(name, mutable)
+		return st.Outer.defineSymbol(name, mutable, stype)
 	}
 
 	// first, check if it is already defined in this scope
@@ -121,6 +123,7 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool) (Symbol, error) {
 
 	sym = Symbol{
 		Name:    name,
+		Type:    stype,
 		Index:   st.DefinitionCount,
 		Mutable: mutable,
 	}
@@ -139,7 +142,7 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool) (Symbol, error) {
 
 func (st *SymbolTable) defineRootSymbol(name string, mutable bool) (Symbol, error) {
 	if st.Outer == nil {
-		return st.defineSymbol(name, mutable)
+		return st.defineSymbol(name, mutable, 0)
 	}
 	return st.Outer.defineRootSymbol(name, mutable)
 }
@@ -149,6 +152,7 @@ func (st *SymbolTable) defineFree(original Symbol) Symbol {
 
 	sym := Symbol{
 		Name:    original.Name,
+		Type:    original.Type.Copy(),
 		Index:   len(st.FreeSymbols) - 1,
 		Scope:   FreeScope,
 		Mutable: false,
@@ -161,6 +165,7 @@ func (st *SymbolTable) defineFree(original Symbol) Symbol {
 func (st *SymbolTable) DefineSelf(name string) Symbol {
 	sym := Symbol{
 		Name:    name,
+		Type:    0,
 		Index:   0,
 		Scope:   SelfScope,
 		Mutable: false,

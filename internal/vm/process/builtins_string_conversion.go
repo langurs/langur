@@ -160,10 +160,10 @@ var bi_s2gc = &object.BuiltIn{
 		// string to grapheme clusters
 		const fnName = "s2gc"
 
-		s := args[0].(*object.String)
+		s := args[0].(*object.String).String()
 		var clusters []object.Object
 
-		graphemes := str.Graphemes(s.String())
+		graphemes := str.Graphemes(s)
 		for _, gr := range graphemes {
 			if len(gr) == 1 {
 				// 1 code point
