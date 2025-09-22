@@ -139,7 +139,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	// 7. = operator followed by default value
 	// ex.: var x as y string
 	// ex.: x as y string = "asdf"
-	// ex.: x as y ...[4..7]
+	// ex.: x ...[4..7]
 
 	var expansion *ast.ExpansionNode
 	if p.tok.Type == token.EXPANSION {
