@@ -172,7 +172,7 @@ func replaceWithFunctionsAndStrings(
 var bi_tran = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "tran",
-		Description: "transliteration by strings, code points, or graphemes; may use lists",
+		Description: "transliteration by strings, code points, or graphemes; may use lists; or may use single hash for argument with",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -209,7 +209,7 @@ var bi_tran = &object.BuiltIn{
 			} else {
 				return object.NewError(object.ERR_ARGUMENTS, fnName, "Argument with must be hash when argument by not passed")
 			}
-			
+
 		} else {
 			list1, err = listToGraphemeStringSlice(args[1])
 			if err != nil {
@@ -220,7 +220,7 @@ var bi_tran = &object.BuiltIn{
 				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
 			}
 		}
-		
+
 		// should have 2 lists of equal length
 		if len(list1) != len(list2) {
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same number of items for lists in arguments by and with")
