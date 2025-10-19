@@ -6832,6 +6832,14 @@ func TestTransliterate(t *testing.T) {
 
 		// using hash
 		{`tran("CDAB", with={"A": "A", "B": "ö", "C": "Ж", "D": "€", "E": "𝄞"})`, "Ж€Aö", object.STRING_OBJ},
+
+		// with delimiter
+		{`tran("abcd", by='a'..'z', with='A'..'Z', delim="7")`, "A7B7C7D", object.STRING_OBJ},
+		{`tran("abc3d", by='a'..'z', with='A'..'Z', delim="7")`, "A7B7C737D", object.STRING_OBJ},
+
+		{`tran("cab", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "-.-. .- -...", object.STRING_OBJ},
+		{`tran("cabs", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "-.-. .- -... s", object.STRING_OBJ},
+		{`tran("zcabs2", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "z -.-. .- -... s2", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

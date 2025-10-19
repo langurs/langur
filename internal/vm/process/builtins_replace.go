@@ -181,13 +181,16 @@ var bi_tran = &object.BuiltIn{
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "with", Required: true},
+			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "tran"
 
-		src := args[0].String()
 		var sb strings.Builder
+
+		src := args[0].String()
+		delim := args[3].String()
 
 		var list1, list2 []string
 		var err error
@@ -226,22 +229,42 @@ var bi_tran = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same number of items for lists in arguments by and with")
 		}
 
+		previousMatch := false
+		initiated := false
 		for len(src) != 0 {
 			match := false
 			for i, find := range list1 {
 				if len(src) >= len(find) && src[:len(find)] == find {
 					match = true
+
+					if initiated {
+						// preceding delimiter
+						sb.WriteString(delim)
+					}
+
 					sb.WriteString(list2[i])
 					src = src[len(find):]
+
+					previousMatch = true
+
 					break // for i, find
 				}
 			}
+
 			if !match {
-				// no match; advance by 1 code point
+				// only add trailing delimiter if previously matched and this time did not
+				if previousMatch {
+					sb.WriteString(delim)
+				}
+				previousMatch = false
+
+				// no match; advance search by 1 code point
 				r, bc, _ := cpoint.Decode(&src, 0)
 				sb.WriteRune(r)
 				src = src[bc:]
 			}
+
+			initiated = true
 		}
 		
 		return object.NewString(sb.String())
