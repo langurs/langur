@@ -340,3 +340,11 @@ func (d *Hash) Reverse() (hash *Hash, err error) {
 	}
 	return hash, err
 }
+
+func (left *Hash) Values() *List {
+	list := &List{}
+	for _, kv := range left.Pairs {
+		list.Elements = append(list.Elements, kv.Value)
+	}
+	return list
+}

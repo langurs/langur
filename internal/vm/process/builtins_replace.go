@@ -179,7 +179,7 @@ var bi_tran = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true},
+			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "with", Required: true},
 		},
 	},
@@ -192,13 +192,33 @@ var bi_tran = &object.BuiltIn{
 		var list1, list2 []string
 		var err error
 
-		list1, err = listToGraphemeStringSlice(args[1])
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument by: %s", err.Error()))
-		}
-		list2, err = listToGraphemeStringSlice(args[2])
-		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
+		if args[1] == nil {
+			// no argument by; with must be hash
+			h, ok := args[2].(*object.Hash)
+			if ok {
+				keys, values := h.IndexKeys(), h.Values()
+				list1, err = listToGraphemeStringSlice(keys)
+				if err != nil {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on keys of hash argument with: %s", err.Error()))
+				}
+				list2, err = listToGraphemeStringSlice(values)
+				if err != nil {
+					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on values of hash argument with: %s", err.Error()))
+				}
+
+			} else {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Argument with must be hash when argument by not passed")
+			}
+			
+		} else {
+			list1, err = listToGraphemeStringSlice(args[1])
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument by: %s", err.Error()))
+			}
+			list2, err = listToGraphemeStringSlice(args[2])
+			if err != nil {
+				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
+			}
 		}
 		
 		// should have 2 lists of equal length
