@@ -5849,9 +5849,9 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`any({:})`, nil, object.NULL_OBJ},
 
 		// join
-		{`join(["abc", "123"], by=",")`, "abc,123", object.STRING_OBJ},
+		{`join(["abc", "123"], delim=",")`, "abc,123", object.STRING_OBJ},
 		// join with auto-stringification
-		{`join(series(1..7), by=" ")`, "1 2 3 4 5 6 7", object.STRING_OBJ},
+		{`join(series(1..7), delim=" ")`, "1 2 3 4 5 6 7", object.STRING_OBJ},
 
 		{`join(["abc", "123"])`, "abc123", object.STRING_OBJ},
 		{`join(series(7))`, "1234567", object.STRING_OBJ},
@@ -6894,35 +6894,35 @@ func TestRe2(t *testing.T) {
 		// passing nothing to replace (no replacement string or function; default ZLS)
 		{`replace("abc azc aec afc ", by=re/[e-z]/)`, "abc ac ac ac ", object.STRING_OBJ},
 
-		{`split("5841755193", by=re/[789]/)`, []string{"5", "41", "551", "3"}, object.LIST_OBJ},
-		{`split("84175519", by=re/[789]/)`, []string{"", "41", "551", ""}, object.LIST_OBJ},
-		{`split("84175519", by=re/[789]/, max=2)`, []string{"", "4175519"}, object.LIST_OBJ},
-		{`split("84175519", by=re/[789]/, max=1)`, []string{"84175519"}, object.LIST_OBJ},
+		{`split("5841755193", delim=re/[789]/)`, []string{"5", "41", "551", "3"}, object.LIST_OBJ},
+		{`split("84175519", delim=re/[789]/)`, []string{"", "41", "551", ""}, object.LIST_OBJ},
+		{`split("84175519", delim=re/[789]/, max=2)`, []string{"", "4175519"}, object.LIST_OBJ},
+		{`split("84175519", delim=re/[789]/, max=1)`, []string{"84175519"}, object.LIST_OBJ},
 
-		{`split("abc", by=re//, max=4)`, []string{"a", "b", "c"}, object.LIST_OBJ},
-		{`split("abc", by=re//, max=3)`, []string{"a", "b", "c"}, object.LIST_OBJ},
-		{`split("abc", by=re//, max=2)`, []string{"a", "bc"}, object.LIST_OBJ},
-		{`split("abc", by=re//, max=1)`, []string{"abc"}, object.LIST_OBJ},
-		{`split("abc", by=re//, max=0)`, []string{}, object.LIST_OBJ},
-		{`split("abc", by=re//)`, []string{"a", "b", "c"}, object.LIST_OBJ},
-		{`split("ασδ", by="σ")`, []string{"α", "δ"}, object.LIST_OBJ},
+		{`split("abc", delim=re//, max=4)`, []string{"a", "b", "c"}, object.LIST_OBJ},
+		{`split("abc", delim=re//, max=3)`, []string{"a", "b", "c"}, object.LIST_OBJ},
+		{`split("abc", delim=re//, max=2)`, []string{"a", "bc"}, object.LIST_OBJ},
+		{`split("abc", delim=re//, max=1)`, []string{"abc"}, object.LIST_OBJ},
+		{`split("abc", delim=re//, max=0)`, []string{}, object.LIST_OBJ},
+		{`split("abc", delim=re//)`, []string{"a", "b", "c"}, object.LIST_OBJ},
+		{`split("ασδ", delim="σ")`, []string{"α", "δ"}, object.LIST_OBJ},
 
-		{`split("144000", by=RE/\./)`, []string{"144000"}, object.LIST_OBJ},
-		{`split("144.000", by=RE/\./)`, []string{"144", "000"}, object.LIST_OBJ},
+		{`split("144000", delim=RE/\./)`, []string{"144000"}, object.LIST_OBJ},
+		{`split("144.000", delim=RE/\./)`, []string{"144", "000"}, object.LIST_OBJ},
 
-		{`split("don't.you.know", by=RE/\./)`, []string{"don't", "you", "know"}, object.LIST_OBJ},
-		{`split("don't.you.know", by=RE/Z/)`, []string{"don't.you.know"}, object.LIST_OBJ},
+		{`split("don't.you.know", delim=RE/\./)`, []string{"don't", "you", "know"}, object.LIST_OBJ},
+		{`split("don't.you.know", delim=RE/Z/)`, []string{"don't.you.know"}, object.LIST_OBJ},
 
-		{`split("zzz", by=re"a")`, []string{"zzz"}, object.LIST_OBJ},
-		{`split("zzz", by=re"a", max=0)`, []string{}, object.LIST_OBJ},
-		{`split("zzz", by="a")`, []string{"zzz"}, object.LIST_OBJ},
-		{`split("zzz", by="a", max=0)`, []string{}, object.LIST_OBJ},
+		{`split("zzz", delim=re"a")`, []string{"zzz"}, object.LIST_OBJ},
+		{`split("zzz", delim=re"a", max=0)`, []string{}, object.LIST_OBJ},
+		{`split("zzz", delim="a")`, []string{"zzz"}, object.LIST_OBJ},
+		{`split("zzz", delim="a", max=0)`, []string{}, object.LIST_OBJ},
 
-		{`split("", by=re"a")`, []string{""}, object.LIST_OBJ},
-		{`split("", by="a")`, []string{""}, object.LIST_OBJ},
-		{`split("", by=re"")`, []string{}, object.LIST_OBJ},
-		{`split("", by="")`, []string{}, object.LIST_OBJ},
-		{`split("", by=3)`, []string{}, object.LIST_OBJ}, // ?
+		{`split("", delim=re"a")`, []string{""}, object.LIST_OBJ},
+		{`split("", delim="a")`, []string{""}, object.LIST_OBJ},
+		{`split("", delim=re"")`, []string{}, object.LIST_OBJ},
+		{`split("", delim="")`, []string{}, object.LIST_OBJ},
+		{`split("", delim=3)`, []string{}, object.LIST_OBJ}, // ?
 
 		{`submatch("asdfzzto", by=re"(a.).+(zz)(t)")`, []string{"as", "zz", "t"}, object.LIST_OBJ},
 		{`submatch("asdfzz", by=re"(a.).+(zz)(t)")`, []string{}, object.LIST_OBJ},
@@ -7240,9 +7240,9 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 		{`replace(" abc abc ", by="b", with=fn s: ucase(s))`, " aBc aBc ", object.STRING_OBJ},
 		{`replace(" abc abc ", by="abc", with=fn(s) { "ZZZ" })`, " ZZZ ZZZ ", object.STRING_OBJ},
 
-		{`split("don't.ya.know", by=".")`, []string{"don't", "ya", "know"}, object.LIST_OBJ},
-		{`split("abc", by="b")`, []string{"a", "c"}, object.LIST_OBJ},
-		{`split("ασδ", by="σ")`, []string{"α", "δ"}, object.LIST_OBJ},
+		{`split("don't.ya.know", delim=".")`, []string{"don't", "ya", "know"}, object.LIST_OBJ},
+		{`split("abc", delim="b")`, []string{"a", "c"}, object.LIST_OBJ},
+		{`split("ασδ", delim="σ")`, []string{"α", "δ"}, object.LIST_OBJ},
 
 		// split with default ZLS delimiter
 		{`split("ασδ")`, []string{"α", "σ", "δ"}, object.LIST_OBJ},
@@ -7269,88 +7269,88 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 
 func TestSplitByNumber(t *testing.T) {
 	tests := []vmTestCase{
-		{`split("ασδ", by=1)`, []string{"α", "σ", "δ"}, object.LIST_OBJ},
-		{`split("ασδ", by=1, max=2)`, []string{"α", "σδ"}, object.LIST_OBJ},
-		{`split("ασδ", by=-1, max=2)`, []string{"ασ", "δ"}, object.LIST_OBJ},
-		{`split("ασδ", by=2)`, []string{"ασ", "δ"}, object.LIST_OBJ},
-		{`split("ασδ", by=-2)`, []string{"α", "σδ"}, object.LIST_OBJ},
+		{`split("ασδ", delim=1)`, []string{"α", "σ", "δ"}, object.LIST_OBJ},
+		{`split("ασδ", delim=1, max=2)`, []string{"α", "σδ"}, object.LIST_OBJ},
+		{`split("ασδ", delim=-1, max=2)`, []string{"ασ", "δ"}, object.LIST_OBJ},
+		{`split("ασδ", delim=2)`, []string{"ασ", "δ"}, object.LIST_OBJ},
+		{`split("ασδ", delim=-2)`, []string{"α", "σδ"}, object.LIST_OBJ},
 
-		{`split("123456789", by=1)`, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, object.LIST_OBJ},
-		{`split("123456789", by=2)`, []string{"12", "34", "56", "78", "9"}, object.LIST_OBJ},
-		{`split("1234567890", by=2)`, []string{"12", "34", "56", "78", "90"}, object.LIST_OBJ},
-		{`split("123456789", by=3)`, []string{"123", "456", "789"}, object.LIST_OBJ},
-		{`split("1234567890", by=3)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
-		{`split("1234567890", by=9)`, []string{"123456789", "0"}, object.LIST_OBJ},
-		{`split("1234567890", by=10)`, []string{"1234567890"}, object.LIST_OBJ},
-		{`split("1234567890", by=12)`, []string{"1234567890"}, object.LIST_OBJ},
+		{`split("123456789", delim=1)`, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, object.LIST_OBJ},
+		{`split("123456789", delim=2)`, []string{"12", "34", "56", "78", "9"}, object.LIST_OBJ},
+		{`split("1234567890", delim=2)`, []string{"12", "34", "56", "78", "90"}, object.LIST_OBJ},
+		{`split("123456789", delim=3)`, []string{"123", "456", "789"}, object.LIST_OBJ},
+		{`split("1234567890", delim=3)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
+		{`split("1234567890", delim=9)`, []string{"123456789", "0"}, object.LIST_OBJ},
+		{`split("1234567890", delim=10)`, []string{"1234567890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=12)`, []string{"1234567890"}, object.LIST_OBJ},
 
-		{`split("123456789", by=3, max=2)`, []string{"123", "456789"}, object.LIST_OBJ},
-		{`split("1234567890", by=3, max=2)`, []string{"123", "4567890"}, object.LIST_OBJ},
-		{`split("1234567890", by=3, max=3)`, []string{"123", "456", "7890"}, object.LIST_OBJ},
-		{`split("1234567890", by=3, max=4)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
-		{`split("1234567890", by=3, max=5)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
+		{`split("123456789", delim=3, max=2)`, []string{"123", "456789"}, object.LIST_OBJ},
+		{`split("1234567890", delim=3, max=2)`, []string{"123", "4567890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=3, max=3)`, []string{"123", "456", "7890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=3, max=4)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
+		{`split("1234567890", delim=3, max=5)`, []string{"123", "456", "789", "0"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=2)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=2)`,
 			[]string{"123", "4567890123456789012345678901234567890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=3)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=3)`,
 			[]string{"123", "456", "7890123456789012345678901234567890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=4)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=4)`,
 			[]string{"123", "456", "789", "0123456789012345678901234567890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=12)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=12)`,
 			[]string{"123", "456", "789", "012", "345", "678", "901", "234", "567", "890", "123", "4567890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=13)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=13)`,
 			[]string{"123", "456", "789", "012", "345", "678", "901", "234", "567", "890", "123", "456", "7890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3, max=14)`,
+		{`split("1234567890123456789012345678901234567890", delim=3, max=14)`,
 			[]string{"123", "456", "789", "012", "345", "678", "901", "234", "567", "890", "123", "456", "789", "0"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=3)`,
+		{`split("1234567890123456789012345678901234567890", delim=3)`,
 			[]string{"123", "456", "789", "012", "345", "678", "901", "234", "567", "890", "123", "456", "789", "0"}, object.LIST_OBJ},
 
-		{`split("123456789", by=-3, max=2)`, []string{"123456", "789"}, object.LIST_OBJ},
-		{`split("1234567890", by=-3, max=2)`, []string{"1234567", "890"}, object.LIST_OBJ},
-		{`split("1234567890", by=-3, max=3)`, []string{"1234", "567", "890"}, object.LIST_OBJ},
-		{`split("1234567890", by=-3, max=4)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
-		{`split("1234567890", by=-3, max=5)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
+		{`split("123456789", delim=-3, max=2)`, []string{"123456", "789"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-3, max=2)`, []string{"1234567", "890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-3, max=3)`, []string{"1234", "567", "890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-3, max=4)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-3, max=5)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=2)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=2)`,
 			[]string{"1234567890123456789012345678901234567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=3)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=3)`,
 			[]string{"1234567890123456789012345678901234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=4)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=4)`,
 			[]string{"1234567890123456789012345678901", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=12)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=12)`,
 			[]string{"1234567", "890", "123", "456", "789", "012", "345", "678", "901", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=13)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=13)`,
 			[]string{"1234", "567", "890", "123", "456", "789", "012", "345", "678", "901", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3, max=14)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3, max=14)`,
 			[]string{"1", "234", "567", "890", "123", "456", "789", "012", "345", "678", "901", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890123456789012345678901234567890", by=-3)`,
+		{`split("1234567890123456789012345678901234567890", delim=-3)`,
 			[]string{"1", "234", "567", "890", "123", "456", "789", "012", "345", "678", "901", "234", "567", "890"}, object.LIST_OBJ},
 
-		{`split("1234567890", by=-12)`, []string{"1234567890"}, object.LIST_OBJ},
-		{`split("1234567890", by=-10)`, []string{"1234567890"}, object.LIST_OBJ},
-		{`split("1234567890", by=-9)`, []string{"1", "234567890"}, object.LIST_OBJ},
-		{`split("123456789", by=-3)`, []string{"123", "456", "789"}, object.LIST_OBJ},
-		{`split("1234567890", by=-3)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
-		{`split("123456789", by=-2)`, []string{"1", "23", "45", "67", "89"}, object.LIST_OBJ},
-		{`split("1234567890", by=-2)`, []string{"12", "34", "56", "78", "90"}, object.LIST_OBJ},
-		{`split("123456789", by=-1)`, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-12)`, []string{"1234567890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-10)`, []string{"1234567890"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-9)`, []string{"1", "234567890"}, object.LIST_OBJ},
+		{`split("123456789", delim=-3)`, []string{"123", "456", "789"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-3)`, []string{"1", "234", "567", "890"}, object.LIST_OBJ},
+		{`split("123456789", delim=-2)`, []string{"1", "23", "45", "67", "89"}, object.LIST_OBJ},
+		{`split("1234567890", delim=-2)`, []string{"12", "34", "56", "78", "90"}, object.LIST_OBJ},
+		{`split("123456789", delim=-1)`, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, object.LIST_OBJ},
 
 		// Do something practical with it.
-		{`join(split("1234567890", by=-3), by=",")`, "1,234,567,890", object.STRING_OBJ},
+		{`join(split("1234567890", delim=-3), delim=",")`, "1,234,567,890", object.STRING_OBJ},
 
-		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", by=-8), by=fn x:"{{x:8(0)}}"), by="_")`,
+		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", delim=-8), by=fn x:"{{x:8(0)}}"), delim="_")`,
 			"2x01111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111", object.STRING_OBJ},
 	}
 
@@ -7781,7 +7781,7 @@ func TestCallingCompiledFunctionsFromBuiltIns(t *testing.T) {
 		},
 
 		// call a built-in from a compiled function that is called from a built-in...
-		{`val x = fn(y) { len(split(y ^/ 2, by=".")) == 1 }	
+		{`val x = fn(y) { len(split(y ^/ 2, delim=".")) == 1 }	
 		  # true if the square root of a number is an integer
 		  # There are probably better ways to check this.
 	

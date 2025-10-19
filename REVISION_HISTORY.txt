@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.20.1
+- renamed parameter "by" as "delim" for join() and split() functions
+
+
 2025-09-16 - 0.20.0
 - added limited explicit type checking for function parameters (checks type of argument passed)
 - moved variable and parameter expansion parsing from before name to after

@@ -253,7 +253,7 @@ var bi_split = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "delim", DefaultValue: object.ZLS},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
@@ -277,10 +277,10 @@ var bi_split = &object.BuiltIn{
 		case *object.Number:
 			countEach, isCountEach = object.NumberToInt(by)
 			if !isCountEach {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument by")
+				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
 			}
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument by")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
 		}
 
 		count, ok := args[2].(*object.Number)
