@@ -3999,6 +3999,19 @@ func TestIndexExpressions(t *testing.T) {
 		{`{"yo": 2, "joe": 4}["jo"; 7]`, "7", object.NUMBER_OBJ},
 		{`{"yo": 2, "joe": 4}["joe"; 7]`, "4", object.NUMBER_OBJ},
 
+		{"{1: 2, 3: 4}[[1, 3]; 0]", []int{2, 4}, object.LIST_OBJ},
+		{"{1: 2, 3: 4}[[1, 4]; 0]", 0, object.NUMBER_OBJ},
+
+		// indices on hashes using range
+		{"{1: 34, 2: 44, 3: 5, 4: 17}[1..2; 0]", []int{34, 44}, object.LIST_OBJ},
+		{"{1: 34, 2: 44, 3: 5, 4: 17}[2..3; 0]", []int{44, 5}, object.LIST_OBJ},
+		{"{1: 34, 2: 44, 3: 5, 4: 17}[3..2; 0]", []int{5, 44}, object.LIST_OBJ},
+		{"{1: 34, 2: 44, 3: 5, 4: 17}[3..7; 0]", 0, object.NUMBER_OBJ},
+
+		{"{-1: 34, 0: 44, 1: 5, 2: 17}[1..2; 0]", []int{5, 17}, object.LIST_OBJ},
+		{"{-1: 34, 0: 44, 1: 5, 2: 17}[-1..1; 0]", []int{34, 44, 5}, object.LIST_OBJ},
+		{"{-1: 34, 0: 44, 1: 5, 2: 17}[-1..3; 0]", 0, object.NUMBER_OBJ},
+
 		// short-hand string indexing (on hashes)
 		{`val x = {"yo": 2, "joe": 4}; x'yo`, 2, object.NUMBER_OBJ},
 		{`val x = {"yo": 2, "joe": 4}; x'joe`, 4, object.NUMBER_OBJ},

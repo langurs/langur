@@ -34,7 +34,7 @@ func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, e
 
 	switch idx := index.(type) {
 	case *List:
-		arr := &List{}
+		list := &List{}
 		for _, v := range idx.Elements {
 			e, err, poly := left.index(v, returnOtherObjType)
 			if err != nil {
@@ -42,13 +42,21 @@ func (left *Hash) index(index Object, returnOtherObjType bool) (result Object, e
 			}
 			if poly {
 				for _, e2 := range e.(*List).Elements {
-					arr.Elements = append(arr.Elements, e2)
+					list.Elements = append(list.Elements, e2)
 				}
 			} else {
-				arr.Elements = append(arr.Elements, e)
+				list.Elements = append(list.Elements, e)
 			}
 		}
-		return arr, nil, true
+		return list, nil, true
+		
+	case *Range:
+		list, err := idx.ToList(One, true)
+		if err != nil {
+			return left, fmt.Errorf("Error generating list from range: %s", err.Error()), true
+		}
+		// call self with list...
+		return left.index(list, returnOtherObjType)
 	}
 
 	if !IsValidForHashKey(index) {
@@ -68,11 +76,19 @@ func (d *Hash) IndexInverse(index Object, returnOtherObjType bool) (
 
 	var keySlc []Object
 
-	list, isList := index.(*List)
-	if isList {
+	switch idx := index.(type) {
+	case *List:
+		keySlc = idx.Elements
+
+	case *Range:
+		list, err := idx.ToList(One, true)
+		if err != nil {
+			return idx, fmt.Errorf("Error generating list from range: %s", err.Error())
+		}
 		keySlc = list.Elements
-	} else {
-		keySlc = []Object{index}
+
+	default:
+		keySlc = []Object{idx}
 	}
 
 	hash := &Hash{}
@@ -106,7 +122,15 @@ func (left *Hash) IndexValid(index Object) bool {
 			}
 		}
 		return true
+
+	case *Range:
+		list, err := idx.ToList(One, true)
+		if err != nil {
+			return false
+		}
+		return left.IndexValid(list)
 	}
+
 	_, err := left.GetValue(index)
 	return err == nil
 }
