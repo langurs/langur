@@ -2,6 +2,7 @@
 
 package object
 
+// NOTE: Numeric negation not the same as complex conjugate
 func (left *Complex) Negate() Object {
 	return NewComplex(left.real.Negate().(*Number), left.imaginary.Negate().(*Number))
 }
@@ -108,17 +109,18 @@ func (left *Complex) Divide(o2 Object) Object {
 func (left *Complex) Power(o2 Object) Object {
 	switch right := o2.(type) {
 	case *Number:
-		power, err := right.ToInt()
+		// NOTE: assumes exponent value is within limits of int type
+		exp, err := right.ToInt()
 		if err != nil {
-			return NewError(ERR_MATH, "^", "Cannot calculate non-integer power on complex")
+			return NewError(ERR_MATH, "^", "Cannot calculate non-integer exponent on complex")
 		}
-		inverse := power < 0
+		inverse := exp < 0
 		if inverse {
-			power = -power
+			exp = -exp
 		}
 
 		result := NewComplex(One, Zero)
-		for i := 0; i < power; i++ {
+		for i := 0; i < exp; i++ {
 			result = result.Multiply(left).(*Complex)
 		}
 
