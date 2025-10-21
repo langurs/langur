@@ -165,3 +165,8 @@ type IRoot interface {
 	Object
 	Root(Object) Object
 }
+
+type ISimplify interface {
+	Object
+	Simplify() Object
+}

@@ -3,5 +3,5 @@
 package object
 
 func (c *Complex) Simplify() Object {
-	return NewComplex(c.real.Simplify(), c.imaginary.Simplify())
+	return NewComplex(c.real.Simplify().(*Number), c.imaginary.Simplify().(*Number))
 }

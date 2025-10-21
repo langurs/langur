@@ -82,7 +82,7 @@ func Lcm(a, b *Number) (*Number, error) {
 	return numberFromDecimal(dec.Lcm(a.ToDecimal(), b.ToDecimal())), nil
 }
 
-func (n *Number) Simplify() *Number {
+func (n *Number) Simplify() Object {
 	// remove trailing zeros
 	if n.usingIntOptimization {
 		return n

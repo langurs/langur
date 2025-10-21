@@ -615,12 +615,11 @@ var bi_simplify = &object.BuiltIn{
 		const fnName = "simplify"
 
 		switch n := args[0].(type) {
-		case *object.Number:
+		case object.ISimplify:
 			return n.Simplify()
-		case *object.Complex:
-			return n.Simplify()
+		
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number or complex for argument num")
+			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Expected type that can be simplified for argument num (not %s)", args[0].TypeString()))
 		}
 	},
 }
