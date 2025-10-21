@@ -608,10 +608,19 @@ var bi_simplify = &object.BuiltIn{
 		Description: "simplifies number, removing trailing zeros",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
+			object.Parameter{ExternalName: "num"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		return args[0].(*object.Number).Simplify()
+		const fnName = "simplify"
+
+		switch n := args[0].(type) {
+		case *object.Number:
+			return n.Simplify()
+		case *object.Complex:
+			return n.Simplify()
+		default:
+			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number or complex for argument num")
+		}
 	},
 }

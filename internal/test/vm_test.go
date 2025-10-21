@@ -33,11 +33,16 @@ func TestNumberLiterals(t *testing.T) {
 		{"2", 2, object.NUMBER_OBJ},
 		{"16xff", 255, object.NUMBER_OBJ},
 		{"-2x0011_0000_0011_1011", -12347, object.NUMBER_OBJ},
-		
+
 		{"2i", "0+2i", object.COMPLEX_OBJ},
 		{"-2i", "0-2i", object.COMPLEX_OBJ},
 		{"2 + 2i", "2+2i", object.COMPLEX_OBJ},
 		{"2 - 2i", "2-2i", object.COMPLEX_OBJ},
+
+		{"simplify(2i)", "0+2i", object.COMPLEX_OBJ},
+		{"simplify(0i)", 0, object.NUMBER_OBJ},
+		{"simplify(3+11i)", "3+11i", object.COMPLEX_OBJ},
+		{"simplify(3+0i)", 3, object.NUMBER_OBJ},
 
 		// with continuation
 		{`6._
