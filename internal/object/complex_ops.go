@@ -112,7 +112,7 @@ func (left *Complex) Power(o2 Object) Object {
 		// NOTE: assumes exponent value is within limits of int type
 		exp, err := right.ToInt()
 		if err != nil {
-			return NewError(ERR_MATH, "^", "Cannot calculate non-integer exponent on complex")
+			return NewError(ERR_MATH, "^", "Cannot calculate power with non-integer exponent on complex")
 		}
 		inverse := exp < 0
 		if inverse {
