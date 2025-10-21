@@ -40,9 +40,13 @@ func TestNumberLiterals(t *testing.T) {
 		{"2 - 2i", "2-2i", object.COMPLEX_OBJ},
 
 		{"simplify(2i)", "0+2i", object.COMPLEX_OBJ},
-		{"simplify(0i)", 0, object.NUMBER_OBJ},
+		{"simplify(0i)", "0+0i", object.COMPLEX_OBJ},
 		{"simplify(3+11i)", "3+11i", object.COMPLEX_OBJ},
-		{"simplify(3+0i)", 3, object.NUMBER_OBJ},
+		{"simplify(3+11.100i)", "3+11.1i", object.COMPLEX_OBJ},
+		{"simplify(3+0i)", "3+0i", object.COMPLEX_OBJ},
+		{"simplify(3.0+11.0i)", "3+11i", object.COMPLEX_OBJ},
+		{"simplify(3.1560+11.0120i)", "3.156+11.012i", object.COMPLEX_OBJ},
+		{"simplify(3.1560+0i)", "3.156+0i", object.COMPLEX_OBJ},
 
 		// with continuation
 		{`6._
