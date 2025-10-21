@@ -2,6 +2,7 @@
 
 package object
 
+
 // NOTE: Numeric negation not the same as complex conjugate
 func (left *Complex) Negate() Object {
 	return NewComplex(left.real.Negate().(*Number), left.imaginary.Negate().(*Number))
@@ -12,6 +13,10 @@ func (left *Complex) Abs() Object {
 	return left.real.Multiply(left.real).(*Number).
 		Add(left.imaginary.Multiply(left.imaginary)).(*Number).
 			Root(Two)
+}
+
+func (left *Complex) Simplify() Object {
+	return NewComplex(left.real.Simplify().(*Number), left.imaginary.Simplify().(*Number))
 }
 
 func (left *Complex) Add(o2 Object) Object {

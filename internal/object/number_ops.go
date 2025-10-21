@@ -38,6 +38,14 @@ func (left *Number) Abs() Object {
 	return left
 }
 
+func (left *Number) Simplify() Object {
+	// remove trailing zeros
+	if left.usingIntOptimization {
+		return left
+	}
+	return numberFromDecimal(left.decimal.Simplify())
+}
+
 func (left *Number) Append(o2 Object) Object {
 	var s *String
 
