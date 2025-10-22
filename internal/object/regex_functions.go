@@ -156,8 +156,14 @@ func RegexProgressiveSubMatchesHashList(re *Regex, s string, max int) (Object, e
 	return arr, nil
 }
 
-func RegexReplace(src string, re *Regex, repl string, max int) (Object, error) {
+var prepForNoSubmatchInterpolation = regexp.MustCompile("\\$")
+
+func RegexReplace(src string, re *Regex, repl string, max int, doSubmatchInterpolation bool) (Object, error) {
 	var newStr string
+
+	if !doSubmatchInterpolation {
+		repl = prepForNoSubmatchInterpolation.ReplaceAllString(repl, "$$$$")
+	}
 
 	if re.RegexType == regex.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)

@@ -6907,6 +6907,8 @@ func TestRe2(t *testing.T) {
 		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A$1", max=1)`, "Ab azc aec afc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A $1 Z")`, "A b Z A z Z A e Z A f Z ", object.STRING_OBJ},
 
+		{`replace("abc azc aec afc ", by=re/a(.*?)c/, with="A$1", max=7, submatchinterp=false)`, "A$1 A$1 A$1 A$1 ", object.STRING_OBJ},
+
 		// passing a function to replace
 		{`replace("abc azc aec afc ", by=re/[e-z]/, with=fn(s) { ucase(s) } )`, "abc aZc aEc aFc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/./, with=fn(s) { ucase(s) } )`, "ABC AZC AEC AFC ", object.STRING_OBJ},
@@ -6921,7 +6923,7 @@ func TestRe2(t *testing.T) {
 		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
-		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn s: ucase s])`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn s:ucase(s)], submatchinterp=false)`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
 		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["$1", fn s: ucase s])`, "aBc azc Aec afc ", object.STRING_OBJ},
 
 		// passing nothing to replace (no replacement string or function; default ZLS)

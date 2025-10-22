@@ -28,6 +28,7 @@ var bi_replace = &object.BuiltIn{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "with", DefaultValue: object.ZLS},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
+			object.Parameter{ExternalName: "submatchinterp", DefaultValue: object.TRUE, Type: object.BOOLEAN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -82,15 +83,17 @@ var bi_replace = &object.BuiltIn{
 			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
+		doSubmatchInterpolation := args[4].IsTruthy()
+
 		if isRegex {
 			if fn == nil && fns == nil {
-				result, err := object.RegexReplace(src.String(), re, replacementString, max)
+				result, err := object.RegexReplace(src.String(), re, replacementString, max, doSubmatchInterpolation)
 				if err != nil {
 					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 				}
 				return result
 			}
-			return regexReplaceWithFunctionsAndStrings(pr, src.String(), re, fn, fns, max)
+			return regexReplaceWithFunctionsAndStrings(pr, src.String(), re, fn, fns, max, doSubmatchInterpolation)
 		}
 
 		if fn == nil && fns == nil {
@@ -102,7 +105,7 @@ var bi_replace = &object.BuiltIn{
 
 func regexReplaceWithFunctionsAndStrings(
 	pr *Process, src string, re *object.Regex,
-	fn object.Object, fns []object.Object, max int) object.Object {
+	fn object.Object, fns []object.Object, max int, doSubmatchInterpolation bool) object.Object {
 
 	const fnName = "replace"
 
@@ -111,7 +114,7 @@ func regexReplaceWithFunctionsAndStrings(
 		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 	}
 
-	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, re, fn, fns)
+	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, re, fn, fns, doSubmatchInterpolation)
 }
 
 func stringReplaceWithFunctionsAndStrings(
@@ -124,12 +127,12 @@ func stringReplaceWithFunctionsAndStrings(
 	if err != nil {
 		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
 	}
-	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, nil, fn, fns)
+	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, nil, fn, fns, false)
 }
 
 func replaceWithFunctionsAndStrings(
 	pr *Process, elements []object.Object, re *object.Regex,
-	fn object.Object, fns []object.Object) object.Object {
+	fn object.Object, fns []object.Object, doSubmatchInterpolation bool) object.Object {
 
 	const fnName = "replace"
 
@@ -140,12 +143,13 @@ func replaceWithFunctionsAndStrings(
 			// no-op
 
 		case *object.String:
-			if re == nil {
-				elements[i] = fn
-			} else {
-				// TODO: To account for submatch interpolation ($1, etc.)
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with regex")
+			if re != nil {
+				if doSubmatchInterpolation {
+					// TODO: To account for submatch interpolation ($1, etc.)
+					return object.NewError(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with regex")
+				}
 			}
+			elements[i] = fn
 
 		default:
 			result, err := pr.callback(fn, elements[i])

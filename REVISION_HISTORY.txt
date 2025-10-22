@@ -5,6 +5,7 @@ https://langurlang.org
 - renamed parameter "by" as "delim" for join() and split() functions
 - updated tran() function to be able to transliterate from a hash instead of two lists
 - added parameter delim to tran() function
+- added parameter submatchinterp to replace() function (default true)
 - allow indexing hash by numeric range
 - updated simplify() function to accept complex number
 - (internal) added object.ISimplify interface
