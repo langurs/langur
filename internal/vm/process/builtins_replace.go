@@ -28,7 +28,7 @@ var bi_replace = &object.BuiltIn{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "with", DefaultValue: object.ZLS},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
-			object.Parameter{ExternalName: "submatchinterp", DefaultValue: object.TRUE, Type: object.BOOLEAN_OBJ},
+			object.Parameter{ExternalName: "interp", DefaultValue: object.TRUE, Type: object.BOOLEAN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
