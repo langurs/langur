@@ -1,15 +1,14 @@
 langur revision history
 https://langurlang.org
 
-... - 0.20.1
+2025-10-23 - 0.20.1
 - renamed parameter "by" as "delim" for join() and split() functions
 - updated tran() function to be able to transliterate from a hash instead of two lists
 - added optional parameter "delim" to tran() function (default zero-length string)
-- added optional parameter "interp" to replace() function (default true)
+- added optional parameter "interp" to replace() function (default true), to specify whether to interpolate submatches or not
 - allow indexing hash by numeric range
 - updated simplify() function to accept complex number
 - (internal) added object.ISimplify interface
-
 
 2025-09-16 - 0.20.0
 - added limited explicit type checking for function parameters (checks type of argument passed)
