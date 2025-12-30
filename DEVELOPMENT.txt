@@ -1,58 +1,38 @@
 # langur development
-2025-12-24
+2025-12-30
 
-I hope you find langur useful. I've put a lot into it. It started as a project for learning, not as an end in itself, but I have made drastic improvements since. The syntax is relatively settled at this point, so I'd like to get to 1.0. I only have so much time. If you'd like to contribute to the project, here are some things I'd like to see. While I don't have time for all of it, I do have ideas about how it could function and the syntax, and I'm open to input.
+I hope you find langur useful. To this point, it's been a one-man show. It started as a project for learning and I also had many ideas about a programming language. The syntax is relatively settled, though I'm open to input.
 
-To make 1.0, I would like to fix setting by index. One issue is efficiency. Another is that you cannot presently set by index if using more than a single index on a variable (as shown below).
+To make 1.0, I would like to fix what I might call the fundamental l-value problem. As one symptom of this problem, you can't set a value with multiple indices.
 
 x[1] = 123      # okay
 y[1][2] = 123   # doesn't work
 
+Rather than fix the symptom and find a workaround, I'd like to fix the fundamental problem with how data is handled. This is necessary for taking things forward, such as adding OOP (with composition) to langur. It's also a matter of efficiency.
+
 --Anthony Davis
 
 
-things to consider...
-- import modules
-    presently not compiled as modules (only as stand-alone scripts)
-    must account for global modes
- - module compile
-    global modes
-    order irrelevant for module compiled declarations
+PS. My idea for both OOP and structs is to use type definitions which can include methods, as in the example below.
 
-- optional explicit typing
-- OOP with composition
-    no inheritance - I don't like inheritance in programming (Davis).
 
-    instead of writing ...
-        join(filter(mapX(wordsets..., by=amb)), delim="\n")
-    one could write ...
-        wordsets.mapX(by=amb, multiple=true)
-            .filter().join(delim="\n")
+type picnicBasket {
+    public val (
+        nServings number
+        corkscrew bool
+    )
 
-- OOP and imports will help with uncluttering the global namespace (far fewer reserved word tokens).
+    public val happy = fn() bool {
+        this.nServings > 1 and this.corkscrew
+    }
 
-- resource management
-    close resources when finished, even if there's an exception
-- structures
-- sets
-- explicit integer types
-- bitwise operations
-    on explicit types
-- pointers
-    using strict left-to-right syntax; none of the left/right business you see in C
-- concurrency
-    updated decimal library that is safe for concurrency
-    must trap/account for exceptions
-    trap ctrl-C at times
-    looks promising: github.com/sourcegraph/conc
-- testing mechanisms
-- scoped modes, not just global modes
-- log (math) function
-- atan2(), acos(), etc.
-- PEG grammar
-- duration string formatting, including weeks
-- engineering notation (almost like scientific notation) interpolation modifier
-- write custom decimal library - likely to be a separate project
-    make safe for concurrency
-    simplify and other changes
+    # _new method allows using type name as a constructor
+    public val _new = fn(nPeople as nPeople number) picnicBasket {
+        picnicBasket{nServings = nPeople, corkscrew = nPeople > 0}
+    }
+}
+
+var pb = picnicBasket(nPeople = 2)
+
+writeln pb.happy()
 
