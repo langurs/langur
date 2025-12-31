@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.20.2
+- fixed duration object creation to not allow negative numbers
+
+
 2025-10-23 - 0.20.1
 - renamed parameter "by" as "delim" for join() and split() functions
 - updated tran() function to be able to transliterate from a hash instead of two lists
