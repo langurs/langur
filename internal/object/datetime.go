@@ -10,16 +10,6 @@ import (
 	"time"
 )
 
-var timeMustParse = func(format, s string) time.Time {
-	t, err := time.Parse(format, s)
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
-
-var firstGregorianDateTime = timeMustParse(Format_RFC3339, "1582-10-15T00:00:00Z")
-
 type DateTime struct {
 	Time time.Time
 }
