@@ -27,6 +27,7 @@ func NewDurationFromString(s string) (*Duration, error) {
 	return durationStringToObject(s)
 }
 
+// NOTE: assuming only positive numbers
 func NewDuration(years, months, days, hours, minutes, seconds, nanoseconds int64) *Duration {
 	return &Duration{Years: years, Months: months, Days: days,
 		Hours: hours, Minutes: minutes, Seconds: seconds, Nanoseconds: nanoseconds}
@@ -34,6 +35,11 @@ func NewDuration(years, months, days, hours, minutes, seconds, nanoseconds int64
 
 func NewDurationFromNanoseconds(nanoseconds int64) *Duration {
 	var years, months, days, hours, minutes, seconds int64
+
+	// cannot be negative
+	if nanoseconds < 0 {
+		nanoseconds = -nanoseconds
+	}
 
 	years, nanoseconds = nanoseconds/nsPerYear, nanoseconds%nsPerYear
 	months, nanoseconds = nanoseconds/nsPerMon, nanoseconds%nsPerMon
@@ -48,6 +54,12 @@ func NewDurationFromNanoseconds(nanoseconds int64) *Duration {
 
 func NewDurationOfNanoseconds(nanoseconds int64) *Duration {
 	// just nanoseconds
+
+	// cannot be negative
+	if nanoseconds < 0 {
+		nanoseconds = -nanoseconds
+	}
+	
 	return &Duration{Nanoseconds: nanoseconds}
 }
 
@@ -251,34 +263,71 @@ func (d *Duration) ToHash() *Hash {
 	return hash
 }
 
+func noNegatives(src string) error {
+	return NewError(ERR_ARGUMENTS, src, "Duration values cannot be negative.")
+}
+
 func (d *Hash) ToDuration() (dr *Duration, err error) {
 	var years, months, days, hours, minutes, seconds, nanoseconds int64
 
-	years, err = getHashInteger64Value(d, durStringYears)
+	// using tryHashInteger64Value() instead of getHashInteger64Value() to ignore missing keys
+
+	years, err = tryHashInteger64Value(d, durStringYears, 0)
 	if err != nil {
 		return
 	}
-	months, err = getHashInteger64Value(d, durStringMonths)
+	if years < 0 {
+		err = noNegatives("years")
+		return
+	}
+	months, err = tryHashInteger64Value(d, durStringMonths, 0)
 	if err != nil {
 		return
 	}
-	days, err = getHashInteger64Value(d, durStringDays)
+	if months < 0 {
+		err = noNegatives("months")
+		return
+	}
+	days, err = tryHashInteger64Value(d, durStringDays, 0)
 	if err != nil {
 		return
 	}
-	hours, err = getHashInteger64Value(d, durStringHours)
+	if days < 0 {
+		err = noNegatives("days")
+		return
+	}
+	hours, err = tryHashInteger64Value(d, durStringHours, 0)
 	if err != nil {
 		return
 	}
-	minutes, err = getHashInteger64Value(d, durStringMinutes)
+	if hours < 0 {
+		err = noNegatives("hours")
+		return
+	}
+	minutes, err = tryHashInteger64Value(d, durStringMinutes, 0)
 	if err != nil {
 		return
 	}
-	seconds, err = getHashInteger64Value(d, durStringSeconds)
+	if minutes < 0 {
+		err = noNegatives("minutes")
+		return
+	}
+	seconds, err = tryHashInteger64Value(d, durStringSeconds, 0)
 	if err != nil {
 		return
 	}
-	nanoseconds, err = getHashInteger64Value(d, durStringNanoseconds)
+	if seconds < 0 {
+		err = noNegatives("seconds")
+		return
+	}
+	nanoseconds, err = tryHashInteger64Value(d, durStringNanoseconds, 0)
+	if err != nil {
+		return
+	}
+	if nanoseconds < 0 {
+		err = noNegatives("nanoseconds")
+		return
+	}
 
 	return NewDuration(years, months, days, hours, minutes, seconds, nanoseconds), err
 }

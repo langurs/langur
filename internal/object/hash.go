@@ -315,6 +315,22 @@ func getHashInteger64Value(h *Hash, key Object) (int64, error) {
 	return 0, fmt.Errorf("Hash value %s of wrong type (not INTEGER)", hashUserValueOutput(key))
 }
 
+// return default value if no key
+func tryHashInteger64Value(h *Hash, key Object, def int64) (int64, error) {
+	intObj, err := h.GetValue(key)
+	if err != nil {
+		return def, nil
+	}
+	switch intObj := intObj.(type) {
+	case *Number:
+		i, err := intObj.ToInt64()
+		if err == nil {
+			return i, nil
+		}
+	}
+	return 0, fmt.Errorf("Hash value %s of wrong type (not INTEGER)", hashUserValueOutput(key))
+}
+
 func hashUserValueOutput(obj Object) string {
 	return str.ReformatInput(ComposedOrRegularString(obj))
 }
