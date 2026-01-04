@@ -1,14 +1,16 @@
 # langur 0.20
 
-[Langur](https://langurlang.org) is an open-source imperative/functional programming language written in Go.
+[Langur](https://langurlang.org) is an open-source programming language written in Go, running on a bytecode VM. It is presently an imperative/functional language.
 
 Langur source code is always UTF-8, with Linux line returns, no BOM, and no surrogate codes.
 
 The recommended file extension is .langur.
 
-At the start of a langur script file, you can use a shebang to specify the location of the interpreter (as you do with other types of script files).
+At the start of a langur source file, you can use a shebang to specify the location of the interpreter.
 
-Besides running script files, you can also use langur in interactive mode by not specifying a file to execute. To use the REPL, see the instructions at the beginning of langur/interactive/main.go. This is useful for development, as it allows you to print lexer tokens, parsed representations, compiled opcodes, and the VM result (all optional).
+Besides executing source files, you can also use langur in interactive mode by not specifying a file to execute.
+
+To use the REPL, see the instructions at the beginning of langur/internal/interactive/main.go. This is useful for development, as it allows you to print lexer tokens, parsed representations, compiled opcodes, and the VM result (all optional).
 
 The revision history is in a separate file.
 

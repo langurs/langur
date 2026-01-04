@@ -1,6 +1,6 @@
 // langur/main.go
 
-// Copyright 2025 Anthony Davis
+// Copyright 2026 Anthony Davis
 // See LICENSE.txt.
 // This constitutes notice for all appropriate source files.
 
