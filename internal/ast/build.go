@@ -38,12 +38,12 @@ func BlockOrAsBlock(node Node) *BlockNode {
 	return &BlockNode{Token: node.TokenInfo(), Statements: []Node{node}}
 }
 
-func AssignmentsToDeclarations(assignments []Node, mutable bool) (
+func AssignmentsToDeclarations(assignments []Node, mutable, public bool) (
 	declarations []Node, err error) {
 
 	for _, each := range assignments {
 		var assign Node
-		assign, err = AssignmentToDeclaration(each, mutable)
+		assign, err = AssignmentToDeclaration(each, mutable, public)
 		if err != nil {
 			break
 		}
@@ -53,14 +53,14 @@ func AssignmentsToDeclarations(assignments []Node, mutable bool) (
 	return
 }
 
-func AssignmentToDeclaration(assignment Node, mutable bool) (decl Node, err error) {
+func AssignmentToDeclaration(assignment Node, mutable, public bool) (decl Node, err error) {
 	assign, ok := assignment.(*AssignmentNode)
 	if !ok {
 		err = fmt.Errorf("Cannot convert non-assignment to declaration")
 		return assign, err
 	}
 	return &LineDeclarationNode{
-		Token: assign.Token, Assignment: assign, Mutable: mutable}, nil
+		Token: assign.Token, Assignment: assign, Mutable: mutable, Public: public}, nil
 }
 
 func FlattenDeclaration(decl *LineDeclarationNode) (declarations []*LineDeclarationNode, err error) {

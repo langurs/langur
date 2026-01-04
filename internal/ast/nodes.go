@@ -308,6 +308,7 @@ type LineDeclarationNode struct {
 	Token      token.Token
 	Assignment Node // assignment or variable
 	Mutable    bool
+	Public     bool
 }
 
 func (d *LineDeclarationNode) expressionNode() {}
@@ -317,6 +318,7 @@ func (d *LineDeclarationNode) Copy() Node {
 		Token:      d.Token.Copy(),
 		Assignment: copyOrNil(d.Assignment),
 		Mutable:    d.Mutable,
+		Public:     d.Public,
 	}
 }
 
@@ -331,6 +333,10 @@ func (d *LineDeclarationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err e
 func (d *LineDeclarationNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
+	if d.Public {
+		out.WriteString("public ")
+	}
+
 	if d.Mutable {
 		out.WriteString("var ")
 	} else {
@@ -342,6 +348,10 @@ func (d *LineDeclarationNode) TokenRepresentation() string {
 }
 func (d *LineDeclarationNode) String() string {
 	var out bytes.Buffer
+
+	if d.Public {
+		out.WriteString("Public ")
+	}
 
 	if d.Mutable {
 		out.WriteString("Var ")

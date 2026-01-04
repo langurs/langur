@@ -82,7 +82,7 @@ func (p *Parser) parseIfTest() ast.Node {
 
 	} else if p.tok.Type == token.IDENT || p.tok.Type == token.NONE {
 		expr := p.parseIdentifiersWithPotentialAssignments(
-			false, true, false, false, true, false, true, false,
+			false, true, false, false, true, false, true, false, false,
 		)
 
 		switch p.tok.Type {

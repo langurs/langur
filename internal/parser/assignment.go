@@ -9,7 +9,13 @@ import (
 
 func (p *Parser) parseDeclaration() ast.Node {
 	mutable := false
+	public := false
 	// tok := p.tok
+
+	if p.tok.Type == token.PUBLIC {
+		public = true
+		p.advanceToken()
+	}
 
 	switch p.tok.Type {
 	case token.VAL:
@@ -22,7 +28,7 @@ func (p *Parser) parseDeclaration() ast.Node {
 	}
 
 	return p.parseIdentifiersWithPotentialAssignments(
-		false, false, !mutable, false, true, mutable, true, mutable)
+		false, false, !mutable, false, true, mutable, true, mutable, public)
 }
 
 // assignmentRequired: identifier alone allowed?
@@ -30,7 +36,7 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 	mayIncludeIndexedAssignment, mayIncludeIndexedNonAssignment,
 	assignmentRequired, mayBeComboOp,
 	mayBeMultiAssign, convertIdentsListToAssignment,
-	convertAssignmentToDeclaration, defaultDeclarationsMutable bool) ast.Node {
+	convertAssignmentToDeclaration, defaultDeclarationsMutable, public bool) ast.Node {
 
 	var idents []ast.Node
 	tok := p.tok
@@ -57,7 +63,7 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 		assign := p.parseAssignment(idents, mayIncludeIndexedAssignment, mayBeComboOp, mayBeMultiAssign)
 
 		if convertAssignmentToDeclaration {
-			decl, err := ast.AssignmentToDeclaration(assign, defaultDeclarationsMutable)
+			decl, err := ast.AssignmentToDeclaration(assign, defaultDeclarationsMutable, public)
 			if err != nil {
 				p.addError(err.Error())
 			}
@@ -73,7 +79,7 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 		assign := &ast.AssignmentNode{Token: tok, Identifiers: idents, Values: values}
 
 		if convertAssignmentToDeclaration {
-			decl, err := ast.AssignmentToDeclaration(assign, defaultDeclarationsMutable)
+			decl, err := ast.AssignmentToDeclaration(assign, defaultDeclarationsMutable, public)
 			if err != nil {
 				p.addError(err.Error())
 			}
@@ -264,7 +270,7 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 func (p *Parser) parseExpressionWithPotentialAssignment() ast.Node {
 	if p.tok.Type == token.IDENT {
 		expr := p.parseIdentifiersWithPotentialAssignments(
-			true, true, false, true, true, false, false, false)
+			true, true, false, true, true, false, false, false, false)
 
 		if _, ok := expr.(*ast.IdentNode); ok {
 			expr = p.parseContinuedExpression(expr, precedence_LOWEST)

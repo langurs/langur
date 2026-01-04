@@ -245,11 +245,14 @@ func TestDeclarations(t *testing.T) {
 		expectedIdent string
 		expectedValue interface{}
 		expectMutable bool
+		expectPublic  bool
 	}{
-		{"val x = 123", "x", 123, false},
-		{"val y = true", "y", true, false},
-		{"val yoyo = y;", "yoyo", "y", false},
-		{"var x = 123", "x", 123, true},
+		{"val x = 123", "x", 123, false, false},
+		{"val y = true", "y", true, false, false},
+		{"val yoyo = y;", "yoyo", "y", false, false},
+		{"var x = 123", "x", 123, true, false},
+
+		{"public var x = 123", "x", 123, true, true},
 	}
 
 	for _, tt := range tests {
@@ -289,6 +292,9 @@ func TestDeclarations(t *testing.T) {
 
 		if decl.Mutable != tt.expectMutable {
 			t.Errorf("Expected mutable=%t, receieved=%t", tt.expectMutable, decl.Mutable)
+		}
+		if decl.Public != tt.expectPublic {
+			t.Errorf("Expected public=%t, receieved=%t", tt.expectPublic, decl.Public)
 		}
 	}
 }

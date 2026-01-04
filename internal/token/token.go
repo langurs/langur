@@ -37,6 +37,7 @@ const (
 	STRING    = "STRING"
 	REGEX_RE2 = "REGEX_RE2"
 
+	PUBLIC = "PUBLIC"
 	VAR    = "VAR"
 	VAL    = "VAL"
 	ASSIGN = "ASSIGN"
@@ -155,6 +156,7 @@ var Keywords = map[string]Type{
 
 	"mode": MODE,
 
+	"public": PUBLIC,
 	"var": VAR,
 	"val": VAL,
 
@@ -215,13 +217,7 @@ var Keywords = map[string]Type{
 
 	common.ZlsLiteral: ZLS,
 
-	"class":  RESERVED,
-	"pipe":   RESERVED,
-	"run":    RESERVED,
-	"select": RESERVED,
-	"using":  RESERVED,
-	"struct": RESERVED,
-	"iface":  RESERVED,
+	"type": RESERVED,
 
 	"i8":   RESERVED,
 	"i16":  RESERVED,

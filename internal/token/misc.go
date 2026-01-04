@@ -21,7 +21,7 @@ type Token struct {
 	// ... or can be 0 for base 10.
 	Code2 int
 
-	// Attachments: so far has 1 use
+	// Attachments
 	// 1. string/regex interpolation
 	Attachments []interface{}
 

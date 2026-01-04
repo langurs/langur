@@ -207,7 +207,7 @@ func (p *Parser) parseExplicitForLoopValue(
 
 	} else if p.tok.Type == token.IDENT {
 		loopValue := p.parseIdentifiersWithPotentialAssignments(
-			false, false, false, false, false, true, false, true,
+			false, false, false, false, false, true, false, true, false,
 		)
 
 		if assign, ok := loopValue.(*ast.AssignmentNode); ok {
@@ -260,7 +260,7 @@ func (p *Parser) parseForLoopInitialization() (init []ast.Node) {
 	}
 
 	var err error
-	init, err = ast.AssignmentsToDeclarations(init, true)
+	init, err = ast.AssignmentsToDeclarations(init, true, false)
 	if err != nil {
 		p.addError(err.Error())
 	}
