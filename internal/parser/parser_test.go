@@ -253,6 +253,7 @@ func TestDeclarations(t *testing.T) {
 		{"var x = 123", "x", 123, true, false},
 
 		{"public var x = 123", "x", 123, true, true},
+		{"public val x = 123", "x", 123, false, true},
 	}
 
 	for _, tt := range tests {

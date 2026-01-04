@@ -218,22 +218,4 @@ var Keywords = map[string]Type{
 	common.ZlsLiteral: ZLS,
 
 	"type": RESERVED,
-
-	"i8":   RESERVED,
-	"i16":  RESERVED,
-	"i32":  RESERVED,
-	"i64":  RESERVED,
-	"i128": RESERVED,
-	"int":  RESERVED,
-
-	"u8":   RESERVED,
-	"u16":  RESERVED,
-	"u32":  RESERVED,
-	"u64":  RESERVED,
-	"u128": RESERVED,
-	"uint": RESERVED,
-
-	"d128": RESERVED,
-	"b32":  RESERVED,
-	"b64":  RESERVED,
 }
