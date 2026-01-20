@@ -4,6 +4,9 @@ https://langurlang.org
 ... - 0.20.2
 - fixed duration object creation to not allow negative numbers
 - creation of duration from hash now ignores missing keys instead of throwing an error
+- (internal) removed dead code about Gregorian date/time
+- (internal) added *Public* field to ast.LineDeclarationNode; initial parsing of *public* keyword (no compiling)
+- (internal) removed all reserved keywords except *type*
 
 
 2025-10-23 - 0.20.1
