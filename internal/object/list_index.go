@@ -112,6 +112,7 @@ func (left *List) SetIndex(index, setTo Object) (Object, error) {
 		return left, fmt.Errorf("Cannot set list value from invalid index (not an integer or out of range)")
 	}
 
+	// FIXME: This is likely to be changed when we change how data is handled.
 	// Since we don't know how many references there are to the list object we're changing, ...
 	// ... we make a new one.
 	left = left.CopyRefs().(*List)
