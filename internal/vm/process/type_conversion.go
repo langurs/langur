@@ -8,7 +8,7 @@ import (
 	"langur/str"
 )
 
-// string, number, hash, datetime, duration, bool
+// string, number, complex, hash, datetime, duration, bool
 
 var bi_string = &object.BuiltIn{
 	FnSignature: &object.Signature{
