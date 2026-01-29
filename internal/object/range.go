@@ -24,10 +24,6 @@ func (l *Range) Equal(r2 Object) bool {
 	return Equal(l.Start, r.Start) && Equal(l.End, r.End)
 }
 
-func (r *Range) CopyRefs() Object {
-	return &Range{Start: r.Start, End: r.End}
-}
-
 func (r *Range) String() string {
 	return ComposedOrRegularString(r.Start) + " .. " + ComposedOrRegularString(r.End)
 }
