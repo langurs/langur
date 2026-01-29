@@ -18,7 +18,7 @@ type Process struct {
 	startFrame   *frame
 	currentFrame *frame
 
-	// see vm/frames.go
+	// see vm/process/frames.go
 	frameAlloc []frame
 	fap        int
 
