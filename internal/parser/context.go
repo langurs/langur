@@ -19,7 +19,7 @@ func (p *Parser) popContext() {
 	p.contexts = p.contexts[:len(p.contexts)-1]
 }
 
-func (p *Parser) peekContext() context {
+func (p *Parser) checkContext() context {
 	if len(p.contexts) != 0 {
 		return p.contexts[len(p.contexts)-1]
 	}
