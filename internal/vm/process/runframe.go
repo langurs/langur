@@ -284,10 +284,10 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				// non-zero code indicates the type
 				objTypeCode := int(pr.pop().Type())
 
-				// // using compiled fn code to check for either a built-in or compiled fn
-				// if objTypeCode == int(object.BUILTIN_FUNCTION_OBJ) {
-				// 	objTypeCode = int(object.COMPILED_CODE_OBJ)
-				// }
+				// using compiled fn code to check for either a built-in or compiled fn
+				if objTypeCode == int(object.BUILTIN_FUNCTION_OBJ) {
+					objTypeCode = int(object.COMPILED_CODE_OBJ)
+				}
 
 				err = pr.push(object.NativeBoolToObject(objTypeCode == code))
 			}
