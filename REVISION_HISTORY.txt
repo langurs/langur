@@ -5,6 +5,7 @@ https://langurlang.org
 - (internal) added reserved keyword *ref*
 - (internal) renamed parser.peekContext() as parser.checkContext() to avoid confusion
 - (internal) removed range.CopyRefs()
+- (internal) make possible to use one code to check for either compiled or built-in function (future use)
 
 
 2026-01-25 - 0.20.2
