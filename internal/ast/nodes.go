@@ -989,6 +989,10 @@ func NewBuiltInNode(tok token.Token, name string, sys bool) *IdentNode {
 func NodeToLangurType(node Node) object.ObjectType {
 	switch id := node.(type) {
 	case *IdentNode:
+		if id.Name == common.FunctionTokenLiteral {
+			return object.COMPILED_CODE_OBJ
+		}
+		
 		code, ok := object.TypeNameToType[id.Name]
 		if ok {
 			return code
