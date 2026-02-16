@@ -423,10 +423,6 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 		// context check to not confuse right operand { (such as beginning a hash)...
 		// ... with { after switch test
 
-		// // special case for *is fn* or *is not fn*
-		// if expr.Operator.Type == token.IS && p.tok.Type == token.FUNCTION {
-		// 	expr.Right, _ = p.parseWord()
-
 		expr.Right = p.parseExpression(getInfixPrecedence(expr.Operator.Type))
 
 		rightIsType := ast.NodeToLangurType(expr.Right) != 0

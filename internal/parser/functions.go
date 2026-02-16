@@ -13,7 +13,9 @@ func (p *Parser) parseFunction() ast.Node {
 	impureEffects := false
 
 	tok := p.tok
-	p.advanceToken() // past the fn token
+	
+	asType, _ := p.parseWord()	// will be returned if fn token by itself
+	// past the fn token
 
 	if tok.Type != token.FUNCTION {
 		p.addError("Expected function token")
@@ -43,32 +45,34 @@ func (p *Parser) parseFunction() ast.Node {
 	}
 
 	longForm := false
-	if p.tok.Type == token.LPAREN {
+	if p.tok.Type == token.LPAREN && p.tok.CpDiff == 0 {
 		// directly attached parentheses for parameters
 		// fn() { ... }
 		longForm = true
-
-		if p.tok.CpDiff != 0 {
-			p.addError("Expected parenthesis directly after fn token")
-			return lit
-		}
 		p.advanceToken()
 
-		// ... or could be self-reference call fn((x, y))
+		// ... could be self-reference call fn((x, y))
 		if p.tok.Type == token.LPAREN {
 			return p.finishSelfReferenceCall()
 		}
 
 		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN}, longForm)
 
-	} else if p.tok.Type == token.COLON {
+	} else if p.tok.Type == token.COLON && 
+		p.checkContext() != context_expression_switch_condition {
+		// not in a switch case condition
+		
 		// no parameters
 		// fn: ...
 		p.advanceToken()
 
-	} else {
+	} else if p.tok.Type == token.IDENT {
 		// fn x, y: ...
 		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON}, longForm)
+	
+	} else {
+		// fn token by itself
+		return asType
 	}
 
 	if longForm {

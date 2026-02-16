@@ -1767,7 +1767,7 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 
 		{`val x = fn{+}
 			switch x is {
-				case "callable": 1
+				case fn: 1
 				case number: 2
 				default: 3
 			}`,
@@ -1776,14 +1776,14 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 		{`val x = fn{+}
 			switch x is {
 				case number: 1
-				case "callable": 2
+				case fn: 2
 				default: 3
 			}`,
 			2, object.NUMBER_OBJ,
 		},
 		{`val x = fn{+}
 			switch x {
-				case is "callable": 1
+				case is fn: 1
 				case is not number: 2
 				default: 3
 			}`,
@@ -1791,7 +1791,7 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 		},
 		{`val x = fn{+}
 			switch x {
-				case is not "callable": 1
+				case is not fn: 1
 				case is not number: 2
 				default: 3
 			}`,
@@ -1799,7 +1799,7 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 		},
 		{`val x = fn{+}
 			switch x {
-				case is not "callable": 1
+				case is not fn: 1
 				case is number: 2
 				default: 3
 			}`,
@@ -6746,10 +6746,18 @@ func TestIsAndIsNotOperators(t *testing.T) {
 			x is not hash`,
 			false, object.BOOLEAN_OBJ},
 
-		{`fn{+} is "callable"`,
+		{`fn{+} is fn`,
 			true, object.BOOLEAN_OBJ},
-		{`fn{+} is not "callable"`,
+		{`fn{+} is not fn`,
 			false, object.BOOLEAN_OBJ},
+		{`mapX is fn`,
+			true, object.BOOLEAN_OBJ},
+		{`mapX is not fn`,
+			false, object.BOOLEAN_OBJ},
+		{`12 is fn`,
+			false, object.BOOLEAN_OBJ},
+		{`12 is not fn`,
+			true, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

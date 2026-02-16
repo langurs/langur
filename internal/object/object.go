@@ -86,8 +86,8 @@ func Is(obj Object, otype Object) (bool, error) {
 	switch t := otype.(type) {
 	case *String:
 		switch t.String() {
-		case "callable":
-			return IsCallable(obj), nil
+		// case "callable":
+		// 	return IsCallable(obj), nil
 		default:
 			return false, fmt.Errorf("String %q not defined to determine type", str.ReformatInput(t.String()))
 		}

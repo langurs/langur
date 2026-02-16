@@ -150,8 +150,11 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 				if shortenedForm {
 					var conditionsOrDefault []ast.Node
 					// don't know if it's a set of test expressions or a default until we parse
+
+					p.pushContext(context_expression_switch_condition)
 					conditionsOrDefault, end = p.parseExpressionList(
 						[]token.Type{token.COLON, token.SEMICOLON, token.RPAREN}, token.COMMA, false, true, false)
+					p.popContext()
 
 					if end == token.RPAREN {
 						// is the default (no condition)
@@ -174,8 +177,10 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 
 				} else {
 					// not shortened form
+					p.pushContext(context_expression_switch_condition)
 					cd.MatchConditions, end = p.parseExpressionList(
 						[]token.Type{token.COLON, token.SEMICOLON}, token.COMMA, false, true, false)
+					p.popContext()
 				}
 
 				if len(cd.MatchConditions) > len(sw.Expressions) && len(sw.Expressions) > 1 {
