@@ -92,12 +92,6 @@ func Is(obj Object, otype Object) (bool, error) {
 			return false, fmt.Errorf("String %q not defined to determine type", str.ReformatInput(t.String()))
 		}
 
-		// case *BuiltIn:
-		// 	ot, ok := TypeNameToType[t.Name]
-		// 	if ok {
-		// 		return obj.Type() == ot, nil
-		// 	}
-
 	}
 	return false, fmt.Errorf("Expected string as definition to determine type")
 }
