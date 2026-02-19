@@ -266,10 +266,10 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 
 		case opcode.OpIs:
-			code := int(ins[ip+1])
+			tcode := int(ins[ip+1])
 			ip += 1
 
-			if code == 0 {
+			if tcode == 0 {
 				// 0 indicates that we require a second operand; use object.Is() function
 				right := pr.pop()
 				left := pr.pop()
@@ -289,7 +289,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 					objTypeCode = int(object.COMPILED_CODE_OBJ)
 				}
 
-				err = pr.push(object.NativeBoolToObject(objTypeCode == code))
+				err = pr.push(object.NativeBoolToObject(objTypeCode == tcode))
 			}
 
 		case opcode.OpLogicalAnd, opcode.OpLogicalOr,
