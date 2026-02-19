@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.20.3
+- eliminated short-form fn definition without parameters
 - changed checking for function with *is* and *is not* operators to use the *fn* token instead string "callable"
 - (internal) added reserved keyword *ref*
 - (internal) renamed parser.peekContext() as parser.checkContext() to avoid confusion
