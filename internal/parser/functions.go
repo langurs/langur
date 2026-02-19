@@ -3,6 +3,7 @@
 package parser
 
 import (
+	"langur/common"
 	"fmt"
 	"langur/ast"
 	"langur/object"
@@ -58,20 +59,16 @@ func (p *Parser) parseFunction() ast.Node {
 
 		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN}, longForm)
 
-	} else if p.tok.Type == token.COLON && 
-		p.checkContext() != context_expression_switch_condition {
-		// not in a switch case condition
-		
-		// no parameters
-		// fn: ...
-		p.advanceToken()
-
 	} else if p.tok.Type == token.IDENT {
 		// fn x, y: ...
 		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON}, longForm)
-	
+
 	} else {
 		// fn token by itself
+		if impureEffects {
+			p.addError(fmt.Sprintf("Unexpected impure effects flag on %s token", common.FunctionTokenLiteral))
+		}
+		
 		return asType
 	}
 

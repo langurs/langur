@@ -9,7 +9,6 @@ const (
 	context_unknown_block
 	context_expression
 	context_expression_switch_test
-	context_expression_switch_condition
 )
 
 func (p *Parser) pushContext(c context) {

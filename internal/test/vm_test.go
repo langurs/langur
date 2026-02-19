@@ -5010,14 +5010,14 @@ func TestIntRangeExpressions(t *testing.T) {
 func TestFunctionCallWithoutArgs(t *testing.T) {
 	tests := []vmTestCase{
 		{
-			input:        "val yo = fn: 7 * 7; \n yo();",
+			input:        "val yo = fn() { 7 * 7 }; \n yo();",
 			expected:     "49",
 			expectedType: object.NUMBER_OBJ,
 		},
 
 		{
-			input: `val yo = fn: 7 * 7
-					val no = fn: yo() + 10.14
+			input: `val yo = fn() { 7 * 7 }
+					val no = fn() { yo() + 10.14 }
 					no()`,
 
 			expected:     "59.14",
@@ -5639,7 +5639,7 @@ func TestPurityOfClosuresWithRedefinitionAndSingleCompile(t *testing.T) {
 		{`
 			var add1, add2
 			for i of 7 {
-			   val temp = fn: i
+			   val temp = fn() { i }
 			   switch i {
 			      case 3: add1 = temp
 				  case 5: add2 = temp
@@ -9240,7 +9240,7 @@ func TestModuleCompile(t *testing.T) {
 	tests := []vmTestCase{
 		{`module
 		 mode divMaxScale = 7
-		 val _main = fn: 2/3`,
+		 val _main = fn() { 2/3 }`,
 			"0.6666667", object.NUMBER_OBJ,
 		},
 
