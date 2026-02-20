@@ -2559,9 +2559,6 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 	plainWithCode := func() (pkg opcode.InsPackage, err error) {
 		pkg = left.Append(right)
 		pkg = pkg.Append(opcode.MakePkg(node.Token, op, code))
-		if negated {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
-		}
 		return
 	}
 
@@ -2615,7 +2612,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 	}
 
 	switch op {
-	case opcode.OpAppend:
+	case opcode.OpAppend, opcode.OpIn, opcode.OpOf:
 		return plainWithCode()
 
 	case opcode.OpIs:
@@ -2627,8 +2624,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		opcode.OpTruncateDivide, opcode.OpFloorDivide,
 		opcode.OpRemainder, opcode.OpModulus,
 		opcode.OpPower, opcode.OpRoot,
-		opcode.OpForward,
-		opcode.OpIn, opcode.OpOf:
+		opcode.OpForward:
 
 		return plain()
 

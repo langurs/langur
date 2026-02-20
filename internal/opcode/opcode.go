@@ -157,8 +157,8 @@ var definitions = map[OpCode]*Definition{
 
 	// operands: object type number or 0
 	OpIs: {Name: "Is", OperandWidths: []int{1, 1}},
-	OpIn: {Name: "In"},
-	OpOf: {Name: "Of"},
+	OpIn: {Name: "In", OperandWidths: []int{1}},
+	OpOf: {Name: "Of", OperandWidths: []int{1}},
 
 	OpConstant: {Name: "Constant", OperandWidths: []int{OperandWidth_Constant}},
 	OpExecute:  {Name: "Execute", OperandWidths: []int{OperandWidth_Constant}},

@@ -229,10 +229,13 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			err = pr.push(object.NULL)
 
 		case opcode.OpIn, opcode.OpOf:
+			code := int(ins[ip+1])
+			ip += 1
+
 			right := pr.pop()
 			left := pr.pop()
 
-			result, err = object.InfixComparison(op, left, right, 0)
+			result, err = object.InfixComparison(op, left, right, code)
 			if err == nil {
 				err = pr.push(result)
 			}
@@ -293,8 +296,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				if 0 != code&opcode.OC_Negated_Op {
 					is = !is
-
-fmt.Println(code)
 				}
 				err = pr.push(object.NativeBoolToObject(is))
 			}
