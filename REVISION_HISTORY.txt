@@ -4,9 +4,10 @@ https://langurlang.org
 ... - 0.20.3
 - eliminated short-form fn definition without parameters
 - changed checking for function with *is* and *is not* operators to use the *fn* token instead string "callable"
+- (internal) changed negation of OpIs, OpIn, and OpOf to use code for negation instead of more opcodes
 - (internal) added reserved keyword *ref*
 - (internal) renamed parser.peekContext() as parser.checkContext() to avoid confusion
-- (internal) removed range.CopyRefs()
+- (internal) removed range.CopyRefs() as dead code
 
 
 2026-01-25 - 0.20.2
