@@ -2521,6 +2521,9 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
 		return
 	}
+	if negated {
+		code |= opcode.OC_Negated_Op
+	}
 
 	if !negated && node.Operator.Code == 0 {
 		pkg, err = c.checkForComplexNumber(node, op)
@@ -2597,7 +2600,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		return nonShortCircuiting()
 	}
 
-	withTypeCode := func() (pkg opcode.InsPackage, err error) {
+	withCodeAndTypeCode := func() (pkg opcode.InsPackage, err error) {
 		tcode := 0 // 0 indicates requirement for right operand
 		pkg = left
 
@@ -2607,12 +2610,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 			pkg = pkg.Append(right)
 		}
 
-		pkg = pkg.Append(opcode.MakePkg(node.Token, op, tcode))
-
-		if negated {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
-		}
-
+		pkg = pkg.Append(opcode.MakePkg(node.Token, op, code, tcode))
 		return
 	}
 
@@ -2621,7 +2619,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		return plainWithCode()
 
 	case opcode.OpIs:
-		return withTypeCode()
+		return withCodeAndTypeCode()
 
 	case opcode.OpRange,
 		opcode.OpAdd, opcode.OpSubtract,

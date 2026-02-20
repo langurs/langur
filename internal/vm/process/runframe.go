@@ -266,19 +266,17 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 
 		case opcode.OpIs:
-			tcode := int(ins[ip+1])
-			ip += 1
+			code := int(ins[ip+1])
+			tcode := int(ins[ip+2])
+			ip += 2
+
+			var is bool
 
 			if tcode == 0 {
 				// 0 indicates that we require a second operand; use object.Is() function
 				right := pr.pop()
 				left := pr.pop()
-
-				var is bool
 				is, err = object.Is(left, right)
-				if err == nil {
-					err = pr.push(object.NativeBoolToObject(is))
-				}
 
 			} else {
 				// non-zero code indicates the type
@@ -289,7 +287,16 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 					objTypeCode = int(object.COMPILED_CODE_OBJ)
 				}
 
-				err = pr.push(object.NativeBoolToObject(objTypeCode == tcode))
+				is = objTypeCode == tcode
+			}
+
+			if err == nil {
+				if 0 != code&opcode.OC_Negated_Op {
+					is = !is
+
+fmt.Println(code)
+				}
+				err = pr.push(object.NativeBoolToObject(is))
 			}
 
 		case opcode.OpLogicalAnd, opcode.OpLogicalOr,
