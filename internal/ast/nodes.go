@@ -2565,9 +2565,6 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 	nonShortCircuiting := func() (pkg opcode.InsPackage, err error) {
 		pkg = left.Append(right)
 		pkg = pkg.Append(opcode.MakePkg(node.Token, op, code, 0))
-		if negated {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
-		}
 		return
 	}
 
@@ -2580,11 +2577,6 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 		// if we didn't short-circuit, must evaluate here...
 		pkg = pkg.Append(right)
 		pkg = pkg.Append(evalWithRight)
-
-		if negated {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpLogicalNegation, 0))
-		}
-
 		return
 	}
 
