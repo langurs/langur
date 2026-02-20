@@ -23,6 +23,7 @@ const (
 	// up to 8 bit flags (0x01, 0x02, 0x04, 0x08, ...)
 	OC_Database_Op = 1 << iota
 	OC_Combination_Op
+	OC_Negated_Op
 	OC_Fractional_Seconds
 )
 

@@ -15,6 +15,9 @@ func isDatabaseOperation(code int) bool {
 func isCombinationOperation(code int) bool {
 	return 0 != code&opcode.OC_Combination_Op
 }
+func isNegatedOperation(code int) bool {
+	return 0 != code&opcode.OC_Negated_Op
+}
 
 func invalidOpString(op opcode.OpCode, dbComp bool, left, right Object) string {
 	if right == nil {
@@ -304,6 +307,10 @@ func InfixComparison(
 			left.TypeString(),
 			opcode.DisplayName(op, isDatabaseOperation(code)),
 			right.TypeString())
+	}
+
+	if isNegatedOperation(code) {
+		match = !match
 	}
 
 	return NativeBoolToObject(match), nil
