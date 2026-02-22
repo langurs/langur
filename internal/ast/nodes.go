@@ -2514,8 +2514,6 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 
 	code, isDatabaseOperation, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
 
-	// NOTE: negated in present form, ...
-	// may not work and play well with database operation but so far not mixed
 	op, negated, ok := opcode.InfixTokenToOpCode(node.Operator)
 	if !ok {
 		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
