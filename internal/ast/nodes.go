@@ -2491,36 +2491,56 @@ func (ie *InfixExpressionNode) Evaluate() object.Object {
 	return nil
 }
 
-// TODO: once the compiler is moved to the AST...
+// TODO: untested....
 // func (ie *InfixExpressionNode) Evaluate() object.Object {
-// 	left, ok := ie.Left.Evaluate()
-// 	if ok {
-// 		right, ok := ie.Right.Evaluate()
-// 		if ok {
-// 			op, negated, ok := compiler.InfixTokenToOpCode(ie.Operator)
-// 			obj, err := object.InfixOperation(op, left, right, ie.Operator.Code)
-// 			ok = err == nil
-// 			if negated {
-// 				obj = object.NativeBoolToObject(obj.IsTruthy())
+// 	left := ie.Left.Evaluate()
+// 	if left != nil {
+// 		op, code, isDatabaseOperation, _, err := ie.examineOpToken(ie.Operator)
+// 		if err != nil {
+// 			return nil
+// 		}
+// 		if isDatabaseOperation && left == object.NULL {
+// 			// right operand not needed; return null
+// 			return object.NULL
+// 		}
+//
+// 		right := ie.Right.Evaluate()
+// 		if right != nil {
+// 			// evaluated left and right; can we do operation at compile time?
+// 			result, err := object.InfixOperation(op, left, right, code)
+// 			if err == nil {
+// 				return result
 // 			}
-// 			return obj, ok
 // 		}
 // 	}
-// 	return nil, false
+// 	return nil
 // }
 
-func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
-	var left, right opcode.InsPackage
+// separated so could be used for compiler or evaluation (when possible)
+func (node *InfixExpressionNode) examineOpToken(opTok token.Token) (
+	op opcode.OpCode, code int, dbOperation, negated bool, err error) {
 
-	code, isDatabaseOperation, _ := opcode.TokenCodeToOcCode(node.Operator.Code)
+	code, dbOperation, _ = opcode.TokenCodeToOcCode(opTok.Code)
 
-	op, negated, ok := opcode.InfixTokenToOpCode(node.Operator)
+	op, negated, ok := opcode.InfixTokenToOpCode(opTok)
 	if !ok {
-		err = c.makeErr(node, fmt.Sprintf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type)))
+		err = fmt.Errorf("no infix token to opcode conversion for %s", token.TypeDescription(node.Operator.Type))
 		return
 	}
 	if negated {
 		code |= opcode.OC_Negated_Op
+	}
+
+	return
+}
+
+func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+	var left, right opcode.InsPackage
+
+	op, code, isDatabaseOperation, negated, err2 := node.examineOpToken(node.Operator)
+	if err2 != nil {
+		err = c.makeErr(node, err2.Error())
+		return
 	}
 
 	if !negated && node.Operator.Code == 0 {

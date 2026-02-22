@@ -2257,3 +2257,36 @@ func TestCompilerRecursion(t *testing.T) {
 
 	runCompilerTests(t, tests, false)
 }
+
+// func TestCompiledInfixOpsWithPreevaluation(t *testing.T) {
+// 	tests := []compilerTestCase{
+// 		{
+// 			input: `1 + 1`,
+// 			expectedConstants: []interface{}{
+// 				2,
+// 			},
+// 			expectedInstructions: []opcode.Instructions{
+// 				opcode.Make(opcode.OpConstant, 0),
+// 				opcode.Make(opcode.OpPop),
+// 			},
+// 		},
+// 	}
+
+// 	runCompilerTests(t, tests, false)
+// }
+
+// func TestCompilerSomething(t *testing.T) {
+// 	tests := []compilerTestCase{
+// 		{
+// 			input: ``,
+// 			expectedConstants: []interface{}{
+				
+// 			},
+// 			expectedInstructions: []opcode.Instructions{
+				
+// 			},
+// 		},
+// 	}
+
+// 	runCompilerTests(t, tests, false)
+// }
