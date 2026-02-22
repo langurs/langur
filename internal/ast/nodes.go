@@ -2492,6 +2492,7 @@ func (ie *InfixExpressionNode) Evaluate() object.Object {
 }
 
 // TODO: untested....
+// NOTE: Operations that depend on modes should not be evaluated at compile-time.
 // func (ie *InfixExpressionNode) Evaluate() object.Object {
 // 	left := ie.Left.Evaluate()
 // 	if left != nil {
@@ -2499,14 +2500,22 @@ func (ie *InfixExpressionNode) Evaluate() object.Object {
 // 		if err != nil {
 // 			return nil
 // 		}
-// 		if isDatabaseOperation && left == object.NULL {
-// 			// right operand not needed; return null
+
+// 		right := ie.Right.Evaluate()
+
+// 		if isDatabaseOperation && (
+// 			left == object.NULL || right == object.NULL) {
 // 			return object.NULL
 // 		}
-//
-// 		right := ie.Right.Evaluate()
+
 // 		if right != nil {
 // 			// evaluated left and right; can we do operation at compile time?
+// 			// may depend on a run-time (VM) mode...
+// 			if object.OpNotReadyAtCompileTime(op, left, right) {
+// 				return nil
+// 			}
+
+// 			// try for a result...
 // 			result, err := object.InfixOperation(op, left, right, code)
 // 			if err == nil {
 // 				return result

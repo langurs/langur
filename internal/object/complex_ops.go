@@ -2,7 +2,6 @@
 
 package object
 
-
 // NOTE: Numeric negation not the same as complex conjugate
 func (left *Complex) Negate() Object {
 	return NewComplex(left.real.Negate().(*Number), left.imaginary.Negate().(*Number))
@@ -88,11 +87,11 @@ func (left *Complex) Divide(o2 Object) Object {
 		// ((ac+bd) / (c^2+d^2)) + ((bc−ad) / (c^2+d^2))i
 
 		// denominator: c^2+d^2
-		denominator := right.real.Multiply(right.real).(*Number).
-			Add(right.imaginary.Multiply(right.imaginary)).(*Number)
+		denominator := right.real.Multiply(right.real).(*Number).	// c^2
+			Add(right.imaginary.Multiply(right.imaginary)).(*Number) // +d^2
 
 		// real: ((ac+bd) / (c^2+d^2))
-		real := left.real.Multiply(right.real).(*Number).				// ac
+		real := left.real.Multiply(right.real).(*Number).			// ac
 			Add(left.imaginary.Multiply(right.imaginary)).(*Number).	// +bd
 				Divide(denominator).(*Number)
 

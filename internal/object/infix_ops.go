@@ -68,6 +68,17 @@ func ShortCircuitingOperation(op opcode.OpCode, left Object, code int) (
 	return NONE, false
 }
 
+// to note operations that might depend on modes, such as divMaxScale, or other things
+func OpNotReadyAtCompileTime(op opcode.OpCode, left, right Object) bool {
+	switch op {
+	case opcode.OpDivide:
+		return true
+	case opcode.OpPower:
+		return left.Type() == COMPLEX_OBJ || right.Type() == COMPLEX_OBJ
+	}
+	return false
+}
+
 // to use from ast.InfixExpressionNode.Evaluate()
 func InfixOperation(op opcode.OpCode, left, right Object, code int) (Object, error) {
 	switch op {
