@@ -459,7 +459,7 @@ func TestForwardOperator(t *testing.T) {
 		{`123.345 -> re/123/`, true, object.BOOLEAN_OBJ},
 		{`123.345 -> re/13/`, false, object.BOOLEAN_OBJ},
 
-		{`val x = fn a: a is number
+		{`val x = fn(a) { a is number }
 		  123.456 -> x`, true, object.BOOLEAN_OBJ},
 		{`val x = fn(a) { a is number }
 		  "asdf" -> x`, false, object.BOOLEAN_OBJ},
@@ -3077,8 +3077,8 @@ func TestStringInterpolationModifiers(t *testing.T) {
 		{`val x = 14; "{{x:X2:-5}}"`, " E   ", object.STRING_OBJ},
 
 		// custom formatting function
-		{`val x = 255; val F = fn s: ucase(s); "{{x:x:fn F}}"`, "FF", object.STRING_OBJ},
-		{`val x = "   sdf sdf  "; val T = fn(s) {trim s}; "{{x : fn T }}"`, "sdf sdf", object.STRING_OBJ},
+		{`val x = 255; val F = fn(s) { ucase s }; "{{x:x:fn F}}"`, "FF", object.STRING_OBJ},
+		{`val x = "   sdf sdf  "; val T = fn(s) { trim s }; "{{x : fn T }}"`, "sdf sdf", object.STRING_OBJ},
 
 		// type string
 		{`val x = 255; "{{x:T}}"`, common.NumberTypeName, object.STRING_OBJ},
@@ -4064,7 +4064,7 @@ func TestIndexExpressions(t *testing.T) {
 		{`(7+21i)[1; 4]`, 7, object.NUMBER_OBJ},
 		{`(7+21i)[3; 4]`, 4, object.NUMBER_OBJ},
 
-		{`val conjugate = fn c:complex(c[1], -c[2])
+		{`val conjugate = fn(c) { complex(c[1], -c[2]) }
 			conjugate(1+1i)`, "1-1i", object.COMPLEX_OBJ},
 
 		// alternate index
@@ -4482,11 +4482,11 @@ func TestForLoopMisc(t *testing.T) {
 		},
 
 		// return out of for loop
-		{`val test = fn a: for x of a {
+		{`val test = fn(a) { for x of a {
 		     if x > 1 {
 				return x
 			 }
-		  }
+		  }}
 		  test([7, 14, 21, 28])`,
 			"2", object.NUMBER_OBJ,
 		},
@@ -6315,8 +6315,8 @@ func TestMathFunctions(t *testing.T) {
 
 		// min for positional parameter counts
 		{`min(fn{})`, "0", object.NUMBER_OBJ},
-		{`min(fn x: x)`, "1", object.NUMBER_OBJ},
-		{`min(fn x, y: x + y)`, "2", object.NUMBER_OBJ},
+		{`min(fn(x) {x})`, "1", object.NUMBER_OBJ},
+		{`min(fn(x, y) { x + y })`, "2", object.NUMBER_OBJ},
 		{`min(map)`, 1, object.NUMBER_OBJ},
 
 		// max
@@ -6921,18 +6921,18 @@ func TestRe2(t *testing.T) {
 		{`replace("abc azc aec afc ", by=re/[e-z]/, with=fn(s) { ucase(s) } )`, "abc aZc aEc aFc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/./, with=fn(s) { ucase(s) } )`, "ABC AZC AEC AFC ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/a./, with=fn(s) { s~"AAA" })`, "abAAAc azAAAc aeAAAc afAAAc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z")`, "ZZZ ZzZ ZZZ ZfZ ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z", max=2)`, "ZZc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn s: "Z", max=1)`, "Zbc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/c/, with=fn s: "Z", max=1)`, "abZ azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"})`, "ZZZ ZzZ ZZZ ZfZ ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"}, max=2)`, "ZZc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"}, max=1)`, "Zbc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/c/, with=fn(s) {"Z"}, max=1)`, "abZ azc aec afc ", object.STRING_OBJ},
 
 		// passing multiple things to replace
 		{`replace("abc azc aec afc ", by="c", with=["Z", _])`, "abZ azc aeZ afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn s: ucase(s), fn s: s~"Y"], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn s:ucase(s)], interp=false)`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
-		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["$1", fn s: ucase s])`, "aBc azc Aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn(s) { ucase s }], interp=false)`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
+		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["$1", fn(s) { ucase s }])`, "aBc azc Aec afc ", object.STRING_OBJ},
 
 		// passing nothing to replace (no replacement string or function; default ZLS)
 		{`replace("abc azc aec afc ", by=re/[e-z]/)`, "abc ac ac ac ", object.STRING_OBJ},
@@ -7280,7 +7280,7 @@ func TestRegexFunctionsWithPlainStrings(t *testing.T) {
 		{`replace("abc azc aec afc ", by=" a")`, "abczcecfc ", object.STRING_OBJ},
 
 		// replace with function
-		{`replace(" abc abc ", by="b", with=fn s: ucase(s))`, " aBc aBc ", object.STRING_OBJ},
+		{`replace(" abc abc ", by="b", with=fn(s) { ucase s })`, " aBc aBc ", object.STRING_OBJ},
 		{`replace(" abc abc ", by="abc", with=fn(s) { "ZZZ" })`, " ZZZ ZZZ ", object.STRING_OBJ},
 
 		{`split("don't.ya.know", delim=".")`, []string{"don't", "ya", "know"}, object.LIST_OBJ},
@@ -7393,7 +7393,7 @@ func TestSplitByNumber(t *testing.T) {
 		// Do something practical with it.
 		{`join(split("1234567890", delim=-3), delim=",")`, "1,234,567,890", object.STRING_OBJ},
 
-		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", delim=-8), by=fn x:"{{x:8(0)}}"), delim="_")`,
+		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", delim=-8), by=fn(x) { "{{x:8(0)}}" }), delim="_")`,
 			"2x01111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111", object.STRING_OBJ},
 	}
 
@@ -7864,17 +7864,17 @@ func TestZipFunction(t *testing.T) {
 		{"zip([], [], by=fn(x, y) {[x, y]})",
 			[]int{}, object.LIST_OBJ,
 		},
-		{"zip([1, 3], [2, 4], by=fn x, y: [x, y])",
+		{"zip([1, 3], [2, 4], by=fn(x, y) { [x, y] })",
 			[]int{1, 2, 3, 4}, object.LIST_OBJ,
 		},
-		{"zip([1, 3], [2, 4], by=fn x, y: [x + 7, y * 3])",
+		{"zip([1, 3], [2, 4], by=fn(x, y) { [x + 7, y * 3] })",
 			[]int{8, 6, 10, 12}, object.LIST_OBJ,
 		},
 		{"zip([1, 3], [2, 4], by=fn(x, y) { if(y > 3: 123; [x, y]) })",
 			[]int{1, 2, 123}, object.LIST_OBJ,
 		},
 
-		{"zip(1..3, 7..9, by=fn x, y: [x, y])", // function redundant in this case, but just a test
+		{"zip(1..3, 7..9, by=fn(x, y) { [x, y] })", // function redundant in this case, but just a test
 			[]int{1, 7, 2, 8, 3, 9}, object.LIST_OBJ,
 		},
 		{"zip(1..3, 7..9, by=fn(x, y) { if(y rem 2 == 0: []; [x, y]) })",
@@ -7887,11 +7887,11 @@ func TestZipFunction(t *testing.T) {
 
 func TestMapFunction(t *testing.T) {
 	tests := []vmTestCase{
-		{`map([7, 9, 10], by=fn x:x * 2)`, []int{14, 18, 20}, object.LIST_OBJ},
-		{`map(1..3, by=fn x: x * 2)`, []int{2, 4, 6}, object.LIST_OBJ},
-		{`map(7..3, by=fn x: x * 2)`, []int{14, 12, 10, 8, 6}, object.LIST_OBJ},
+		{`map([7, 9, 10], by=fn(x) { x * 2 })`, []int{14, 18, 20}, object.LIST_OBJ},
+		{`map(1..3, by=fn(x) { x * 2 })`, []int{2, 4, 6}, object.LIST_OBJ},
+		{`map(7..3, by=fn(x) { x * 2 })`, []int{14, 12, 10, 8, 6}, object.LIST_OBJ},
 
-		{`map({1: 7, 2: 9, 3: 10}, by=fn x: x * 2)`,
+		{`map({1: 7, 2: 9, 3: 10}, by=fn(x) { x * 2 })`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(14)},
 				{object.NumberFromInt(2), object.NumberFromInt(18)},
@@ -7913,12 +7913,12 @@ func TestMapFunction(t *testing.T) {
 		// map with list of functions
 		{ // multiply every second one by 2
 			`val f = fn{*2}
-		 	 map([7, 9, 10], by=[fn x: x, f])`,
+		 	 map([7, 9, 10], by=[fn(x) { x }, f])`,
 			[]int{7, 18, 10}, object.LIST_OBJ},
 
 		{ // multiply every second one by 2
 			`val f = fn{*2}
-		 	 map([7, 9, 10, 11, 12, 13, 14, 15], by=[fn x:x, f])`,
+		 	 map([7, 9, 10, 11, 12, 13, 14, 15], by=[fn(x) { x }, f])`,
 			[]int{7, 18, 10, 22, 12, 26, 14, 30}, object.LIST_OBJ},
 		{ // multiply every second one by 2; use no-op for first
 			`map([7, 9, 10, 11, 12, 13, 14, 15], by=[_, fn{*2}])`,
@@ -7944,7 +7944,7 @@ func TestMapFunction(t *testing.T) {
 
 func TestMapXFunction(t *testing.T) {
 	tests := []vmTestCase{
-		{`mapX([1, 2], [3, 4], by=fn x...:x)`,
+		{`mapX([1, 2], [3, 4], by=fn(x...) {x})`,
 			[][]int{{1, 3}, {1, 4}, {2, 3}, {2, 4}},
 			object.LIST_OBJ,
 		},
@@ -8199,7 +8199,7 @@ func TestFoldAndFoldFromFunctions(t *testing.T) {
 		{`fold(
 			[1, 2, 3], 
 			[10, 5, 6],
-			by=fn from, a, b: from + a * b, 
+			by=fn(from, a, b) { from + a * b },
 			init=1, 
 			)`,
 			"39", object.NUMBER_OBJ,
@@ -8357,13 +8357,13 @@ func TestCallingClosuresFromBuiltins(t *testing.T) {
 		},
 		{
 			`val v = 120
-			 val f = fn x: x - v
+			 val f = fn(x) { x - v }
 			 map([1, 2, 3], by=f)`,
 			[]int{-119, -118, -117}, object.LIST_OBJ,
 		},
 		{
 			`val v = 120
-			 map([1, 2, 3], by=fn x: x + v)`,
+			 map([1, 2, 3], by=fn(x) { x + v })`,
 			[]int{121, 122, 123}, object.LIST_OBJ,
 		},
 	}
@@ -8375,10 +8375,10 @@ func TestRecursiveFunctions(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input: `
-				val fibonacci = fn x: switch x, x {
-					case 0, 1: x
+				val fibonacci = fn(x number) { switch x {
+					case < 2: x
 					default: fibonacci(x - 1) + fibonacci(x - 2)
-				}
+				}}
 				fibonacci(15)
 				`,
 			expected:     "610",
@@ -8448,7 +8448,7 @@ func TestRecursiveFunctions(t *testing.T) {
 			input: `
 				val winner = fn(x) {
 					val winner2 = fn(x) {
-						val chickendinner = fn n: if n > 1 { n * chickendinner(n - 1) } else { 1 }
+						val chickendinner = fn(n) { if n > 1 { n * chickendinner(n - 1) } else { 1 } }
 						chickendinner(x)
 					}
 					winner2(x)
@@ -8495,10 +8495,10 @@ func TestRecursiveFunctionsUsingSelfToken(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input: `
-				val fibonacci = fn x: switch x {
+				val fibonacci = fn(x) { switch x {
 					case 0, 1: x
 					default: fn((x - 1)) + fn((x - 2))
-				}
+				}}
 				fibonacci(15)
 				`,
 			expected:     "610",

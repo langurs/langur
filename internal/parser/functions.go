@@ -45,11 +45,9 @@ func (p *Parser) parseFunction() ast.Node {
 		return specialFn
 	}
 
-	longForm := false
 	if p.tok.Type == token.LPAREN && p.tok.CpDiff == 0 {
 		// directly attached parentheses for parameters
 		// fn() { ... }
-		longForm = true
 		p.advanceToken()
 
 		// ... could be self-reference call fn((x, y))
@@ -57,11 +55,7 @@ func (p *Parser) parseFunction() ast.Node {
 			return p.finishSelfReferenceCall()
 		}
 
-		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN}, longForm)
-
-	} else if p.tok.Type == token.IDENT {
-		// fn x, y: ...
-		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.COLON}, longForm)
+		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
 
 	} else {
 		// fn token by itself
@@ -72,20 +66,18 @@ func (p *Parser) parseFunction() ast.Node {
 		return asType
 	}
 
-	if longForm {
-		// optional explicit return type here (long form only)
-		// fn(x, y) string { ... }
-		if p.tok.Type == token.IDENT {
-			var code object.ObjectType
-			lit.ReturnType, code = p.parseType()
-			if code == 0 {
-				p.addError("Unexpected identifier token; not a return type for function")
-			}
+	// optional explicit return type here (long form only)
+	// fn(x, y) string { ... }
+	if p.tok.Type == token.IDENT {
+		var code object.ObjectType
+		lit.ReturnType, code = p.parseType()
+		if code == 0 {
+			p.addError("Unexpected identifier token; not a return type for function")
 		}
+	}
 
-		if p.tok.Type != token.LBRACE {
-			p.addError("Expected left brace { to start function body for long form")
-		}
+	if p.tok.Type != token.LBRACE {
+		p.addError("Expected left brace { to start function body")
 	}
 
 	if p.tok.CpDiff > 1 {
@@ -97,7 +89,7 @@ func (p *Parser) parseFunction() ast.Node {
 	return lit
 }
 
-func (p *Parser) parseFunctionParameters(until []token.Type, longForm bool) (
+func (p *Parser) parseFunctionParameters(until []token.Type) (
 	positional, byname []ast.Node) {
 
 	for !token.InTypeSlice(p.tok.Type, until) {

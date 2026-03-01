@@ -15,7 +15,7 @@ import (
 func TestSpeedByFibonacci(t *testing.T) {
 	tests := []vmTestCase{
 		{
-			`val fibonacci = fn x: if(x < 2: x ; fn((x - 1)) + fn((x - 2)))
+			`val fibonacci = fn(x) { if(x < 2: x ; fn((x - 1)) + fn((x - 2))) }
 		 	fibonacci(15)`,
 			"610",
 			object.NUMBER_OBJ,
