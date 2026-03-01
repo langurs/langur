@@ -3,7 +3,7 @@ https://langurlang.org
 
 ... - 0.20.3
 - changed checking for function with *is* and *is not* operators to use the *fn* token instead of string "callable"
-- eliminated defining functions using short-form with no parameters
+- eliminated defining functions with short-form
 - (internal) changed negation of OpIs, OpIn, and OpOf to use code for negation instead of more opcodes
 - (internal) added reserved keyword *ref*
 - (internal) renamed parser.peekContext() as parser.checkContext() to avoid confusion
