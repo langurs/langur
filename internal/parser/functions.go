@@ -66,7 +66,7 @@ func (p *Parser) parseFunction() ast.Node {
 		return asType
 	}
 
-	// optional explicit return type here (long form only)
+	// optional explicit return type
 	// fn(x, y) string { ... }
 	if p.tok.Type == token.IDENT {
 		var code object.ObjectType

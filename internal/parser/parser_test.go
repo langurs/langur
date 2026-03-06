@@ -1094,10 +1094,6 @@ func TestParsingFunctionLiteralParameters(t *testing.T) {
 		{input: "fn(x) {}", expectedParams: []string{"x"}},
 		{input: "fn(x, y, z) {}", expectedParams: []string{"x", "y", "z"}},
 		{input: "fn(a, b) {a < b}", expectedParams: []string{"a", "b"}},
-
-		{input: "fn x: {}", expectedParams: []string{"x"}},
-		{input: "fn x, y, z: {}", expectedParams: []string{"x", "y", "z"}},
-		{input: "fn a, b: a < b", expectedParams: []string{"a", "b"}},
 	}
 
 	for _, tt := range tests {
