@@ -19,6 +19,10 @@ import (
 
 // NOTE: If adding node types, you may need to add them to functions in ast/search.go.
 
+func cannotDirectlyCompile(s string) (opcode.InsPackage, error) {
+	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type %s", s)
+}
+
 // THE BASE OF THE TREE
 type Program struct {
 	Token        token.Token
@@ -122,7 +126,7 @@ func (m *ModuleNode) Evaluate() object.Object {
 }
 
 func (m *ModuleNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ModuleNode")
+	return cannotDirectlyCompile("ModuleNode")
 }
 
 func (m *ModuleNode) TokenRepresentation() string {
@@ -197,7 +201,7 @@ func (i *ImportNode) Evaluate() object.Object {
 }
 
 func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ImportNode")
+	return cannotDirectlyCompile("ImportNode")
 }
 
 func (i *ImportNode) TokenRepresentation() string {
@@ -674,7 +678,7 @@ func (fc *CallNode) TokenInfo() token.Token {
 	return fc.Token
 }
 
-// UNCOMPILED FUNCTIONS
+// UNCOMPILED/USER-DEFINED FUNCTIONS
 type FunctionNode struct {
 	Token                token.Token
 	ReturnType           Node // nil for no explicit return type
@@ -704,106 +708,7 @@ func (f *FunctionNode) Evaluate() object.Object {
 }
 
 func (f *FunctionNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
-	if f.ReturnType != nil {
-		err = c.makeErr(f, "This version of langur not able to compile explicit return type")
-		return
-	}
-
-	c.pushVariableScope() // pop scope in deferred function below
-	c.symbolTable.IsFunction = true
-	c.functionLevel++
-
-	sig := &object.Signature{Name: f.Name}
-
-	sig.ImpureEffects = f.ImpureEffects // self-declared impure; to be tested later...
-	defer func() {
-		c.popVariableScope()
-		c.functionLevel--
-
-		// Impurity is transitive.
-		if sig.ImpureEffects {
-			c.addToImpureEffectsList(f.Name)
-		}
-	}()
-
-	var body opcode.InsPackage
-
-	switch sig.Name {
-	case common.MainFnName:
-		if len(f.PositionalParameters) != 0 || len(f.ByNameParameters) != 0 {
-			err = c.makeErr(f, fmt.Sprintf("Function %s() cannot have parameters", common.MainFnName))
-			return
-		}
-
-	case "":
-		// no name ... no defining self
-
-	default:
-		c.symbolTable.DefineSelf(sig.Name)
-	}
-
-	// compile parameters before function body so that each is added to the symbol table
-	var defaultInsTotal opcode.InsPackage
-	var defaultCount int
-	defaultInsTotal, defaultCount, err = c.compileFunctionNodeParameters(f, sig)
-	if err != nil {
-		return
-	}
-
-	if f.Body != nil {
-		body, err = f.Body.Compile(c)
-		if err != nil {
-			return
-		}
-	}
-
-	if len(body.Instructions) == 0 {
-		// no body; return no value
-		
-		body = c.noValueIns.Append(opcode.MakePkg(f.Token, opcode.OpReturnValue))
-
-	} else if !EndsWithDefiniteJump(f.Body.(*BlockNode).Statements) {
-		// append return if doesn't already end with return
-		body = body.Append(opcode.MakePkg(f.Token, opcode.OpReturnValue))
-	}
-
-	freeSymbols := c.symbolTable.FreeSymbols
-	localsCount := c.symbolTable.DefinitionCount
-
-	// may be self-declared or proven impure
-	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.ImpureEffects != nil
-
-	if sig.ImpureEffects && !f.ImpureEffects {
-		if f.Name == "" {
-			err = c.makeErr(f, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
-		} else {
-			err = c.makeErr(f, fmt.Sprintf("Impure function (%s) not declared as impure; use a * to declare impurity, such as fn*() { }", str.ReformatInput(f.Name)))
-		}
-		return
-	}
-
-	compiledFn := &object.CompiledCode{
-		FnSignature:        sig,
-		InsPackage:         body,
-		LocalBindingsCount: localsCount,
-	}
-	fnIndex := c.addConstant(compiledFn)
-
-	if len(freeSymbols) != 0 || defaultCount != 0 {
-		// a closure or has optional parameter defaults that are to be determined at run-time
-		pkg, err = c.instructionsForSymbols(f, freeSymbols)
-		if err != nil {
-			return
-		}
-		pkg = pkg.Append(defaultInsTotal)
-		pkg = pkg.Append(opcode.MakePkg(f.Token, opcode.OpFunction, fnIndex, len(freeSymbols), defaultCount))
-
-	} else {
-		// not a closure and has all optional parameter defaults already determined
-		pkg = opcode.MakePkg(f.Token, opcode.OpConstant, fnIndex)
-	}
-
-	return
+	return c.compileFunctionNode(f)
 }
 
 func (f *FunctionNode) TokenRepresentation() string {
@@ -906,7 +811,7 @@ func (pe *ExpansionNode) Evaluate() object.Object {
 }
 
 func (pe *ExpansionNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ExpansionNode")
+	return cannotDirectlyCompile("ExpansionNode")
 }
 
 func (pe *ExpansionNode) TokenRepresentation() string {
@@ -1373,7 +1278,7 @@ func (n *ForInOfNode) Evaluate() object.Object {
 }
 
 func (n *ForInOfNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type ForInOfNode")
+	return cannotDirectlyCompile("ForInOfNode")
 }
 
 func (n *ForInOfNode) TokenRepresentation() string {
@@ -1743,7 +1648,7 @@ func (i *InterpolatedNode) Evaluate() object.Object {
 }
 
 func (i *InterpolatedNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type InterpolatedNode")
+	return cannotDirectlyCompile("InterpolatedNode")
 }
 
 func (i *InterpolatedNode) TokenRepresentation() string {
@@ -3126,7 +3031,7 @@ func (g *SwitchNode) Evaluate() object.Object {
 }
 
 func (g *SwitchNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type SwitchNode")
+	return cannotDirectlyCompile("SwitchNode")
 }
 
 func (g *SwitchNode) TokenRepresentation() string {

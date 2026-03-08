@@ -21,6 +21,111 @@ func decodeInt(node Node) (int, error) {
 	}
 }
 
+func (c *Compiler) compileFunctionNode(
+	node *FunctionNode) (pkg opcode.InsPackage, err error) {
+
+	if node.ReturnType != nil {
+		err = c.makeErr(node, "This version of langur not able to compile explicit return type")
+		return
+	}
+
+	c.pushVariableScope() // pop scope in deferred function below
+	c.symbolTable.IsFunction = true
+	c.functionLevel++
+
+	sig := &object.Signature{Name: node.Name}
+
+	sig.ImpureEffects = node.ImpureEffects // self-declared impure; to be tested later...
+	defer func() {
+		c.popVariableScope()
+		c.functionLevel--
+
+		// Impurity is transitive.
+		if sig.ImpureEffects {
+			c.addToImpureEffectsList(node.Name)
+		}
+	}()
+
+	var body opcode.InsPackage
+
+	switch sig.Name {
+	case common.MainFnName:
+		if len(node.PositionalParameters) != 0 || len(node.ByNameParameters) != 0 {
+			err = c.makeErr(node, fmt.Sprintf("Function %s() cannot have parameters", common.MainFnName))
+			return
+		}
+
+	case "":
+		// no name ... no defining self
+
+	default:
+		c.symbolTable.DefineSelf(sig.Name)
+	}
+
+	// compile parameters before function body so that each is added to the symbol table
+	var defaultInsTotal opcode.InsPackage
+	var defaultCount int
+	defaultInsTotal, defaultCount, err = c.compileFunctionNodeParameters(node, sig)
+	if err != nil {
+		return
+	}
+
+	if node.Body != nil {
+		body, err = node.Body.Compile(c)
+		if err != nil {
+			return
+		}
+	}
+
+	if len(body.Instructions) == 0 {
+		// no body; return no value
+		
+		body = c.noValueIns.Append(opcode.MakePkg(node.Token, opcode.OpReturnValue))
+
+	} else if !EndsWithDefiniteJump(node.Body.(*BlockNode).Statements) {
+		// append return if doesn't already end with return
+		body = body.Append(opcode.MakePkg(node.Token, opcode.OpReturnValue))
+	}
+
+	freeSymbols := c.symbolTable.FreeSymbols
+	localsCount := c.symbolTable.DefinitionCount
+
+	// may be self-declared or proven impure
+	sig.ImpureEffects = sig.ImpureEffects || c.symbolTable.ImpureEffects != nil
+
+	if sig.ImpureEffects && !node.ImpureEffects {
+		if node.Name == "" {
+			err = c.makeErr(node, "Anonymous impure function not declared as impure; use a * to declare impurity, such as fn*() { }")
+		} else {
+			err = c.makeErr(node, fmt.Sprintf("Impure function (%s) not declared as impure; use a * to declare impurity, such as fn*() { }", str.ReformatInput(node.Name)))
+		}
+		return
+	}
+
+	compiledFn := &object.CompiledCode{
+		FnSignature:        sig,
+		InsPackage:         body,
+		LocalBindingsCount: localsCount,
+	}
+	fnIndex := c.addConstant(compiledFn)
+
+	if len(freeSymbols) != 0 || defaultCount != 0 {
+		// a closure or has optional parameter defaults that are to be determined at run-time
+		pkg, err = c.instructionsForSymbols(node, freeSymbols)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(defaultInsTotal)
+		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpFunction, fnIndex, len(freeSymbols), defaultCount))
+
+	} else {
+		// not a closure and has all optional parameter defaults already determined
+		pkg = opcode.MakePkg(node.Token, opcode.OpConstant, fnIndex)
+	}
+
+	return
+}
+
 func (c *Compiler) compileFunctionNodeParameters(
 	node *FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.InsPackage, defaultCount int, err error) {
