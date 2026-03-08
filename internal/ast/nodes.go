@@ -2347,8 +2347,7 @@ func (pe *PostfixExpressionNode) Evaluate() object.Object {
 }
 
 func (pe *PostfixExpressionNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	// FIXME:
-	return opcode.InsPackage{}, nil
+	return cannotDirectlyCompile("PostfixExpressionNode")
 }
 
 func (pe *PostfixExpressionNode) TokenRepresentation() string {
@@ -2397,7 +2396,6 @@ func (ie *InfixExpressionNode) Evaluate() object.Object {
 }
 
 // TODO: untested....
-// NOTE: Operations that depend on modes should not be evaluated at compile-time.
 // func (ie *InfixExpressionNode) Evaluate() object.Object {
 // 	left := ie.Left.Evaluate()
 // 	if left != nil {
@@ -3031,6 +3029,7 @@ func (g *SwitchNode) Evaluate() object.Object {
 }
 
 func (g *SwitchNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	// A switch node is converted into an if node before being compiled.
 	return cannotDirectlyCompile("SwitchNode")
 }
 
