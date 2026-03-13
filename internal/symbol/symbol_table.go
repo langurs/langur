@@ -40,9 +40,9 @@ type SymbolTable struct {
 	DefinitionCount int
 	IsNonScope      bool // a placeholder for a non-scoped VM frame
 
-	FreeSymbols      []Symbol // free symbols for closures
-	FreezeDefineFree bool     // when setting optional parameter defaults
-	IsFunction       bool
+	FreeSymbols        []Symbol // free symbols for closures
+	DefiningParameters bool     // when setting optional parameter defaults
+	IsFunction         bool
 
 	Modes         *modes.CompileModes
 	ImpureEffects []string
@@ -66,14 +66,21 @@ func ReuseSymbolTable(outer, reuse *SymbolTable) *SymbolTable {
 	return reuse
 }
 
-func (st *SymbolTable) DefineVariable(name string, mutable, system bool) (sym Symbol, err error) {
+func (st *SymbolTable) DefineParameter(name string, mutable, system bool) (sym Symbol, err error) {
 	if system {
-		return st.DefineSystemVariable(name, mutable)
+		return st.defineSystemVariable(name, mutable)
 	}
-	return st.DefineUserVariable(name, mutable)
+	return st.defineUserVariable(name, mutable)
 }
 
-func (st *SymbolTable) DefineUserVariable(name string, mutable bool) (sym Symbol, err error) {
+func (st *SymbolTable) DefineVariable(name string, mutable, system bool) (sym Symbol, err error) {
+	if system {
+		return st.defineSystemVariable(name, mutable)
+	}
+	return st.defineUserVariable(name, mutable)
+}
+
+func (st *SymbolTable) defineUserVariable(name string, mutable bool) (sym Symbol, err error) {
 	if name[0] == '_' {
 		err = fmt.Errorf("User-defined variable names cannot start with underscore")
 		return
@@ -81,9 +88,9 @@ func (st *SymbolTable) DefineUserVariable(name string, mutable bool) (sym Symbol
 	return st.defineSymbol(name, mutable, 0)
 }
 
-func (st *SymbolTable) DefineSystemVariable(name string, mutable bool) (sym Symbol, err error) {
+func (st *SymbolTable) defineSystemVariable(name string, mutable bool) (sym Symbol, err error) {
 	if name[0] != '_' {
-		bug("DefineSystemVariable", fmt.Sprintf("System variable name %q invalid", name))
+		bug("defineSystemVariable", fmt.Sprintf("System variable name %q invalid", name))
 		err = fmt.Errorf("System variable names start with underscore")
 		return
 	}
@@ -190,7 +197,7 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 		// not found in current symbol table; check outer symbol table
 		sym, level, ok = st.Outer.resolveSymbol(name, fromLevel+1)
 
-		if ok && st.IsFunction && !st.FreezeDefineFree {
+		if ok && st.IsFunction && !st.DefiningParameters {
 			// resolves from beyond function border
 			// define a "free" variable for this scope
 			sym = st.defineFree(sym)

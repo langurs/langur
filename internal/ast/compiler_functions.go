@@ -130,12 +130,13 @@ func (c *Compiler) compileFunctionNodeParameters(
 	node *FunctionNode, sig *object.Signature) (
 	defaultInsTotal opcode.InsPackage, defaultCount int, err error) {
 
-	// to set optional parameter defaults that are determined at run-time ...
+	// 1. to set optional parameter defaults that are determined at run-time ...
 	// ... that may include variables (not closure "free" variables)
-	previousFreezeDefineFree := c.symbolTable.FreezeDefineFree
-	c.symbolTable.FreezeDefineFree = true
+	// 2. to ensure parameters don't attempt to resolve other parameters
+	previousDefiningParameters := c.symbolTable.DefiningParameters
+	c.symbolTable.DefiningParameters = true
 	defer func() {
-		c.symbolTable.FreezeDefineFree = previousFreezeDefineFree
+		c.symbolTable.DefiningParameters = previousDefiningParameters
 	}()
 
 	var param object.Parameter
@@ -354,7 +355,7 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 	// since the context makes the meaning clear, ...
 	// but an internal name (used within a compiled function) may not.
 
-	_, err = c.symbolTable.DefineVariable(param.InternalName, param.Mutable, system)
+	_, err = c.symbolTable.DefineParameter(param.InternalName, param.Mutable, system)
 	if err != nil {
 		err = c.makeErr(node, fmt.Sprintf("Parameter %d definition error: %s", pnum, err.Error()))
 	}

@@ -21,7 +21,7 @@ func TestDefine(t *testing.T) {
 
 	global := NewSymbolTable(nil, modes)
 
-	a, err := global.DefineUserVariable("a", false)
+	a, err := global.DefineVariable("a", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol a: %s", err)
 	}
@@ -29,7 +29,7 @@ func TestDefine(t *testing.T) {
 		t.Errorf("expected a=%+v, received=%+v", expected["a"], a)
 	}
 
-	b, err := global.DefineUserVariable("b", false)
+	b, err := global.DefineVariable("b", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol b: %s", err)
 	}
@@ -40,7 +40,7 @@ func TestDefine(t *testing.T) {
 	firstLocal := NewSymbolTable(global, modes)
 	firstLocal.IsFunction = true
 
-	c, err := firstLocal.DefineUserVariable("c", false)
+	c, err := firstLocal.DefineVariable("c", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol c: %s", err)
 	}
@@ -48,7 +48,7 @@ func TestDefine(t *testing.T) {
 		t.Errorf("expected c=%+v, received=%+v", expected["c"], c)
 	}
 
-	d, err := firstLocal.DefineUserVariable("d", false)
+	d, err := firstLocal.DefineVariable("d", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol d: %s", err)
 	}
@@ -59,7 +59,7 @@ func TestDefine(t *testing.T) {
 	secondLocal := NewSymbolTable(firstLocal, modes)
 	secondLocal.IsFunction = true
 
-	e, err := secondLocal.DefineUserVariable("e", false)
+	e, err := secondLocal.DefineVariable("e", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol e: %s", err)
 	}
@@ -67,7 +67,7 @@ func TestDefine(t *testing.T) {
 		t.Errorf("expected e=%+v, received=%+v", expected["e"], e)
 	}
 
-	f, err := secondLocal.DefineUserVariable("f", false)
+	f, err := secondLocal.DefineVariable("f", false, false)
 	if err != nil {
 		t.Errorf("Error defining symbol f: %s", err)
 	}
@@ -79,8 +79,8 @@ func TestDefine(t *testing.T) {
 func TestResolveGlobal(t *testing.T) {
 	modes := modes.NewCompileModes()
 	global := NewSymbolTable(nil, modes)
-	global.DefineUserVariable("a", false)
-	global.DefineUserVariable("b", false)
+	global.DefineVariable("a", false, false)
+	global.DefineVariable("b", false, false)
 
 	expected := []Symbol{
 		Symbol{Name: "a", Scope: GlobalScope, Index: 0},
@@ -102,13 +102,13 @@ func TestResolveGlobal(t *testing.T) {
 func TestResolveLocal(t *testing.T) {
 	modes := modes.NewCompileModes()
 	global := NewSymbolTable(nil, modes)
-	global.DefineUserVariable("a", false)
-	global.DefineUserVariable("b", false)
+	global.DefineVariable("a", false, false)
+	global.DefineVariable("b", false, false)
 
 	local := NewSymbolTable(global, modes)
 	local.IsFunction = true
-	local.DefineUserVariable("c", false)
-	local.DefineUserVariable("d", false)
+	local.DefineVariable("c", false, false)
+	local.DefineVariable("d", false, false)
 
 	expected := []Symbol{
 		Symbol{Name: "a", Scope: FreeScope, Index: 0},
@@ -133,23 +133,23 @@ func TestResolveNestedLocal(t *testing.T) {
 	modes := modes.NewCompileModes()
 
 	global := NewSymbolTable(nil, modes)
-	global.DefineUserVariable("a", false)
-	global.DefineUserVariable("b", false)
+	global.DefineVariable("a", false, false)
+	global.DefineVariable("b", false, false)
 
 	firstLocal := NewSymbolTable(global, modes)
 	firstLocal.IsFunction = true
-	firstLocal.DefineUserVariable("c", false)
-	firstLocal.DefineUserVariable("d", false)
+	firstLocal.DefineVariable("c", false, false)
+	firstLocal.DefineVariable("d", false, false)
 
 	secondLocal := NewSymbolTable(firstLocal, modes)
 	secondLocal.IsFunction = true
-	secondLocal.DefineUserVariable("e", false)
-	secondLocal.DefineUserVariable("f", false)
+	secondLocal.DefineVariable("e", false, false)
+	secondLocal.DefineVariable("f", false, false)
 
 	thirdLocal := NewSymbolTable(secondLocal, modes)
 	thirdLocal.IsFunction = true
-	thirdLocal.DefineUserVariable("a", false)
-	thirdLocal.DefineUserVariable("g", false)
+	thirdLocal.DefineVariable("a", false, false)
+	thirdLocal.DefineVariable("g", false, false)
 
 	tests := []struct {
 		table           *SymbolTable
@@ -204,18 +204,18 @@ func TestResolveFree(t *testing.T) {
 	modes := modes.NewCompileModes()
 
 	global := NewSymbolTable(nil, modes)
-	global.DefineUserVariable("a", false)
-	global.DefineUserVariable("b", false)
+	global.DefineVariable("a", false, false)
+	global.DefineVariable("b", false, false)
 
 	firstLocal := NewSymbolTable(global, modes)
 	firstLocal.IsFunction = true
-	firstLocal.DefineUserVariable("c", false)
-	firstLocal.DefineUserVariable("d", false)
+	firstLocal.DefineVariable("c", false, false)
+	firstLocal.DefineVariable("d", false, false)
 
 	secondLocal := NewSymbolTable(firstLocal, modes)
 	secondLocal.IsFunction = true
-	secondLocal.DefineUserVariable("e", false)
-	secondLocal.DefineUserVariable("f", false)
+	secondLocal.DefineVariable("e", false, false)
+	secondLocal.DefineVariable("f", false, false)
 
 	tests := []struct {
 		table           *SymbolTable
@@ -262,16 +262,16 @@ func TestResolveUnresolvableFree(t *testing.T) {
 	modes := modes.NewCompileModes()
 
 	global := NewSymbolTable(nil, modes)
-	global.DefineUserVariable("a", false)
+	global.DefineVariable("a", false, false)
 
 	firstLocal := NewSymbolTable(global, modes)
 	firstLocal.IsFunction = true
-	firstLocal.DefineUserVariable("c", false)
+	firstLocal.DefineVariable("c", false, false)
 
 	secondLocal := NewSymbolTable(firstLocal, modes)
 	secondLocal.IsFunction = true
-	secondLocal.DefineUserVariable("e", false)
-	secondLocal.DefineUserVariable("f", false)
+	secondLocal.DefineVariable("e", false, false)
+	secondLocal.DefineVariable("f", false, false)
 
 	expected := []Symbol{
 		Symbol{Name: "a", Scope: FreeScope, Index: 0},
