@@ -9,16 +9,15 @@
 // NOTE: Go allows a package to be either executable or importable (not both).
 // Use only one of the following package names (normally set to interactive, not main).
 // for local REPL only, use...
-// package main			/// executable
+package main			/// executable
 
 // for interactive mode (normal), use...
-package interactive		/// importable
+// package interactive		/// importable
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"langur/ast"
 	"langur/bytecode"
@@ -101,20 +100,17 @@ func resetEnvironment() {
 	compileModes = modes.NewCompileModes()
 }
 
-var in, out = os.Stdin, os.Stdout
-
 // for REPL not run from langur command (not "interactive" mode)
 func main() {
 	const loadFile = ""
 
 	defer func() {
 		if p := recover(); p != nil {
-			fmt.Fprintf(out, object.UnhandledPanicString(p))
-			fmt.Fprintln(out)
+			fmt.Println(object.UnhandledPanicString(p))
 
 			// NOTE: since not a command line REPL, okay to print a stack trace
-			fmt.Fprintf(out, "Print stack trace? y/n: ")
-			answer, _ := readLine(in, false)
+			fmt.Print("Print stack trace? y/n: ")
+			answer, _ := readLine(false)
 			if answer == "y" || answer == "Y" {
 				panic(p)
 			} else {
@@ -126,13 +122,13 @@ func main() {
 	firstRun = true
 
 	if loadFile != "" {
-		fmt.Fprintf(out, "loading file (%s)...\n", loadFile)
+		fmt.Printf("loading file (%s)...\n", loadFile)
 		b, err := ioutil.ReadFile(loadFile)
 
 		if err == nil {
 			repl(string(b), options)
 		} else {
-			fmt.Fprintf(out, "failed to load file: %s\n", err.Error())
+			fmt.Printf("failed to load file: %s\n", err.Error())
 		}
 		firstRun = false
 	}
@@ -148,14 +144,14 @@ func Interactive(opts *InteractiveOptions) {
 
 func loop(opts *InteractiveOptions) {
 	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
-	fmt.Fprintf(out, "Type “exit()” or press ctrl-D to quit.\n")
-	fmt.Fprintf(out, "Type “reset()” for a new environment.\n")
+	fmt.Println("Type “exit()” or press ctrl-D to quit.")
+	fmt.Println("Type “reset()” for a new environment.")
 
 	resetEnvironment()
 
 	for {
-		fmt.Fprintf(out, opts.Prompt)
-		line, ok := readLine(in, true)
+		fmt.Print(opts.Prompt)
+		line, ok := readLine(true)
 		if !ok {
 			return
 		}
@@ -166,7 +162,7 @@ func loop(opts *InteractiveOptions) {
 			continue
 
 		case "exit":
-			fmt.Fprintf(out, "Type exit() to quit.\n")
+			fmt.Print("Type exit() to quit.\n")
 			continue
 
 		case "exit()":
@@ -175,13 +171,13 @@ func loop(opts *InteractiveOptions) {
 
 		// FIXME: "reset" not a reserved keyword; therefore could potentially conflict with variable name
 		case "reset":
-			fmt.Fprintf(out, "Type reset() to reset the environment.\n")
+			fmt.Print("Type reset() to reset the environment.\n")
 			continue
 
 		case "reset()":
 			resetEnvironment()
 			firstRun = true
-			fmt.Fprintf(out, "Environment Reset\n")
+			fmt.Print("Environment Reset\n")
 			continue
 		}
 
@@ -214,20 +210,20 @@ func repl(source string, opts *InteractiveOptions) {
 		// print lexical tokens
 		lex, err = lexer.New(source, "RLPL", compileModes)
 		if err == nil {
-			io.WriteString(out, "Tokens\n")
+			fmt.Println("Tokens")
 			for tok, err := lex.NextToken(); tok.Type != token.EOF; tok, err = lex.NextToken() {
 				if err != nil {
-					fmt.Printf(err.Error())
+					fmt.Print(err.Error())
 					return
 				}
-				fmt.Fprintf(out, "%+v\n", tok.String())
+				fmt.Printf("%+v\n", tok.String())
 			}
 		}
 	}
 
 	lex, err = lexer.New(source, "REPL", compileModes)
 	if err != nil {
-		fmt.Fprintf(out, err.Error())
+		fmt.Print(err.Error())
 		return
 	}
 
@@ -238,36 +234,31 @@ func repl(source string, opts *InteractiveOptions) {
 		p = parser.New(lex, compileModes)
 		program, err = p.ParseProgram()
 		if err != nil {
-			io.WriteString(out, fmt.Sprintf("Parser Error: %s", err.Error()))
+			fmt.Printf("Parser Error: %s", err.Error())
 		}
 
 		if len(p.Errs) != 0 {
-			io.WriteString(out, "Parser Errors\n")
+			fmt.Println("Parser Errors")
 			for _, msg := range p.Errs {
-				io.WriteString(out, "\t"+msg.Error()+"\n")
+				fmt.Println("\t"+msg.Error())
 			}
 		}
 	}
 
 	if opts.printParseTokenRepresentation {
-		io.WriteString(out, "Parsed Token Representation\n")
-
-		io.WriteString(out, program.TokenRepresentation())
-		io.WriteString(out, "\n")
+		fmt.Println("Parsed Token Representation")
+		fmt.Println(program.TokenRepresentation())
 	}
 
 	if opts.printParseNodes {
-		io.WriteString(out, "Nodes\n")
-
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		fmt.Println("Nodes")
+		fmt.Println(program.String())
 	}
 
 	if opts.printParsedVarNames {
-		io.WriteString(out, "Variable Names Used\n")
+		fmt.Println("Variable Names Used")
 		for i := range program.VarNamesUsed {
-			io.WriteString(out, program.VarNamesUsed[i])
-			io.WriteString(out, "\n")
+			fmt.Println(program.VarNamesUsed[i])
 		}
 	}
 
@@ -280,7 +271,7 @@ func repl(source string, opts *InteractiveOptions) {
 
 		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, firstRun)
 		if err != nil {
-			io.WriteString(out, fmt.Sprintf("New Compiler Error: %s", err.Error()))
+			fmt.Print(fmt.Sprintf("New Compiler Error: %s", err.Error()))
 
 		} else {
 			if firstRun {
@@ -289,18 +280,18 @@ func repl(source string, opts *InteractiveOptions) {
 				_, err = program.CompileAnother(comp)
 			}
 			if err != nil {
-				fmt.Fprintf(out, "Compile Errors\n%s\n", err)
+				fmt.Printf("Compile Errors\n%s\n", err)
 			}
 	
 			byteCode = comp.ByteCode()
 			if opts.printCompiledInstructions {
-				fmt.Fprintf(out, "ByteCode Instructions\n%s\n",
+				fmt.Printf("ByteCode Instructions\n%s\n",
 					InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
 			}
 			if opts.printCompiledConstants {
-				fmt.Fprintf(out, "ByteCode Constants\n")
+				fmt.Println("ByteCode Constants")
 				for i := range byteCode.Constants {
-					fmt.Fprintf(out, "%d: %s\n", i, byteCode.Constants[i].ReplString())
+					fmt.Printf("%d: %s\n", i, byteCode.Constants[i].ReplString())
 				}
 			}
 		}
@@ -317,7 +308,7 @@ func repl(source string, opts *InteractiveOptions) {
 
 		err, where = machine.Run()
 		if err != nil {
-			fmt.Fprintf(out, "VM Errors\n%s\n", err)
+			fmt.Printf("VM Errors\n%s\n", err)
 			return
 		}
 		result := machine.LastValue()
@@ -325,45 +316,42 @@ func repl(source string, opts *InteractiveOptions) {
 		vmModes = machine.LastModes() // so modes persist in the REPL
 
 		if result == nil {
-			io.WriteString(out, "VM Result Nil (bug?)\n")
+			fmt.Println("VM Result Nil (bug?)")
 			return
 		}
 		if opts.PrintVmResultEscaped {
 			if opts.PrintVmResultDescriptions {
-				io.WriteString(out, "langur escaped result: ")
+				fmt.Print("langur escaped result: ")
 			}
-			io.WriteString(out, str.Escape(result.String()))
-			io.WriteString(out, "\n")
+			fmt.Println(str.Escape(result.String()))
 		}
 
 		if opts.PrintVmResultGoEscaped {
 			if opts.PrintVmResultDescriptions {
-				io.WriteString(out, "Go escaped result: ")
+				fmt.Print("Go escaped result: ")
 			}
-			io.WriteString(out, str.EscapeGo(result.String()))
-			io.WriteString(out, "\n")
+			fmt.Println(str.EscapeGo(result.String()))
 		}
 
 		if opts.PrintVmResultRaw {
 			if opts.PrintVmResultDescriptions {
-				io.WriteString(out, "raw result string: ")
+				fmt.Print("raw result string: ")
 			}
-			io.WriteString(out, result.String())
-			io.WriteString(out, "\n")
+			fmt.Println(result.String())
 		}
 	}
 }
 
 // strings including type of constant
 func InstructionsString(ins opcode.Instructions, constants []object.Object) string {
-	var out bytes.Buffer
+	var sb bytes.Buffer
 
 	i := 0
 	for i < len(ins) {
 		deftypenum := ins[i]
 		def, err := opcode.Lookup(deftypenum)
 		if err != nil {
-			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			fmt.Fprintf(&sb, "ERROR: %s\n", err)
 			continue
 		}
 
@@ -372,19 +360,19 @@ func InstructionsString(ins opcode.Instructions, constants []object.Object) stri
 		switch deftypenum {
 		case opcode.OpConstant:
 			// include the constant type string
-			fmt.Fprintf(&out, "%04d %s (%s)\n", i, ins.FmtInstruction(def, operands), constants[operands[0]].TypeString())
+			fmt.Fprintf(&sb, "%04d %s (%s)\n", i, ins.FmtInstruction(def, operands), constants[operands[0]].TypeString())
 		default:
-			fmt.Fprintf(&out, "%04d %s\n", i, ins.FmtInstruction(def, operands))
+			fmt.Fprintf(&sb, "%04d %s\n", i, ins.FmtInstruction(def, operands))
 		}
 
 		i += 1 + offset
 	}
 
-	return out.String()
+	return sb.String()
 }
 
-func readLine(in io.Reader, fixNewLines bool) (text string, scanned bool) {
-	scanner := bufio.NewScanner(in)
+func readLine(fixNewLines bool) (text string, scanned bool) {
+	scanner := bufio.NewScanner(os.Stdin)
 	scanned = scanner.Scan()
 	if !scanned {
 		return
