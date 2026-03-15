@@ -27,11 +27,12 @@ const (
 // Note: Built-ins don't have scope and don't need a symbol table.
 
 type Symbol struct {
-	Name    string
-	Type    object.ObjectType
-	Scope   symbolScope
-	Index   int
-	Mutable bool
+	Name         string
+	Type         object.ObjectType
+	Scope        symbolScope
+	Index        int
+	Mutable      bool
+	Unresolvable bool	// a temporary state
 }
 
 type SymbolTable struct {
@@ -40,9 +41,9 @@ type SymbolTable struct {
 	DefinitionCount int
 	IsNonScope      bool // a placeholder for a non-scoped VM frame
 
-	FreeSymbols        []Symbol // free symbols for closures
-	DefiningParameters bool     // when setting optional parameter defaults
-	IsFunction         bool
+	FreeSymbols      []Symbol // free symbols for closures
+	FreezeDefineFree bool     // when setting optional parameter defaults
+	IsFunction       bool
 
 	Modes         *modes.CompileModes
 	ImpureEffects []string
@@ -66,35 +67,44 @@ func ReuseSymbolTable(outer, reuse *SymbolTable) *SymbolTable {
 	return reuse
 }
 
+func (st *SymbolTable) SetSymbolsResolvable() {
+	for key := range st.store {
+		// since map values cannot be directly changed...
+		val := st.store[key]
+		val.Unresolvable = false
+		st.store[key] = val
+	}
+}
+
 func (st *SymbolTable) DefineParameter(name string, mutable, system bool) (sym Symbol, err error) {
 	if system {
-		return st.defineSystemVariable(name, mutable)
+		return st.defineSystemVariable(name, mutable, true)
 	}
-	return st.defineUserVariable(name, mutable)
+	return st.defineUserVariable(name, mutable, true)
 }
 
 func (st *SymbolTable) DefineVariable(name string, mutable, system bool) (sym Symbol, err error) {
 	if system {
-		return st.defineSystemVariable(name, mutable)
+		return st.defineSystemVariable(name, mutable, false)
 	}
-	return st.defineUserVariable(name, mutable)
+	return st.defineUserVariable(name, mutable, false)
 }
 
-func (st *SymbolTable) defineUserVariable(name string, mutable bool) (sym Symbol, err error) {
+func (st *SymbolTable) defineUserVariable(name string, mutable, unresolvable bool) (sym Symbol, err error) {
 	if name[0] == '_' {
 		err = fmt.Errorf("User-defined variable names cannot start with underscore")
 		return
 	}
-	return st.defineSymbol(name, mutable, 0)
+	return st.defineSymbol(name, mutable, unresolvable, 0)
 }
 
-func (st *SymbolTable) defineSystemVariable(name string, mutable bool) (sym Symbol, err error) {
+func (st *SymbolTable) defineSystemVariable(name string, mutable, unresolvable bool) (sym Symbol, err error) {
 	if name[0] != '_' {
 		bug("defineSystemVariable", fmt.Sprintf("System variable name %q invalid", name))
 		err = fmt.Errorf("System variable names start with underscore")
 		return
 	}
-	return st.defineSymbol(name, mutable, 0)
+	return st.defineSymbol(name, mutable, unresolvable, 0)
 }
 
 // to check if identifier name allowed for declaration
@@ -110,11 +120,11 @@ func isNonShadowedWord(name string) bool {
 	return false
 }
 
-func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.ObjectType) (Symbol, error) {
+func (st *SymbolTable) defineSymbol(name string, mutable, unresolvable bool, stype object.ObjectType) (Symbol, error) {
 	if st.IsNonScope {
 		// safe to do this blindly (without checking for null), ...
 		// ... as the root table will never be a non-scope table
-		return st.Outer.defineSymbol(name, mutable, stype)
+		return st.Outer.defineSymbol(name, mutable, unresolvable, stype)
 	}
 
 	// first, check if it is already defined in this scope
@@ -129,10 +139,11 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.Obje
 	}
 
 	sym = Symbol{
-		Name:    name,
-		Type:    stype,
-		Index:   st.DefinitionCount,
-		Mutable: mutable,
+		Name:         name,
+		Type:         stype,
+		Index:        st.DefinitionCount,
+		Mutable:      mutable,
+		Unresolvable: unresolvable,
 	}
 
 	if st.Outer == nil {
@@ -149,7 +160,7 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.Obje
 
 func (st *SymbolTable) defineRootSymbol(name string, mutable bool) (Symbol, error) {
 	if st.Outer == nil {
-		return st.defineSymbol(name, mutable, 0)
+		return st.defineSymbol(name, mutable, false, 0)
 	}
 	return st.Outer.defineRootSymbol(name, mutable)
 }
@@ -193,11 +204,17 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 
 	sym, ok = st.store[name]
 
+	if sym.Unresolvable {
+		// in a temporarily unresolvable state
+		// allows definition of full set of parameters before any can be resolved
+		ok = false
+	}
+
 	if !ok && st.Outer != nil {
-		// not found in current symbol table; check outer symbol table
+		// not findable in current symbol table; check outer symbol table
 		sym, level, ok = st.Outer.resolveSymbol(name, fromLevel+1)
 
-		if ok && st.IsFunction && !st.DefiningParameters {
+		if ok && st.IsFunction && !st.FreezeDefineFree {
 			// resolves from beyond function border
 			// define a "free" variable for this scope
 			sym = st.defineFree(sym)

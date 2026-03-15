@@ -5471,6 +5471,20 @@ func TestOptionalParameters(t *testing.T) {
 			expected:     234,
 			expectedType: object.NUMBER_OBJ,
 		},
+
+		// optional parameter using variable name same as another parameter to set default
+		// parameter a not resolved while setting default value for b
+		{
+			input: `
+		val a = 100
+		val add = fn(a, b=a) {
+			a + b
+		}
+		add(11)
+		`,
+			expected:     111,
+			expectedType: object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
