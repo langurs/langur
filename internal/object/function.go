@@ -179,23 +179,15 @@ func (b *BuiltIn) IsTruthy() bool {
 }
 
 func (b *BuiltIn) String() string {
-	// TODO: UPDATE
 	if b.FnSignature.Name[0] == '_' {
 		// internal function names only start with underscore
 		// likely won't happen, but shouldn't
 		return INTERNAL_OBJECT_ONLY
 	}
 
-	var out bytes.Buffer
-
-	out.WriteRune('(')
-	if b.FnSignature.ImpureEffects {
-		out.WriteString("impure ")
-	}
-	out.WriteString("builtin) " + b.FullName())
-
-	return out.String()
+	return b.FnSignature.String()
 }
+
 func (b *BuiltIn) ReplString() string {
 	var out bytes.Buffer
 
