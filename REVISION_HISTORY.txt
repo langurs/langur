@@ -1,6 +1,12 @@
 langur revision history
 https://langurlang.org
 
+... - 0.20.4
+- fix: parameters should not resolve while setting default values for other parameters of the same function
+- string of builtin function uses function signature (like compiled functions already do)
+- (internal) changed output functions in interactive package to be consistent
+
+
 2026-03-08 - 0.20.3
 - changed checking for function with *is* and *is not* operators to use the *fn* token instead of string "callable"
 - eliminated defining functions with short-form
