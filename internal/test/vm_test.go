@@ -5485,6 +5485,21 @@ func TestOptionalParameters(t *testing.T) {
 			expected:     111,
 			expectedType: object.NUMBER_OBJ,
 		},
+
+		// another function within with default values pointing to undefined values
+		{
+			input: `
+		val add = fn(a, b) {
+			val second = fn(x=a, y=b) {
+				x + y
+			}
+			second()
+		}
+		add(3, 4)
+		`,
+			expected:     7,
+			expectedType: object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
