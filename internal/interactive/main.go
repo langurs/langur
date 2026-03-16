@@ -9,10 +9,10 @@
 // NOTE: Go allows a package to be either executable or importable (not both).
 // Use only one of the following package names (normally set to interactive, not main).
 // for local REPL only, use...
-package main			/// executable
+// package main			/// executable
 
 // for interactive mode (normal), use...
-// package interactive		/// importable
+package interactive		/// importable
 
 import (
 	"bufio"
