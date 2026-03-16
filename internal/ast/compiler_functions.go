@@ -352,6 +352,12 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 		}
 	}
 
+	// NOTE: 0.20.4 removed mutable parameters, likely a temporary move until some things are clarified
+	if param.Mutable {
+		err = c.makeErr(node, "This version of langur cannot use a mutable parameter")
+		return
+	}
+
 	// DEFINE IN SYMBOL TABLE
 	// An external name (for a parameter by name) may shadow a keyword ...
 	// since the context makes the meaning clear, ...

@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.20.4
 - fix: parameters should not resolve while setting default values for other parameters of the same function
+- eliminated parameter mutability option for now
 - string of builtin function uses function signature (like compiled functions already do)
 - (internal) changed output functions in interactive package to be consistent
 

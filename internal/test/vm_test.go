@@ -5324,14 +5324,14 @@ func TestOptionalParameters(t *testing.T) {
 		},
 
 		// with parameter mutability
-		{
-			input: `
-		val mult = fn(a, var b as break=12, c=4) { b += 1 ; a * b + c }	# internally use b
-		mult(4, break=10)									# called with break=...
-		`,
-			expected:     48,
-			expectedType: object.NUMBER_OBJ,
-		},
+		// {
+		// 	input: `
+		// val mult = fn(a, var b as break=12, c=4) { b += 1 ; a * b + c }	# internally use b
+		// mult(4, break=10)									# called with break=...
+		// `,
+		// 	expected:     48,
+		// 	expectedType: object.NUMBER_OBJ,
+		// },
 
 		{ // c not just a simple number; must be calculated
 			input: `
@@ -6852,32 +6852,32 @@ func TestExecT(t *testing.T) {
 	}
 }
 
-func TestParameterMutability(t *testing.T) {
-	tests := []vmTestCase{
-		{`
-			fn(var x, var y) {
-				if y > 10 { return x + y }
-				x += 2; y += 1
-				fn((x, y))
-			}(7, 0)
-			`,
-			"40",
-			object.NUMBER_OBJ,
-		},
+// func TestParameterMutability(t *testing.T) {
+// 	tests := []vmTestCase{
+// 		{`
+// 			fn(var x, var y) {
+// 				if y > 10 { return x + y }
+// 				x += 2; y += 1
+// 				fn((x, y))
+// 			}(7, 0)
+// 			`,
+// 			"40",
+// 			object.NUMBER_OBJ,
+// 		},
 
-		{`
-			fn(x, var y) {
-				y += 10
-				x + y
-			}(7, 3)
-			`,
-			"20",
-			object.NUMBER_OBJ,
-		},
-	}
+// 		{`
+// 			fn(x, var y) {
+// 				y += 10
+// 				x + y
+// 			}(7, 3)
+// 			`,
+// 			"20",
+// 			object.NUMBER_OBJ,
+// 		},
+// 	}
 
-	runVmTests(t, tests, false, false)
-}
+// 	runVmTests(t, tests, false, false)
+// }
 
 func TestTransliterate(t *testing.T) {
 	tests := []vmTestCase{
@@ -9202,13 +9202,13 @@ func TestSemiDeepCopy(t *testing.T) {
 		  x[2]`,
 			2, object.NUMBER_OBJ,
 		},
-		{`val x = [1, 2, 3]
-		  fn(var a) {
-			a[2] = 7
-		  }(x)
-		  x[2]`,
-			2, object.NUMBER_OBJ,
-		},
+		// {`val x = [1, 2, 3]
+		//   fn(var a) {
+		// 	a[2] = 7
+		//   }(x)
+		//   x[2]`,
+		// 	2, object.NUMBER_OBJ,
+		// },
 	
 	}
 
