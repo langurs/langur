@@ -5500,6 +5500,20 @@ func TestOptionalParameters(t *testing.T) {
 			expected:     7,
 			expectedType: object.NUMBER_OBJ,
 		},
+		{
+			input: `
+		val add = fn(a, b) {
+			val c, d = a, b
+			val second = fn(x=c, y=d) {
+				x + y
+			}
+			second()
+		}
+		add(3, 4)
+		`,
+			expected:     7,
+			expectedType: object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
