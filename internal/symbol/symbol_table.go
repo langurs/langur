@@ -201,7 +201,12 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 
 	if !ok && st.Outer != nil {
 		// not findable in current symbol table; check outer symbol table
-		sym, level, ok = st.Outer.resolveSymbol(name, fromLevel+1)
+		// ...but before we increase the level number, verify we're not defining parameters at this level, ...
+		// ...since opcodes for default parameter values are executed at a different level
+		if !st.DefiningParams {
+			fromLevel++
+		}
+		sym, level, ok = st.Outer.resolveSymbol(name, fromLevel)
 
 		if ok && st.IsFunction && !st.DefiningParams {
 			// resolves from beyond function border
