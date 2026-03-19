@@ -196,13 +196,15 @@ func (st *SymbolTable) resolveSymbol(name string, fromLevel int) (
 	if st.DefiningParams {
 		// in a temporarily unresolvable state
 		// allows definition of full set of parameters before any can be resolved
+		// (in case any default values include variables of the same name as any parameters)
 		ok = false
 	}
 
 	if !ok && st.Outer != nil {
 		// not findable in current symbol table; check outer symbol table
-		// ...but before we increase the level number, verify we're not defining parameters at this level, ...
-		// ...since opcodes for default parameter values are executed at a different level
+		// ...but before we increase the level number, verify if defining parameters at this level, ...
+		// ...since opcodes for default parameter values are executed at a different level...
+		// ...(for default values not known at compile-time)
 		if !st.DefiningParams {
 			fromLevel++
 		}
