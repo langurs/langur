@@ -132,10 +132,10 @@ func (c *Compiler) compileFunctionNodeParameters(
 
 	// to set optional parameter defaults that are determined at run-time ...
 	// ... that may include variables (not closure "free" variables)
-	previousFreezeDefineFree := c.symbolTable.FreezeDefineFree
-	c.symbolTable.FreezeDefineFree = true
+	previousDefiningParams := c.symbolTable.DefiningParams
+	c.symbolTable.DefiningParams = true
 	defer func() {
-		c.symbolTable.FreezeDefineFree = previousFreezeDefineFree
+		c.symbolTable.DefiningParams = previousDefiningParams
 	}()
 
 	var param object.Parameter
@@ -205,9 +205,6 @@ func (c *Compiler) compileFunctionNodeParameters(
 			externalNames = append(externalNames, param.ExternalName)
 		}
 	}
-
-	// set all parameters to resolvable, now that all of them are defined
-	c.symbolTable.SetSymbolsResolvable()
 
 	return
 }
