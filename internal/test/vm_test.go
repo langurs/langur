@@ -5893,6 +5893,195 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"rotate(2, distance=1, range=1..21)", "1", object.NUMBER_OBJ},
 		{"rotate(2, distance=2, range=1..21)", "21", object.NUMBER_OBJ},
 
+		// group
+		{`group([100, 2, 7, 98, 78], by=fn{< 50})`, [][]int{{2, 7}, {100, 98, 78}}, object.LIST_OBJ},
+		{`group(["a", "abc", "z", "zzz", "ab"], by=len)`, [][]string{{"a", "z"}, {"abc", "zzz"}, {"ab"}}, object.LIST_OBJ},
+
+		{`group([100, 2, 7, 98, 78], by=2)`, [][]int{{100, 2}, {7, 98}, {78}}, object.LIST_OBJ},
+		{`group([100, 2, 7, 98, 78], by=-2)`, [][]int{{100}, {2, 7}, {98, 78}}, object.LIST_OBJ},
+		{`group([100, 2, 7, 98, 78], by=3)`, [][]int{{100, 2, 7}, {98, 78}}, object.LIST_OBJ},
+		{`group([100, 2, 7, 98, 78], by=-3)`, [][]int{{100, 2}, {7, 98, 78}}, object.LIST_OBJ},
+
+		{`group([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], by=3)`,
+			[][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], by=-3)`,
+			[][]int{{1}, {2, 3, 4}, {5, 6, 7}, {8, 9, 10}}, object.LIST_OBJ},
+		{`group([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], by=-3)`,
+			[][]int{{0, 1}, {2, 3, 4}, {5, 6, 7}, {8, 9, 10}}, object.LIST_OBJ},
+		{`group([-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], by=-3)`,
+			[][]int{{-1, 0, 1}, {2, 3, 4}, {5, 6, 7}, {8, 9, 10}}, object.LIST_OBJ},
+
+		{`group([], by=3)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([], by=-3)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([1], by=3)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1], by=-3)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1, 2], by=3)`,
+			[][]int{{1, 2}}, object.LIST_OBJ},
+		{`group([1, 2], by=-3)`,
+			[][]int{{1, 2}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=3)`,
+			[][]int{{1, 2, 3}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=-3)`,
+			[][]int{{1, 2, 3}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4], by=3)`,
+			[][]int{{1, 2, 3}, {4}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4], by=-3)`,
+			[][]int{{1}, {2, 3, 4}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5], by=3)`,
+			[][]int{{1, 2, 3}, {4, 5}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5], by=-3)`,
+			[][]int{{1, 2}, {3, 4, 5}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5, 6], by=3)`,
+			[][]int{{1, 2, 3}, {4, 5, 6}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5, 6], by=-3)`,
+			[][]int{{1, 2, 3}, {4, 5, 6}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5, 6, 7], by=3)`,
+			[][]int{{1, 2, 3}, {4, 5, 6}, {7}}, object.LIST_OBJ},
+		{`group([1, 2, 3, 4, 5, 6, 7], by=-3)`,
+			[][]int{{1}, {2, 3, 4}, {5, 6, 7}}, object.LIST_OBJ},
+
+		{`group([], by=2)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([], by=-2)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([1], by=2)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1], by=-2)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1, 2], by=2)`,
+			[][]int{{1, 2}}, object.LIST_OBJ},
+		{`group([1, 2], by=-2)`,
+			[][]int{{1, 2}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=2)`,
+			[][]int{{1, 2}, {3}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=-2)`,
+			[][]int{{1}, {2, 3}}, object.LIST_OBJ},
+
+		{`group([], by=1)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([], by=-1)`,
+			[][]int{}, object.LIST_OBJ},
+		{`group([1], by=1)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1], by=-1)`,
+			[][]int{{1}}, object.LIST_OBJ},
+		{`group([1, 2], by=1)`,
+			[][]int{{1}, {2}}, object.LIST_OBJ},
+		{`group([1, 2], by=-1)`,
+			[][]int{{1}, {2}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=1)`,
+			[][]int{{1}, {2}, {3}}, object.LIST_OBJ},
+		{`group([1, 2, 3], by=-1)`,
+			[][]int{{1}, {2}, {3}}, object.LIST_OBJ},
+
+		// group with 1 argument (by truthiness)
+		// true first, false second, even if one or both empty
+		{`group([])`,
+			[][]int{{}, {}}, object.LIST_OBJ},
+		{`group([1, 2, 3])`,
+			[][]int{{1, 2, 3}, {}}, object.LIST_OBJ},
+		{`string(group([true, false, null, [], [7]]))`,
+			"[[true, [7]], [false, null, []]]", object.STRING_OBJ},
+		{`string(group([false, null, []]))`,
+			"[[], [false, null, []]]", object.STRING_OBJ},
+		{`string(group([false, null, [], 7]))`,
+			"[[7], [false, null, []]]", object.STRING_OBJ},
+
+		// group on string code points
+		{`group(s2cp("abcdefghijkl"), by=fn{< 100})`,
+			[][]int{{97, 98, 99}, {100, 101, 102, 103, 104, 105, 106, 107, 108}}, object.LIST_OBJ,
+		},
+
+		// groupby
+		{`string(groupby([100, 2, 7, 98, 78], by=fn{< 50}))`,
+			"[[true, [2, 7]], [false, [100, 98, 78]]]", object.STRING_OBJ},
+
+		{`string(groupby(["don't you know", "nada", 123, "hey", "yo"], by=fn(x) { x -> re/yo/ }))`,
+			`[[true, ["don't you know", "yo"]], [false, ["nada", 123, "hey"]]]`, object.STRING_OBJ},
+
+		{`val test = fn(x) { if(x < 0: "neg"; x > 200: "over"; "good") }
+			string(groupby([-123, 345, 89, 150, 1000, -3.4], by=test))`,
+			`[["neg", [-123, -3.4]], ["over", [345, 1000]], ["good", [89, 150]]]`, object.STRING_OBJ},
+
+		// groupby with 1 argument (by truthiness)
+		{`string(groupby([true, false, null, [], [7]]))`,
+			"[[true, [true, [7]]], [false, [false, null, []]]]", object.STRING_OBJ},
+
+		// groupby on string code points
+		{`string(groupby(s2cp("abcdefghijkl"), by=fn(i) { if(i < 100: 0; 1) }))`,
+			`[[0, [97, 98, 99]], [1, [100, 101, 102, 103, 104, 105, 106, 107, 108]]]`, object.STRING_OBJ,
+		},
+
+		// groupbyH
+		{`groupbyH([100, 2, 7, 98, 78], by=fn(i) { if(i < 50: "A"; "B") })`,
+			[][]object.Object{
+				{object.NewString("A"), &object.List{Elements: []object.Object{
+					object.NumberFromInt(2), object.NumberFromInt(7),
+				}}},
+				{object.NewString("B"), &object.List{Elements: []object.Object{
+					object.NumberFromInt(100), object.NumberFromInt(98), object.NumberFromInt(78),
+				}}},
+			},
+			object.HASH_OBJ},
+
+		{`groupbyH(["don't you know", "nada", 123, "hey", "yo"], by=fn(x) { if(x -> re/yo/: "true"; "false") })`,
+			[][]object.Object{
+				{object.NewString("true"), &object.List{Elements: []object.Object{
+					object.NewString("don't you know"), object.NewString("yo"),
+				}}},
+				{object.NewString("false"), &object.List{Elements: []object.Object{
+					object.NewString("nada"), object.NumberFromInt(123), object.NewString("hey"),
+				}}},
+			},
+			object.HASH_OBJ},
+
+		{`val test = fn(x) { if(x < 0: "neg"; x > 200: "over"; "good") }
+			groupbyH([-123, 345, 89, 150, 1000, -34], by=test)`,
+			[][]object.Object{
+				{object.NewString("neg"), &object.List{Elements: []object.Object{
+					object.NumberFromInt(-123), object.NumberFromInt(-34),
+				}}},
+				{object.NewString("good"), &object.List{Elements: []object.Object{
+					object.NumberFromInt(89), object.NumberFromInt(150),
+				}}},
+				{object.NewString("over"), &object.List{Elements: []object.Object{
+					object.NumberFromInt(345), object.NumberFromInt(1000),
+				}}},
+			},
+			object.HASH_OBJ},
+
+		{`val test = fn(x) { if(x < 0: -1; x > 200: 1; 0) }
+			groupbyH([-123, 345, 89, 150, 1000, -34], by=test)`,
+			[][]object.Object{
+				{object.NumberFromInt(0), &object.List{Elements: []object.Object{
+					object.NumberFromInt(89), object.NumberFromInt(150),
+				}}},
+				{object.NumberFromInt(1), &object.List{Elements: []object.Object{
+					object.NumberFromInt(345), object.NumberFromInt(1000),
+				}}},
+				{object.NumberFromInt(-1), &object.List{Elements: []object.Object{
+					object.NumberFromInt(-123), object.NumberFromInt(-34),
+				}}},
+			},
+			object.HASH_OBJ},
+
+		// groupbyH on string code points
+		{`groupbyH(s2cp("abcdefg"), by=fn(i) { if(i < 100: 0; 1) })`,
+			[][]object.Object{
+				{object.NumberFromInt(0), &object.List{Elements: []object.Object{
+					object.NumberFromInt(97), object.NumberFromInt(98), object.NumberFromInt(99),
+				}}},
+				{object.NumberFromInt(1), &object.List{Elements: []object.Object{
+					object.NumberFromInt(100), object.NumberFromInt(101), object.NumberFromInt(102), object.NumberFromInt(103),
+				}}},
+			},
+			object.HASH_OBJ,
+		},
+
 		// any
 		{`any([10, 101], by=fn{> 100})`, true, object.BOOLEAN_OBJ},
 		{`any([10, 99], by=fn{> 100})`, false, object.BOOLEAN_OBJ},

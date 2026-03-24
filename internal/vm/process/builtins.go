@@ -59,6 +59,10 @@ var BuiltIns = []*object.BuiltIn{
 	bi_trunc,
 	bi_simplify,
 
+	bi_group,
+	bi_groupby,
+	bi_groupbyH,
+
 	bi_all,
 	bi_any,
 
