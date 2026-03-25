@@ -5984,6 +5984,8 @@ func TestBuiltinFunctions(t *testing.T) {
 			[][]int{{}, {}}, object.LIST_OBJ},
 		{`group([1, 2, 3])`,
 			[][]int{{1, 2, 3}, {}}, object.LIST_OBJ},
+		{`group([0, 1, 2, 3])`,
+			[][]int{{1, 2, 3}, {0}}, object.LIST_OBJ},
 		{`string(group([true, false, null, [], [7]]))`,
 			"[[true, [7]], [false, null, []]]", object.STRING_OBJ},
 		{`string(group([false, null, []]))`,
