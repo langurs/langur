@@ -116,13 +116,6 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 			}
 			any = true
 
-		case "lead":
-			if lead {
-				err = fmt.Errorf(`Unexpected repeat of "lead" modifier`)
-				return
-			}
-			lead = true
-
 		case "esc":
 			if !maybeInterpolated {
 				err = fmt.Errorf(`Cannot combine "esc" and "ni" modifiers`)
@@ -133,6 +126,16 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 				return
 			}
 			escInterpolations = true
+
+		case "lead":
+			if lead {
+				err = fmt.Errorf(`Unexpected repeat of "lead" modifier`)
+				return
+			}
+			lead = true
+
+		// case "marks":
+		// 	marks = true
 
 		case "ni":
 			if escInterpolations {
@@ -287,6 +290,9 @@ func (lex *Lexer) readQuotedStringLiteral(tok *token.Token) (err error) {
 				return
 			}
 			lead = true
+
+		case "marks":
+			marks = true
 
 		case "ni":
 			if !maybeInterpolated {

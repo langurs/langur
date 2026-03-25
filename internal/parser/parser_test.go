@@ -79,7 +79,7 @@ func TestParsingIndexExpressions(t *testing.T) {
 	}
 }
 
-func TestStringExpression(t *testing.T) {
+func TestStringExpressions(t *testing.T) {
 	expect := "yo don't you know"
 	input := "\"" + expect + "\""
 
@@ -108,14 +108,6 @@ func TestStringExpression(t *testing.T) {
 	if !ok {
 		t.Fatalf("expression not an *ast.StringNode, received=%T", stmt.Expression)
 	}
-	// arr, ok := stmt.Expression.(*ast.ListNode)
-	// if !ok {
-	// 	t.Fatalf("expression not an *ast.ListNode, received=%T", stmt.Expression)
-	// }
-	// str, ok := arr.Elements[0].(*ast.StringNode)
-	// if !ok {
-	// 	t.Fatalf("arr.Elements[0] expression not an *ast.StringNode, received=%T", arr.Elements[0])
-	// }
 
 	if str.Values[0] != expect {
 		t.Fatalf("string not \"%s\", received=\"%s\"", expect, str.Values[0])

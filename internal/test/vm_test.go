@@ -2861,6 +2861,14 @@ func TestStringAndRegexModifiers(t *testing.T) {
 	tests := []vmTestCase{
 		{"QS:any(\uF8FF)", "\uF8FF", object.STRING_OBJ},
 		{"matching(QS:any(\uF8FF), by=re:any(\uF8FF))", true, object.BOOLEAN_OBJ},
+
+		{"qs:marks(\\uF8FF)", "(\uF8FF)", object.STRING_OBJ},
+		{"qs:marks\"abcd\"", "\"abcd\"", object.STRING_OBJ},
+		{"qs:marks'abcd'", "'abcd'", object.STRING_OBJ},
+		{"qs:marks[abcd]", "[abcd]", object.STRING_OBJ},
+		
+		// {"re:marks\"abcd\"", "\"abcd\"", object.REGEX_OBJ},
+		// {"re:marks'abcd'", "'abcd'", object.REGEX_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
