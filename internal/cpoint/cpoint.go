@@ -51,8 +51,8 @@ func QuotedLiteralClosingMark(openingMark rune) (cp rune, ok bool) {
 		return ')', true
 	case '[':
 		return ']', true
-	case '<':
-		return '>', true
+	// case '<':
+	// 	return '>', true
 	}
 	return 0, false
 }

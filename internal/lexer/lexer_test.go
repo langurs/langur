@@ -44,13 +44,13 @@ func TestGeneralTokens(t *testing.T) {
 		{"qs/abc/", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"qs(abc)", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"qs[abc]", &token.Token{Type: token.STRING, Literal: "abc"}, false},
-		{"qs<abc>", &token.Token{Type: token.STRING, Literal: "abc"}, false},
+		// {"qs<abc>", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"QS'abc'", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{`QS"abc"`, &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"QS/abc/", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"QS(abc)", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 		{"QS[abc]", &token.Token{Type: token.STRING, Literal: "abc"}, false},
-		{"QS<abc>", &token.Token{Type: token.STRING, Literal: "abc"}, false},
+		// {"QS<abc>", &token.Token{Type: token.STRING, Literal: "abc"}, false},
 
 		// bad strings
 		{`"abc`, nil, true},
@@ -65,7 +65,7 @@ func TestGeneralTokens(t *testing.T) {
 		{"QS/abc", nil, true},
 		{"QS(abc", nil, true},
 		{"QS[abc", nil, true},
-		{"QS<abc", nil, true},
+		// {"QS<abc", nil, true},
 
 		// good code point literals
 		{"'a'", &token.Token{Type: token.INT, Literal: "97"}, false},
@@ -86,13 +86,13 @@ func TestGeneralTokens(t *testing.T) {
 		{"re/abc/", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"re(abc)", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"re[abc]", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{"re<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"re<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"RE'abc'", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{`RE"abc"`, &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"RE/abc/", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"RE(abc)", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 		{"RE[abc]", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{"RE<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"RE<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
 
 		// bad re2 regex literals
 		{"re'abc", nil, true},
@@ -100,13 +100,13 @@ func TestGeneralTokens(t *testing.T) {
 		{"re/abc", nil, true},
 		{"re(abc", nil, true},
 		{"re[abc", nil, true},
-		{"re<abc", nil, true},
+		// {"re<abc", nil, true},
 		{"RE'abc", nil, true},
 		{`RE"abc`, nil, true},
 		{"RE/abc", nil, true},
 		{"RE(abc", nil, true},
 		{"RE[abc", nil, true},
-		{"RE<abc", nil, true},
+		// {"RE<abc", nil, true},
 
 		{"if", &token.Token{Type: token.IF, Literal: "if"}, false},
 
@@ -229,7 +229,7 @@ func TestStringLiterals(t *testing.T) {
 		{`qs/abc/`, "abc", false},
 		{`qs(abc)`, "abc", false},
 		{`qs[abc]`, "abc", false},
-		{`qs<abc>`, "abc", false},
+		// {`qs<abc>`, "abc", false},
 
 		// blockquotes
 		{"qs:block END\nabc\nEND\n", "abc", false},
