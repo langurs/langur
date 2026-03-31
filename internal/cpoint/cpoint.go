@@ -47,10 +47,10 @@ func QuotedLiteralClosingMark(openingMark rune) (cp rune, ok bool) {
 	switch openingMark {
 	case '"', '\'', '/':
 		return openingMark, true
-	case '(':
-		return ')', true
-	case '[':
-		return ']', true
+	// case '(':
+	// 	return ')', true
+	// case '[':
+	// 	return ']', true
 	// case '<':
 	// 	return '>', true
 	}

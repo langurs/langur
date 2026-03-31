@@ -2859,14 +2859,15 @@ func TestStringBlockQuotes(t *testing.T) {
 
 func TestStringAndRegexModifiers(t *testing.T) {
 	tests := []vmTestCase{
-		{"QS:any(\uF8FF)", "\uF8FF", object.STRING_OBJ},
-		{"matching(QS:any(\uF8FF), by=re:any(\uF8FF))", true, object.BOOLEAN_OBJ},
+		{"QS:any'\uF8FF'", "\uF8FF", object.STRING_OBJ},
+		{"matching(QS:any'\uF8FF', by=re:any'\uF8FF')", true, object.BOOLEAN_OBJ},
 
-		{"qs:marks(\\uF8FF)", "(\uF8FF)", object.STRING_OBJ},
+		{"qs:marks'\\uF8FF'", "'\uF8FF'", object.STRING_OBJ},
 		{"qs:marks\"abcd\"", "\"abcd\"", object.STRING_OBJ},
 		{"qs:marks'abcd'", "'abcd'", object.STRING_OBJ},
-		{"qs:marks[abcd]", "[abcd]", object.STRING_OBJ},
-		
+
+		// {"qs:marks[abcd]", "[abcd]", object.STRING_OBJ},
+
 		// {"re:marks\"abcd\"", "\"abcd\"", object.REGEX_OBJ},
 		// {"re:marks'abcd'", "'abcd'", object.REGEX_OBJ},
 	}
@@ -2876,8 +2877,8 @@ func TestStringAndRegexModifiers(t *testing.T) {
 
 func TestStringAppend(t *testing.T) {
 	tests := []vmTestCase{
-		{"qs[lan] ~ qs(gurs)", "langurs", object.STRING_OBJ},
-		{`qs[lan] ~ qs(gurs) ~ " ♥ bananas"`, "langurs ♥ bananas", object.STRING_OBJ},
+		{"qs/lan/ ~ qs/gurs/", "langurs", object.STRING_OBJ},
+		{`qs/lan/ ~ qs/gurs/ ~ " ♥ bananas"`, "langurs ♥ bananas", object.STRING_OBJ},
 
 		{`"A" ~ "B"`, "AB", object.STRING_OBJ},
 		{`"A" ~ 99`, "Ac", object.STRING_OBJ},
@@ -3779,9 +3780,9 @@ func TestListLiterals(t *testing.T) {
 			x[2][5]`, "you", object.STRING_OBJ},
 
 		// free word list with line returns
-		{`val x = fw[
+		{`val x = fw/
 			1 2 3 abc
-			you know]
+			you know/
 		x == ["1", "2", "3", "abc", "you", "know"]`, true, object.BOOLEAN_OBJ},
 
 		// append
@@ -7378,8 +7379,8 @@ func TestRe2Modifiers(t *testing.T) {
 		{`matching("\nabc", by=re/^a.c/)`, false, object.BOOLEAN_OBJ},
 		{`matching("\nabc", by=re:m/^a.c/)`, true, object.BOOLEAN_OBJ},
 
-		{`matching("abc\n", by=re(a.c$))`, false, object.BOOLEAN_OBJ},
-		{`matching("abc\n", by=re:m(a.c$))`, true, object.BOOLEAN_OBJ},
+		{`matching("abc\n", by=re/a.c$/)`, false, object.BOOLEAN_OBJ},
+		{`matching("abc\n", by=re:m/a.c$/)`, true, object.BOOLEAN_OBJ},
 
 		// ungreedy mode (reverse "greediness"/"laziness" of quantifiers)
 		{`match("1234567", by=RE/\d+/)`, "1234567", object.STRING_OBJ},
@@ -7796,7 +7797,7 @@ func TestDateTimeOutputFormatting(t *testing.T) {
 		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 		{`val x = dt/2008-01-01 12:30/
 		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
-		{`val x = dt(2008-01-01 12)
+		{`val x = dt/2008-01-01 12/
 		  string(x, fmt="2006")`, "2008", object.STRING_OBJ},
 
 		{`val x = dt/2008-01-01 11/
