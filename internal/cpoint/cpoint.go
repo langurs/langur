@@ -43,20 +43,16 @@ func Tcase(cp rune) rune {
 	return unicode.ToTitle(cp)
 }
 
-func QuotedLiteralClosingMark(openingMark rune) (cp rune, ok bool) {
+func ValidQuotedLiteralOpeningMark(openingMark rune) bool {
 	switch openingMark {
 	case '"', '\'', '/':
-		return openingMark, true
-	// case '(':
-	// 	return ')', true
-	// case '[':
-	// 	return ']', true
-	// case '<':
-	// 	return '>', true
+		return true
 	}
-	return 0, false
+	return false
 }
 
+// ClosingMark returns the closing mark to expect with a given opening mark.
+// This is not used to determine whether a pair of marks is valid in a given context.
 func ClosingMark(openingMark rune) rune {
 	switch openingMark {
 	case '{':

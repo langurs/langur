@@ -36,21 +36,9 @@ func (lex *Lexer) readAndInterpretWordToken(tok *token.Token, cpPosition int) (e
 
 		case token.DATETIME:
 			err = lex.readDateTimeLiteral(tok)
-		
-			// // date-time literal
-			// // using same quoting mechanism as strings
-			// // might include interpolation
-			// tok.Literal, _, tok.Attachments, _, err =
-			// 	lex.readStringLiteral(false, true, false, false, false, false, "")
 
 		case token.DURATION:
-			// duration literal
-			// using same quoting mechanism as strings
-			// might include interpolation
-			tok.Literal, _, tok.Attachments, _, err =
-				lex.readStringLiteral(false, true, false, false, false, false, "")
-
-			tok.Type = token.DURATION
+			err = lex.readDurationLiteral(tok)
 
 		case token.ZLS:
 			tok.Type, tok.Literal = token.STRING, ""

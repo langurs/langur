@@ -36,6 +36,13 @@ func (lex *Lexer) readFreeWordList(tok *token.Token) (err error) {
 
 	allowNewLines := true //blockQuoteMarker != ""
 
+	if blockQuoteMarker == "" &&
+		 !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
+
+		err = fmt.Errorf("Invalid quote marker for free word list literal (%s)", string(lex.cp))
+		return
+	}
+
 	var strs []string
 	strs, err = lex.readFreeWordListLiteral(allowEsc, allowNewLines, any, blockQuoteMarker)
 
@@ -165,6 +172,13 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 		list += neg
 	}
 
+	if blockQuoteMarker == "" &&
+		 !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
+
+		err = fmt.Errorf("Invalid quote marker for regex literal (%s)", string(lex.cp))
+		return
+	}
+
 	tok.Literal, _, tok.Attachments, _, err =
 		lex.readStringLiteral(allowEsc, maybeInterpolated, allowNewLines, any, lead, marks, blockQuoteMarker)
 
@@ -208,6 +222,51 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 	return
 }
 
+// duration literal
+// using same quoting mechanism as strings
+// might include interpolation
+func (lex *Lexer) readDurationLiteral(tok *token.Token) (err error) {
+	modifiers, blockQuoteMarker, err2 := lex.readStringModifiers()
+	if err2 != nil {
+		err = err2
+		return
+	}
+
+	if blockQuoteMarker == "" {
+		if !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
+			err = fmt.Errorf("Invalid quote marker for duration literal (%s)", string(lex.cp))
+			return
+		}
+
+	} else {
+		err = fmt.Errorf("Cannot use blockquote marker for duration literal")
+		return
+	}
+
+	for _, mod := range modifiers {
+		switch mod {
+		default:
+			err = fmt.Errorf("Invalid duration modifier: %s", str.ReformatInput(mod))
+			return
+		}
+	}
+	
+	tok.Literal, _, tok.Attachments, _, err =
+		lex.readStringLiteral(false, true, false, false, false, false, blockQuoteMarker)
+
+	tok.Type = token.DURATION
+
+	if err != nil {
+		return
+	}
+	
+	if lex.cp != ',' && blockQuoteMarker != "" {
+		lex.queueImpliedSemicolon()
+	}
+
+	return
+}
+
 // date-time literal
 // using same quoting mechanism as strings
 // might include interpolation
@@ -217,7 +276,14 @@ func (lex *Lexer) readDateTimeLiteral(tok *token.Token) (err error) {
 		err = err2
 		return
 	}
-	if blockQuoteMarker != "" {
+
+	if blockQuoteMarker == "" {
+		if !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
+			err = fmt.Errorf("Invalid quote marker for duration literal (%s)", string(lex.cp))
+			return
+		}
+
+	} else {
 		err = fmt.Errorf("Cannot use blockquote marker for datetime literal")
 		return
 	}
@@ -241,6 +307,8 @@ func (lex *Lexer) readDateTimeLiteral(tok *token.Token) (err error) {
 
 	tok.Literal, _, tok.Attachments, _, err =
 		lex.readStringLiteral(false, true, false, false, false, false, blockQuoteMarker)
+
+	tok.Type = token.DATETIME
 
 	if includeFractionalSecondsInNowDateTime {
 		tok.Code = token.CODE_FRACTIONAL_SECONDS
@@ -305,6 +373,13 @@ func (lex *Lexer) readQuotedStringLiteral(tok *token.Token) (err error) {
 			err = fmt.Errorf("Invalid string modifier: %s", str.ReformatInput(mod))
 			return
 		}
+	}
+
+	if blockQuoteMarker == "" &&
+		 !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
+
+		err = fmt.Errorf("Invalid quote marker for string literal (%s)", string(lex.cp))
+		return
 	}
 
 	tok.Literal, tok.Type, tok.Attachments, _, err =
@@ -436,7 +511,6 @@ func (lex *Lexer) readStringLiteral(
 	}
 
 	var closingQuote rune = 0
-	var ok bool
 	var out, piece, possibleMarker bytes.Buffer
 
 	writeCPToPiece := func() {
@@ -445,14 +519,10 @@ func (lex *Lexer) readStringLiteral(
 	}
 
 	if blockQuoteMarker == "" {
-		closingQuote, ok = cpoint.QuotedLiteralClosingMark(lex.cp)
-		if !ok {
-			err = fmt.Errorf("Illegal opening mark")
-			return
-		}
+		closingQuote = cpoint.ClosingMark(lex.cp)
 
-		if lex.cp == '\\' && (interpretEsc || maybeInterpolated) {
-			addStrErr("Cannot use escape codes or interpolation and use the escape character as a string quote mark")
+		if lex.cp == '\\' && interpretEsc {
+			addStrErr("Cannot use escape codes and use the escape character as a string quote mark")
 		}
 
 		if marks {
@@ -617,13 +687,10 @@ func (lex *Lexer) readFreeWordListLiteral(
 	}
 
 	var closingQuote rune = 0
-	var ok bool
 
 	if blockQuoteMarker == "" {
-		closingQuote, ok = cpoint.QuotedLiteralClosingMark(lex.cp)
-		if !ok {
-			return nil, fmt.Errorf("Illegal opening mark")
-		}
+		closingQuote = cpoint.ClosingMark(lex.cp)
+
 		if lex.cp == '\\' && interpretEsc {
 			addStrErr("Cannot use escape codes and use the escape character as a quote mark")
 		}
@@ -781,7 +848,7 @@ func (lex *Lexer) readInterpolatedSection(
 
 	if lex.cp == '}' {
 		lex.advanceCodePoint()
-		// past second } of }}
+		// second } of }}
 
 	} else {
 		err = fmt.Errorf("Missing second } of }} to close interpolated section")
@@ -811,7 +878,7 @@ func (lex *Lexer) readInterpolationModifiers(interpretEsc, any bool) (
 		}
 
 		if lex.cp == '(' || lex.cp == '[' {
-			closer, _ := cpoint.QuotedLiteralClosingMark(lex.cp)
+			closer := cpoint.ClosingMark(lex.cp)
 			mod.WriteRune(lex.cp)
 
 			var s string

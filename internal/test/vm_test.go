@@ -2790,8 +2790,12 @@ func TestAssignmentsInIfElse(t *testing.T) {
 func TestStringExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{`"langur"`, "langur", object.STRING_OBJ},
-		{"qs[langur]", "langur", object.STRING_OBJ},
-		{"QS[langur]", "langur", object.STRING_OBJ},
+		{"qs\"langur\"", "langur", object.STRING_OBJ},
+		{"QS\"langur\"", "langur", object.STRING_OBJ},
+		{"qs'langur'", "langur", object.STRING_OBJ},
+		{"QS'langur'", "langur", object.STRING_OBJ},
+		{"qs/langur/", "langur", object.STRING_OBJ},
+		{"QS/langur/", "langur", object.STRING_OBJ},
 		{`zls`, "", object.STRING_OBJ},
 	}
 
@@ -5785,11 +5789,11 @@ func TestImpureFunctionDeclarations(t *testing.T) {
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []vmTestCase{
 		// length of string in code points
-		{`len("")`, "0", object.NUMBER_OBJ},
-		{`len("four")`, "4", object.NUMBER_OBJ},
+		{`len("")`, 0, object.NUMBER_OBJ},
+		{`len("four")`, 4, object.NUMBER_OBJ},
 
-		// NOTE: This next line displays wrong in my IDE, b/c of L/R confusion but returns the correct result (3).
-		{`len("שלם")`, "3", object.NUMBER_OBJ},
+		{`len("\U0001F600")`, 1, object.NUMBER_OBJ},
+		{`len("\U0001F600\U0001F923")`, 2, object.NUMBER_OBJ},
 
 		// length of list
 		{"len([])", "0", object.NUMBER_OBJ},

@@ -319,8 +319,8 @@ func TestDateTimeLiterals(t *testing.T) {
 		{`dt/2018-01-01 12:01:00/`, "2018-01-01 12:01:00", false},
 
 		// bad literals
-		{`dt`, "", true},
-		{`dt //`, "", true},
+		{`dt`, "dt", true},
+		{`dt //`, "dt", true},
 		{`dt/2018-01-01 12:01:00`, "2018-01-01 12:01:00", true},
 	}
 
@@ -329,9 +329,13 @@ func TestDateTimeLiterals(t *testing.T) {
 		if err != nil {
 			t.Fatal(err.Error())
 		}
+
 		tok, err := l.NextToken()
-		if err != nil && !tt.expectErrors {
-			t.Fatal(err.Error())
+		if err != nil {
+			if !tt.expectErrors {
+				t.Fatal(err.Error())
+			}
+			// continue
 		}
 
 		if !tt.expectErrors && tok.Type != token.DATETIME {
