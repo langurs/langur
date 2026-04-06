@@ -878,17 +878,13 @@ func (lex *Lexer) readInterpolationModifiers(interpretEsc, any bool) (
 		}
 
 		if lex.cp == '(' || lex.cp == '[' {
-			closer := cpoint.ClosingMark(lex.cp)
-			mod.WriteRune(lex.cp)
-
 			var s string
-			s, _, _, _, err = lex.readStringLiteral(interpretEsc, false, false, any, false, false, "")
+			s, _, _, _, err = lex.readStringLiteral(interpretEsc, false, false, any, false, true, "")
 			if err != nil {
 				err = fmt.Errorf("Error reading enclosed subsection of interpolation modifier: %s", err.Error())
 				return
 			}
 			mod.WriteString(s)
-			mod.WriteRune(closer)
 		}
 
 		if lex.cp == '}' {
