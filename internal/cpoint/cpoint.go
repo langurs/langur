@@ -51,19 +51,30 @@ func ValidQuotedLiteralOpeningMark(openingMark rune) bool {
 	return false
 }
 
+var marks = []struct{
+	opener rune
+	closer rune
+	}{
+	{'{', '}'},
+	{'(', ')'},
+	{'[', ']'},
+	{'<', '>'},
+	{'“', '”'},
+	{'‘', '’'},
+	{'«', '»'},
+	{'‹', '›'},
+	// There are more in Unicode, but I'd guess that some of them should not be included (for programming). It gets a little crazy. --Davis
+}
+
 // ClosingMark returns the closing mark to expect with a given opening mark.
 // This is not used to determine whether a pair of marks is valid in a given context.
 func ClosingMark(openingMark rune) rune {
-	switch openingMark {
-	case '{':
-		return '}'
-	case '(':
-		return ')'
-	case '[':
-		return ']'
-	case '<':
-		return '>'
+	for i := range marks {
+		if marks[i].opener == openingMark {
+			return marks[i].closer
+		}
 	}
+	// not in the marks list; return the opening mark as the closing mark
 	return openingMark
 }
 
