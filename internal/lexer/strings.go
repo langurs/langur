@@ -376,6 +376,10 @@ func (lex *Lexer) readQuotedStringLiteral(tok *token.Token) (err error) {
 			lead = true
 
 		case "marks":
+			if blockQuoteMarker != "" {
+				err = fmt.Errorf(`Cannot combine "marks" and "block" modifiers`)
+				return
+			}
 			marks = true
 
 		case "ni":
