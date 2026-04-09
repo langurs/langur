@@ -3,9 +3,9 @@ https://langurlang.org
 
 ... - 0.20.5
 - added functions group() and groupby() to create a grouped list of lists and groupbyH() to create a hash of lists
-- added string modifier *marks* to include quote marks in a string
+- added string modifier *marks* to include quote marks in a string or regex
 - eliminated option to use greater than/less than or square brackets or parentheses marks as quote marks
-- (internal) changed lexing string quote marks to verify validity and make more flexible
+- (internal) changed lexing string and quote marks to verify validity and make more flexible
 
 
 2026-03-21 - 0.20.4

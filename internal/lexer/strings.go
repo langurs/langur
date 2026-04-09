@@ -3,6 +3,7 @@
 package lexer
 
 import (
+	"langur/regex"
 	"bytes"
 	"fmt"
 	"langur/cpoint"
@@ -141,8 +142,12 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 			}
 			lead = true
 
-		// case "marks":
-		// 	marks = true
+		case "marks":
+			if blockQuoteMarker != "" {
+				err = fmt.Errorf(`Cannot combine "marks" and "block" modifiers`)
+				return
+			}
+			marks = true
 
 		case "ni":
 			if escInterpolations {
@@ -179,8 +184,19 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 		return
 	}
 
+	var opener, closer string
+	if marks {
+		// if including the opening and closing marks, escape meta characters in case they are
+		opener, _ = regex.RE2.Escape(string(lex.cp))
+		closer, _ = regex.RE2.Escape(string(cpoint.ClosingMark(lex.cp)))
+	}
+
 	tok.Literal, _, tok.Attachments, _, err =
-		lex.readStringLiteral(allowEsc, maybeInterpolated, allowNewLines, any, lead, marks, blockQuoteMarker)
+		lex.readStringLiteral(allowEsc, maybeInterpolated, allowNewLines, any, lead, false, blockQuoteMarker)
+
+	if marks {
+		tok.Literal = opener + tok.Literal + closer
+	}
 
 	if err != nil {
 		return

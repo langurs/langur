@@ -8,7 +8,6 @@ import (
 	"langur/opcode"
 	"langur/regex"
 	"langur/regexp" // a modified copy of Go's standard regexp (re2) package
-	"langur/str"
 )
 
 var codeToReType = map[int]regex.RegexType{
@@ -110,14 +109,11 @@ func EscString(obj Object, reType regex.RegexType) (result Object, err error) {
 	if err != nil {
 		return
 	}
-
-	if reType == regex.NONE {
-		return NewString(str.Escape(strObj.String())), nil
-
-	} else if reType == regex.RE2 {
-		return NewString(regexp.QuoteMeta(strObj.String())), nil
-	}
-	return nil, fmt.Errorf("Unknown Escape Type for String Object")
+	
+	var s string
+	s, err = reType.Escape(strObj.String())
+	result = NewString(s)
+	return
 }
 
 func RegexMatchingOrError(re *Regex, o2 Object) (Object, error) {

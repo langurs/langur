@@ -63,7 +63,6 @@ var marks = []struct{
 	{'‘', '’'},
 	{'«', '»'},
 	{'‹', '›'},
-	// There are more in Unicode, but I'd guess that some of them should not be included (for programming). It gets a little crazy. --Davis
 }
 
 // ClosingMark returns the closing mark to expect with a given opening mark.

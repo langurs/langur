@@ -2870,10 +2870,11 @@ func TestStringAndRegexModifiers(t *testing.T) {
 		{"qs:marks\"abcd\"", "\"abcd\"", object.STRING_OBJ},
 		{"qs:marks'abcd'", "'abcd'", object.STRING_OBJ},
 
-		// {"qs:marks[abcd]", "[abcd]", object.STRING_OBJ},
+		{"qs:marks/abcd/", "/abcd/", object.STRING_OBJ},
 
-		// {"re:marks\"abcd\"", "\"abcd\"", object.REGEX_OBJ},
-		// {"re:marks'abcd'", "'abcd'", object.REGEX_OBJ},
+		{"re:marks\"abcd\"", "\"abcd\"", object.REGEX_OBJ},
+		{"re:marks'abcd'", "'abcd'", object.REGEX_OBJ},
+		{"re:marks/abcd/", "/abcd/", object.REGEX_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
