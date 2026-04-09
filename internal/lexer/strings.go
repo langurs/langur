@@ -3,10 +3,10 @@
 package lexer
 
 import (
-	"langur/regex"
 	"bytes"
 	"fmt"
 	"langur/cpoint"
+	"langur/regexp"
 	"langur/str"
 	"langur/token"
 	"langur/trace"
@@ -187,8 +187,8 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 	var opener, closer string
 	if marks {
 		// if including the opening and closing marks, escape meta characters in case they are
-		opener, _ = regex.RE2.Escape(string(lex.cp))
-		closer, _ = regex.RE2.Escape(string(cpoint.ClosingMark(lex.cp)))
+		opener = regexp.QuoteMeta(string(lex.cp))
+		closer = regexp.QuoteMeta(string(cpoint.ClosingMark(lex.cp)))
 	}
 
 	tok.Literal, _, tok.Attachments, _, err =
