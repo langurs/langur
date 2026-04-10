@@ -9,7 +9,7 @@ import (
 // ByteCode struct in a separate package to untangle dependencies
 // built by compiler; used by VM
 
-var LangurRev = "0.20.5-dev"
+var LangurRev = "0.20.5"
 
 // to pass from compiler to VM
 type ByteCode struct {

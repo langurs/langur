@@ -1,12 +1,11 @@
 langur revision history
 https://langurlang.org
 
-... - 0.20.5
+2026-04-09 - 0.20.5
 - added functions group() and groupby() to create a grouped list of lists and groupbyH() to create a hash of lists
 - added string modifier *marks* to include quote marks in a string or regex
 - eliminated option to use greater than/less than or square brackets or parentheses marks as quote marks
 - (internal) changed lexing string and quote marks to verify validity and make more flexible
-
 
 2026-03-21 - 0.20.4
 - fix: parameters not to resolve while setting default values for other parameters of the same function
