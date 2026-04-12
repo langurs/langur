@@ -246,13 +246,13 @@ func groupByFunctionOrTruthiness(
 func groupByIntoHash(
 	fnName string, pr *Process,
 	fn object.Object,
-	arr *object.List) object.Object {
+	list *object.List) object.Object {
 
 	hash := &object.Hash{}
 	var key object.Object
 	var err error
 
-	for _, obj := range arr.Elements {
+	for _, obj := range list.Elements {
 		if fn == nil {
 			key = obj
 		} else {
@@ -266,9 +266,9 @@ func groupByIntoHash(
 		if err != nil {
 			value = &object.List{Elements: []object.Object{obj}}
 		} else {
-			arr2 := value.(*object.List)
-			arr2.Elements = append(arr2.Elements, obj)
-			value = arr2
+			list2 := value.(*object.List)
+			list2.Elements = append(list2.Elements, obj)
+			value = list2
 		}
 
 		err = hash.WritePair(key, value)
