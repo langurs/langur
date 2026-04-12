@@ -134,7 +134,7 @@ var bi_groupbyH = &object.BuiltIn{
 			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "by", Type: object.COMPILED_CODE_OBJ},
+			object.Parameter{ExternalName: "by", Type: object.COMPILED_CODE_OBJ, Required: true},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
