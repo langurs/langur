@@ -2080,55 +2080,56 @@ func TestIndexHashAssignment(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestIndexStringAssignment(t *testing.T) {
-	tests := []vmTestCase{
-		{
-			`var x = "abcd"
-			 x[1] = "Z"
-			 x`,
-			"Zbcd", object.STRING_OBJ,
-		},
+// NOTE(davis): set strings to immutable, at least for now (after v0.20.5)
+// func TestIndexStringAssignment(t *testing.T) {
+// 	tests := []vmTestCase{
+// 		{
+// 			`var x = "abcd"
+// 			 x[1] = "Z"
+// 			 x`,
+// 			"Zbcd", object.STRING_OBJ,
+// 		},
 
-		// ... with negative index
-		{
-			`var x = "abcd"
-			 x[-1] = "Z"
-			 x`,
-			"abcZ", object.STRING_OBJ,
-		},
+// 		// ... with negative index
+// 		{
+// 			`var x = "abcd"
+// 			 x[-1] = "Z"
+// 			 x`,
+// 			"abcZ", object.STRING_OBJ,
+// 		},
 
-		{
-			`var x = "abcd"
-			 x[3] = "\u05d0"
-			 x`,
-			"ab\u05d0d", object.STRING_OBJ,
-		},
-		{
-			`var x = "a\u05d0cd"
-			 x[2] = "Z"
-			 x`,
-			"aZcd", object.STRING_OBJ,
-		},
+// 		{
+// 			`var x = "abcd"
+// 			 x[3] = "\u05d0"
+// 			 x`,
+// 			"ab\u05d0d", object.STRING_OBJ,
+// 		},
+// 		{
+// 			`var x = "a\u05d0cd"
+// 			 x[2] = "Z"
+// 			 x`,
+// 			"aZcd", object.STRING_OBJ,
+// 		},
 
-		// clobbers one code point only
-		{
-			`var x = "abcd"
-			 x[2] = "zzz"
-			 x`,
-			"azcd", object.STRING_OBJ,
-		},
+// 		// clobbers one code point only
+// 		{
+// 			`var x = "abcd"
+// 			 x[2] = "zzz"
+// 			 x`,
+// 			"azcd", object.STRING_OBJ,
+// 		},
 
-		// set from a code point number
-		{
-			`var x = "abcd"
-			 x[4] = 67
-			 x`,
-			"abcC", object.STRING_OBJ,
-		},
-	}
+// 		// set from a code point number
+// 		{
+// 			`var x = "abcd"
+// 			 x[4] = 67
+// 			 x`,
+// 			"abcC", object.STRING_OBJ,
+// 		},
+// 	}
 
-	runVmTests(t, tests, false, false)
-}
+// 	runVmTests(t, tests, false, false)
+// }
 
 func TestMultiVariableDeclarationAssignment(t *testing.T) {
 	tests := []vmTestCase{

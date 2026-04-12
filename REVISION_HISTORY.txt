@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.20.6
 - for function groupbyH(), set parameter *by* as required
+- changed string mutability to immutable, at least for now
 
 
 2026-04-09 - 0.20.5

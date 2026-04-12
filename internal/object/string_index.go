@@ -126,37 +126,38 @@ func (left *String) IndexValid(index Object) bool {
 	}
 }
 
-// assumes mutability of an object (checked elsewhere)
-func (left *String) SetIndex(index, setTo Object) (Object, error) {
-	n, ok := left.IndexNativeInt(index)
-	if !ok {
-		return left, fmt.Errorf("Cannot set string index value from invalid index (not an integer)")
-	}
+// NOTE(davis): set strings to immutable, at least for now (after v0.20.5)
+// // assumes mutability of an object (checked elsewhere)
+// func (left *String) SetIndex(index, setTo Object) (Object, error) {
+// 	n, ok := left.IndexNativeInt(index)
+// 	if !ok {
+// 		return left, fmt.Errorf("Cannot set string index value from invalid index (not an integer)")
+// 	}
 
-	var piece string
-	switch to := setTo.(type) {
-	case *Number:
-		n2, err := to.ToRune()
-		if err != nil {
-			return left, fmt.Errorf("Cannot set string index value from a non-integer (not a code point)")
-		}
-		piece = string(n2)
+// 	var piece string
+// 	switch to := setTo.(type) {
+// 	case *Number:
+// 		n2, err := to.ToRune()
+// 		if err != nil {
+// 			return left, fmt.Errorf("Cannot set string index value from a non-integer (not a code point)")
+// 		}
+// 		piece = string(n2)
 
-	case *String:
-		piece = to.String()
-		if piece == "" {
-			return left, fmt.Errorf("Cannot set string index value from empty string")
-		}
-		// one code point; leaves out others if there are more
-		piece = string([]rune(piece)[0])
+// 	case *String:
+// 		piece = to.String()
+// 		if piece == "" {
+// 			return left, fmt.Errorf("Cannot set string index value from empty string")
+// 		}
+// 		// one code point; leaves out others if there are more
+// 		piece = string([]rune(piece)[0])
 
-	default:
-		return left, fmt.Errorf("Cannot set index of string from type %s", left.TypeString())
-	}
+// 	default:
+// 		return left, fmt.Errorf("Cannot set index of string from type %s", left.TypeString())
+// 	}
 
-	cpSlc := left.RuneSlc()
-	return NewStringFromParts(cpSlc[:n], piece, cpSlc[n+1:])
-}
+// 	cpSlc := left.RuneSlc()
+// 	return NewStringFromParts(cpSlc[:n], piece, cpSlc[n+1:])
+// }
 
 func (left *String) IndexNativeInt(index Object) (idx int, ok bool) {
 	idx, ok = NumberToInt(index)
