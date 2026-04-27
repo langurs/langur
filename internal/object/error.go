@@ -146,7 +146,7 @@ func NewErrorFromHash(hash *Hash) *Error {
 	// Add required fields if not present, and enforce their type if they are.
 	// Other fields are allowed (optional).
 	enforceHashString(hash, ERR_HASHKEY_CATEGORY, NewString(ERR_GENERAL))
-	enforceHashString(hash, ERR_HASHKEY_SOURCE, ZLS)
+	enforceHashString(hash, ERR_HASHKEY_SOURCE, ZeroLengthString())
 	enforceHashString(hash, ERR_HASHKEY_MESSAGE, NewString("Unknown Error"))
 	enforceHashErrorHistory(hash, ERR_HASHKEY_HISTORY)
 	return &Error{Contents: hash}

@@ -253,7 +253,7 @@ var bi_split = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "delim", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "delim", DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},

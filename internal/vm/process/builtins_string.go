@@ -145,7 +145,7 @@ var bi_join = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

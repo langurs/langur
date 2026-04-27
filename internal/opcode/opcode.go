@@ -78,9 +78,7 @@ const (
 	OpSetGlobal
 	OpSetLocal
 	OpSetNonLocal
-	OpSetGlobalIndexedValue
-	OpSetLocalIndexedValue
-	OpSetNonLocalIndexedValue
+	OpDefine
 
 	OpGetGlobal
 	OpGetLocal
@@ -197,18 +195,17 @@ var definitions = map[OpCode]*Definition{
 	OpReturnValue: {Name: "ReturnValue"},
 	OpNameValue:   {Name: "NameValue"},
 
+	OpDefine: {Name: "Define"},
+
 	OpSetGlobal:             {Name: "SetGlobal", OperandWidths: []int{2}},
 	OpGetGlobal:             {Name: "GetGlobal", OperandWidths: []int{2}},
-	OpSetGlobalIndexedValue: {Name: "SetGlobalIndexedValue", OperandWidths: []int{2}},
 
 	OpSetLocal:             {Name: "SetLocal", OperandWidths: []int{1}},
 	OpGetLocal:             {Name: "GetLocal", OperandWidths: []int{1}},
-	OpSetLocalIndexedValue: {Name: "SetLocalIndexedValue", OperandWidths: []int{1}},
 
 	// operands: index, level
 	OpSetNonLocal:             {Name: "SetNonLocal", OperandWidths: []int{1, 1}},
 	OpGetNonLocal:             {Name: "GetNonLocal", OperandWidths: []int{1, 1}},
-	OpSetNonLocalIndexedValue: {Name: "SetNonLocalIndexedValue", OperandWidths: []int{1, 1}},
 
 	OpGetFree: {Name: "GetFree", OperandWidths: []int{1}},
 	OpGetSelf: {Name: "GetSelf"},
@@ -270,9 +267,7 @@ func Lookup(op OpCode) (*Definition, error) {
 func IsIndexedGetSetOpCode(op OpCode) bool {
 	switch op {
 	case OpGetGlobal, OpGetLocal, OpGetNonLocal,
-		OpSetGlobal, OpSetLocal, OpSetNonLocal,
-		OpSetGlobalIndexedValue, OpSetLocalIndexedValue, OpSetNonLocalIndexedValue:
-
+		OpSetGlobal, OpSetLocal, OpSetNonLocal:
 		return true
 	}
 	return false

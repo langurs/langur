@@ -26,7 +26,7 @@ var bi_replace = &object.BuiltIn{
 
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
-			object.Parameter{ExternalName: "with", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "with", DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "interp", DefaultValue: object.TRUE, Type: object.BOOLEAN_OBJ},
 		},
@@ -185,7 +185,7 @@ var bi_tran = &object.BuiltIn{
 		ParamByName: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "with", Required: true},
-			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

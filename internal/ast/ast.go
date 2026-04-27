@@ -28,6 +28,11 @@ type Node interface {
 	TokenInfo() token.Token
 }
 
+type Definable interface {
+	Node
+	CompileDefine(*Compiler) (opcode.InsPackage, error)
+}
+
 // simply marks it as a statement node (no action)
 type Statement interface {
 	Node

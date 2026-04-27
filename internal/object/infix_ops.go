@@ -400,15 +400,6 @@ func IndexInverse(left, index Object) (result Object, err error) {
 	}
 }
 
-func SetIndex(left, index, setTo Object) (Object, error) {
-	switch left := left.(type) {
-	case IIndexSet:
-		return left.SetIndex(index, setTo)
-	default:
-		return nil, fmt.Errorf("Cannot set index value of type %s", left.TypeString())
-	}
-}
-
 func LogicalNegation(operand Object, code int) (Object, error) {
 	if operand == NULL && isDatabaseOperation(code) {
 		// for DB, Negation of null results in null.

@@ -32,13 +32,16 @@ func (w Where) String() string {
 }
 
 var splitLines = regexp.MustCompile("\r\n|\r|\n")
+var fixSpacing = regexp.MustCompile("\t")
 
 func (w Where) Trace(source string) string {
 	lines := splitLines.Split(source, -1)
 
 	if w.Line <= len(lines) && w.LinePosition > 0 {
 		// using 1-based indexing
-		line := lines[w.Line-1]
+		// replace tabs with space so visual pointer points to right place
+		// TODO: ? count tabs preceding error, replacing with 4 spaces...)
+		line := fixSpacing.ReplaceAllString(lines[w.Line-1], " ")
 		space := strings.Repeat(" ", w.LinePosition-1)
 		return line + "\n" + space + "^" + "\n"
 	}

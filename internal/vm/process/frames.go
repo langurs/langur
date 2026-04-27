@@ -3,6 +3,7 @@
 package process
 
 import (
+	"fmt"
 	"langur/object"
 )
 
@@ -131,32 +132,17 @@ func (fr *frame) setNonLocal(localIndex, count int, setTo object.Object) {
 	}
 }
 
-func (fr *frame) setLocalIndexedValue(localIndex int, objIndex, setTo object.Object) (err error) {
-	if fr.code.LocalBindingsCount > 0 {
-		var setObj object.Object
-		setObj, err = object.SetIndex(fr.locals[localIndex], objIndex, setTo)
-		if err != nil {
-			return
-		}
-		fr.locals[localIndex] = setObj
-		return nil
-	} else {
-		return fr.base.setLocalIndexedValue(localIndex, objIndex, setTo)
-	}
-}
+func setDefine(target, objIndex, setTo object.Object) (setObj object.Object, err error) {
+	switch t := target.(type) {
+	case object.IIndexSet:
+		setObj, err = t.SetIndex(objIndex, setTo)
 
-func (fr *frame) setNonLocalIndexedValue(localIndex, count int, objIndex, setTo object.Object) (err error) {
-	if count == 0 {
-		var setObj object.Object
-		setObj, err = object.SetIndex(fr.locals[localIndex], objIndex, setTo)
-		if err != nil {
-			return
-		}
-		fr.locals[localIndex] = setObj
-		return nil
-	} else {
-		return fr.base.setNonLocalIndexedValue(localIndex, count-1, objIndex, setTo)
+	// and other things to be added later...
+
+	default:
+		err = fmt.Errorf("Invalid Define on %s", t.TypeString())
 	}
+	return
 }
 
 func (fr *frame) getFnName() (string, bool) {

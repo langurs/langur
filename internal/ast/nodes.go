@@ -2039,8 +2039,8 @@ func (a *ListNode) Evaluate() object.Object {
 
 func (node *ListNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if len(node.Elements) == 0 {
-		// no elements; return empty list constant
-		pkg = c.constantIns(object.EmptyList)
+		// no elements; return empty list
+		pkg = c.constantIns(object.EmptyList())
 		return
 	}
 
@@ -2107,21 +2107,10 @@ func (i *IndexNode) Evaluate() object.Object {
 }
 
 func (node *IndexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
-	var b opcode.InsPackage
-
-	// Get "left" node
-	b, err = node.Left.Compile(c)
+	pkg, err = node.CompileDefine(c)
 	if err != nil {
 		return
 	}
-	pkg = b
-
-	// Get the index
-	b, err = node.Index.Compile(c)
-	if err != nil {
-		return
-	}
-	pkg = pkg.Append(b)
 
 	if node.Alternate == nil {
 		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpIndex, 0))
@@ -2136,6 +2125,24 @@ func (node *IndexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpIndex, len(alt.Instructions)))
 		pkg = pkg.Append(alt)
 	}
+
+	return
+}
+
+func (node *IndexNode) CompileDefine(c *Compiler) (pkg opcode.InsPackage, err error) {
+	// Get "left" node
+	pkg, err = node.Left.Compile(c)
+	if err != nil {
+		return
+	}
+
+	// Get the index
+	var temp opcode.InsPackage
+	temp, err = node.Index.Compile(c)
+	if err != nil {
+		return
+	}
+	pkg = pkg.Append(temp)
 
 	return
 }
@@ -2202,8 +2209,8 @@ func (d *HashNode) Evaluate() object.Object {
 
 func (node *HashNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if len(node.Pairs) == 0 {
-		// no entries; return empty hash constant
-		pkg = c.constantIns(object.EmptyHash)
+		// no entries; return empty hash
+		pkg = c.constantIns(object.EmptyHash())
 		return
 	}
 

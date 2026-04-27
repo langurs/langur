@@ -25,7 +25,7 @@ var bi_exit = &object.BuiltIn{
 		},
 
 		ParamByName: []object.Parameter{
-			object.Parameter{ExternalName: "msg", DefaultValue: object.ZLS},
+			object.Parameter{ExternalName: "msg", DefaultValue: object.ZeroLengthString()},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {

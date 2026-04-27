@@ -50,7 +50,7 @@ func (left *List) Multiply(o2 Object) Object {
 		if right.Value {
 			return left
 		}
-		return EmptyList
+		return EmptyList()
 	}
 
 	return nil

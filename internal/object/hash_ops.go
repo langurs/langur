@@ -8,7 +8,7 @@ func (left *Hash) Multiply(o2 Object) Object {
 		if right.Value {
 			return left
 		}
-		return EmptyHash
+		return EmptyHash()
 
 	default:
 		return nil

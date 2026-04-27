@@ -107,22 +107,23 @@ func (cf *CompiledCode) String() string {
 func (cf *CompiledCode) ReplString() string {
 	var out bytes.Buffer
 
-	if cf.FnSignature.ImpureEffects {
-		out.WriteString("Impure ")
-	}
-
 	if cf.IsFunction() {
+		if cf.FnSignature.ImpureEffects {
+			out.WriteString("Impure ")
+		}
 		out.WriteString(fmt.Sprintf(common.FuntionTypeName+" %s (%p)", cf.FnSignature.Name, cf))
+
+		if len(cf.FnSignature.ParamPositional) != 0 {
+			out.WriteString(fmt.Sprintf("; Positional Parameters: %s", cf.FnSignature.MinMaxString()))
+		}
+		if len(cf.FnSignature.ParamByName) != 0 {
+			out.WriteString(fmt.Sprintf("; Parameters By Name: %d", len(cf.FnSignature.ParamByName)))
+		}
+
 	} else {
 		out.WriteString(fmt.Sprintf(common.CompiledCodeTypeName+" (%p)", cf))
 	}
 
-	if len(cf.FnSignature.ParamPositional) != 0 {
-		out.WriteString(fmt.Sprintf("; Positional Parameters: %s", cf.FnSignature.MinMaxString()))
-	}
-	if len(cf.FnSignature.ParamByName) != 0 {
-		out.WriteString(fmt.Sprintf("; Parameters By Name: %d", len(cf.FnSignature.ParamByName)))
-	}
 	if cf.LocalBindingsCount > 0 {
 		out.WriteString(fmt.Sprintf("; LocalBindingsCount: %d", cf.LocalBindingsCount))
 	}

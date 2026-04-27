@@ -1984,12 +1984,22 @@ func TestIndexListAssignment(t *testing.T) {
 			object.LIST_OBJ,
 		},
 
-		// FIXME: set a value with multiple indices
-		// {`var x = [[2, 4], [7, 8]]
-		//   x[2][1] = 14
-		//   x[2][1] + 7`,
-		// 	21, object.NUMBER_OBJ,
-		// },
+		// set a value with multiple indices
+		{`var x = [[2, 4], [7, 8]]
+		  x[2][1] = 14
+		  x[2][1] + 7`,
+			21, object.NUMBER_OBJ,
+		},
+		{`var x = [[2, 4], [7, 8]]
+		  x[2][1] = 14
+		  string(x)`,
+			"[[2, 4], [14, 8]]", object.STRING_OBJ,
+		},
+		{`var x = [[2, 4], [7, 8]]
+		  x[1][2] = 14
+		  string(x)`,
+			"[[2, 14], [7, 8]]", object.STRING_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -2075,6 +2085,15 @@ func TestIndexHashAssignment(t *testing.T) {
 		  }`,
 			"7", object.NUMBER_OBJ,
 		},
+
+		// set a value with multiple indices
+		{`var h1 = {1: 7, 2: 8}
+		  var h2 = {3: 9, 4: 10}
+ 		  var h3 = {"a": h1, "b": h2}
+			h3["b"][3] = 70
+			string(h3)
+		  `,
+			`{"a": {1: 7, 2: 8}, "b": {3: 70, 4: 10}}`, object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

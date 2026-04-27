@@ -38,7 +38,10 @@ type Hash struct {
 	Pairs []keyValuePair
 }
 
-var EmptyHash = &Hash{}
+func EmptyHash() *Hash {
+	// make a new hash each time; may get modified
+	return &Hash{}
+}
 
 func (d *Hash) HasImpureEffects() bool {
 	for _, kv := range d.Pairs {

@@ -110,21 +110,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// look() doesn't pop, so that assignment is an expression
 			pr.startFrame.locals[globalIndex] = pr.look()
 
-		case opcode.OpSetGlobalIndexedValue:
-			globalIndex := opcode.ReadUInt16(ins[ip+1:])
-			ip += 2
-
-			objIdx := pr.pop()
-			// look() doesn't pop, so that assignment is an expression
-			setTo := pr.look()
-
-			var setObj object.Object
-			setObj, err = object.SetIndex(pr.startFrame.locals[globalIndex], objIdx, setTo)
-			if err != nil {
-				return
-			}
-			pr.startFrame.locals[globalIndex] = setObj
-
 		case opcode.OpGetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
 			ip += 2
@@ -135,16 +120,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 1
 			// look() doesn't pop, so that assignment is an expression
 			fr.setLocal(localIndex, pr.look())
-
-		case opcode.OpSetLocalIndexedValue:
-			localIndex := int(ins[ip+1])
-			ip += 1
-
-			objIdx := pr.pop()
-			// look() doesn't pop, so that assignment is an expression
-			setTo := pr.look()
-
-			err = fr.setLocalIndexedValue(localIndex, objIdx, setTo)
 
 		case opcode.OpGetLocal:
 			localIndex := int(ins[ip+1])
@@ -162,16 +137,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// look() doesn't pop, so that assignment is an expression
 			fr.setNonLocal(index, level, pr.look())
 
-		case opcode.OpSetNonLocalIndexedValue:
-			index := int(ins[ip+1])
-			level := int(ins[ip+2])
-			ip += 2
-
-			objIdx := pr.pop()
-			// look() doesn't pop, so that assignment is an expression
-			setTo := pr.look()
-			err = fr.setNonLocalIndexedValue(index, level, objIdx, setTo)
-
 		case opcode.OpGetNonLocal:
 			index := int(ins[ip+1])
 			level := int(ins[ip+2])
@@ -181,6 +146,16 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				err = pr.push(result)
 			}
+
+		case opcode.OpDefine:
+			// for setting indexed values
+			// ... and for dot notation (future use)
+			objIdx := pr.pop()
+			target := pr.pop()
+			// look() doesn't pop, so that assignment is an expression
+			setTo := pr.look()
+ 
+			_, err = setDefine(target, objIdx, setTo)
 
 		case opcode.OpGetFree:
 			freeIndex := int(ins[ip+1])

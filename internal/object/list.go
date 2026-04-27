@@ -11,7 +11,10 @@ type List struct {
 	Elements []Object
 }
 
-var EmptyList = &List{}
+func EmptyList() *List {
+	// make a new list each time; may get modified
+	return &List{}
+}
 
 func (left *List) HasImpureEffects() bool {
 	return SliceHasImpureEffects(left.Elements...)

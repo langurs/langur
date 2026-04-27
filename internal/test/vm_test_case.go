@@ -22,8 +22,8 @@ func runVmTests(t *testing.T, tests []vmTestCase, printTestFirst, testPrintSpeed
 	t.Helper()
 
 	for i, tt := range tests {
-		result := oneResult(t, i, tt.input, printTestFirst, testPrintSpeed)
-		testExpectedObject(t, i, tt.input, tt.expected, tt.expectedType, result)
+		result := oneResult(t, i+1, tt.input, printTestFirst, testPrintSpeed)
+		testExpectedObject(t, i+1, tt.input, tt.expected, tt.expectedType, result)
 	}
 }
 

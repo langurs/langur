@@ -3,7 +3,9 @@ https://langurlang.org
 
 ... - 0.20.6
 - for function groupbyH(), set parameter *by* as required
-- changed string mutability to immutable, at least for now
+- changed string mutability to immutable
+- fix: prevent nil pointer dereference in *CompiledCode.ReplString() receiver function when CompiledCode is not a langur function
+- changed ref. to test no. in vm tests to use 1-based indexing
 
 
 2026-04-09 - 0.20.5

@@ -62,7 +62,7 @@ func (l *String) Multiply(o2 Object) Object {
 		}
 		// negative number same as 0
 		if n < 1 {
-			return ZLS
+			return ZeroLengthString()
 		}
 		return NewString(strings.Repeat(l.String(), n))
 
@@ -70,7 +70,7 @@ func (l *String) Multiply(o2 Object) Object {
 		if r.Value {
 			return l
 		}
-		return ZLS
+		return ZeroLengthString()
 
 	default:
 		return nil

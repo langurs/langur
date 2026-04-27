@@ -259,7 +259,7 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 	
 		} else if diff == 0 && sig.ParamExpansionMin == 0 {
 			// received 0 and none required; since it's missing, add the empty list
-			params = append(positional, object.EmptyList)
+			params = append(positional, object.EmptyList())
 		}
 	
 		if len(last) < sig.ParamExpansionMin {

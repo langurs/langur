@@ -80,7 +80,9 @@ func main() {
 	}
 
 	if file == "" {
-		// interactive mode
+		// interactive mode -- invoked from the command line
+		// These are not the REPL options. Edit those in the interactive package.
+		// Interactive mode should not give away as much information as the REPL can.
 		opts := &interactive.InteractiveOptions{
 			Prompt: ">> ", PrintVmResultRaw: true,
 			PrintCodeLocationTrace: printCodeLocationTrace,

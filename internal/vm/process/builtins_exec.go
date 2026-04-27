@@ -78,7 +78,7 @@ var bi_execTH = &object.BuiltIn{
 			hash.WritePair(object.NewString("status"), object.Zero)
 
 		} else {
-			hash.WritePair(object.NewString("result"), object.ZLS)
+			hash.WritePair(object.NewString("result"), object.ZeroLengthString())
 			hash.WritePair(object.NewString("error"), object.NewString(formatErrString(out)))
 			hash.WritePair(object.NewString("status"),
 				object.NumberFromInt(getExitStatusFromExecError(err.Error())))

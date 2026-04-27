@@ -10,7 +10,14 @@ import (
 
 // NOTE: using these functions to build strings, not &String{}
 
-var ZLS = NewString("")
+// NOTE: Use ZeroLengthString() to get a new one, NOT the zls variable.
+var zls = NewString("")
+func ZeroLengthString() *String {
+	return zls
+
+	// If string objects are mutable for any reason, a ZLS could be modified.
+	// return NewString("")
+}
 
 func NewStringFromParts(parts ...interface{}) (*String, error) {
 	s, err := str.BuildString(parts)

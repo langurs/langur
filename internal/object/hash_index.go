@@ -142,11 +142,6 @@ func (left *Hash) SetIndex(index, setTo Object) (Object, error) {
 	if !IsValidForHashKey(index) {
 		return left, fmt.Errorf("Cannot set hash value from invalid index (not hashable)")
 	}
-
-	// FIXME: This is likely to be changed when we change how data is handled.
-	// Since we don't know how many references there are to the hash object we're changing, ...
-	left = left.CopyRefs().(*Hash)
-
 	left.WritePair(index, setTo)
 	return left, nil
 }
