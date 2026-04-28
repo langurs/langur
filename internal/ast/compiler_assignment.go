@@ -307,13 +307,14 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 		}
 
 		altOk := token.IsComboOp(node.Token) && len(node.Identifiers) == 1
+		expansionOk := false
 
 		var variable *IdentNode
 		var definable Node
 		var sym symbol.Symbol
 		var cnt int
 		for i, id := range node.Identifiers {
-			variable, definable, err = c.getVarAndDefinable(id, false, altOk)
+			variable, definable, err = c.getVarAndDefinable(id, expansionOk, altOk)
 			if err != nil {
 				return
 			}
@@ -369,6 +370,7 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 
 	if len(node.Values) != 1 {
 		bug("compileDecouplingAssignment", "Attempt to set assignment decoupling when len(node.Values) != 1")
+		err = c.makeErr(node, "Attempt to set assignment decoupling when len(node.Values) != 1")
 		return
 	}
 
