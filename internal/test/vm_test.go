@@ -2279,6 +2279,12 @@ func TestDecouplingAssignment(t *testing.T) {
 			 x + y`,
 			"28", object.NUMBER_OBJ,
 		},
+		{
+			`var x; var y
+			_, x, y = [7, 14, 21]
+			 x + y`,
+			"35", object.NUMBER_OBJ,
+		},
 
 		// not enough things...
 		{

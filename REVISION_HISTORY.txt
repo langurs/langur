@@ -5,6 +5,7 @@ https://langurlang.org
 - for function groupbyH(), set parameter *by* as required
 - changed string mutability to immutable
 - fix: prevent nil pointer dereference in *CompiledCode.ReplString() receiver function when CompiledCode is not a langur function
+- fix: parser to allow no-op as first in list of variables for decoupling assignment
 - changed ref. to test no. in vm tests to use 1-based indexing
 
 
