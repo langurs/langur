@@ -188,6 +188,10 @@ func TestMoreMath(t *testing.T) {
 		{"-(5)^3", "-125", object.NUMBER_OBJ},
 		{"(-5)^3", "-125", object.NUMBER_OBJ},
 		{"-(5^3)", "-125", object.NUMBER_OBJ},
+
+		// operator precedence
+		{"1 + 2 * 4", 9, object.NUMBER_OBJ},
+		{"1 + 2 ^ 3 * 4", 33, object.NUMBER_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
