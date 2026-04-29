@@ -90,6 +90,8 @@ func (c *Compiler) compileDeclarationAndAssignments(
 			variable, ok := id.(*IdentNode)
 			if !ok {
 				bug("compileDeclarationAndAssignments", fmt.Sprintf("Wrong node for variable in Declaration Assignment node: %T", id))
+				err = c.makeErr(decl, fmt.Sprintf("Wrong node for variable in Declaration Assignment node: %T", id))
+				return
 			}
 
 			var sym symbol.Symbol
@@ -118,6 +120,7 @@ func (c *Compiler) compileDeclarationAndAssignments(
 	} else {
 		// parser should have caught this...
 		bug("compileDeclarationAndAssignments", "Identifier/value count mismatch in Declaration Assignment")
+		err = c.makeErr(decl, "Identifier/value count mismatch in Declaration Assignment")
 	}
 
 	return
@@ -131,6 +134,7 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 	if len(node.Values) != 1 {
 		// parser should have caught this...
 		bug("compileDecouplingDeclarationAssignment", "Attempt to set declaration assignment decoupling when len(node.Values) != 1")
+		err = c.makeErr(node, "Attempt to set declaration assignment decoupling when len(node.Values) != 1")
 		return
 	}
 
@@ -295,9 +299,34 @@ func (c *Compiler) checkVarForAssignment(node *AssignmentNode, variable *IdentNo
 // called by AssignmentNode.Compile()
 // for things already declared; not for declaration assignment
 func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackage, err error) {
+	isDecouplingAssignment := false
+
 	if len(node.Values) == len(node.Identifiers) {
+		// not a decoupling assignment
+
+	} else if len(node.Values) == 1 {
+		// more than 1 identifier, but only 1 thing assigned from; must index into it ("decouple")
+		isDecouplingAssignment = true
+
+	} else {
+		err = c.makeErr(node, "Identifier/value count mismatch in Assignment")
+		return
+	}
+
+	var expansionMin, expansionMax int
+	var tempNode, tempCompositeResultVarNode Node
+	var setResultsNodes []Node
+	var temp opcode.InsPackage
+
+	if isDecouplingAssignment {
+		// TODO: combining functions into this one
+		pkg, err = c.compileDecouplingAssignment(node)
+		return
+
+		tempCompositeResultVarNode = NewVariableNode(node.Token, "_Decouple_", true)
+
+	} else {
 		// push values onto the stack in reverse order
-		var temp opcode.InsPackage
 		for i := len(node.Values) - 1; i > -1; i-- {
 			temp, err = node.Values[i].Compile(c)
 			if err != nil {
@@ -305,59 +334,66 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 			}
 			pkg = pkg.Append(temp)
 		}
+	}
 
-		altOk := token.IsComboOp(node.Token) && len(node.Identifiers) == 1
-		expansionOk := false
+	altOk := !isDecouplingAssignment && token.IsComboOp(node.Token) && len(node.Identifiers) == 1
 
-		var variable *IdentNode
-		var definable Node
-		var sym symbol.Symbol
-		var cnt int
-		for i, id := range node.Identifiers {
-			variable, definable, err = c.getVarAndDefinable(id, expansionOk, altOk)
+	var variable *IdentNode
+	var definable Node
+	var sym symbol.Symbol
+	var cnt int
+
+	for i, id := range node.Identifiers {
+		// expansion ok only on last identifier in list for decoupling assignment
+		expansionOk := isDecouplingAssignment && i == len(node.Identifiers)-1
+
+		variable, definable, err = c.getVarAndDefinable(id, expansionOk, altOk)
+		if err != nil {
+			return
+		}
+
+		if variable != nil {
+			// resolve variable, check if mutable, etc.
+			sym, cnt, err = c.checkVarForAssignment(node, variable)
 			if err != nil {
 				return
 			}
+		}
 
+		if definable == nil {
 			if variable != nil {
-				sym, cnt, err = c.checkVarForAssignment(node, variable)
-				if err != nil {
-					return
-				}
-			}
-
-			if definable == nil {
-				if variable != nil {
-					temp, err = c.makeOpSetInstructions(node, sym, cnt)
-					if err != nil {
-						return
-					}
-					pkg = pkg.Append(temp)
-				}
-
-			} else {
-				if variable == nil {
-					err = c.makeErr(id, "Invalid use of none in assignment")
-					return
-				}
-				temp, err = c.makeOpSetDefineInstructions(definable)
+				temp, err = c.makeOpSetInstructions(node, sym, cnt)
 				if err != nil {
 					return
 				}
 				pkg = pkg.Append(temp)
 			}
 
-			// pop all but the last one
-			if i < len(node.Identifiers)-1 {
-				pkg = pkg.Append(opcode.MakePkg(id.TokenInfo(), opcode.OpPop))
+		} else {
+			if variable == nil {
+				err = c.makeErr(id, "Invalid use of none in assignment")
+				return
 			}
+			temp, err = c.makeOpSetDefineInstructions(definable)
+			if err != nil {
+				return
+			}
+			pkg = pkg.Append(temp)
 		}
 
-	} else if len(node.Values) == 1 {
-		pkg, err = c.compileDecouplingAssignment(node)
+		if !isDecouplingAssignment && i < len(node.Identifiers)-1 {
+			// add codes to pop all but the last one
+			pkg = pkg.Append(opcode.MakePkg(id.TokenInfo(), opcode.OpPop))
+		}
+	} // for
 
-	} else {
-		err = c.makeErr(node, "Identifier/value count mismatch in Assignment")
+	if isDecouplingAssignment && err == nil {
+		tempNode, err = MakeDecouplingAssignment(node, tempCompositeResultVarNode,
+			setResultsNodes, nil, expansionMin, expansionMax)
+	
+		if err == nil {
+			pkg, err = tempNode.Compile(c)
+		}
 	}
 
 	return
@@ -420,6 +456,8 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 
 		default:
 			bug("compileDecouplingAssignment", fmt.Sprintf("Invalid type for assignment identifier: %T", id))
+			err = c.makeErr(node, fmt.Sprintf("Invalid type for assignment identifier: %T", id))
+			return
 		}
 	}
 

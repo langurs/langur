@@ -192,12 +192,15 @@ func TestMoreMath(t *testing.T) {
 		// operator precedence
 		{"1 + 2 * 4", 9, object.NUMBER_OBJ},
 		{"1 + 2 ^ 3 * 4", 33, object.NUMBER_OBJ},
+		{"1 + 2 ^ 3 * 4 + 1", 34, object.NUMBER_OBJ},
+		{"1 + 2 ^ 3 * 4 ^ 2 + 1", 130, object.NUMBER_OBJ},
+		{"1 + 2 ^ 3 + 4 ^ 2 + 1", 26, object.NUMBER_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
 }
 
-func TestMathBeyondIntOptimization(t *testing.T) {
+func TestMathBeyondInt64Optimization(t *testing.T) {
 	tests := []vmTestCase{
 		{"9223372036854775807 + 1", "9223372036854775808", object.NUMBER_OBJ},
 		{"-9223372036854775808 - 1", "-9223372036854775809", object.NUMBER_OBJ},
