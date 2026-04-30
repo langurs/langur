@@ -58,8 +58,9 @@ func (pr *Process) setMode(code int, setting object.Object) error {
 		pr.Modes.NewFilePermissions = os.FileMode(i)
 
 	default:
-		bug("setMode", fmt.Sprintf("Unknown mode setting %d", code))
-		return fmt.Errorf("Unknown mode setting %d", code)
+		err := fmt.Errorf("Unknown mode setting %d", code)
+		bug("setMode", err.Error())
+		return err
 	}
 
 	return nil

@@ -63,8 +63,8 @@ func (c *Compiler) compileDeclarationAndAssignments(
 	assign, ok := decl.Assignment.(*AssignmentNode)
 	if !ok {
 		// parser failed
-		bug("compileDeclarationAndAssignments", "Expected *AssignmentNode in *LineDeclarationNode")
 		err = c.makeErr(assign, "Expected assignment in declaration")
+		bug("compileDeclarationAndAssignments", err.Error())
 		return
 	}
 
@@ -89,8 +89,8 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		for i, id := range assign.Identifiers {
 			variable, ok := id.(*IdentNode)
 			if !ok {
-				bug("compileDeclarationAndAssignments", fmt.Sprintf("Wrong node for variable in Declaration Assignment node: %T", id))
 				err = c.makeErr(decl, fmt.Sprintf("Wrong node for variable in Declaration Assignment node: %T", id))
+				bug("compileDeclarationAndAssignments", err.Error())
 				return
 			}
 
@@ -119,8 +119,8 @@ func (c *Compiler) compileDeclarationAndAssignments(
 
 	} else {
 		// parser should have caught this...
-		bug("compileDeclarationAndAssignments", "Identifier/value count mismatch in Declaration Assignment")
 		err = c.makeErr(decl, "Identifier/value count mismatch in Declaration Assignment")
+		bug("compileDeclarationAndAssignments", err.Error())
 	}
 
 	return
@@ -133,8 +133,8 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 
 	if len(node.Values) != 1 {
 		// parser should have caught this...
-		bug("compileDecouplingDeclarationAssignment", "Attempt to set declaration assignment decoupling when len(node.Values) != 1")
 		err = c.makeErr(node, "Attempt to set declaration assignment decoupling when len(node.Values) != 1")
+		bug("compileDecouplingDeclarationAssignment", err.Error())
 		return
 	}
 
@@ -261,10 +261,6 @@ func (c *Compiler) getVarAndDefinable(node Node, expansionOk, altOk bool) (
 			if i > 1 || !expansionOk {
 				err = c.makeErr(n, "Invalid use of expansion in assignment")
 			}
-			if n.Limits != nil {
-				err = c.makeErr(node, "Expansion limits not expected on decoupling assignment")
-				return
-			}
 			node = n.Continuation
 
 		default:
@@ -337,6 +333,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 		}
 
 		if variable != nil {
+			// not a no-op
 			// resolve variable, check if mutable, etc.
 			sym, cnt, err = c.checkVarForAssignment(node, variable)
 			if err != nil {
@@ -345,6 +342,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 		}
 
 		if definable == nil {
+			// not requiring OpDefine
 			if variable != nil {
 				// not a no-op
 				temp, err = c.makeOpSetInstructions(node, sym, cnt)
@@ -355,11 +353,11 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 			}
 
 		} else {
+			// requiring OpDefine: setting an indexed value, or something with dot notation
 			if variable == nil {
 				err = c.makeErr(id, "Invalid use of no-op in assignment")
 				return
 			}
-			// setting an indexed value, or something with dot notation
 			temp, err = c.makeOpSetDefineInstructions(definable)
 			if err != nil {
 				return
@@ -382,8 +380,8 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	pkg opcode.InsPackage, err error) {
 
 	if len(node.Values) != 1 {
-		bug("compileDecouplingAssignment", "Attempt to set assignment decoupling when len(node.Values) != 1")
 		err = c.makeErr(node, "Attempt to set assignment decoupling when len(node.Values) != 1")
+		bug("compileDecouplingAssignment", err.Error())
 		return
 	}
 
@@ -400,19 +398,20 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 		// expansion ok only on last identifier in list for decoupling assignment
 		expansionOk := i == len(node.Identifiers)-1
 
+		// definable not checked here; will create another AssignmentNode, which will check definable
 		variable, _, err = c.getVarAndDefinable(id, expansionOk, altOk)
 		if err != nil {
 			return
 		}
-
 		if variable != nil {
+			// not a no-op
 			// resolve variable, check if mutable, etc.
 			_, _, err = c.checkVarForAssignment(node, variable)
 			if err != nil {
 				return
 			}
 		}
-		
+
 		switch id := id.(type) {
 		case *NoneNode:
 			// skip index number
@@ -451,8 +450,8 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 			}
 
 		default:
-			bug("compileDecouplingAssignment", fmt.Sprintf("Invalid type for assignment identifier: %T", id))
 			err = c.makeErr(node, fmt.Sprintf("Invalid type for assignment identifier: %T", id))
+			bug("compileDecouplingAssignment", err.Error())
 			return
 		}
 	}

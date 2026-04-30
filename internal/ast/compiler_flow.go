@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	// an assertion to be sure the compiler hasn't broken here
 	if opcode.OP_JUMP_LEN != opcode.OP_JUMP_RELAY_LEN {
 		bug("init", "opcode.OP_JUMP_LEN != opcode.OP_JUMP_RELAY_LEN: This means the old method of setting break/next jumps will not work (compiler must change).")
 	}

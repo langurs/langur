@@ -101,7 +101,9 @@ func (c *Compiler) compileString(
 	pkg opcode.InsPackage, err error) {
 
 	if len(node.Interpolations) != len(node.Values)-1 {
-		bug("compileString", "string value/interpolation node mismatch")
+		err = c.makeErr(node, "string value/interpolation node mismatch")
+		bug("compileString", err.Error())
+		return
 	}
 
 	if len(node.Values) == 1 {
@@ -124,8 +126,8 @@ func (c *Compiler) compileString(
 				// not the last string section; add interpolation value
 				interp, ok := node.Interpolations[i].(*InterpolatedNode)
 				if !ok {
-					bug("compileStringNode", fmt.Sprintf("Expected interpolation node for value %d", i))
 					err = c.makeErr(interp, fmt.Sprintf("Expected interpolation node for value %d", i))
+					bug("compileStringNode", err.Error())
 					return
 				}
 

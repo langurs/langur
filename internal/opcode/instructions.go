@@ -72,14 +72,17 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 
 	def, defined := definitions[op]
 	if !defined {
-		//return []byte{}
-		bug(fnName, fmt.Sprintf("OpCode %d not defined", op))
+		err = fmt.Errorf("OpCode %d not defined", op)
+		bug(fnName, err.Error())
+		return
 	}
 
 	if op == OpFormat {
 		// variable width
 	} else if len(operands) != len(def.OperandWidths) {
-		bug(fnName, fmt.Sprintf("Operand Count Mismatch on OpCode %s, expected=%d, received=%d", def.Name, len(def.OperandWidths), len(operands)))
+		err = fmt.Errorf("Operand Count Mismatch on OpCode %s, expected=%d, received=%d", def.Name, len(def.OperandWidths), len(operands))
+		bug(fnName, err.Error())
+		return
 	}
 
 	instuctionLen := 1
@@ -108,7 +111,9 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 				}
 			}
 			if o < 0 || o > max1byteop {
-				bug(fnName, fmt.Sprintf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o))
+				err = fmt.Errorf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o)
+				bug(fnName, err.Error())
+				return
 			}
 			instruction[offset] = uint8(o)
 
@@ -120,13 +125,17 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 				}
 			}
 			if o < 0 || o > max2byteop {
-				bug(fnName, fmt.Sprintf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o))
+				err = fmt.Errorf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o)
+				bug(fnName, err.Error())
+				return
 			}
 			binary.BigEndian.PutUint16(instruction[offset:], uint16(o))
 
 		case 3:
 			if o < 0 || o > max3byteop {
-				bug(fnName, fmt.Sprintf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o))
+				err = fmt.Errorf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o)
+				bug(fnName, err.Error())
+				return
 			}
 			temp := []byte{0, 0, 0, 0}
 			binary.BigEndian.PutUint32(temp, uint32(o))
@@ -134,12 +143,16 @@ func MakeWithErrTest(op OpCode, operands ...int) (ins Instructions, err error) {
 
 		case 4:
 			if o < 0 || int64(o) > max4byteop {
-				bug(fnName, fmt.Sprintf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o))
+				err = fmt.Errorf("Operand %d on OpCode %s value (%d) out of range", i+1, def.Name, o)
+				bug(fnName, err.Error())
+				return
 			}
 			binary.BigEndian.PutUint32(instruction[offset:], uint32(o))
 
 		default:
-			bug(fnName, fmt.Sprintf("Operand %d on OpCode %s of unknown width %d", i+1, def.Name, w))
+			err = fmt.Errorf("Operand %d on OpCode %s of unknown width %d", i+1, def.Name, w)
+			bug(fnName, err.Error())
+			return
 		}
 		offset += w
 	}
@@ -173,8 +186,9 @@ func (ins Instructions) FmtInstruction(def *Definition, operands []int) string {
 	operandCount := len(def.OperandWidths)
 
 	if len(operands) != operandCount {
-		bug("Instructions.FmtInstruction", fmt.Sprintf("Operand length %d does not match defined %d", len(operands), operandCount))
-		return fmt.Sprintf("ERROR: operand length %d does not match defined %d\n", len(operands), operandCount)
+		err := fmt.Errorf("Operand length %d does not match defined %d", len(operands), operandCount)
+		bug("Instructions.FmtInstruction", err.Error())
+		return err.Error()
 	}
 
 	var out bytes.Buffer
@@ -202,7 +216,8 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 		case 4:
 			operands[i] = int(ReadUInt32(ins[offset:]))
 		default:
-			bug("ReadOperands", fmt.Sprintf("Operand width %d not accounted for", width))
+			err := fmt.Errorf("Operand width %d not accounted for", width)
+			bug("ReadOperands", err.Error())
 		}
 
 		offset += width

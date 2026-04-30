@@ -65,8 +65,9 @@ func (p *Parser) parseStringForLiteral(escAllInterpolations bool) ast.Node {
 				sv++
 				str, ok := pieces[i].(string)
 				if !ok {
-					bug("parseStringForLiteral", fmt.Sprintf("String interpolation value %d type wrong (%T); expected string", sv, pieces[i]))
-					return strNode
+					err := fmt.Errorf("String interpolation value %d type wrong (%T); expected string", sv, pieces[i])
+					bug("parseStringForLiteral", err.Error())
+					return nil
 				}
 				strNode.Values = append(strNode.Values, str)
 
@@ -89,13 +90,15 @@ func (p *Parser) parseInterpolation(
 	// token slice (interpolated)
 	tokSlc, ok := pieces[i].([]token.Token)
 	if !ok {
-		bug("parseStringForLiteral", fmt.Sprintf("String interpolation value %d type wrong (%T); expected token slice", iv, pieces[i]))
+		err := fmt.Errorf("String interpolation value %d type wrong (%T); expected token slice", iv, pieces[i])
+		bug("parseStringForLiteral", err.Error())
 		return
 	}
 	i++
 	interpModifiers, ok := pieces[i].([]string)
 	if !ok {
-		bug("parseStringForLiteral", fmt.Sprintf("String interpolation modifiers %d type wrong (%T); expected string slice", iv, pieces[i]))
+		err := fmt.Errorf("String interpolation modifiers %d type wrong (%T); expected string slice", iv, pieces[i])
+		bug("parseStringForLiteral", err.Error())
 		return
 	}
 
@@ -109,7 +112,8 @@ func (p *Parser) parseInterpolation(
 
 	node, err := ParseExpressionTokens(tokSlc)
 	if err != nil {
-		p.addError(fmt.Sprintf("String interpolation value %d failed parsing (%s)", iv, err))
+		err = fmt.Errorf("String interpolation value %d failed parsing (%s)", iv, err)
+		p.addError(err.Error())
 		p.advanceToken()
 		return
 	}

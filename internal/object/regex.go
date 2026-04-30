@@ -31,6 +31,7 @@ func (re *Regex) Copy() Object {
 		newComp = comp.Copy()
 	default:
 		bug("Regex.Copy()", "Missing Copy() method for regex type")
+		// newComp nil
 	}
 
 	return &Regex{

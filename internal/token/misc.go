@@ -111,7 +111,7 @@ func New(line, linePosition int) Token {
 }
 
 func bug(s string) {
-	panic(s)
+	panic("Token bug: " + s)
 }
 
 type tokenErr struct {

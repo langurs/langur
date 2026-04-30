@@ -1723,8 +1723,8 @@ func (node *RegexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		code = opcode.OC_Regex_Re2
 
 	} else {
-		bug("RegexNode.Compile", "Unknown regex type")
-		err = c.makeErr(node, fmt.Sprintf("Unknown regex type"))
+		err = c.makeErr(node, "Unknown regex type")
+		bug("RegexNode.Compile", err.Error())
 		return
 	}
 
@@ -2797,12 +2797,11 @@ func (node *IfNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 			if !lastOne {
 				// Houston, we have a bug.
 				if node.IsSwitchExpr {
-					bug("compileIfExpression", "Default not last part of switch expression")
 					err = c.makeErr(node, "Default not last part of switch expression")
 				} else {
-					bug("compileIfExpression", "Else not last part of if/else expression")
 					err = c.makeErr(node, "Else not last part of if/else expression")
 				}
+				bug("compileIfExpression", err.Error())
 				return
 			}
 
@@ -3290,7 +3289,8 @@ func (node *TryCatchNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error
 		tcelse, err = node.Else.Compile(c)
 		elseIndex = c.wrapInstructions(tcelse)
 		if elseIndex == 0 {
-			bug("compileTryCatch", "elseIndex 0 (0 used as indicator for no else section)")
+			err = c.makeErr(node.Else, "elseIndex 0 (0 used as indicator for no else section)")
+			bug("compileTryCatch", err.Error())
 		}
 	}
 

@@ -7,7 +7,7 @@ import (
 )
 
 func bug(fnName, s string) {
-	panic(s)
+	panic("Object bug: " + s)
 }
 
 // This is not just used for bugs at the moment.

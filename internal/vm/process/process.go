@@ -109,8 +109,9 @@ func (pr *Process) pushFunction(constIndex, freeCount, optionalsCount int) error
 	constant := pr.constants[constIndex]
 	compiledFn, ok := constant.(*object.CompiledCode)
 	if !ok {
-		bug("pushFunction", fmt.Sprintf("Not a function: %T", constant))
-		return fmt.Errorf("Not a function: %s", constant.TypeString())
+		err := fmt.Errorf("Not a function: %s", constant.TypeString())
+		bug("pushFunction", err.Error())
+		return err
 	}
 
 	if optionalsCount != 0 {

@@ -8,7 +8,7 @@ import (
 )
 
 func bug(fnName, s string) {
-	panic(s)
+	panic("OpCode bug: " + s)
 }
 
 const OperandWidth_Jump = 4

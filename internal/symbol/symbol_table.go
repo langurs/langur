@@ -90,8 +90,8 @@ func (st *SymbolTable) defineUserVariable(name string, mutable bool) (sym Symbol
 
 func (st *SymbolTable) defineSystemVariable(name string, mutable bool) (sym Symbol, err error) {
 	if name[0] != '_' {
-		bug("defineSystemVariable", fmt.Sprintf("System variable name %q invalid", name))
-		err = fmt.Errorf("System variable names start with underscore")
+		err = fmt.Errorf("System variable name %q invalid", name)
+		bug("defineSystemVariable", err.Error())
 		return
 	}
 	return st.defineSymbol(name, mutable, 0)

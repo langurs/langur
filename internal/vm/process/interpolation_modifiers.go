@@ -254,8 +254,8 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 		return object.NewString(orig.FormatString(dtformat)), nil
 
 	default:
-		bug("format", "Invalid code for Format")
 		err = fmt.Errorf("Invalid code for Format")
+		bug("format", err.Error())
 	}
 
 	return

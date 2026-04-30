@@ -101,8 +101,8 @@ func (vm *VM) gatherLateBindings() (late []object.Object, err error) {
 			late = append(late, object.NewString(file))
 
 		default:
-			bug("vm.Run", "Unknown late binding "+v)
 			err = fmt.Errorf("Unknown late binding %q", v)
+			bug("vm.Run", err.Error())
 		}
 	}
 

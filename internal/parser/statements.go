@@ -294,8 +294,9 @@ func (p *Parser) parseModeStatement() (mode *ast.ModeNode) {
 		// set mode to its default
 		defaultSubLexString, ok := modes.DefaultSubLexString[modeNumber]
 		if !ok {
-			bug("parseModeStatement", fmt.Sprintf("Failed to lookup default for %s", name))
-			p.addError(fmt.Sprintf("Failed to lookup default for %s", name))
+			err := fmt.Errorf("Failed to lookup default for %s", name)
+			bug("parseModeStatement", err.Error())
+			p.addError(err.Error())
 			return
 		}
 		tokSlc, err := lexer.LexString(defaultSubLexString, "", p.Modes)
@@ -479,7 +480,10 @@ func (p *Parser) parseStatements(
 
 		if !p.tokenAdvanced && p.tok.Type != token.EOF && errCnt == len(p.Errs) {
 			// no new errors added, yet failed to advance
-			bug("parseStatements", "Failed to advance the token position")
+			err := fmt.Errorf("Failed to advance the token position (at token %d, line/col %s)", p.tokSlcPos, p.tok.Where.String())
+			bug("parseStatements", err.Error())
+			// panic if we haven't...
+			panic(err.Error())
 		}
 	}
 
