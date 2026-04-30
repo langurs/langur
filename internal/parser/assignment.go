@@ -257,9 +257,6 @@ func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node)
 		}
 	}
 
-	if cnt == 0 {
-		p.addError("Expected identifier(s) in list (cannot be all no-op)")
-	}
 	if p.tok.Where.Line != line {
 		p.addError("Unexpected new line(s) in identifier list")
 	}
