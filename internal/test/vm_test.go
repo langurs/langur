@@ -2207,6 +2207,21 @@ func TestMultiVariableAssignment(t *testing.T) {
 			 [x, y]`,
 			[]int{14, 7}, object.LIST_OBJ,
 		},
+
+		// with index
+		{
+			`var x = [3, 4, 5]; var y = 14
+			 x[2], y = 53, 42
+			 [x[2], y]`,
+			[]int{53, 42}, object.LIST_OBJ,
+		},
+		// with multi-level index
+		{
+			`var x = [3, [6, 7, 8, 9], 5]; var y = 14
+			 x[2][3], y = 53, 42
+			 [x[2][3], y]`,
+			[]int{53, 42}, object.LIST_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -2304,6 +2319,21 @@ func TestDecouplingAssignment(t *testing.T) {
 			x, y = [123]
 			 x`,
 			nil, object.NULL_OBJ,
+		},
+
+		// with index
+		{
+			`var x = [3, 4, 5]; var y = 14
+			 x[2], y = [53, 42]
+			 [x[2], y]`,
+			[]int{53, 42}, object.LIST_OBJ,
+		},
+		// with multi-level index
+		{
+			`var x = [3, [6, 7, 8, 9], 5]; var y = 14
+			 x[2][3], y = [53, 42]
+			 [x[2][3], y]`,
+			[]int{53, 42}, object.LIST_OBJ,
 		},
 	}
 

@@ -299,54 +299,38 @@ func (c *Compiler) checkVarForAssignment(node *AssignmentNode, variable *IdentNo
 // called by AssignmentNode.Compile()
 // for things already declared; not for declaration assignment
 func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackage, err error) {
-	isDecouplingAssignment := false
-
 	if len(node.Values) == len(node.Identifiers) {
-		// not a decoupling assignment
+		// good to go; not a decoupling assignment
 
 	} else if len(node.Values) == 1 {
 		// more than 1 identifier, but only 1 thing assigned from; must index into it ("decouple")
-		isDecouplingAssignment = true
+		pkg, err = c.compileDecouplingAssignment(node)
+		return
 
 	} else {
 		err = c.makeErr(node, "Identifier/value count mismatch in Assignment")
 		return
 	}
 
-	var expansionMin, expansionMax int
-	var tempNode, tempCompositeResultVarNode Node
-	var setResultsNodes []Node
+	altOk := token.IsComboOp(node.Token) && len(node.Identifiers) == 1
+	expansionOk := false
+
 	var temp opcode.InsPackage
-
-	if isDecouplingAssignment {
-		// TODO: combining functions into this one
-		pkg, err = c.compileDecouplingAssignment(node)
-		return
-
-		tempCompositeResultVarNode = NewVariableNode(node.Token, "_Decouple_", true)
-
-	} else {
-		// push values onto the stack in reverse order
-		for i := len(node.Values) - 1; i > -1; i-- {
-			temp, err = node.Values[i].Compile(c)
-			if err != nil {
-				return
-			}
-			pkg = pkg.Append(temp)
-		}
-	}
-
-	altOk := !isDecouplingAssignment && token.IsComboOp(node.Token) && len(node.Identifiers) == 1
-
 	var variable *IdentNode
 	var definable Node
 	var sym symbol.Symbol
 	var cnt int
 
-	for i, id := range node.Identifiers {
-		// expansion ok only on last identifier in list for decoupling assignment
-		expansionOk := isDecouplingAssignment && i == len(node.Identifiers)-1
+	// push values onto the stack in reverse order
+	for i := len(node.Values) - 1; i > -1; i-- {
+		temp, err = node.Values[i].Compile(c)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(temp)
+	}
 
+	for i, id := range node.Identifiers {
 		variable, definable, err = c.getVarAndDefinable(id, expansionOk, altOk)
 		if err != nil {
 			return
@@ -362,6 +346,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 
 		if definable == nil {
 			if variable != nil {
+				// not a no-op
 				temp, err = c.makeOpSetInstructions(node, sym, cnt)
 				if err != nil {
 					return
@@ -374,6 +359,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 				err = c.makeErr(id, "Invalid use of no-op in assignment")
 				return
 			}
+			// setting an indexed value, or something with dot notation
 			temp, err = c.makeOpSetDefineInstructions(definable)
 			if err != nil {
 				return
@@ -381,20 +367,11 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 			pkg = pkg.Append(temp)
 		}
 
-		if !isDecouplingAssignment && i < len(node.Identifiers)-1 {
+		if i < len(node.Identifiers)-1 {
 			// add codes to pop all but the last one
 			pkg = pkg.Append(opcode.MakePkg(id.TokenInfo(), opcode.OpPop))
 		}
 	} // for
-
-	if isDecouplingAssignment && err == nil {
-		tempNode, err = MakeDecouplingAssignment(node, tempCompositeResultVarNode,
-			setResultsNodes, nil, expansionMin, expansionMax)
-	
-		if err == nil {
-			pkg, err = tempNode.Compile(c)
-		}
-	}
 
 	return
 }
@@ -413,10 +390,29 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	var expansionMin, expansionMax int
 	var temp Node
 
+	altOk := false
+	var variable *IdentNode
+
 	tempCompositeResultVarNode := NewVariableNode(node.Token, "_Decouple_", true)
 
 	setResultsNodes := []Node{}
 	for i, id := range node.Identifiers {
+		// expansion ok only on last identifier in list for decoupling assignment
+		expansionOk := i == len(node.Identifiers)-1
+
+		variable, _, err = c.getVarAndDefinable(id, expansionOk, altOk)
+		if err != nil {
+			return
+		}
+
+		if variable != nil {
+			// resolve variable, check if mutable, etc.
+			_, _, err = c.checkVarForAssignment(node, variable)
+			if err != nil {
+				return
+			}
+		}
+		
 		switch id := id.(type) {
 		case *NoneNode:
 			// skip index number
