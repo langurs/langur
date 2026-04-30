@@ -376,6 +376,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 
 // see also compileDecouplingDeclarationAssignment()
 // not a declaration decoupling assignment
+// NOTE: not checking variable and definable here; building new Assignment Nodes, and these will be checked when compiled
 func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	pkg opcode.InsPackage, err error) {
 
@@ -388,37 +389,17 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	var expansionMin, expansionMax int
 	var temp Node
 
-	altOk := false
-	var variable *IdentNode
-
 	tempCompositeResultVarNode := NewVariableNode(node.Token, "_Decouple_", true)
 
 	setResultsNodes := []Node{}
 	for i, id := range node.Identifiers {
-		// expansion ok only on last identifier in list for decoupling assignment
-		expansionOk := i == len(node.Identifiers)-1
-
-		// definable not checked here; will create another AssignmentNode, which will check definable
-		variable, _, err = c.getVarAndDefinable(id, expansionOk, altOk)
-		if err != nil {
-			return
-		}
-		if variable != nil {
-			// not a no-op
-			// resolve variable, check if mutable, etc.
-			_, _, err = c.checkVarForAssignment(node, variable)
-			if err != nil {
-				return
-			}
-		}
-
 		switch id := id.(type) {
 		case *NoneNode:
 			// skip index number
 			continue
 
 		case *IdentNode, *IndexNode:
-			temp, err = MakeAssignmentIndexValueStatement(id, tempCompositeResultVarNode, i+1, true, 0, 0)
+			temp, err = MakeAssignmentIndexValueStatement(id, tempCompositeResultVarNode, i+1, false, 0, 0)
 			if err != nil {
 				return
 			}
@@ -438,7 +419,7 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 
 			switch variable := id.Continuation.(type) {
 			case *IdentNode, *IndexNode:
-				temp, err = MakeAssignmentIndexValueStatement(variable, tempCompositeResultVarNode, i+1, true, expansionMin, expansionMax)
+				temp, err = MakeAssignmentIndexValueStatement(variable, tempCompositeResultVarNode, i+1, false, expansionMin, expansionMax)
 				if err != nil {
 					return
 				}
