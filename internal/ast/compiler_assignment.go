@@ -376,7 +376,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 
 // see also compileDecouplingDeclarationAssignment()
 // not a declaration decoupling assignment
-// NOTE: not checking variable and definable here; building new Assignment Nodes, and these will be checked when compiled
+// NOTE: not checking variable here; building new Assignment Nodes, and these will be checked when compiled
 func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	pkg opcode.InsPackage, err error) {
 
@@ -398,13 +398,6 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 			// skip index number
 			continue
 
-		case *IdentNode, *IndexNode:
-			temp, err = MakeAssignmentIndexValueStatement(id, tempCompositeResultVarNode, i+1, false, 0, 0)
-			if err != nil {
-				return
-			}
-			setResultsNodes = append(setResultsNodes, temp)
-
 		case *ExpansionNode:
 			if i < len(node.Identifiers)-1 {
 				err = c.makeErr(node, "Expansion possible on last variable of decoupling assignment only")
@@ -418,22 +411,24 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 			expansionMin, expansionMax = implicitDecouplingExpansionMin, -1
 
 			switch variable := id.Continuation.(type) {
-			case *IdentNode, *IndexNode:
+			case *NoneNode:
+				err = c.makeErr(node, "Expansion expected variable on decoupling assignment")
+				return
+
+			default:
 				temp, err = MakeAssignmentIndexValueStatement(variable, tempCompositeResultVarNode, i+1, false, expansionMin, expansionMax)
 				if err != nil {
 					return
 				}
 				setResultsNodes = append(setResultsNodes, temp)
-
-			default:
-				err = c.makeErr(node, "Expansion expected variable on decoupling assignment")
-				return
 			}
 
 		default:
-			err = c.makeErr(node, fmt.Sprintf("Invalid type for assignment identifier: %T", id))
-			bug("compileDecouplingAssignment", err.Error())
-			return
+			temp, err = MakeAssignmentIndexValueStatement(id, tempCompositeResultVarNode, i+1, false, 0, 0)
+			if err != nil {
+				return
+			}
+			setResultsNodes = append(setResultsNodes, temp)
 		}
 	}
 
