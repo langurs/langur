@@ -220,7 +220,7 @@ func (c *Compiler) getVarAndDefinable(node Node, expansionOk, altOk bool) (
 		switch n := node.(type) {
 		case *NoneNode:
 			if i > 1 {
-				err = c.makeErr(n, "Invalid use of none in assignment")
+				err = c.makeErr(n, "Invalid use of no-op in assignment")
 			}
 			// skip
 			return
@@ -256,7 +256,7 @@ func (c *Compiler) getVarAndDefinable(node Node, expansionOk, altOk bool) (
 
 		// FUTURE: dot notation
 		// case *DotNode:
-
+ 
 		case *ExpansionNode:
 			if i > 1 || !expansionOk {
 				err = c.makeErr(n, "Invalid use of expansion in assignment")
@@ -371,7 +371,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 
 		} else {
 			if variable == nil {
-				err = c.makeErr(id, "Invalid use of none in assignment")
+				err = c.makeErr(id, "Invalid use of no-op in assignment")
 				return
 			}
 			temp, err = c.makeOpSetDefineInstructions(definable)
