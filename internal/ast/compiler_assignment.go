@@ -394,10 +394,6 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 	setResultsNodes := []Node{}
 	for i, id := range node.Identifiers {
 		switch id := id.(type) {
-		case *NoneNode:
-			// skip index number
-			continue
-
 		case *ExpansionNode:
 			if i < len(node.Identifiers)-1 {
 				err = c.makeErr(node, "Expansion possible on last variable of decoupling assignment only")
