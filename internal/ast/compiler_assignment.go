@@ -89,7 +89,7 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		for i, id := range assign.Identifiers {
 			variable, ok := id.(*IdentNode)
 			if !ok {
-				err = c.makeErr(decl, fmt.Sprintf("Wrong node for variable in Declaration Assignment node: %T", id))
+				err = c.makeErr(decl, fmt.Sprintf("Expected identifier for Declaration Assignment, not %s", token.TypeDescription(id.TokenInfo().Type)))
 				bug("compileDeclarationAndAssignments", err.Error())
 				return
 			}
@@ -412,20 +412,21 @@ func (c *Compiler) compileDecouplingAssignment(node *AssignmentNode) (
 				return
 
 			default:
+				// system: false (ensure user cannot set immutable values)
 				temp, err = MakeAssignmentIndexValueStatement(variable, tempCompositeResultVarNode, i+1, false, expansionMin, expansionMax)
 				if err != nil {
 					return
 				}
-				setResultsNodes = append(setResultsNodes, temp)
 			}
 
 		default:
+			// system: false (ensure user cannot set immutable values)
 			temp, err = MakeAssignmentIndexValueStatement(id, tempCompositeResultVarNode, i+1, false, 0, 0)
 			if err != nil {
 				return
 			}
-			setResultsNodes = append(setResultsNodes, temp)
 		}
+		setResultsNodes = append(setResultsNodes, temp)
 	}
 
 	temp, err = MakeDecouplingAssignment(node, tempCompositeResultVarNode,
