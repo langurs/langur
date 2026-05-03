@@ -147,7 +147,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				err = pr.push(result)
 			}
 
-		case opcode.OpDefine:
+		case opcode.OpSetDefine:
 			// for setting indexed values
 			// ... and for dot notation (future use)
 			objIdx := pr.pop()
@@ -155,7 +155,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// look() doesn't pop, so that assignment is an expression
 			setTo := pr.look()
  
-			_, err = setDefine(target, objIdx, setTo)
+			err = setDefine(target, objIdx, setTo)
 
 		case opcode.OpGetFree:
 			freeIndex := int(ins[ip+1])

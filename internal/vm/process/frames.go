@@ -132,10 +132,10 @@ func (fr *frame) setNonLocal(localIndex, count int, setTo object.Object) {
 	}
 }
 
-func setDefine(target, objIndex, setTo object.Object) (setObj object.Object, err error) {
+func setDefine(target, objIndex, setTo object.Object) (err error) {
 	switch t := target.(type) {
 	case object.IIndexSet:
-		setObj, err = t.SetIndex(objIndex, setTo)
+		_, err = t.SetIndex(objIndex, setTo)
 
 	// and other things to be added later...
 

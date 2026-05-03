@@ -78,7 +78,7 @@ const (
 	OpSetGlobal
 	OpSetLocal
 	OpSetNonLocal
-	OpDefine
+	OpSetDefine
 
 	OpGetGlobal
 	OpGetLocal
@@ -195,7 +195,7 @@ var definitions = map[OpCode]*Definition{
 	OpReturnValue: {Name: "ReturnValue"},
 	OpNameValue:   {Name: "NameValue"},
 
-	OpDefine: {Name: "Define"},
+	OpSetDefine: {Name: "SetDefine"},
 
 	OpSetGlobal:             {Name: "SetGlobal", OperandWidths: []int{2}},
 	OpGetGlobal:             {Name: "GetGlobal", OperandWidths: []int{2}},

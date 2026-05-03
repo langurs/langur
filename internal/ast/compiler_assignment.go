@@ -42,14 +42,14 @@ func (c *Compiler) makeOpSetDefineInstructions(node Node) (
 			return
 		}
 
-		temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpDefine)
+		temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetDefine)
 		if err != nil {
 			return
 		}
 		pkg = pkg.Append(temp)
 
 	default:
-		err = c.makeErr(n, fmt.Sprintf("Attempt to create OpDefine instructions on non-definable (%T)", n))
+		err = c.makeErr(n, fmt.Sprintf("Attempt to create OpSetDefine instructions on non-definable (%T)", n))
 	}
 
 	return
@@ -342,7 +342,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 		}
 
 		if definable == nil {
-			// not requiring OpDefine
+			// not requiring OpSetDefine
 			if variable != nil {
 				// not a no-op
 				temp, err = c.makeOpSetInstructions(node, sym, cnt)
@@ -353,7 +353,7 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 			}
 
 		} else {
-			// requiring OpDefine: setting an indexed value, or something with dot notation
+			// requiring OpSetDefine: setting an indexed value, or something with dot notation
 			if variable == nil {
 				err = c.makeErr(id, "Invalid use of no-op in assignment")
 				return
