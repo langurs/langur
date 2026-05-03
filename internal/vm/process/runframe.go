@@ -108,7 +108,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
 			ip += 2
 			// look() doesn't pop, so that assignment is an expression
-			pr.startFrame.locals[globalIndex] = pr.look()
+			// Copy() on this may be a temporary thing, to make things work right for now.
+			pr.startFrame.locals[globalIndex] = pr.look().Copy()
 
 		case opcode.OpGetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
@@ -119,7 +120,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			localIndex := int(ins[ip+1])
 			ip += 1
 			// look() doesn't pop, so that assignment is an expression
-			fr.setLocal(localIndex, pr.look())
+			// Copy() on this may be a temporary thing, to make things work right for now.
+			fr.setLocal(localIndex, pr.look().Copy())
 
 		case opcode.OpGetLocal:
 			localIndex := int(ins[ip+1])
@@ -135,7 +137,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 2
 
 			// look() doesn't pop, so that assignment is an expression
-			fr.setNonLocal(index, level, pr.look())
+			// Copy() on this may be a temporary thing, to make things work right for now.
+			fr.setNonLocal(index, level, pr.look().Copy())
 
 		case opcode.OpGetNonLocal:
 			index := int(ins[ip+1])
