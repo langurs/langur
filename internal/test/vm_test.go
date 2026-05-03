@@ -8869,6 +8869,7 @@ func TestRecursiveFunctionsUsingSelfToken(t *testing.T) {
 
 func TestTryCatch(t *testing.T) {
 	tests := []vmTestCase{
+		// catch switch
 		{
 			input: `
 				throw 123
@@ -8927,6 +8928,41 @@ func TestTryCatch(t *testing.T) {
 				catch: _err'msg		# to catch a rethrown error
 					`,
 			expected:     "4",
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		// catch switch with op
+		{
+			input: `
+				1 / 0
+				catch[e][and] e'cat, e'msg {
+					case "math", -> re/division/: 45
+					default: 15
+				}
+					`,
+			expected:     "45",
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+				1 / 0
+				catch[e][and] e'cat, e'msg {
+					case "math", -> re/asdf/: 45
+				}
+				catch: _err'cat
+					`,
+			expected:     "math",
+			expectedType: object.STRING_OBJ,
+		},
+		{
+			input: `
+				1 / 0
+				catch[e][or] e'cat, e'msg {
+					case "math", -> re/asdf/: 45
+				}
+				catch: _err'cat
+					`,
+			expected:     "45",
 			expectedType: object.NUMBER_OBJ,
 		},
 
