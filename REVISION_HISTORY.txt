@@ -1,7 +1,7 @@
 langur revision history
 https://langurlang.org
 
-... - 0.20.6
+2026-05-03 - 0.21.0
 - added catch switch syntax
 - for function groupbyH(), set parameter *by* as required
 - changed string mutability to immutable
@@ -13,7 +13,6 @@ https://langurlang.org
 - removed restriction that assignment cannot be all no-op
 - changed ref. to test no. in vm tests to use 1-based indexing
 - (internal) fix: prevent nil pointer dereference in *CompiledCode.ReplString() receiver function when CompiledCode is not a langur function
-
 
 2026-04-09 - 0.20.5
 - added functions group() and groupby() to create a grouped list of lists and groupbyH() to create a hash of lists

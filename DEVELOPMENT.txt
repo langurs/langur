@@ -1,7 +1,7 @@
 # langur development
 2026-05-03
 
-I hope you find langur useful. To this point, it's been a one-man show. It started as a project for learning and I also had many ideas about a programming language. The syntax is relatively settled.
+I hope you find langur useful. To this point, it's been a one-man show. It started as a project for learning and I also had many ideas about a programming language. The syntax is relatively settled. There are many optimizations that could be made.
 
 PS. My idea for both OOP and structs is to use type definitions which can include methods, as in the possibly rough example below.
 
