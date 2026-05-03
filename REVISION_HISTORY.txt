@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.20.6
+- added catch switch syntax
 - for function groupbyH(), set parameter *by* as required
 - changed string mutability to immutable
 - fix: allow setting values when multiple indices are involved

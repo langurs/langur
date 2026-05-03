@@ -8,11 +8,12 @@ import (
 )
 
 // Since a switch expression is a glorified if/else, ...
-// ... there's no need for the compiler to deal with it (except for fallthrough).
+// ... there's no need for the compiler to deal with it ...
+// ... (except for fallthrough and for catch switch exceptions (when no default given)).
 func ConvertSwitchNodeToIfNode(sw *SwitchNode, defaultCompOp token.Token) (*IfNode, error) {
 	var testDo TestDo
 
-	ifnode := &IfNode{Token: sw.TokenInfo(), IsSwitchExpr: true}
+	ifnode := &IfNode{Token: sw.TokenInfo(), IsSwitchExpr: true, CatchException: sw.CatchException}
 
 	buildCondition := func(
 		variable, condition Node,

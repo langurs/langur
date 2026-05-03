@@ -8874,29 +8874,59 @@ func TestTryCatch(t *testing.T) {
 				throw 123
 				100
 
-				catch[e] { switch e["msg"] {
+				catch _err'msg {
 					case "100": 1
 					case "123": 2
 					case "234": 3
-					default: throw e
-				}}
+				}
 			`,
 			expected:     "2",
+			expectedType: object.NUMBER_OBJ,
+		},
+		{
+			input: `
+				100
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+				}
+					`,
+			expected:     "100",
 			expectedType: object.NUMBER_OBJ,
 		},
 
 		{
 			input: `
-						100
+				throw 456
+				100
 
-						catch { switch _err["msg"] {
-							case "100": 1
-							case "123": 2
-							case "234": 3
-							default: throw
-						}}
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+				}
+				catch: _err'msg		# catching the rethrown exception
 					`,
-			expected:     "100",
+			expected:     "456",
+			expectedType: object.STRING_OBJ,
+		},
+
+		{
+			input: `
+				throw 111
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+					default: 4
+					# catch switch with default section will not rethrow if no switch case tests match
+				}
+				catch: _err'msg		# to catch a rethrown error
+					`,
+			expected:     "4",
 			expectedType: object.NUMBER_OBJ,
 		},
 
@@ -9165,6 +9195,79 @@ func TestTryCatchElse(t *testing.T) {
 		  }`,
 			3,
 			object.NUMBER_OBJ,
+		},
+
+		{
+			input: `
+				throw 100
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+					# catch switch with no default section will rethrow if no switch case tests match
+				} else {
+					42
+				}
+				catch: _err'msg		# to catch a rethrown error
+				`,
+			expected:     "1",
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		{
+			input: `
+				throw 111
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+					# catch switch with no default section will rethrow if no switch case tests match
+				} else {
+					42
+				}
+				catch: _err'msg		# to catch a rethrown error
+					`,
+			expected:     "111",
+			expectedType: object.STRING_OBJ,
+		},
+
+		{
+			input: `
+				111
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+					# catch switch with no default section will rethrow if no switch case tests match
+				} else {
+					42
+				}
+				catch: _err'msg		# to catch a rethrown error
+					`,
+			expected:     "42",
+			expectedType: object.NUMBER_OBJ,
+		},
+
+		{
+			input: `
+				throw 111
+
+				catch _err'msg {
+					case "100": 1
+					case "123": 2
+					case "234": 3
+					default: 4
+					# catch switch with default section will not rethrow if no switch case tests match
+				} else {
+					42
+				}
+				catch: _err'msg		# to catch a rethrown error
+					`,
+			expected:     "4",
+			expectedType: object.NUMBER_OBJ,
 		},
 	}
 

@@ -332,13 +332,13 @@ func (p *Parser) parseCatch() ast.Node {
 	// past the "catch" keyword
 	p.advanceToken()
 
+	// explicit exception variable name?
 	if p.tok.Type == token.LBRACKET && p.tok.CpDiff == 0 {
-		// new syntax (0.13.10) for explicit error variable name
-		// catch[.e] ...
+		// catch[e] ...
 		p.advanceToken()
 
 		if p.tok.CpDiff != 0 {
-			p.addError("Expected variable after opening square bracket without space, such as catch[.e] ...")
+			p.addError("Expected variable after opening square bracket without space, such as catch[e] ...")
 		}
 
 		switch p.tok.Type {
@@ -352,21 +352,13 @@ func (p *Parser) parseCatch() ast.Node {
 		if p.tok.Type == token.RBRACKET && p.tok.CpDiff == 0 {
 			p.advanceToken()
 		} else {
-			p.addError("Expected closing square bracket without space after variable, such as catch[.e] ...")
+			p.addError("Expected closing square bracket without space after variable, such as catch[e] ...")
 		}
 	}
 
 	if catch.ExceptionVar == nil {
-		// not set by new syntax
-		switch p.tok.Type {
-		case token.IDENT:
-			// catch[.e]
-			p.addError("To set an explicit exception variable, use square brackets, such as catch[.e]")
-
-		default:
-			// implied catch variable _err
-			catch.ExceptionVar = ast.NewVariableNode(p.tok, "_err", true)
-		}
+		// implied catch exception variable _err
+		catch.ExceptionVar = ast.NewVariableNode(p.tok, "_err", true)
 	}
 
 	p.exceptionVariableStack = append(p.exceptionVariableStack, catch.ExceptionVar)
@@ -374,12 +366,24 @@ func (p *Parser) parseCatch() ast.Node {
 	simpleCatch := false
 	switch p.tok.Type {
 	case token.LBRACE:
+		if p.tok.CpDiff == 0 {
+			p.addError("Expected space between catch and opening brace")
+		}
+
 		catch.Catch = p.parseBlock()
+
 	case token.COLON:
 		catch.Catch = p.finishSimpleCatch()
 		simpleCatch = true
+
 	default:
-		p.addError("Expected opening curly brace for catch body, or colon for simple catch body")
+		if p.tok.Type == token.LPAREN && p.tok.CpDiff == 0 {
+			// might allow later, but easier to disallow than to do so later
+			p.addError("Cannot use short-form switch for catch switch")
+		}
+
+		// catch switch
+		catch.Catch = p.finishParsingSwitchExpression(catch.Token, catch.ExceptionVar)
 	}
 
 	p.exceptionVariableStack = ast.Pop(p.exceptionVariableStack)

@@ -2712,6 +2712,7 @@ func (b *BlockNode) TokenInfo() token.Token {
 }
 
 // IF ... ELSEIF ... ELSE
+// Also, a SwitchNode is converted to an IfNode.
 type TestDo struct {
 	Test Node
 	Do   Node
@@ -2725,6 +2726,7 @@ type IfNode struct {
 	Token           token.Token
 	TestsAndActions []TestDo
 	IsSwitchExpr    bool
+    CatchException  Node		// if used on a catch switch
 }
 
 func (i *IfNode) expressionNode() {}
@@ -2739,6 +2741,7 @@ func (i *IfNode) Copy() Node {
 		Token:           i.Token.Copy(),
 		TestsAndActions: taSlc,
 		IsSwitchExpr:    i.IsSwitchExpr,
+		CatchException:  copyOrNil(i.CatchException),
 	}
 }
 
@@ -2748,9 +2751,13 @@ func (i *IfNode) Evaluate() object.Object {
 
 func (node *IfNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if node.TestsAndActions[len(node.TestsAndActions)-1].Test != nil {
-		// no else/default section; add implicit else/default section returning null
+		// no else/default section; add implicit else/default section of null or throw
+		var def Node = NoValue
+		if node.CatchException != nil {
+			def = &ThrowNode{Exception: node.CatchException}
+		}
 		node.TestsAndActions = append(node.TestsAndActions,
-			TestDo{Test: nil, Do: &BlockNode{Statements: []Node{NoValue}}})
+			TestDo{Test: nil, Do: &BlockNode{Statements: []Node{def}}})
 	}
 
 	type compiled struct {
@@ -3009,6 +3016,7 @@ type SwitchNode struct {
 	Expressions      []PartialExpr
 	CasesAndActions  []CaseDo
 	DefaultLogicalOp token.Token
+    CatchException   Node		// if used on a catch switch
 }
 
 func (g *SwitchNode) expressionNode() {}
@@ -3027,6 +3035,7 @@ func (g *SwitchNode) Copy() Node {
 		CasesAndActions:  cdSlc,
 		Expressions:      eSlc,
 		DefaultLogicalOp: g.DefaultLogicalOp,
+		CatchException:   copyOrNil(g.CatchException),
 	}
 }
 

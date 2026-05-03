@@ -33,12 +33,19 @@ func (p *Parser) possiblyParseAlternateInfixOp(tok token.Token) token.Token {
 }
 
 func (p *Parser) parseSwitchExpression() ast.Node {
+	// the "switch" token
+	tok := p.tok
+	p.advanceToken()
+	return p.finishParsingSwitchExpression(tok, nil)
+}
+
+// catchException: what variable to throw if it is a catch switch that does not include a default
+func (p *Parser) finishParsingSwitchExpression(tok token.Token, catchException ast.Node) ast.Node {
 	var cd ast.CaseDo
 
-	sw := &ast.SwitchNode{Token: p.tok}
+	sw := &ast.SwitchNode{Token: tok, CatchException: catchException}
 
-	// skip "switch" token
-	p.advanceToken()
+	// shortened form or long form?
 	shortenedForm := p.tok.Type == token.LPAREN && p.tok.CpDiff == 0
 
 	// use default *or* operator or parse logical operator (used between case conditions)
