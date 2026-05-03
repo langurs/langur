@@ -13,7 +13,7 @@ import (
 func ConvertSwitchNodeToIfNode(sw *SwitchNode, defaultCompOp token.Token) (*IfNode, error) {
 	var testDo TestDo
 
-	ifnode := &IfNode{Token: sw.TokenInfo(), IsSwitchExpr: true, CatchException: sw.CatchException}
+	ifnode := &IfNode{Token: sw.TokenInfo(), IsSwitchExpr: true, DefaultElse: sw.DefaultDefault}
 
 	buildCondition := func(
 		variable, condition Node,

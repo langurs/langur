@@ -40,10 +40,10 @@ func (p *Parser) parseSwitchExpression() ast.Node {
 }
 
 // catchException: what variable to throw if it is a catch switch that does not include a default
-func (p *Parser) finishParsingSwitchExpression(tok token.Token, catchException ast.Node) ast.Node {
+func (p *Parser) finishParsingSwitchExpression(tok token.Token, defaultDefault ast.Node) ast.Node {
 	var cd ast.CaseDo
 
-	sw := &ast.SwitchNode{Token: tok, CatchException: catchException}
+	sw := &ast.SwitchNode{Token: tok, DefaultDefault: defaultDefault}
 
 	// shortened form or long form?
 	shortenedForm := p.tok.Type == token.LPAREN && p.tok.CpDiff == 0

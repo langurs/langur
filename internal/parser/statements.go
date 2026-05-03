@@ -383,7 +383,8 @@ func (p *Parser) parseCatch() ast.Node {
 		}
 
 		// catch switch
-		catch.Catch = p.finishParsingSwitchExpression(catch.Token, catch.ExceptionVar)
+		catch.Catch = p.finishParsingSwitchExpression(
+			catch.Token, &ast.ThrowNode{Exception: catch.ExceptionVar})
 	}
 
 	p.exceptionVariableStack = ast.Pop(p.exceptionVariableStack)
