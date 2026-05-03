@@ -1,19 +1,9 @@
 # langur development
-2025-12-30
+2026-05-03
 
-I hope you find langur useful. To this point, it's been a one-man show. It started as a project for learning and I also had many ideas about a programming language. The syntax is relatively settled, though I'm open to input.
+I hope you find langur useful. To this point, it's been a one-man show. It started as a project for learning and I also had many ideas about a programming language. The syntax is relatively settled.
 
-To make 1.0, I would like to fix what I might call the fundamental l-value problem. As one symptom of this problem, you can't set a value with multiple indices.
-
-x[1] = 123      # okay
-y[1][2] = 123   # doesn't work
-
-Rather than fix the symptom and find a workaround, I'd like to fix the fundamental problem with how data is handled. This is necessary for taking things forward, such as adding OOP (with composition) to langur. It's also a matter of efficiency.
-
---Anthony Davis
-
-
-PS. My idea for both OOP and structs is to use type definitions which can include methods, as in the example below.
+PS. My idea for both OOP and structs is to use type definitions which can include methods, as in the possibly rough example below.
 
 
 type picnicBasket {
