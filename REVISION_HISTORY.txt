@@ -8,6 +8,7 @@ https://langurlang.org
 - fix: allow setting values when multiple indices are involved
 - fix: ensure not allowed to set immutable variable in decoupling assignment
 - fix: parser to allow no-op as first in list of variables for decoupling assignment
+- fix: parser checks if a simple if is used within a switch case test (cannot be done)
 - removed restriction that assignment cannot be all no-op
 - changed ref. to test no. in vm tests to use 1-based indexing
 - (internal) fix: prevent nil pointer dereference in *CompiledCode.ReplString() receiver function when CompiledCode is not a langur function

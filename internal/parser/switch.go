@@ -182,8 +182,14 @@ func (p *Parser) finishParsingSwitchExpression(tok token.Token, catchException a
 
 				} else {
 					// not shortened form
+
+					// in case of simple if being used within case test
+					p.pushContext(context_expression_switch_case)				
+
 					cd.MatchConditions, end = p.parseExpressionList(
 						[]token.Type{token.COLON, token.SEMICOLON}, token.COMMA, false, true, false)
+						
+					p.popContext()
 				}
 
 				if len(cd.MatchConditions) > len(sw.Expressions) && len(sw.Expressions) > 1 {

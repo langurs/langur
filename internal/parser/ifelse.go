@@ -30,8 +30,14 @@ func (p *Parser) parseIfExpression() ast.Node {
 	case token.LBRACE:
 		// parse first action
 		ta.Do = p.parseBlock()
+
 	case token.COLON:
+		if p.checkContext() == context_expression_switch_case {
+			// both simple if and case using a colon; no confusion...
+			p.addError("Cannot use simple if within switch case test; use shortened form if instead")
+		}
 		return p.finishSimpleIf(expr, ta)
+
 	default:
 		p.addError("Expected opening curly brace for if expression body, or colon for simple if expression body")
 		return nil
