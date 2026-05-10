@@ -91,6 +91,8 @@ func (l *Duration) GreaterThan(d2 Object) (gt, comparable bool) {
 	}
 	comparable = true
 
+	// There is no perfect solution for comparing durations if there are months or years involved.
+	// Here, we convert to nanoseconds as the likely best solution.
 	gt, _ = l.ToNanoseconds().GreaterThan(r.ToNanoseconds())
 	return
 }

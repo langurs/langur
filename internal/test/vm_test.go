@@ -538,6 +538,9 @@ func TestInOperator(t *testing.T) {
 		{`dt/1970-01-01/ in dt/1969-01-01/ .. dt/1971-01-01/`, true, object.BOOLEAN_OBJ},
 		{`dt/1970-01-01/ in dt/1962-01-01/ .. dt/1965-01-01/`, false, object.BOOLEAN_OBJ},
 
+		{`"bat" in "a".."c"`, true, object.BOOLEAN_OBJ},
+		{`"sat" in "a".."c"`, false, object.BOOLEAN_OBJ},
+
 		// not in
 		{"1 not in []", true, object.BOOLEAN_OBJ},
 		{"1 not in [2, 3, 4]", true, object.BOOLEAN_OBJ},
@@ -586,6 +589,9 @@ func TestInOperator(t *testing.T) {
 
 		{`dt/1970-01-01/ not in dt/1969-01-01/ .. dt/1971-01-01/`, false, object.BOOLEAN_OBJ},
 		{`dt/1970-01-01/ not in dt/1962-01-01/ .. dt/1965-01-01/`, true, object.BOOLEAN_OBJ},
+
+		{`"bat" not in "a".."c"`, false, object.BOOLEAN_OBJ},
+		{`"sat" not in "a".."c"`, true, object.BOOLEAN_OBJ},
 
 		{`var x, y = 0, [4, 5, 6, 7]
 		  while x not in y { x += 1 }
