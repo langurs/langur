@@ -56,16 +56,7 @@ func (l *Range) AppendToNone() Object {
 
 func (r *Range) Contains(value Object) (bool, bool) {
 	if r.Start.Type() == value.Type() {
-		var high, low Object
-		if test, _ := GreaterOrEqual(r.End, r.Start); test {
-			high, low = r.End, r.Start
-		} else {
-			low, high = r.End, r.Start
-		}
-		test, _ := GreaterOrEqual(high, value)
-		if test {
-			test, _ = GreaterOrEqual(value, low)
-		}
+		test, _ := WithinRange(value, r)
 		return test, true
 	}
 	return false, false
