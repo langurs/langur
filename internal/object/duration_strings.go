@@ -3,9 +3,7 @@
 package object
 
 import (
-	"fmt"
 	"langur/regexp"
-	"langur/str"
 )
 
 /*
@@ -52,13 +50,6 @@ var dtRegexDuration = regexp.MustCompile(
 	"^P?(?:" + dtRegexDurationDaysString + ")?(?:" + dtRegexDurationTimeString + ")?$|^P?" +
 		dtRegexDurationWeeksString + "$")
 
-func NanosecondsDurationFromString(s string) (ns *Number, err error) {
-	var nsec int64
-	nsec, err = durationStringToNanoseconds(s)
-	ns = NumberFromInt64(nsec)
-	return
-}
-
 // A "month" and a "year" are hard to define in terms of nanoseconds.
 const (
 	nsPerYear int64 = 31557600000000000 // 365.25 days
@@ -70,36 +61,15 @@ const (
 	nsPerSec        = 1000000000
 )
 
-func durationStringToNanoseconds(s string) (int64, error) {
-	m := dtRegexDuration.FindStringSubmatch(s)
-	if m == nil {
-		return 0, fmt.Errorf("Invalid duration string")
-	}
-	names := dtRegexDuration.SubexpNames()
-
-	years, okyears := subMatchToInt64("years", m, names)
-	months, okmonths := subMatchToInt64("months", m, names)
-	weeks, okweeks := subMatchToInt64("weeks", m, names)
-	days, okdays := subMatchToInt64("days", m, names)
-
-	hours, okhours := subMatchToInt64("hours", m, names)
-	minutes, okminutes := subMatchToInt64("minutes", m, names)
-	seconds, okseconds := subMatchToInt64("seconds", m, names)
-
-	if !okyears && !okmonths && !okweeks && !okdays && !okhours && !okminutes && !okseconds {
-		return 0, fmt.Errorf("Invalid duration string; expected at least one of years/months/days/hours/minutes/seconds or weeks")
-	}
-
-	secondsfraction := subMatchByName("secondsfraction", m, names)
-	var ns int64 = 0
-	if secondsfraction != "" {
-		secondsfraction = str.PadRight(secondsfraction, 9, '0')
-		ns, _ = str.StrToInt64(secondsfraction, 10)
-	}
-
-	return nsPerYear*years + nsPerMon*months + nsPerWeek*weeks + nsPerDay*days +
-		nsPerHour*hours + nsPerMin*minutes + nsPerSec*seconds + ns, nil
-}
+var (
+	nsPerYearN *Number = NumberFromInt64(nsPerYear)
+	nsPerMonN          = NumberFromInt64(nsPerMon)
+	nsPerWeekN         = NumberFromInt64(nsPerWeek)
+	nsPerDayN          = NumberFromInt64(nsPerDay)
+	nsPerHourN         = NumberFromInt64(nsPerHour)
+	nsPerMinN          = NumberFromInt64(nsPerMin)
+	nsPerSecN          = NumberFromInt64(nsPerSec)
+)
 
 func IsValidDurationString(s string) bool {
 	if s == "" {

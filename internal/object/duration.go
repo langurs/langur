@@ -91,36 +91,7 @@ func (l *Duration) GreaterThan(d2 Object) (gt, comparable bool) {
 	}
 	comparable = true
 
-	// return l.ToNanoseconds() > r.ToNanoseconds(), true
-
-	// FIXME(?): a somewhat naive implementation
-	if l.Years > r.Years {
-		gt = true
-	} else if l.Years == r.Years {
-		if l.Months > r.Months {
-			gt = true
-		} else if l.Months == r.Months {
-			if l.Days > r.Days {
-				gt = true
-			} else if l.Days == r.Days {
-				if l.Hours > r.Hours {
-					gt = true
-				} else if l.Hours == r.Hours {
-					if l.Minutes > r.Minutes {
-						gt = true
-					} else if l.Minutes == r.Minutes {
-						if l.Seconds > r.Seconds {
-							gt = true
-						} else if l.Seconds == r.Seconds {
-							if l.Nanoseconds > r.Nanoseconds {
-								gt = true
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	gt, _ = l.ToNanoseconds().GreaterThan(r.ToNanoseconds())
 	return
 }
 
@@ -235,9 +206,34 @@ func durationStringToObject(s string) (*Duration, error) {
 		Hours: hours, Minutes: minutes, Seconds: seconds, Nanoseconds: ns}, nil
 }
 
-func (d *Duration) ToNanoseconds() int64 {
-	return nsPerYear*d.Years + nsPerMon*d.Months + nsPerDay*d.Days +
-		nsPerHour*d.Hours + nsPerMin*d.Minutes + nsPerSec*d.Seconds + d.Nanoseconds
+// convert to an arbitrary precision decimal
+// seeing that an int64 overflows between before reaching 293 years
+func (d *Duration) ToNanoseconds() *Number {
+	answer := Zero
+
+	if d.Years != 0 {
+		answer = NumberFromInt64(d.Years).Multiply(nsPerYearN).(*Number)
+	}
+	if d.Months != 0 {
+		answer = answer.Add(NumberFromInt64(d.Months).Multiply(nsPerMonN)).(*Number)
+	}
+	if d.Days != 0 {
+		answer = answer.Add(NumberFromInt64(d.Days).Multiply(nsPerDayN)).(*Number)
+	}
+	if d.Hours != 0 {
+		answer = answer.Add(NumberFromInt64(d.Hours).Multiply(nsPerHourN)).(*Number)
+	}
+	if d.Minutes != 0 {
+		answer = answer.Add(NumberFromInt64(d.Minutes).Multiply(nsPerMinN)).(*Number)
+	}
+	if d.Seconds != 0 {
+		answer = answer.Add(NumberFromInt64(d.Seconds).Multiply(nsPerSecN)).(*Number)
+	}
+	if d.Nanoseconds != 0 {
+		answer = answer.Add(NumberFromInt64(d.Nanoseconds)).(*Number)
+	}
+
+	return answer
 }
 
 // for building/interpreting hashes

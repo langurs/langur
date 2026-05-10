@@ -314,7 +314,7 @@ func ToNumber(obj Object, base int) (*Number, bool) {
 		return NumberFromInt64(obj.UnixNano()), true
 
 	case *Duration:
-		return NumberFromInt64(obj.ToNanoseconds()), true
+		return obj.ToNanoseconds(), true
 
 	case *Range:
 		return obj.ToNumber()

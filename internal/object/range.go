@@ -36,7 +36,7 @@ func (r *Range) Type() ObjectType {
 	return RANGE_OBJ
 }
 func (r *Range) TypeString() string {
-	return common.RangeTypeName
+	return common.RangeTypeName + "<" + r.Start.TypeString() + ">"
 }
 
 func (r *Range) IsTruthy() bool {

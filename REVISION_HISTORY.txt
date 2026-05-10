@@ -1,6 +1,13 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.1
+- added use of *in* operator on ranges (test if a value is within a range)
+- updated range type string to include the subtype (number, datetime, or duration)
+- fix: some naivite of duration greater than comparisons and conversion to nanoseconds to use arbitrary precision decimal (not int64)
+- (internal) removed some unused duration string functions
+
+
 2026-05-03 - 0.21.0
 - added catch switch syntax
 - for function groupbyH(), set parameter *by* as required

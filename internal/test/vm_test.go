@@ -518,6 +518,23 @@ func TestInOperator(t *testing.T) {
 		{`97 in "abc"`, true, object.BOOLEAN_OBJ},
 		{`100 in "abc"`, false, object.BOOLEAN_OBJ},
 
+		{`97 in 4..5`, false, object.BOOLEAN_OBJ},
+		{`97 in 45..500`, true, object.BOOLEAN_OBJ},
+		{`97 in 100..50`, true, object.BOOLEAN_OBJ},
+		{`97 in 97..96`, true, object.BOOLEAN_OBJ},
+		{`97 in 96..97`, true, object.BOOLEAN_OBJ},
+		{`97 in 97..97`, true, object.BOOLEAN_OBJ},
+		{`97 in 96..96`, false, object.BOOLEAN_OBJ},
+		{`97 in 98..98`, false, object.BOOLEAN_OBJ},
+
+		{`dr/T 45m/ in dr/T 43m/ .. dr/T 44m/`, false, object.BOOLEAN_OBJ},
+		{`dr/T 45m/ in dr/T 43m/ .. dr/T 46m/`, true, object.BOOLEAN_OBJ},
+		{`dr/7M/ in dr/1M/ .. dr/1Y/`, true, object.BOOLEAN_OBJ},
+		{`dr/7M/ in dr/1M/ .. dr/5M/`, false, object.BOOLEAN_OBJ},
+
+		{`dt/1970-01-01/ in dt/1969-01-01/ .. dt/1971-01-01/`, true, object.BOOLEAN_OBJ},
+		{`dt/1970-01-01/ in dt/1962-01-01/ .. dt/1965-01-01/`, false, object.BOOLEAN_OBJ},
+
 		// not in
 		{"1 not in []", true, object.BOOLEAN_OBJ},
 		{"1 not in [2, 3, 4]", true, object.BOOLEAN_OBJ},
@@ -546,6 +563,23 @@ func TestInOperator(t *testing.T) {
 		{`97 not in ""`, true, object.BOOLEAN_OBJ},
 		{`97 not in "abc"`, false, object.BOOLEAN_OBJ},
 		{`100 not in "abc"`, true, object.BOOLEAN_OBJ},
+
+		{`97 not in 4..5`, true, object.BOOLEAN_OBJ},
+		{`97 not in 45..500`, false, object.BOOLEAN_OBJ},
+		{`97 not in 100..50`, false, object.BOOLEAN_OBJ},
+		{`97 not in 97..96`, false, object.BOOLEAN_OBJ},
+		{`97 not in 96..97`, false, object.BOOLEAN_OBJ},
+		{`97 not in 97..97`, false, object.BOOLEAN_OBJ},
+		{`97 not in 96..96`, true, object.BOOLEAN_OBJ},
+		{`97 not in 98..98`, true, object.BOOLEAN_OBJ},
+
+		{`dr/T 45m/ not in dr/T 43m/ .. dr/T 44m/`, true, object.BOOLEAN_OBJ},
+		{`dr/T 45m/ not in dr/T 43m/ .. dr/T 46m/`, false, object.BOOLEAN_OBJ},
+		{`dr/7M/ not in dr/1M/ .. dr/1Y/`, false, object.BOOLEAN_OBJ},
+		{`dr/7M/ not in dr/1M/ .. dr/5M/`, true, object.BOOLEAN_OBJ},
+
+		{`dt/1970-01-01/ not in dt/1969-01-01/ .. dt/1971-01-01/`, false, object.BOOLEAN_OBJ},
+		{`dt/1970-01-01/ not in dt/1962-01-01/ .. dt/1965-01-01/`, true, object.BOOLEAN_OBJ},
 
 		{`var x, y = 0, [4, 5, 6, 7]
 		  while x not in y { x += 1 }
@@ -3160,7 +3194,7 @@ func TestStringInterpolationModifiers(t *testing.T) {
 		// type string
 		{`val x = 255; "{{x:T}}"`, common.NumberTypeName, object.STRING_OBJ},
 		{`val x = 255+1i; "{{x:T}}"`, common.ComplexTypeName, object.STRING_OBJ},
-		{`val x = 1 .. 255; "{{x : T }}"`, common.RangeTypeName, object.STRING_OBJ},
+		{`val x = 1 .. 255; "{{x : T }}"`, common.RangeTypeName+"<"+common.NumberTypeName+">", object.STRING_OBJ},
 		{`val x = fn{+}; "{{x:T}}"`, common.FuntionTypeName, object.STRING_OBJ},
 		{`val x = len; "{{x:T}}"`, common.BuiltInTypeName, object.STRING_OBJ},
 		{`val x = "255"; "{{x:T}}"`, common.StringTypeName, object.STRING_OBJ},
@@ -8029,8 +8063,8 @@ func TestDurationBasicComparisons(t *testing.T) {
 }
 
 func TestDurationNaiveComparisons(t *testing.T) {
-	// naive, testing first by years, then months, etc.
 	tests := []vmTestCase{
+		// testing first by years, then months, etc.
 		{`dr/1Y/ == dr/12M/`, false, object.BOOLEAN_OBJ},
 		{`dr/1Y/ > dr/1M/`, true, object.BOOLEAN_OBJ},
 
@@ -8038,10 +8072,15 @@ func TestDurationNaiveComparisons(t *testing.T) {
 		{`dr/1Y/ > dr/1Y 5M/`, false, object.BOOLEAN_OBJ},
 		{`dr/1Y/ == dr/1Y 5M/`, false, object.BOOLEAN_OBJ},
 
-		{`dr/1Y/ > dr/5000M/`, true, object.BOOLEAN_OBJ},
 		{`dr/2Y/ >= dr/1Y 5M/`, true, object.BOOLEAN_OBJ},
 		{`dr/1Y/ <= dr/1Y 5M/`, true, object.BOOLEAN_OBJ},
 		{`dr/1Y/ >= dr/1Y 5M/`, false, object.BOOLEAN_OBJ},
+
+		// test for naivite
+		{`dr/1Y/ > dr/5000M/`, false, object.BOOLEAN_OBJ},
+		{`dr/13M/ >= dr/1Y/`, true, object.BOOLEAN_OBJ},
+		{`dr/T25H/ > dr/1D/`, true, object.BOOLEAN_OBJ},
+		{`dr/292Y/ > dr/293Y/`, false, object.BOOLEAN_OBJ},	// if using int64, overflows between 292 and 293 years
 	}
 
 	runVmTests(t, tests, false, false)
