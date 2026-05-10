@@ -37,3 +37,9 @@ func (pr *Process) popMultiple(count int) []object.Object {
 func (pr *Process) look() object.Object {
 	return pr.stack[len(pr.stack)-1]
 }
+
+// replace the object at the top of the stack; might be used with look() to prevent unnecessary pop() and push()
+func (pr *Process) replacelast(o object.Object) error {
+	pr.stack[len(pr.stack)-1] = o
+	return nil
+}

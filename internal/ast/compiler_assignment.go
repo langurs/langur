@@ -14,19 +14,28 @@ const implicitDecouplingExpansionMin = 0 // set to 0; must be 0 or 1
 func (c *Compiler) makeOpSetInstructions(node Node, sym symbol.Symbol, level int) (
 	pkg opcode.InsPackage, err error) {
 
+	// TODO: make more discriminate as to when it is necessary to copy
+	var temp opcode.InsPackage
+	pkg = opcode.MakePkg(node.TokenInfo(), opcode.OpCopy)
+
 	if sym.Scope == symbol.GlobalScope {
-		pkg, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetGlobal, sym.Index)
+		temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetGlobal, sym.Index)
 
 	} else if sym.Scope == symbol.LocalScope {
 		if level == 0 {
-			pkg, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetLocal, sym.Index)
+			temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetLocal, sym.Index)
 		} else {
-			pkg, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetNonLocal, sym.Index, level)
+			temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetNonLocal, sym.Index, level)
 		}
 
 	} else {
 		err = c.makeErr(node, fmt.Sprintf("Attempt to create OpSet instructions on %s for scope %s", sym.Name, sym.Scope))
 	}
+
+	if err == nil {
+		pkg = pkg.Append(temp)
+	}
+
 	return
 }
 

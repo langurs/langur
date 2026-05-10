@@ -79,6 +79,7 @@ const (
 	OpSetLocal
 	OpSetNonLocal
 	OpSetDefine
+	OpCopy
 
 	OpGetGlobal
 	OpGetLocal
@@ -195,17 +196,17 @@ var definitions = map[OpCode]*Definition{
 	OpReturnValue: {Name: "ReturnValue"},
 	OpNameValue:   {Name: "NameValue"},
 
-	OpSetDefine: {Name: "SetDefine"},
+	OpSetDefine:   {Name: "SetDefine"},
+	OpSetGlobal:   {Name: "SetGlobal", OperandWidths: []int{2}},
+	OpSetLocal:    {Name: "SetLocal", OperandWidths: []int{1}},
+	// OpSetNonLocal operands: index, level
+	OpSetNonLocal: {Name: "SetNonLocal", OperandWidths: []int{1, 1}},
+	OpCopy:        {Name: "Copy"},
 
-	OpSetGlobal:             {Name: "SetGlobal", OperandWidths: []int{2}},
-	OpGetGlobal:             {Name: "GetGlobal", OperandWidths: []int{2}},
-
-	OpSetLocal:             {Name: "SetLocal", OperandWidths: []int{1}},
-	OpGetLocal:             {Name: "GetLocal", OperandWidths: []int{1}},
-
-	// operands: index, level
-	OpSetNonLocal:             {Name: "SetNonLocal", OperandWidths: []int{1, 1}},
-	OpGetNonLocal:             {Name: "GetNonLocal", OperandWidths: []int{1, 1}},
+	OpGetGlobal:   {Name: "GetGlobal", OperandWidths: []int{2}},
+	OpGetLocal:    {Name: "GetLocal", OperandWidths: []int{1}},
+	// OpGetNonLocal operands: index, level
+	OpGetNonLocal: {Name: "GetNonLocal", OperandWidths: []int{1, 1}},
 
 	OpGetFree: {Name: "GetFree", OperandWidths: []int{1}},
 	OpGetSelf: {Name: "GetSelf"},

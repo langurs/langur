@@ -122,34 +122,6 @@ func testConstants(
 	return nil
 }
 
-func testNumberObject(expected *object.Number, actual object.Object) error {
-	result, ok := actual.(*object.Number)
-	if !ok {
-		return fmt.Errorf("object not a *Number, received=%T (%+v)", actual, actual)
-	}
-	if !expected.Same(actual) {
-		return fmt.Errorf("object value wrong\nexpected=%s\nreceived=%s", expected.String(), result.String())
-	}
-	return nil
-}
-
-func testString(expected string, actual object.Object) error {
-	switch actual.(type) {
-	case *object.String:
-		if actual.String() != expected {
-			return fmt.Errorf("String value expected=%q, received=%q", expected, actual.String())
-		}
-		return nil
-	case *object.Number:
-		if actual.String() != expected {
-			return fmt.Errorf("Number value expected=%q, received=%q", expected, actual.String())
-		}
-		return nil
-	default:
-		return fmt.Errorf("Object type %T (%+v) not expected", actual, actual)
-	}
-}
-
 func TestCompilerOpCodeSequencing(t *testing.T) {
 	tests := []compilerTestCase{
 		{

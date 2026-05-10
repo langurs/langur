@@ -15,6 +15,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 	relay *jumpRelay,
 	err error) {
 
+	var deferredPopCount int
 	var errIP int
 	var result object.Object
 	retainLastValue := false
@@ -41,6 +42,11 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 				name, _ := fr.getFnName()
 				err = object.NewErrorFromAnything(p, "panic:"+name)
 			}
+		}
+
+		// If there was an that prevented a pop that should have taken place, this will take care of it.
+		if deferredPopCount != 0 {
+			pr.popMultiple(deferredPopCount)
 		}
 
 		if retainLastValue && fr != pr.startFrame {
@@ -108,8 +114,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
 			ip += 2
 			// look() doesn't pop, so that assignment is an expression
-			// Copy() on this may be a temporary thing, to make things work right for now.
-			pr.startFrame.locals[globalIndex] = pr.look().Copy()
+			pr.startFrame.locals[globalIndex] = pr.look()
 
 		case opcode.OpGetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
@@ -120,8 +125,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			localIndex := int(ins[ip+1])
 			ip += 1
 			// look() doesn't pop, so that assignment is an expression
-			// Copy() on this may be a temporary thing, to make things work right for now.
-			fr.setLocal(localIndex, pr.look().Copy())
+			fr.setLocal(localIndex, pr.look())
 
 		case opcode.OpGetLocal:
 			localIndex := int(ins[ip+1])
@@ -137,8 +141,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 2
 
 			// look() doesn't pop, so that assignment is an expression
-			// Copy() on this may be a temporary thing, to make things work right for now.
-			fr.setNonLocal(index, level, pr.look().Copy())
+			fr.setNonLocal(index, level, pr.look())
 
 		case opcode.OpGetNonLocal:
 			index := int(ins[ip+1])
@@ -388,16 +391,30 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			code := int(ins[ip+1])
 			ip += 1
 
-			result, err = object.LogicalNegation(pr.pop(), code)
+			// look and replace making pop and push unnecessary in this case
+			from := pr.look()
+
+			result, err = object.LogicalNegation(from, code)
 			if err == nil {
-				err = pr.push(result)
+				err = pr.replacelast(result)
+			} else {
+				pr.pop()
 			}
 
 		case opcode.OpNumericNegation:
-			result, err = object.NumericNegation(pr.pop())
+			// look and replace making pop and push unnecessary in this case
+			from := pr.look()
+
+			result, err = object.NumericNegation(from)
 			if err == nil {
-				err = pr.push(result)
+				err = pr.replacelast(result)
+			} else {
+				pr.pop()
 			}
+
+		case opcode.OpCopy:
+			// look and replace making pop and push unnecessary in this case
+			err = pr.replacelast(pr.look().Copy())
 
 		case opcode.OpFormat:
 			code := int(ins[ip+1])
