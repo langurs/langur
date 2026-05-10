@@ -519,6 +519,9 @@ func TestInOperator(t *testing.T) {
 		{`100 in "abc"`, false, object.BOOLEAN_OBJ},
 
 		{`97 in 4..5`, false, object.BOOLEAN_OBJ},
+		{`97 in 97..97`, true, object.BOOLEAN_OBJ},
+		{`97.123 in 97..98`, true, object.BOOLEAN_OBJ},
+		{`97.123 in 96..97`, false, object.BOOLEAN_OBJ},
 		{`97 in 45..500`, true, object.BOOLEAN_OBJ},
 		{`97 in 100..50`, true, object.BOOLEAN_OBJ},
 		{`97 in 97..96`, true, object.BOOLEAN_OBJ},
@@ -565,6 +568,9 @@ func TestInOperator(t *testing.T) {
 		{`100 not in "abc"`, true, object.BOOLEAN_OBJ},
 
 		{`97 not in 4..5`, true, object.BOOLEAN_OBJ},
+		{`97 not in 97..97`, false, object.BOOLEAN_OBJ},
+		{`97.123 not in 97..98`, false, object.BOOLEAN_OBJ},
+		{`97.123 not in 96..97`, true, object.BOOLEAN_OBJ},
 		{`97 not in 45..500`, false, object.BOOLEAN_OBJ},
 		{`97 not in 100..50`, false, object.BOOLEAN_OBJ},
 		{`97 not in 97..96`, false, object.BOOLEAN_OBJ},
