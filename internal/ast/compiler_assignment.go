@@ -9,6 +9,10 @@ import (
 	"langur/token"
 )
 
+// NOTE: The "decoupling" compiler functions make more nodes.
+// Most of the real assignment compiling happens in compileAssignment() or compileDeclarationAndAssignments(), ...
+// ... the one or the other dependent on whether it is a simple assignment or a declaration with assignment, respectively.
+
 const implicitDecouplingExpansionMin = 0 // set to 0; must be 0 or 1
 
 func (c *Compiler) makeOpSetInstructions(node Node, sym symbol.Symbol, level int) (
@@ -59,6 +63,7 @@ func (c *Compiler) makeOpSetDefineInstructions(node Node) (
 
 	default:
 		err = c.makeErr(n, fmt.Sprintf("Attempt to create OpSetDefine instructions on non-definable (%T)", n))
+		bug("makeOpSetDefineInstructions", err.Error())
 	}
 
 	return
@@ -84,52 +89,56 @@ func (c *Compiler) compileDeclarationAndAssignments(
 	}
 
 	if assign.Values == nil || len(assign.Values) == len(assign.Identifiers) {
-		// Compile values first (must be on the stack), then the setting instructions.
-		var temp opcode.InsPackage
-		// push values in reverse order
-		for i := len(assign.Values) - 1; i > -1; i-- {
-			temp, err = assign.Values[i].Compile(c)
-			if err != nil {
-				return
-			}
-			pkg = pkg.Append(temp)
-		}
-
-		for i, id := range assign.Identifiers {
-			variable, ok := id.(*IdentNode)
-			if !ok {
-				err = c.makeErr(decl, fmt.Sprintf("Expected identifier for Declaration Assignment, not %s", token.TypeDescription(id.TokenInfo().Type)))
-				bug("compileDeclarationAndAssignments", err.Error())
-				return
-			}
-
-			var sym symbol.Symbol
-			sym, err = c.symbolTable.DefineVariable(variable.Name, decl.Mutable, variable.System)
-			if err != nil {
-				err = c.makeErr(assign, err.Error())
-				return
-			}
-
-			temp, err = c.makeOpSetInstructions(assign, sym, 0)
-			if err != nil {
-				err = c.makeErr(assign, err.Error())
-				return
-			}
-			pkg = pkg.Append(temp)
-
-			// pop all but the last one
-			if i < len(assign.Identifiers)-1 {
-				pkg = pkg.Append(opcode.MakePkg(id.TokenInfo(), opcode.OpPop))
-			}
-		}
+		// good to go; not a decoupling assignment
 
 	} else if len(assign.Values) == 1 {
 		pkg, err = c.compileDecouplingDeclarationAssignment(assign, decl.Mutable)
+		return
 
 	} else {
 		// parser should have caught this...
 		err = c.makeErr(decl, "Identifier/value count mismatch in Declaration Assignment")
 		bug("compileDeclarationAndAssignments", err.Error())
+		return
+	}
+
+	// Compile values first (must be on the stack), then the setting instructions.
+	var temp opcode.InsPackage
+	// push values in reverse order
+	for i := len(assign.Values) - 1; i > -1; i-- {
+		temp, err = assign.Values[i].Compile(c)
+		if err != nil {
+			return
+		}
+		pkg = pkg.Append(temp)
+	}
+
+	for i, id := range assign.Identifiers {
+		variable, ok := id.(*IdentNode)
+		if !ok {
+			err = c.makeErr(decl, fmt.Sprintf("Expected identifier for Declaration Assignment, not %s", token.TypeDescription(id.TokenInfo().Type)))
+			bug("compileDeclarationAndAssignments", err.Error())
+			return
+		}
+
+		var sym symbol.Symbol
+		sym, err = c.symbolTable.DefineVariable(variable.Name, decl.Mutable, variable.System)
+		if err != nil {
+			err = c.makeErr(assign, err.Error())
+			return
+		}
+
+		temp, err = c.makeOpSetInstructions(assign, sym, 0)
+		if err != nil {
+			err = c.makeErr(assign, err.Error())
+			return
+		}
+		pkg = pkg.Append(temp)
+
+		// pop all but the last one
+		if i < len(assign.Identifiers)-1 {
+			pkg = pkg.Append(opcode.MakePkg(id.TokenInfo(), opcode.OpPop))
+		}
 	}
 
 	return
@@ -141,7 +150,7 @@ func (c *Compiler) compileDecouplingDeclarationAssignment(
 	pkg opcode.InsPackage, err error) {
 
 	if len(node.Values) != 1 {
-		// parser should have caught this...
+		// should have caught this earlier...
 		err = c.makeErr(node, "Attempt to set declaration assignment decoupling when len(node.Values) != 1")
 		bug("compileDecouplingDeclarationAssignment", err.Error())
 		return
