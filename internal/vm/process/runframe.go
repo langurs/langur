@@ -15,7 +15,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 	relay *jumpRelay,
 	err error) {
 
-	var deferredPopCount int
+	// var deferredPopCount int
 	var errIP int
 	var result object.Object
 	retainLastValue := false
@@ -44,17 +44,17 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			}
 		}
 
-		// If there was an that prevented a pop that should have taken place, this will take care of it.
-		if deferredPopCount != 0 {
-			pr.popMultiple(deferredPopCount)
-		}
+		// // If there was an that prevented a pop that should have taken place, this will take care of it.
+		// if deferredPopCount != 0 {
+		// 	pr.popMultiple(deferredPopCount)
+		// }
 
 		if retainLastValue && fr != pr.startFrame {
 			// ran out of instructions in this frame
 			// not the global frame ...
 			// not a return, exception, or jump relay
 			// reset stack + add last value
-			last := pr.look()
+			last := pr.retrieve()
 			pr.stack = pr.stack[:sp+1]
 			pr.stack[sp] = last
 
@@ -113,8 +113,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 		case opcode.OpSetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
 			ip += 2
-			// look() doesn't pop, so that assignment is an expression
-			pr.startFrame.locals[globalIndex] = pr.look()
+			// retrieve() doesn't pop, so that assignment is an expression
+			pr.startFrame.locals[globalIndex] = pr.retrieve()
 
 		case opcode.OpGetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
@@ -124,8 +124,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 		case opcode.OpSetLocal:
 			localIndex := int(ins[ip+1])
 			ip += 1
-			// look() doesn't pop, so that assignment is an expression
-			fr.setLocal(localIndex, pr.look())
+			// retrieve() doesn't pop, so that assignment is an expression
+			fr.setLocal(localIndex, pr.retrieve())
 
 		case opcode.OpGetLocal:
 			localIndex := int(ins[ip+1])
@@ -140,8 +140,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			level := int(ins[ip+2])
 			ip += 2
 
-			// look() doesn't pop, so that assignment is an expression
-			fr.setNonLocal(index, level, pr.look())
+			// retrieve() doesn't pop, so that assignment is an expression
+			fr.setNonLocal(index, level, pr.retrieve())
 
 		case opcode.OpGetNonLocal:
 			index := int(ins[ip+1])
@@ -158,8 +158,8 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			// ... and for dot notation (future use)
 			objIdx := pr.pop()
 			target := pr.pop()
-			// look() doesn't pop, so that assignment is an expression
-			setTo := pr.look()
+			// retrieve() doesn't pop, so that assignment is an expression
+			setTo := pr.retrieve()
  
 			err = setDefine(target, objIdx, setTo)
 
@@ -307,7 +307,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			} else {
 				// have left only; haven't evaluated right yet
 				// just look; don't pop
-				left = pr.look()
+				left = pr.retrieve()
 				result, ok = object.ShortCircuitingOperation(op, left, code)
 				if ok {
 					// short-circuit success
@@ -370,7 +370,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			} else {
 				// have left only; haven't evaluated right yet
 				// just look; don't pop
-				left = pr.look()
+				left = pr.retrieve()
 				result, ok = object.ShortCircuitingOperation(op, left, code)
 				if ok {
 					// short-circuit success
@@ -392,29 +392,29 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 1
 
 			// look and replace making pop and push unnecessary in this case
-			from := pr.look()
+			from := pr.retrieve()
 
 			result, err = object.LogicalNegation(from, code)
 			if err == nil {
-				err = pr.replacelast(result)
+				err = pr.replace(result)
 			} else {
 				pr.pop()
 			}
 
 		case opcode.OpNumericNegation:
 			// look and replace making pop and push unnecessary in this case
-			from := pr.look()
+			from := pr.retrieve()
 
 			result, err = object.NumericNegation(from)
 			if err == nil {
-				err = pr.replacelast(result)
+				err = pr.replace(result)
 			} else {
 				pr.pop()
 			}
 
 		case opcode.OpCopy:
 			// look and replace making pop and push unnecessary in this case
-			err = pr.replacelast(pr.look().Copy())
+			err = pr.replace(pr.retrieve().Copy())
 
 		case opcode.OpFormat:
 			code := int(ins[ip+1])
@@ -566,7 +566,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			relay = &jumpRelay{
 				Jump:  jump,
 				Level: level - 1,
-				Value: pr.look(), // pass along, such as for break with value
+				Value: pr.retrieve(), // pass along, such as for break with value
 			}
 			return
 

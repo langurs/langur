@@ -34,12 +34,12 @@ func (pr *Process) popMultiple(count int) []object.Object {
 }
 
 // let us see what's at the top of the stack without removing it
-func (pr *Process) look() object.Object {
+func (pr *Process) retrieve() object.Object {
 	return pr.stack[len(pr.stack)-1]
 }
 
-// replace the object at the top of the stack; might be used with look() to prevent unnecessary pop() and push()
-func (pr *Process) replacelast(o object.Object) error {
+// replace the object at the top of the stack; might be used with retrieve() to prevent unnecessary pop() and push()
+func (pr *Process) replace(o object.Object) error {
 	pr.stack[len(pr.stack)-1] = o
 	return nil
 }
