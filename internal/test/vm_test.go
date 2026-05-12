@@ -5447,14 +5447,14 @@ func TestOptionalParameters(t *testing.T) {
 		},
 
 		// with parameter mutability
-		// {
-		// 	input: `
-		// val mult = fn(a, var b as break=12, c=4) { b += 1 ; a * b + c }	# internally use b
-		// mult(4, break=10)									# called with break=...
-		// `,
-		// 	expected:     48,
-		// 	expectedType: object.NUMBER_OBJ,
-		// },
+		{
+			input: `
+		val mult = fn(a, var b as break=12, c=4) { b += 1 ; a * b + c }	# internally use b
+		mult(4, break=10)									# called with break=...
+		`,
+			expected:     48,
+			expectedType: object.NUMBER_OBJ,
+		},
 
 		{ // c not just a simple number; must be calculated
 			input: `
@@ -7210,32 +7210,40 @@ func TestExecT(t *testing.T) {
 	}
 }
 
-// func TestParameterMutability(t *testing.T) {
-// 	tests := []vmTestCase{
-// 		{`
-// 			fn(var x, var y) {
-// 				if y > 10 { return x + y }
-// 				x += 2; y += 1
-// 				fn((x, y))
-// 			}(7, 0)
-// 			`,
-// 			"40",
-// 			object.NUMBER_OBJ,
-// 		},
+func TestParameterMutability(t *testing.T) {
+	tests := []vmTestCase{
+		{`
+			fn(var x, var y) {
+				if y > 10 { return x + y }
+				x += 2; y += 1
+				fn((x, y))
+			}(7, 0)
+			`,
+			"40",
+			object.NUMBER_OBJ,
+		},
 
-// 		{`
-// 			fn(x, var y) {
-// 				y += 10
-// 				x + y
-// 			}(7, 3)
-// 			`,
-// 			"20",
-// 			object.NUMBER_OBJ,
-// 		},
-// 	}
+		{`
+			fn(x, var y) {
+				y += 10
+				x + y
+			}(7, 3)
+			`,
+			"20",
+			object.NUMBER_OBJ,
+		},
 
-// 	runVmTests(t, tests, false, false)
-// }
+		// on parameter by name
+		{`
+			val mult = fn(a, var b=12) { b -= 1 ; a * b }
+			mult(4)
+			`,
+			44, object.NUMBER_OBJ,
+		},		
+	}
+
+	runVmTests(t, tests, false, false)
+}
 
 func TestTransliterate(t *testing.T) {
 	tests := []vmTestCase{
@@ -8553,6 +8561,33 @@ func TestParameterExpansionMinMax(t *testing.T) {
 
 	runVmTests(t, tests, false, false)
 }
+
+func TestParameterExpansionFollowedByParametersByName(t *testing.T) {
+	tests := []vmTestCase{
+		{`string(fn(a..., b=21, c=14) {
+			 a
+		  }(4, 12))
+		`,
+			"[4, 12]", object.STRING_OBJ,
+		},
+
+		{`fn(a..., b=21, c=14) {
+			 b
+		  }(4, 12)
+		`,
+			21, object.NUMBER_OBJ,
+		},
+		{`fn(a..., b=21, c=14) {
+			 c
+		  }(4, 12)
+		`,
+			14, object.NUMBER_OBJ,
+		},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 
 func TestFoldAndFoldFromFunctions(t *testing.T) {
 	tests := []vmTestCase{

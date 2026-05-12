@@ -57,6 +57,7 @@ func (pr *Process) executeFunctionCall(fr *frame,
 }
 
 // callback from built-in functions
+// TODO: include params by name for callback
 func (pr *Process) callback(
 	fn object.Object,
 	positional ...object.Object) (
@@ -115,8 +116,9 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	}
 
 	// type assertion required on interface{} here
+	// (interface{} required to prevent a circular reference)
 	result = bi.Fn.(BuiltInFunction)(pr, args...)
-	
+
 	// if received an Error Object (from a built-in function), ... 
 	// ... swap so that error is second value returned from this function
 	if r, isErrObj := result.(*object.Error); isErrObj {
@@ -144,10 +146,10 @@ func reformArgumentsBySignature(
 		return
 	}
 
-	// check positional parameters for adherance to explicit typing (in the signature)
-	// already checked counts
-	// NOTE: explicit typing not accepted on parameter expansion; If this changes, it will need to be accounted for.
 	for argPtr, param := range sig.ParamPositional {
+		// check positional parameters for adherance to explicit typing (in the signature)
+		// already checked counts
+		// NOTE: explicit typing not accepted on parameter expansion; If this changes, it will need to be accounted for.
 		if param.Type != 0 {
 			if param.Type != positional[argPtr].Type() {
 				argTypeName := object.TypeToTypeName(positional[argPtr].Type())
@@ -158,8 +160,13 @@ func reformArgumentsBySignature(
 				return
 			}
 		}
+
+		if param.Mutable {
+			// var keyword used on parameter; treat as copy on import
+			positional[argPtr] = positional[argPtr].Copy()
+		}
 	}
-	
+
 	if byname == nil && sig.ParamByName == nil {
 		// no arguments passed by name and none expected
 		args = positional
@@ -202,7 +209,7 @@ func reformArgumentsBySignature(
 			// Compiled functions will use another means.
 		}
 
-		// While we're in this loop, we'll check parameters by name for adherance to explicit typing (in the signature).
+		// check parameters by name for adherance to explicit typing (in the signature).
 		if found && param.Type != 0 {
 			if param.Type != args[argPtr].Type() {
 				argTypeName := object.TypeToTypeName(args[argPtr].Type())
@@ -212,6 +219,11 @@ func reformArgumentsBySignature(
 						param.ExternalName, argTypeName, param.ExternalName, paramTypeName))
 				return
 			}
+		}
+
+		if param.Mutable {
+			// var keyword used on parameter; treat as copy on import
+			args[argPtr] = args[argPtr].Copy()
 		}
 
 		argPtr++

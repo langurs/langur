@@ -331,7 +331,7 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 			return
 		}
 	}
-	
+
 	if param.Type != 0 {
 		if defaultIns.Instructions != nil {
 			err = c.makeErr(node, "Cannot compile explicit parameter type with default value not known at compile time")
@@ -344,15 +344,10 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 			}
 		}
 		if param.Mutable {
+			// until enforced explicit variable typing exists...
 			err = c.makeErr(node, "This version of langur cannot use a mutable parameter with an explicit type")
 			return
 		}
-	}
-
-	// NOTE: 0.20.4 removed mutable parameters, likely a temporary move until some things are clarified
-	if param.Mutable {
-		err = c.makeErr(node, "This version of langur cannot use a mutable parameter")
-		return
 	}
 
 	// DEFINE IN SYMBOL TABLE

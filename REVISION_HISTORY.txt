@@ -3,9 +3,11 @@ https://langurlang.org
 
 ... - 0.21.1
 - added use of *in* operator on ranges (test if a value is within a range)
-- updated range type string to include the subtype (number, datetime, or duration)
+- updated range type string to include the subtype, such as Range<Number>
+- brought back parameter mutability with the *var* keyword; treated as copy on import
 - fix: some naivite of duration greater than comparisons and conversion to nanoseconds to use arbitrary precision decimal (not int64)
 - (internal) removed some unused duration string functions
+- (internal) added opcode.OpCopy; changed Compiler.makeOpSetInstructions() to add OpCopy and removed Copy() from OpSet in the VM
 
 
 2026-05-03 - 0.21.0
