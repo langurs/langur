@@ -7239,7 +7239,29 @@ func TestParameterMutability(t *testing.T) {
 			mult(4)
 			`,
 			44, object.NUMBER_OBJ,
-		},		
+		},
+
+		// ensure sent value is not changed
+		{`
+			var i = 32
+			fn(var x) {
+				x += 7
+			}(i)
+			i
+			`,
+			32,
+			object.NUMBER_OBJ,
+		},
+		{`
+			var i = [1, 2, 3]
+			fn(var x) {
+				x[2] = 42
+			}(i)
+			string(i)
+			`,
+			"[1, 2, 3]",
+			object.STRING_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
