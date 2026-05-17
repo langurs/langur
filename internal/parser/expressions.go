@@ -257,9 +257,9 @@ func (p *Parser) parseLBrace() ast.Node {
 	block.HasScope = true
 
 	// limit scope blocks to statement context
-	// if p.checkContext() != context_unknown_block {
-	// 	p.addError("Unexpected scope block in expression context")
-	// }
+	if p.checkContext() != context_unknown_statement_block {
+		p.addError("Unexpected scope block in expression context")
+	}
 
 	return block
 }
