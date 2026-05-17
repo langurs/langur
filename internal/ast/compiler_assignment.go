@@ -18,9 +18,7 @@ const implicitDecouplingExpansionMin = 0 // set to 0; must be 0 or 1
 func (c *Compiler) makeOpSetInstructions(node Node, sym symbol.Symbol, level int) (
 	pkg opcode.InsPackage, err error) {
 
-	// TODO: make more discriminate as to when it is necessary to copy
 	var temp opcode.InsPackage
-	pkg = opcode.MakePkg(node.TokenInfo(), opcode.OpCopy)
 
 	if sym.Scope == symbol.GlobalScope {
 		temp, err = opcode.MakePkgWithErrTest(node.TokenInfo(), opcode.OpSetGlobal, sym.Index)
@@ -111,6 +109,10 @@ func (c *Compiler) compileDeclarationAndAssignments(
 			return
 		}
 		pkg = pkg.Append(temp)
+
+		if copyBeforeAssignment(assign.Values[i]) {
+			pkg = pkg.Append(opcode.MakePkg(decl.Token, opcode.OpCopy))
+		}
 	}
 
 	for i, id := range assign.Identifiers {
@@ -310,6 +312,25 @@ func (c *Compiler) checkVarForAssignment(node *AssignmentNode, variable *IdentNo
 	return
 }
 
+func copyBeforeAssignment(val Node) bool {
+	// copy value before assignment?
+	// inefficient to always copy
+
+	switch v := val.(type) {
+	case *IdentNode:
+		return true
+
+	case *IndexNode:
+		return copyBeforeAssignment(v.Left)
+
+	case *BlockNode, *ListNode, *HashNode:
+		// FIXME: make more selective
+		return true
+	}
+
+	return false
+}
+
 // called by AssignmentNode.Compile()
 // for things already declared; not for declaration assignment
 func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackage, err error) {
@@ -342,6 +363,10 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 			return
 		}
 		pkg = pkg.Append(temp)
+
+		if copyBeforeAssignment(node.Values[i]) {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		}
 	}
 
 	for i, id := range node.Identifiers {

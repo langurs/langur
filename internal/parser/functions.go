@@ -84,7 +84,7 @@ func (p *Parser) parseFunction() ast.Node {
 		p.addError("0..1 spaces expected between fn() tokens and function body")
 	}
 
-	lit.Body, _ = p.parseBlockOrIntoBlock()
+	lit.Body = p.parseBlock()
 
 	return lit
 }

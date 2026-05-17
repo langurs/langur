@@ -691,6 +691,7 @@ func TestCompilerGlobalDeclarationStatements(t *testing.T) {
 				opcode.Make(opcode.OpSetGlobal, 0),
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 0),
+				opcode.Make(opcode.OpCopy),
 				opcode.Make(opcode.OpSetGlobal, 1),
 				opcode.Make(opcode.OpPop),
 				opcode.Make(opcode.OpGetGlobal, 1),
@@ -1385,6 +1386,7 @@ func TestCompilerAssignmentStatementScopes(t *testing.T) {
 				process.GetBuiltInByName("_len"), 2, 1,
 				[]opcode.Instructions{ // decoupling scope (uses internal temporary variable)
 					opcode.Make(opcode.OpConstant, 0), // []
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 0), // val _Decouple_ = []
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 0),    // _Decouple_
@@ -1400,15 +1402,17 @@ func TestCompilerAssignmentStatementScopes(t *testing.T) {
 					opcode.Make(opcode.OpSetNonLocal, 1, 1), // y = null
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpFalse), // decoupling failure
-					opcode.Make(opcode.OpJump, 25),
+					opcode.Make(opcode.OpJump, 27),
 					opcode.Make(opcode.OpGetLocal, 0),       // _Decouple_
 					opcode.Make(opcode.OpConstant, 3),       // 1
 					opcode.Make(opcode.OpIndex, 0),          // _Decouple_[1]
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetNonLocal, 0, 1), // x = _Decouple_[1]
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 0),       // _Decouple_
 					opcode.Make(opcode.OpConstant, 2),       // 2
 					opcode.Make(opcode.OpIndex, 0),          // _Decouple_[2]
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetNonLocal, 1, 1), // y = _Decouple_[2]
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpTrue), // decoupling success
@@ -1486,6 +1490,7 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpConstant, 1), // 2
 					opcode.Make(opcode.OpList, 2),     // [1, 2]
 
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 0), // _LoopOver_ = [1, 2]
 					opcode.Make(opcode.OpPop),
 
@@ -1499,6 +1504,7 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpIndex, 1),
 					opcode.Make(opcode.OpNull),
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 2), // x = _LoopOver_[1; null]
 					opcode.Make(opcode.OpPop),
 
@@ -1514,7 +1520,7 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 3), // _LoopInc_
 					opcode.Make(opcode.OpGetLocal, 1), // _LoopLimit_
 					opcode.Make(opcode.OpLessThanOrEqual, 0, 0),
-					opcode.Make(opcode.OpJumpIfNotTruthy, 28),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 29),
 
 					// body
 					opcode.Make(opcode.OpGetLocal, 2), // { x }
@@ -1531,10 +1537,11 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 3), // _LoopInc_
 					opcode.Make(opcode.OpIndex, 1),
 					opcode.Make(opcode.OpNull),
+					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 2), // x = _LoopOver_[_LoopInc_; null]
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 36),
+					opcode.Make(opcode.OpJumpBack, 37),
 
 					opcode.Make(opcode.OpGetLocal, 4), // _for
 				},

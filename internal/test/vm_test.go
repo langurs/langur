@@ -9761,14 +9761,51 @@ func TestSemiDeepCopy(t *testing.T) {
 		  x[2]`,
 			2, object.NUMBER_OBJ,
 		},
-		// {`val x = [1, 2, 3]
-		//   fn(var a) {
-		// 	a[2] = 7
-		//   }(x)
-		//   x[2]`,
-		// 	2, object.NUMBER_OBJ,
-		// },
-	
+		{`val x = [1, 2, 3]
+		  fn(var a) {
+			a[2] = 7
+		  }(x)
+		  x[2]`,
+			2, object.NUMBER_OBJ,
+		},
+
+		// copying?
+		{`val x = [4, 6, 7]
+		  var y = [1, 4, 7]
+		  y[2] = x
+		  y[2][2] = 3
+		  y[2][2] + x[2]
+		 `,
+			9, object.NUMBER_OBJ,
+		},
+		{`val x = [4, [76, 45, 34], 7]
+		  var y = x[2]
+		  y[2] = 17
+		  x[2][2]
+		 `,
+			45, object.NUMBER_OBJ,
+		},
+		{`val x = [4, [76, 45, 34], 7]
+		  var y = { x[2] }
+		  y[2] = 17
+		  x[2][2]
+		 `,
+			45, object.NUMBER_OBJ,
+		},
+		{`val x = [4, [76, 45, 34], 7]
+		  var y = [x[2]]
+		  y[1][2] = 17
+		  x[2][2]
+		 `,
+			45, object.NUMBER_OBJ,
+		},
+		{`val x = [4, [76, 45, 34], 7]
+		  var y = {1 :x[2]}
+		  y[1][2] = 17
+		  x[2][2]
+		 `,
+			45, object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
