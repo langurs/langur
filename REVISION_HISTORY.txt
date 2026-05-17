@@ -8,7 +8,7 @@ https://langurlang.org
 - fix: some naivite of duration greater than comparisons and conversion to nanoseconds to use arbitrary precision decimal (not int64)
 - limited scope blocks to statement context
 - (internal) removed some unused duration string functions
-- (internal) added opcode.OpCopy; changed Compiler.makeOpSetInstructions() to add OpCopy and removed Copy() from OpSet in the VM
+- (internal) added opcode.OpCopy; changed to add OpCopy selectively and removed Copy() from OpSet in the VM
 
 
 2026-05-03 - 0.21.0
