@@ -34,7 +34,7 @@ func (p *Parser) parseIfExpression() ast.Node {
 	case token.COLON:
 		if p.checkContext() == context_expression_switch_case {
 			// both simple if and case using a colon; no confusion...
-			p.addError("Cannot use simple if within switch case test; use shortened form if instead")
+			p.addError("Cannot use simple if within switch case test")
 		}
 		return p.finishSimpleIf(expr, ta)
 
@@ -119,7 +119,7 @@ func (p *Parser) finishSimpleIf(expr *ast.IfNode, ta ast.TestDo) ast.Node {
 		return nil
 	}
 
-	ta.Do, _ = p.parseBlockOrIntoBlockWithPotentialAssignment()
+	ta.Do = p.parseExpressionStatementForSimpleForm()
 	expr.TestsAndActions = append(expr.TestsAndActions, ta)
 	return expr
 }

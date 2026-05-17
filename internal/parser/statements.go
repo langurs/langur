@@ -424,8 +424,7 @@ func (p *Parser) finishSimpleCatch() ast.Node {
 		return nil
 	}
 
-	catchBlock, _ := p.parseBlockOrIntoBlockWithPotentialAssignment()
-	return catchBlock
+	return p.parseExpressionStatementForSimpleForm()
 }
 
 func (p *Parser) parseStatements(

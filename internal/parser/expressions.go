@@ -297,16 +297,12 @@ func (p *Parser) parseBlockOrIntoBlock() (node ast.Node, wasBlock bool) {
 	return
 }
 
-func (p *Parser) parseBlockOrIntoBlockWithPotentialAssignment() (node ast.Node, wasBlock bool) {
-	if p.tok.Type == token.LBRACE {
-		node, wasBlock = p.parseBlock(), true
-
-	} else if token.BeginsFlowBreakingStatement(p.tok.Type) {
-		node, wasBlock = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true)}}, false
+func (p *Parser) parseExpressionStatementForSimpleForm() (node ast.Node) {
+	if token.BeginsFlowBreakingStatement(p.tok.Type) {
+		node = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseStatement(true)}}
 
 	} else {
-		node, wasBlock = &ast.BlockNode{Token: p.tok,
-			Statements: []ast.Node{p.parseExpressionWithPotentialAssignment()}}, false
+		node = &ast.BlockNode{Token: p.tok, Statements: []ast.Node{p.parseExpressionWithPotentialAssignment()}}
 	}
 	return
 }
