@@ -6,9 +6,10 @@ https://langurlang.org
 - updated range type string to include the subtype, such as Range<Number>
 - brought back parameter mutability with the *var* keyword; treated as copy on import
 - fix: some naivite of duration greater than comparisons and conversion to nanoseconds to use arbitrary precision decimal (not int64)
+- fix: objects needing to be copied with OpDefine, not just with OpSet codes
 - limited scope blocks to statement context
 - (internal) removed some unused duration string functions
-- (internal) added opcode.OpCopy; changed to add OpCopy selectively and removed Copy() from OpSet in the VM
+- (internal) added opcode.OpCopy; changed to add OpCopy and removed Copy() from OpSet in the VM; still needs to determine when copy is necessary (more work to do)
 
 
 2026-05-03 - 0.21.0

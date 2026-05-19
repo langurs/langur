@@ -1475,7 +1475,7 @@ func (n *NullNode) Copy() Node {
 }
 
 func (n *NullNode) Evaluate() object.Object {
-	return object.NativeBoolToObject(false)
+	return object.NULL
 }
 
 func (n *NullNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
@@ -2055,6 +2055,10 @@ func (node *ListNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 			}
 		}
 		pkg = pkg.Append(b)
+
+		if CopyBeforeAssignment(e) {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		}
 	}
 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpList, len(node.Elements)))
 	return
@@ -2221,11 +2225,19 @@ func (node *HashNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		}
 		pkg = pkg.Append(b)
 
+		if CopyBeforeAssignment(kv.Key) {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		}
+
 		b, err = kv.Value.Compile(c)
 		if err != nil {
 			return
 		}
 		pkg = pkg.Append(b)
+
+		if CopyBeforeAssignment(kv.Value) {
+			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		}
 	}
 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpHash, len(node.Pairs)*2))
 	return

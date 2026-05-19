@@ -36,16 +36,15 @@ func CopyBeforeAssignment(val Node) bool {
 	// copy value before assignment?
 	// inefficient to always copy
 
+	// // FIXME: a temporary patch; inefficient
+	// return true
+
 	switch v := val.(type) {
 	case *IdentNode:
 		return true
 
 	case *IndexNode:
 		return CopyBeforeAssignment(v.Left)
-
-	case *ListNode, *HashNode:
-		// FIXME: make more selective
-		return true
 	}
 
 	return false
