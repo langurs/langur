@@ -9799,6 +9799,21 @@ func TestSemiDeepCopy(t *testing.T) {
 		 `,
 			45, object.NUMBER_OBJ,
 		},
+
+		{`val x = [4, 5, 7]
+		  var y = if true { x }
+		  y[2] = 17
+		  x[2] + y[2]
+		 `,
+			22, object.NUMBER_OBJ,
+		},
+		{`val x = [4, 5, 7]
+		  var y = switch true { case true: x }
+		  y[2] = 17
+		  x[2] + y[2]
+		 `,
+			22, object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)

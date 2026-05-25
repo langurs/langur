@@ -6,6 +6,15 @@ import (
 	"reflect"
 )
 
+func nodeIsOfType(node Node, ofTypes []Node) bool {
+	for _, n := range ofTypes {
+		if reflect.TypeOf(node) == reflect.TypeOf(n) {
+			return true
+		}
+	}
+	return false
+}
+
 func IsSimple(node Node) bool {
 	switch n := node.(type) {
 	case *StringNode:
@@ -36,18 +45,16 @@ func CopyBeforeAssignment(val Node) bool {
 	// copy value before assignment?
 	// inefficient to always copy
 
-	// // FIXME: a temporary patch; inefficient
-	// return true
+	// FIXME: a temporary patch; inefficient
+	return true
 
-	switch v := val.(type) {
-	case *IdentNode:
-		return true
+	// ofTypes := []Node{&IdentNode{}}
+	// dontSearch := []Node{
+	// 	&LineDeclarationNode{}, &ModeNode{}, &CallNode{}, &AssignmentNode{},
+	// 	&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
+	// }
 
-	case *IndexNode:
-		return CopyBeforeAssignment(v.Left)
-	}
-
-	return false
+	// return val.Search(ofTypes, dontSearch)
 }
 
 func EndsWithDefiniteJump(nodes []Node) bool {
@@ -62,21 +69,39 @@ func EndsWithDefiniteJump(nodes []Node) bool {
 	return false
 }
 
-// for testing whether to wrap into scope
-func NodeContainsFirstScopeLevelDeclaration(node Node) bool {
-	return NodeContainsFirstScopeLevelSomething(node, 0,
-		[]Node{&LineDeclarationNode{Token: node.TokenInfo()}, &ModeNode{Token: node.TokenInfo()}})
+// a convenience function to list nodes to search
+func searchNodes(ofTypes, dontSearch []Node, checkNodes ...Node) (found bool) {
+	return searchNodeSlice(ofTypes, dontSearch, checkNodes)
 }
 
-func NodeContainsFirstScopeLevelSomething(node Node, level int, ofTypes []Node) bool {
-	if level > 1 {
+func searchNodeSlice(ofTypes, dontSearch []Node, checkNodes []Node) (found bool) {
+	for _, n := range checkNodes {
+		if n != nil {
+			if found = n.Search(ofTypes, dontSearch); found {
+				return
+			}
+		}
+	}
+	return
+}
+
+// for testing whether to wrap into scope
+func NodeContainsFirstScopeLevelDeclaration(node Node) bool {
+	found, atlevel := NodeSearch(node, 0,
+		[]Node{&LineDeclarationNode{}, &ModeNode{}}, nil)
+
+	if !found || atlevel > 1 {
 		return false
 	}
+	return true
+}
 
-	for _, n := range ofTypes {
-		if reflect.TypeOf(node) == reflect.TypeOf(n) {
-			return true
-		}
+func NodeSearch(node Node, level int, ofTypes, stopAt []Node) (found bool, atlevel int) {
+	if nodeIsOfType(node, ofTypes) {
+		return true, level
+	}
+	if nodeIsOfType(node, stopAt) {
+		return false, level
 	}
 
 	switch n := node.(type) {
@@ -84,73 +109,77 @@ func NodeContainsFirstScopeLevelSomething(node Node, level int, ofTypes []Node) 
 
 	case *Program:
 		for _, v := range n.Statements {
-			if NodeContainsFirstScopeLevelSomething(v, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(v, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *LineDeclarationNode:
-		return NodeContainsFirstScopeLevelSomething(n.Assignment, level+1, ofTypes)
+		return NodeSearch(n.Assignment, level+1, ofTypes, stopAt)
 
 	case *AssignmentNode:
 		for _, v := range n.Values {
-			if NodeContainsFirstScopeLevelSomething(v, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(v, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *ModeNode:
-		return NodeContainsFirstScopeLevelSomething(n.Setting, level, ofTypes)
+		return NodeSearch(n.Setting, level, ofTypes, stopAt)
 
 	case *CallNode:
 		for _, arg := range n.PositionalArgs {
-			if NodeContainsFirstScopeLevelSomething(arg, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(arg, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 		for _, arg := range n.ByNameArgs {
-			if NodeContainsFirstScopeLevelSomething(arg, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(arg, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *StringNode:
 		for _, v := range n.Interpolations {
-			if NodeContainsFirstScopeLevelSomething(v, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(v, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *InterpolatedNode:
-		return NodeContainsFirstScopeLevelSomething(n.Value, level, ofTypes)
+		found, atlevel = NodeSearch(n.Value, level, ofTypes, stopAt)
 	case *RegexNode:
-		return NodeContainsFirstScopeLevelSomething(n.Pattern, level, ofTypes)
+		found, atlevel = NodeSearch(n.Pattern, level, ofTypes, stopAt)
 	case *DateTimeNode:
-		return NodeContainsFirstScopeLevelSomething(n.Pattern, level, ofTypes)
+		found, atlevel = NodeSearch(n.Pattern, level, ofTypes, stopAt)
 	case *DurationNode:
-		return NodeContainsFirstScopeLevelSomething(n.Pattern, level, ofTypes)
+		found, atlevel = NodeSearch(n.Pattern, level, ofTypes, stopAt)
 
 	case *ListNode:
 		for _, e := range n.Elements {
-			if NodeContainsFirstScopeLevelSomething(e, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(e, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *HashNode:
 		for _, kv := range n.Pairs {
-			if NodeContainsFirstScopeLevelSomething(kv.Key, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(kv.Key, level, ofTypes, stopAt); found {
+				return
 			}
-			if NodeContainsFirstScopeLevelSomething(kv.Value, level, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(kv.Value, level, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *IndexNode:
-		return NodeContainsFirstScopeLevelSomething(n.Left, level, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Index, level, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Alternate, level, ofTypes)
+		if found, atlevel = NodeSearch(n.Left, level, ofTypes, stopAt); found {
+			return
+		}
+		if found, atlevel = NodeSearch(n.Index, level, ofTypes, stopAt); found {
+			return
+		}
+		found, atlevel = NodeSearch(n.Alternate, level, ofTypes, stopAt)
 
 	case *BlockNode:
 		add := 0
@@ -158,75 +187,88 @@ func NodeContainsFirstScopeLevelSomething(node Node, level int, ofTypes []Node) 
 			add = 1
 		}
 		for _, stmt := range n.Statements {
-			if NodeContainsFirstScopeLevelSomething(stmt, level+add, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(stmt, level+add, ofTypes, stopAt); found {
+				return
 			}
 		}
 
 	case *ExpressionStatementNode:
-		return NodeContainsFirstScopeLevelSomething(n.Expression, level, ofTypes)
+		found, atlevel = NodeSearch(n.Expression, level, ofTypes, stopAt)
 
 	case *InfixExpressionNode:
-		return NodeContainsFirstScopeLevelSomething(n.Left, level, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Right, level, ofTypes)
+		if found, atlevel = NodeSearch(n.Left, level, ofTypes, stopAt); found {
+			return
+		}
+		found, atlevel = NodeSearch(n.Right, level, ofTypes, stopAt)
 
 	case *PrefixExpressionNode:
-		return NodeContainsFirstScopeLevelSomething(n.Right, level, ofTypes)
+		found, atlevel = NodeSearch(n.Right, level, ofTypes, stopAt)
 
 	case *PostfixExpressionNode:
-		return NodeContainsFirstScopeLevelSomething(n.Left, level, ofTypes)
+		found, atlevel = NodeSearch(n.Left, level, ofTypes, stopAt)
 
 	case *ForNode:
-		return NodeContainsFirstScopeLevelSomething(n.Body, level+1, ofTypes)
+		found, atlevel = NodeSearch(n.Body, level+1, ofTypes, stopAt)
 
 	case *ForInOfNode:
-		return NodeContainsFirstScopeLevelSomething(n.Body, level+1, ofTypes)
+		found, atlevel = NodeSearch(n.Body, level+1, ofTypes, stopAt)
 
 	case *IfNode:
 		for _, ta := range n.TestsAndActions {
-			if NodeContainsFirstScopeLevelSomething(ta.Test, level+1, ofTypes) ||
-				NodeContainsFirstScopeLevelSomething(ta.Do, level+1, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(ta.Test, level+1, ofTypes, stopAt); found {
+				return true, level
+			}
+			if found, atlevel = NodeSearch(ta.Do, level+1, ofTypes, stopAt); found {
+				return true, level
 			}
 		}
 
 	case *SwitchNode:
 		for _, e := range n.Expressions {
-			if NodeContainsFirstScopeLevelSomething(e.Expr, level+1, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(e.Expr, level+1, ofTypes, stopAt); found {
+				return true, level
 			}
 		}
 		for _, ca := range n.CasesAndActions {
-			if NodeContainsFirstScopeLevelSomething(ca.Do, level+1, ofTypes) {
-				return true
+			if found, atlevel = NodeSearch(ca.Do, level+1, ofTypes, stopAt); found {
+				return true, level
 			}
 			for _, cond := range ca.MatchConditions {
-				if NodeContainsFirstScopeLevelSomething(cond, level+1, ofTypes) {
-					return true
+				if found, atlevel = NodeSearch(cond, level+1, ofTypes, stopAt); found {
+					return true, level
 				}
 			}
 			for _, cond := range ca.OtherConditions {
-				if NodeContainsFirstScopeLevelSomething(cond, level+1, ofTypes) {
-					return true
+				if found, atlevel = NodeSearch(cond, level+1, ofTypes, stopAt); found {
+					return true, level
 				}
 			}
 		}
 
 	case *TryCatchNode:
-		return NodeContainsFirstScopeLevelSomething(n.Try, level, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Catch, level+1, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Else, level+1, ofTypes)
+		if found, atlevel = NodeSearch(n.Try, level, ofTypes, stopAt); found {
+			return
+		}
+		if found, atlevel = NodeSearch(n.Catch, level+1, ofTypes, stopAt); found {
+			return
+		}
+		found, atlevel = NodeSearch(n.Else, level+1, ofTypes, stopAt)
 
 	case *ThrowNode:
-		return NodeContainsFirstScopeLevelSomething(n.Exception, level, ofTypes)
+		found, atlevel = NodeSearch(n.Exception, level, ofTypes, stopAt)
 
 	case *ReturnNode:
-		return NodeContainsFirstScopeLevelSomething(n.ReturnValue, level, ofTypes)
+		found, atlevel = NodeSearch(n.ReturnValue, level, ofTypes, stopAt)
 
 	case *ExpansionNode:
-		return NodeContainsFirstScopeLevelSomething(n.Limits, level, ofTypes) ||
-			NodeContainsFirstScopeLevelSomething(n.Continuation, level, ofTypes)
+		if found, atlevel = NodeSearch(n.Limits, level, ofTypes, stopAt); found {
+			return
+		}
+		found, atlevel = NodeSearch(n.Continuation, level, ofTypes, stopAt)
+		
+	default:
+		// a bug
 	}
 
-	return false
+	return
 }

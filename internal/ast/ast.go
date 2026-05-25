@@ -20,6 +20,7 @@ var ExecuteMain = &CallNode{Function: &IdentNode{Name: common.MainFnName, System
 // NOTE: For error reporting, we attach tokens to the nodes (besides operators).
 // Besides the literal, tokens contain line numbers, etc.
 type Node interface {
+	Search(ofTypes, dontSearch []Node) (found bool)
 	Copy() Node
 	Evaluate() object.Object
 	Compile(*Compiler) (opcode.InsPackage, error)
@@ -28,6 +29,7 @@ type Node interface {
 	TokenInfo() token.Token
 }
 
+// used to set "definable" things, such as indexed values, like x[1][1] = ...
 type Definable interface {
 	Node
 	CompileDefine(*Compiler) (opcode.InsPackage, error)

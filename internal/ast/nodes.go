@@ -29,6 +29,16 @@ type Program struct {
 	VarNamesUsed []string
 }
 
+func (p *Program) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(p, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(p, dontSearch) {
+		return false
+	}
+	return searchNodeSlice(ofTypes, dontSearch, p.Statements)
+}
+
 func (p *Program) Copy() Node {
 	return &Program{Token: p.Token.Copy(), Statements: CopyNodeSlice(p.Statements)}
 }
@@ -114,10 +124,18 @@ type ModuleNode struct {
 	ImpureEffects bool
 }
 
+func (m *ModuleNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(m, ofTypes)
+}
+
 func (m *ModuleNode) statementNode() {}
 
 func (m *ModuleNode) Copy() Node {
-	return m
+	return &ModuleNode{
+		Token:         m.Token.Copy(),
+		Name:          m.Name,
+		ImpureEffects: m.ImpureEffects,
+	}
 }
 
 func (m *ModuleNode) Evaluate() object.Object {
@@ -177,6 +195,10 @@ func (ia *ImportAs) Copy() *ImportAs {
 type ImportNode struct {
 	Token   token.Token
 	Modules []ImportAs
+}
+
+func (i *ImportNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(i, ofTypes)
 }
 
 func (i *ImportNode) statementNode() {}
@@ -263,6 +285,16 @@ type ReturnNode struct {
 	ReturnValue Node
 }
 
+func (r *ReturnNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(r, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(r, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, r.ReturnValue)
+}
+
 func (r *ReturnNode) statementNode() {}
 
 func (r *ReturnNode) Copy() Node {
@@ -312,6 +344,16 @@ type LineDeclarationNode struct {
 	Assignment Node // assignment or variable
 	Mutable    bool
 	Public     bool
+}
+
+func (d *LineDeclarationNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(d, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(d, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, d.Assignment)
 }
 
 func (d *LineDeclarationNode) expressionNode() {}
@@ -376,6 +418,17 @@ type AssignmentNode struct {
 	Identifiers      []Node
 	Values           []Node
 	SystemAssignment bool
+}
+
+func (a *AssignmentNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(a, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(a, dontSearch) {
+		return false
+	}
+	return searchNodeSlice(ofTypes, dontSearch, a.Identifiers) ||
+		searchNodeSlice(ofTypes, dontSearch, a.Values)
 }
 
 func (a *AssignmentNode) expressionNode() {}
@@ -476,6 +529,16 @@ type ExpressionStatementNode struct {
 	Expression Node
 }
 
+func (es *ExpressionStatementNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(es, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(es, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, es.Expression)
+}
+
 func (es *ExpressionStatementNode) statementNode() {}
 
 func (es *ExpressionStatementNode) Copy() Node {
@@ -517,6 +580,18 @@ type CallNode struct {
 	Function       Node // Identifier or Function Literal
 	PositionalArgs []Node
 	ByNameArgs     []Node
+}
+
+func (fc *CallNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(fc, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(fc, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, fc.Function) ||
+		searchNodeSlice(ofTypes, dontSearch, fc.PositionalArgs) ||
+		searchNodeSlice(ofTypes, dontSearch, fc.ByNameArgs)
 }
 
 func (fc *CallNode) expressionNode() {}
@@ -688,6 +763,18 @@ type FunctionNode struct {
 	ImpureEffects        bool
 }
 
+func (f *FunctionNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(f, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(f, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, f.Body, f.ReturnType) ||
+		searchNodeSlice(ofTypes, dontSearch, f.PositionalParameters) ||
+		searchNodeSlice(ofTypes, dontSearch, f.ByNameParameters)
+}
+
 func (f *FunctionNode) expressionNode() {}
 
 func (f *FunctionNode) Copy() Node {
@@ -795,6 +882,16 @@ type ExpansionNode struct {
 	Continuation Node
 }
 
+func (pe *ExpansionNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(pe, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(pe, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, pe.Limits, pe.Continuation)
+}
+
 func (pe *ExpansionNode) expressionNode() {}
 
 func (pe *ExpansionNode) Copy() Node {
@@ -851,6 +948,10 @@ func (pe *ExpansionNode) TokenInfo() token.Token {
 // FUNCTION SELF NODE
 type SelfNode struct {
 	Token token.Token
+}
+
+func (s *SelfNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(s, ofTypes)
 }
 
 func (s *SelfNode) expressionNode() {}
@@ -912,6 +1013,16 @@ type IdentNode struct {
 	Type   Node // type or subtype; nil for no explicit type
 	Name   string
 	System bool
+}
+
+func (i *IdentNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(i, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(i, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, i.Type)
 }
 
 func (i *IdentNode) expressionNode() {}
@@ -989,6 +1100,16 @@ type ModeNode struct {
 	Setting Node
 }
 
+func (m *ModeNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(m, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(m, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, m.Setting)
+}
+
 func (m *ModeNode) statementNode() {}
 
 func (m *ModeNode) Copy() Node {
@@ -1056,6 +1177,18 @@ type ForNode struct {
 	Test          Node
 	Increment     []Node
 	Body          Node
+}
+
+func (n *ForNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(n, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(n, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, n.LoopValueInit, n.Test, n.Body) ||
+		searchNodeSlice(ofTypes, dontSearch, n.Init) ||
+		searchNodeSlice(ofTypes, dontSearch, n.Increment)
 }
 
 func (n *ForNode) expressionNode() {}
@@ -1259,6 +1392,16 @@ type ForInOfNode struct {
 	Body          Node
 }
 
+func (n *ForInOfNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(n, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(n, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, n.LoopValueInit, n.Var, n.Over, n.Body)
+}
+
 func (n *ForInOfNode) expressionNode() {}
 
 func (n *ForInOfNode) Copy() Node {
@@ -1331,6 +1474,16 @@ type BreakNode struct {
 	Value Node
 }
 
+func (n *BreakNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(n, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(n, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, n.Value)
+}
+
 func (n *BreakNode) statementNode() {}
 
 func (n *BreakNode) Copy() Node {
@@ -1377,6 +1530,7 @@ func (n *BreakNode) TokenRepresentation() string {
 
 	return out.String()
 }
+
 func (n *BreakNode) String() string {
 	var out bytes.Buffer
 
@@ -1388,6 +1542,7 @@ func (n *BreakNode) String() string {
 
 	return out.String()
 }
+
 func (n *BreakNode) TokenInfo() token.Token {
 	return n.Token
 }
@@ -1395,6 +1550,10 @@ func (n *BreakNode) TokenInfo() token.Token {
 // NEXT
 type NextNode struct {
 	Token token.Token
+}
+
+func (n *NextNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(n, ofTypes)
 }
 
 func (n *NextNode) statementNode() {}
@@ -1433,6 +1592,10 @@ type BooleanNode struct {
 	Value bool
 }
 
+func (b *BooleanNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(b, ofTypes)
+}
+
 func (b *BooleanNode) expressionNode() {}
 
 func (b *BooleanNode) Copy() Node {
@@ -1466,6 +1629,10 @@ func (b *BooleanNode) TokenInfo() token.Token {
 // NULL
 type NullNode struct {
 	Token token.Token
+}
+
+func (n *NullNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(n, ofTypes)
 }
 
 func (n *NullNode) expressionNode() {}
@@ -1507,6 +1674,10 @@ type NoneNode struct {
 	Token token.Token
 }
 
+func (no *NoneNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(no, ofTypes)
+}
+
 func (no *NoneNode) expressionNode() {}
 
 func (no *NoneNode) Copy() Node {
@@ -1545,6 +1716,16 @@ type StringNode struct {
 	Token          token.Token
 	Values         []string
 	Interpolations []Node
+}
+
+func (s *StringNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(s, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(s, dontSearch) {
+		return false
+	}
+	return searchNodeSlice(ofTypes, dontSearch, s.Interpolations)
 }
 
 func (s *StringNode) expressionNode() {}
@@ -1632,6 +1813,16 @@ type InterpolatedNode struct {
 	Modifiers []string
 }
 
+func (i *InterpolatedNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(i, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(i, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, i.Value)
+}
+
 func (i *InterpolatedNode) expressionNode() {}
 
 func (i *InterpolatedNode) Copy() Node {
@@ -1684,6 +1875,16 @@ type RegexNode struct {
 	Token     token.Token
 	Pattern   Node
 	RegexType regex.RegexType
+}
+
+func (r *RegexNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(r, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(r, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, r.Pattern)
 }
 
 func (r *RegexNode) expressionNode() {}
@@ -1764,6 +1965,7 @@ func (r *RegexNode) TokenRepresentation() string {
 
 	return out.String()
 }
+
 func (r *RegexNode) String() string {
 	var out bytes.Buffer
 
@@ -1781,6 +1983,16 @@ func (r *RegexNode) TokenInfo() token.Token {
 type DateTimeNode struct {
 	Token   token.Token
 	Pattern Node // pattern string, to be interpreted later
+}
+
+func (dt *DateTimeNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(dt, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(dt, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, dt.Pattern)
 }
 
 func (dt *DateTimeNode) expressionNode() {}
@@ -1861,6 +2073,16 @@ type DurationNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
+func (d *DurationNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(d, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(d, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, d.Pattern)
+}
+
 func (d *DurationNode) expressionNode() {}
 
 func (d *DurationNode) Copy() Node {
@@ -1921,10 +2143,14 @@ func (d *DurationNode) TokenInfo() token.Token {
 
 // NUMBER
 type NumberNode struct {
-	Token token.Token
-	Value string
-	Base  int
+	Token     token.Token
+	Value     string
+	Base      int
 	Imaginary bool
+}
+
+func (n *NumberNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(n, ofTypes)
 }
 
 func (n *NumberNode) expressionNode() {}
@@ -1979,6 +2205,7 @@ func (n *NumberNode) TokenRepresentation() string {
 	
 	return sb.String()
 }
+
 func (n *NumberNode) String() string {
 	var sb strings.Builder
 
@@ -2023,6 +2250,16 @@ type ListNode struct {
 	Elements []Node
 }
 
+func (a *ListNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(a, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(a, dontSearch) {
+		return false
+	}
+	return searchNodeSlice(ofTypes, dontSearch, a.Elements)
+}
+
 func (a *ListNode) expressionNode() {}
 
 func (a *ListNode) Copy() Node {
@@ -2056,9 +2293,9 @@ func (node *ListNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		}
 		pkg = pkg.Append(b)
 
-		if CopyBeforeAssignment(e) {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
-		}
+		// if CopyBeforeAssignment(e) {
+		// 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		// }
 	}
 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpList, len(node.Elements)))
 	return
@@ -2093,6 +2330,16 @@ type IndexNode struct {
 	Left      Node
 	Index     Node
 	Alternate Node
+}
+
+func (i *IndexNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(i, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(i, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, i.Left, i.Index, i.Alternate)
 }
 
 func (i *IndexNode) expressionNode() {}
@@ -2196,6 +2443,22 @@ type HashNode struct {
 	Pairs []KeyValuePair
 }
 
+func (d *HashNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(d, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(d, dontSearch) {
+		return false
+	}
+
+	for _, kv := range d.Pairs {
+		if found = searchNodes(ofTypes, dontSearch, kv.Key, kv.Value); found {
+			return
+		}
+	}
+	return
+}
+
 func (d *HashNode) expressionNode() {}
 
 func (d *HashNode) Copy() Node {
@@ -2225,9 +2488,9 @@ func (node *HashNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		}
 		pkg = pkg.Append(b)
 
-		if CopyBeforeAssignment(kv.Key) {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
-		}
+		// if CopyBeforeAssignment(kv.Key) {
+		// 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		// }
 
 		b, err = kv.Value.Compile(c)
 		if err != nil {
@@ -2235,9 +2498,9 @@ func (node *HashNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		}
 		pkg = pkg.Append(b)
 
-		if CopyBeforeAssignment(kv.Value) {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
-		}
+		// if CopyBeforeAssignment(kv.Value) {
+		// 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		// }
 	}
 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpHash, len(node.Pairs)*2))
 	return
@@ -2275,6 +2538,16 @@ type PrefixExpressionNode struct {
 	Token    token.Token
 	Operator token.Token
 	Right    Node
+}
+
+func (pe *PrefixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(pe, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(pe, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, pe.Right)
 }
 
 func (pe *PrefixExpressionNode) expressionNode() {}
@@ -2325,6 +2598,7 @@ func (pe *PrefixExpressionNode) TokenRepresentation() string {
 
 	return out.String()
 }
+
 func (pe *PrefixExpressionNode) String() string {
 	var out bytes.Buffer
 
@@ -2348,6 +2622,16 @@ type PostfixExpressionNode struct {
 	Token    token.Token
 	Left     Node
 	Operator token.Token
+}
+
+func (pe *PostfixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(pe, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(pe, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, pe.Left)
 }
 
 func (pe *PostfixExpressionNode) expressionNode() {}
@@ -2399,6 +2683,16 @@ type InfixExpressionNode struct {
 	Left     Node
 	Operator token.Token
 	Right    Node
+}
+
+func (ie *InfixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(ie, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(ie, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, ie.Left, ie.Right)
 }
 
 func (ie *InfixExpressionNode) expressionNode() {}
@@ -2611,6 +2905,16 @@ type BlockNode struct {
 	HasScope   bool
 }
 
+func (b *BlockNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(b, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(b, dontSearch) {
+		return false
+	}
+	return searchNodeSlice(ofTypes, dontSearch, b.Statements)
+}
+
 func (b *BlockNode) expressionNode() {}
 
 func (b *BlockNode) Copy() Node {
@@ -2680,6 +2984,7 @@ func (b *BlockNode) TokenRepresentation() string {
 
 	return out.String()
 }
+
 func (b *BlockNode) TokenRepresentationWithFallThrough() string {
 	var out bytes.Buffer
 
@@ -2738,6 +3043,23 @@ type IfNode struct {
 	TestsAndActions []TestDo
 	IsSwitchExpr    bool
     DefaultElse     Node
+}
+
+func (i *IfNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(i, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(i, dontSearch) {
+		return false
+	}
+	
+	for _, td := range i.TestsAndActions {
+		if found = searchNodes(ofTypes, dontSearch, td.Test, td.Do); found {
+			return
+		}
+	}
+
+	return searchNodes(ofTypes, dontSearch, i.DefaultElse)
 }
 
 func (i *IfNode) expressionNode() {}
@@ -2847,6 +3169,32 @@ type SwitchNode struct {
 	CasesAndActions  []CaseDo
 	DefaultLogicalOp token.Token
     DefaultDefault   Node
+}
+
+func (g *SwitchNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(g, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(g, dontSearch) {
+		return false
+	}
+
+	for _, cd := range g.CasesAndActions {
+		found = searchNodes(ofTypes, dontSearch, cd.Do) ||
+			searchNodeSlice(ofTypes, dontSearch, cd.MatchConditions) ||
+			searchNodeSlice(ofTypes, dontSearch, cd.OtherConditions)
+
+		if found {
+			return
+		}
+	}
+	for _, pe := range g.Expressions {
+		if found = searchNodes(ofTypes, dontSearch, pe.Expr); found {
+			return
+		}
+	}
+
+	return searchNodes(ofTypes, dontSearch, g.DefaultDefault)
 }
 
 func (g *SwitchNode) expressionNode() {}
@@ -3031,6 +3379,10 @@ type FallThroughNode struct {
 	Token token.Token
 }
 
+func (f *FallThroughNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	return nodeIsOfType(f, ofTypes)
+}
+
 func (f *FallThroughNode) statementNode() {}
 
 func (f *FallThroughNode) Copy() Node {
@@ -3065,6 +3417,16 @@ type TryCatchNode struct {
 	ExceptionVar Node
 	Catch        Node
 	Else         Node
+}
+
+func (t *TryCatchNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(t, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(t, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, t.Try, t.ExceptionVar, t.Catch, t.Else)
 }
 
 func (t *TryCatchNode) expressionNode() {}
@@ -3188,6 +3550,16 @@ func (t *TryCatchNode) TokenInfo() token.Token {
 type ThrowNode struct {
 	Token     token.Token
 	Exception Node
+}
+
+func (t *ThrowNode) Search(ofTypes, dontSearch []Node) (found bool) {
+	if nodeIsOfType(t, ofTypes) {
+		return true
+	}
+	if nodeIsOfType(t, dontSearch) {
+		return false
+	}
+	return searchNodes(ofTypes, dontSearch, t.Exception)
 }
 
 func (t *ThrowNode) statementNode() {}
