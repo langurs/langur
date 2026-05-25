@@ -9814,6 +9814,16 @@ func TestSemiDeepCopy(t *testing.T) {
 		 `,
 			22, object.NUMBER_OBJ,
 		},
+
+		{`var x = [1, 2]
+		  var y = [[2, 3]]
+		  y = more(y, x)
+		  x[1], x[2] = x[2], x[1]
+		  y = more(y, x)
+		  string(y)
+		 `,
+			"[[2, 3], [1, 2], [2, 1]]", object.STRING_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)

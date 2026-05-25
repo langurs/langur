@@ -49,11 +49,7 @@ func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
 func CopyBeforeAssignment(val Node) bool {
 	// copy value before assignment?
 	// inefficient to always copy
-
-	// FIXME: a temporary patch; inefficient
-	return true
-
-	// return val.Search(copyBeforeAssignment_searchCritera)
+	return val.Search(copyBeforeAssignment_searchCritera)
 }
 var copyBeforeAssignment_searchCritera = &searchCriteria{
 	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},

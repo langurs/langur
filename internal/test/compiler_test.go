@@ -1386,7 +1386,6 @@ func TestCompilerAssignmentStatementScopes(t *testing.T) {
 				process.GetBuiltInByName("_len"), 2, 1,
 				[]opcode.Instructions{ // decoupling scope (uses internal temporary variable)
 					opcode.Make(opcode.OpConstant, 0), // []
-					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 0), // val _Decouple_ = []
 					opcode.Make(opcode.OpPop),
 					opcode.Make(opcode.OpGetLocal, 0),    // _Decouple_
@@ -1455,7 +1454,8 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0),    // x
 					opcode.Make(opcode.OpConstant, 1),    // 7
 					opcode.Make(opcode.OpLessThan, 0, 0), // x < 7
-					opcode.Make(opcode.OpJumpIfNotTruthy, 17),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 17),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 18),
 
 					// body
 					opcode.Make(opcode.OpGetLocal, 0), // { x }
@@ -1465,10 +1465,12 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0), // x = x + 1
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 26),
+					// opcode.Make(opcode.OpJumpBack, 26),
+					opcode.Make(opcode.OpJumpBack, 27),
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 				},
@@ -1490,7 +1492,6 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpConstant, 1), // 2
 					opcode.Make(opcode.OpList, 2),     // [1, 2]
 
-					opcode.Make(opcode.OpCopy),
 					opcode.Make(opcode.OpSetLocal, 0), // _LoopOver_ = [1, 2]
 					opcode.Make(opcode.OpPop),
 
@@ -1520,7 +1521,8 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 3), // _LoopInc_
 					opcode.Make(opcode.OpGetLocal, 1), // _LoopLimit_
 					opcode.Make(opcode.OpLessThanOrEqual, 0, 0),
-					opcode.Make(opcode.OpJumpIfNotTruthy, 29),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 29),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 30),
 
 					// body
 					opcode.Make(opcode.OpGetLocal, 2), // { x }
@@ -1530,6 +1532,7 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 3), // _LoopInc_
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 3), // _LoopInc_ += 1
 					opcode.Make(opcode.OpPop),
 
@@ -1541,7 +1544,8 @@ func TestCompilerForLoop(t *testing.T) {
 					opcode.Make(opcode.OpSetLocal, 2), // x = _LoopOver_[_LoopInc_; null]
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 37),
+					// opcode.Make(opcode.OpJumpBack, 37),
+					opcode.Make(opcode.OpJumpBack, 38),
 
 					opcode.Make(opcode.OpGetLocal, 4), // _for
 				},
@@ -1577,7 +1581,8 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0),    // x
 					opcode.Make(opcode.OpConstant, 1),    // 7
 					opcode.Make(opcode.OpLessThan, 0, 0), // x < 7
-					opcode.Make(opcode.OpJumpIfNotTruthy, 37),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 37),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 38),
 
 					// body
 					opcode.Make(opcode.OpGetLocal, 0),       // x
@@ -1585,7 +1590,8 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGreaterThan, 0, 0), // x > 3
 					opcode.Make(opcode.OpJumpIfNotTruthy, 7),
 					opcode.Make(opcode.OpGetLocal, 1), // _for
-					opcode.Make(opcode.OpJump, 16),    // break; jump past increment and JumpBack
+					// opcode.Make(opcode.OpJump, 16),    // break; jump past increment and JumpBack
+					opcode.Make(opcode.OpJump, 17),    // break; jump past increment and JumpBack
 					// jump to end would go here if the compiler doesn't know better (as it's extraneous)
 					opcode.Make(opcode.OpNull),
 					opcode.Make(opcode.OpPop),
@@ -1594,10 +1600,12 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0), // x = x + 1
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 46),
+					// opcode.Make(opcode.OpJumpBack, 46),
+					opcode.Make(opcode.OpJumpBack, 47),
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 
@@ -1628,7 +1636,8 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0),         // x
 					opcode.Make(opcode.OpConstant, 1),         // 7
 					opcode.Make(opcode.OpLessThan, 0, 0),      // x < 7
-					opcode.Make(opcode.OpJumpIfNotTruthy, 24), // jump out
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 24), // jump out
+					opcode.Make(opcode.OpJumpIfNotTruthy, 25), // jump out
 
 					// body
 					opcode.Make(opcode.OpNull),        // FIXME: unnecessary, but works for now (in case of OpJumpRelay expecting a value on the stack)
@@ -1640,10 +1649,12 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0), // x = x + 1
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 33), // jump back to test
+					// opcode.Make(opcode.OpJumpBack, 33), // jump back to test
+					opcode.Make(opcode.OpJumpBack, 34), // jump back to test
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 				},
@@ -1692,7 +1703,8 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0),
 					opcode.Make(opcode.OpConstant, 1), // 3
 					opcode.Make(opcode.OpLessThan, 0, 0),
-					opcode.Make(opcode.OpJumpIfNotTruthy, 18),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 18),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 19),
 
 					// body
 					opcode.Make(opcode.OpExecute, 4), // { ... }
@@ -1702,9 +1714,11 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 0), // 1
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0),
 					opcode.Make(opcode.OpPop),
-					opcode.Make(opcode.OpJumpBack, 27),
+					// opcode.Make(opcode.OpJumpBack, 27),
+					opcode.Make(opcode.OpJumpBack, 28),
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 				},
@@ -1761,12 +1775,14 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // i
 					opcode.Make(opcode.OpConstant, 2),
 					opcode.Make(opcode.OpLessThan, 0, 0), // i < 10
-					opcode.Make(opcode.OpJumpIfNotTruthy, 25),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 25),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 27),
 
 					// body
 					opcode.Make(opcode.OpGetGlobal, 0), // sum
 					opcode.Make(opcode.OpConstant, 3),  // 7
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetGlobal, 0), // sum += 7
 					opcode.Make(opcode.OpPop),
 
@@ -1774,10 +1790,12 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // i
 					opcode.Make(opcode.OpConstant, 1),
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0), // i += 1
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 34),
+					// opcode.Make(opcode.OpJumpBack, 34),
+					opcode.Make(opcode.OpJumpBack, 36),
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 				},
@@ -1796,7 +1814,8 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 2),
 					opcode.Make(opcode.OpLessThanOrEqual, 0, 0), // x < 10
-					opcode.Make(opcode.OpJumpIfNotTruthy, 28),
+					// opcode.Make(opcode.OpJumpIfNotTruthy, 28),
+					opcode.Make(opcode.OpJumpIfNotTruthy, 29),
 
 					// body
 					opcode.Make(opcode.OpExecute, 5), // where the OpJumpFromLevel occurs
@@ -1812,10 +1831,12 @@ func TestCompilerNextBreak(t *testing.T) {
 					opcode.Make(opcode.OpGetLocal, 0), // x
 					opcode.Make(opcode.OpConstant, 1),
 					opcode.Make(opcode.OpAdd),
+					opcode.Make(opcode.OpCopy),        // FIXME: an extraneous copy, b/c it could be smarter
 					opcode.Make(opcode.OpSetLocal, 0), // x += 1
 					opcode.Make(opcode.OpPop),
 
-					opcode.Make(opcode.OpJumpBack, 37),
+					// opcode.Make(opcode.OpJumpBack, 37),
+					opcode.Make(opcode.OpJumpBack, 38),
 
 					opcode.Make(opcode.OpGetLocal, 1), // _for
 				},

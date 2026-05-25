@@ -98,6 +98,7 @@ func resetEnvironment() {
 	symbolTable = symbol.NewSymbolTable(nil, modes.NewCompileModes())
 	vmModes = modes.NewVmModes()
 	compileModes = modes.NewCompileModes()
+	firstRun = true
 }
 
 // for REPL not run from langur command (not "interactive" mode)
@@ -119,7 +120,7 @@ func main() {
 		}
 	}()
 
-	firstRun = true
+	resetEnvironment()
 
 	if loadFile != "" {
 		fmt.Printf("loading file (%s)...\n", loadFile)
@@ -138,7 +139,7 @@ func main() {
 
 // from langur command ("interactive")
 func Interactive(opts *InteractiveOptions) {
-	firstRun = true
+	resetEnvironment()
 	loop(opts)
 }
 
@@ -146,8 +147,6 @@ func loop(opts *InteractiveOptions) {
 	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
 	fmt.Println("Type “exit()” or press ctrl-D to quit.")
 	fmt.Println("Type “reset()” for a new environment.")
-
-	resetEnvironment()
 
 	for {
 		fmt.Print(opts.Prompt)
@@ -176,7 +175,6 @@ func loop(opts *InteractiveOptions) {
 
 		case "reset()":
 			resetEnvironment()
-			firstRun = true
 			fmt.Print("Environment Reset\n")
 			continue
 		}
