@@ -29,14 +29,14 @@ type Program struct {
 	VarNamesUsed []string
 }
 
-func (p *Program) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(p, ofTypes) {
+func (p *Program) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(p, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(p, dontSearch) {
+	if nodeIsOfType(p, sc.DontSearch) {
 		return false
 	}
-	return searchNodeSlice(ofTypes, dontSearch, p.Statements)
+	return sc.searchNodeSlice(p.Statements)
 }
 
 func (p *Program) Copy() Node {
@@ -124,8 +124,8 @@ type ModuleNode struct {
 	ImpureEffects bool
 }
 
-func (m *ModuleNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(m, ofTypes)
+func (m *ModuleNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(m, sc.OfTypes)
 }
 
 func (m *ModuleNode) statementNode() {}
@@ -197,8 +197,8 @@ type ImportNode struct {
 	Modules []ImportAs
 }
 
-func (i *ImportNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(i, ofTypes)
+func (i *ImportNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(i, sc.OfTypes)
 }
 
 func (i *ImportNode) statementNode() {}
@@ -285,14 +285,14 @@ type ReturnNode struct {
 	ReturnValue Node
 }
 
-func (r *ReturnNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(r, ofTypes) {
+func (r *ReturnNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(r, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(r, dontSearch) {
+	if nodeIsOfType(r, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, r.ReturnValue)
+	return sc.searchNodes(r.ReturnValue)
 }
 
 func (r *ReturnNode) statementNode() {}
@@ -346,14 +346,14 @@ type LineDeclarationNode struct {
 	Public     bool
 }
 
-func (d *LineDeclarationNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(d, ofTypes) {
+func (d *LineDeclarationNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, dontSearch) {
+	if nodeIsOfType(d, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, d.Assignment)
+	return sc.searchNodes(d.Assignment)
 }
 
 func (d *LineDeclarationNode) expressionNode() {}
@@ -420,15 +420,15 @@ type AssignmentNode struct {
 	SystemAssignment bool
 }
 
-func (a *AssignmentNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(a, ofTypes) {
+func (a *AssignmentNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(a, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(a, dontSearch) {
+	if nodeIsOfType(a, sc.DontSearch) {
 		return false
 	}
-	return searchNodeSlice(ofTypes, dontSearch, a.Identifiers) ||
-		searchNodeSlice(ofTypes, dontSearch, a.Values)
+	return sc.searchNodeSlice(a.Identifiers) ||
+		sc.searchNodeSlice(a.Values)
 }
 
 func (a *AssignmentNode) expressionNode() {}
@@ -529,14 +529,14 @@ type ExpressionStatementNode struct {
 	Expression Node
 }
 
-func (es *ExpressionStatementNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(es, ofTypes) {
+func (es *ExpressionStatementNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(es, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(es, dontSearch) {
+	if nodeIsOfType(es, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, es.Expression)
+	return sc.searchNodes(es.Expression)
 }
 
 func (es *ExpressionStatementNode) statementNode() {}
@@ -582,16 +582,16 @@ type CallNode struct {
 	ByNameArgs     []Node
 }
 
-func (fc *CallNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(fc, ofTypes) {
+func (fc *CallNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(fc, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(fc, dontSearch) {
+	if nodeIsOfType(fc, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, fc.Function) ||
-		searchNodeSlice(ofTypes, dontSearch, fc.PositionalArgs) ||
-		searchNodeSlice(ofTypes, dontSearch, fc.ByNameArgs)
+	return sc.searchNodes(fc.Function) ||
+		sc.searchNodeSlice(fc.PositionalArgs) ||
+		sc.searchNodeSlice(fc.ByNameArgs)
 }
 
 func (fc *CallNode) expressionNode() {}
@@ -763,16 +763,16 @@ type FunctionNode struct {
 	ImpureEffects        bool
 }
 
-func (f *FunctionNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(f, ofTypes) {
+func (f *FunctionNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(f, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(f, dontSearch) {
+	if nodeIsOfType(f, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, f.Body, f.ReturnType) ||
-		searchNodeSlice(ofTypes, dontSearch, f.PositionalParameters) ||
-		searchNodeSlice(ofTypes, dontSearch, f.ByNameParameters)
+	return sc.searchNodes(f.Body, f.ReturnType) ||
+		sc.searchNodeSlice(f.PositionalParameters) ||
+		sc.searchNodeSlice(f.ByNameParameters)
 }
 
 func (f *FunctionNode) expressionNode() {}
@@ -882,14 +882,14 @@ type ExpansionNode struct {
 	Continuation Node
 }
 
-func (pe *ExpansionNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(pe, ofTypes) {
+func (pe *ExpansionNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, dontSearch) {
+	if nodeIsOfType(pe, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, pe.Limits, pe.Continuation)
+	return sc.searchNodes(pe.Limits, pe.Continuation)
 }
 
 func (pe *ExpansionNode) expressionNode() {}
@@ -950,8 +950,8 @@ type SelfNode struct {
 	Token token.Token
 }
 
-func (s *SelfNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(s, ofTypes)
+func (s *SelfNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(s, sc.OfTypes)
 }
 
 func (s *SelfNode) expressionNode() {}
@@ -1015,14 +1015,14 @@ type IdentNode struct {
 	System bool
 }
 
-func (i *IdentNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(i, ofTypes) {
+func (i *IdentNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, dontSearch) {
+	if nodeIsOfType(i, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, i.Type)
+	return sc.searchNodes(i.Type)
 }
 
 func (i *IdentNode) expressionNode() {}
@@ -1100,14 +1100,14 @@ type ModeNode struct {
 	Setting Node
 }
 
-func (m *ModeNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(m, ofTypes) {
+func (m *ModeNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(m, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(m, dontSearch) {
+	if nodeIsOfType(m, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, m.Setting)
+	return sc.searchNodes(m.Setting)
 }
 
 func (m *ModeNode) statementNode() {}
@@ -1179,16 +1179,16 @@ type ForNode struct {
 	Body          Node
 }
 
-func (n *ForNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(n, ofTypes) {
+func (n *ForNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, dontSearch) {
+	if nodeIsOfType(n, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, n.LoopValueInit, n.Test, n.Body) ||
-		searchNodeSlice(ofTypes, dontSearch, n.Init) ||
-		searchNodeSlice(ofTypes, dontSearch, n.Increment)
+	return sc.searchNodes(n.LoopValueInit, n.Test, n.Body) ||
+		sc.searchNodeSlice(n.Init) ||
+		sc.searchNodeSlice(n.Increment)
 }
 
 func (n *ForNode) expressionNode() {}
@@ -1392,14 +1392,14 @@ type ForInOfNode struct {
 	Body          Node
 }
 
-func (n *ForInOfNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(n, ofTypes) {
+func (n *ForInOfNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, dontSearch) {
+	if nodeIsOfType(n, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, n.LoopValueInit, n.Var, n.Over, n.Body)
+	return sc.searchNodes(n.LoopValueInit, n.Var, n.Over, n.Body)
 }
 
 func (n *ForInOfNode) expressionNode() {}
@@ -1474,14 +1474,14 @@ type BreakNode struct {
 	Value Node
 }
 
-func (n *BreakNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(n, ofTypes) {
+func (n *BreakNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, dontSearch) {
+	if nodeIsOfType(n, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, n.Value)
+	return sc.searchNodes(n.Value)
 }
 
 func (n *BreakNode) statementNode() {}
@@ -1552,8 +1552,8 @@ type NextNode struct {
 	Token token.Token
 }
 
-func (n *NextNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(n, ofTypes)
+func (n *NextNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(n, sc.OfTypes)
 }
 
 func (n *NextNode) statementNode() {}
@@ -1592,8 +1592,8 @@ type BooleanNode struct {
 	Value bool
 }
 
-func (b *BooleanNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(b, ofTypes)
+func (b *BooleanNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(b, sc.OfTypes)
 }
 
 func (b *BooleanNode) expressionNode() {}
@@ -1631,8 +1631,8 @@ type NullNode struct {
 	Token token.Token
 }
 
-func (n *NullNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(n, ofTypes)
+func (n *NullNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(n, sc.OfTypes)
 }
 
 func (n *NullNode) expressionNode() {}
@@ -1674,8 +1674,8 @@ type NoneNode struct {
 	Token token.Token
 }
 
-func (no *NoneNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(no, ofTypes)
+func (no *NoneNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(no, sc.OfTypes)
 }
 
 func (no *NoneNode) expressionNode() {}
@@ -1718,14 +1718,14 @@ type StringNode struct {
 	Interpolations []Node
 }
 
-func (s *StringNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(s, ofTypes) {
+func (s *StringNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(s, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(s, dontSearch) {
+	if nodeIsOfType(s, sc.DontSearch) {
 		return false
 	}
-	return searchNodeSlice(ofTypes, dontSearch, s.Interpolations)
+	return sc.searchNodeSlice(s.Interpolations)
 }
 
 func (s *StringNode) expressionNode() {}
@@ -1813,14 +1813,14 @@ type InterpolatedNode struct {
 	Modifiers []string
 }
 
-func (i *InterpolatedNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(i, ofTypes) {
+func (i *InterpolatedNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, dontSearch) {
+	if nodeIsOfType(i, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, i.Value)
+	return sc.searchNodes(i.Value)
 }
 
 func (i *InterpolatedNode) expressionNode() {}
@@ -1877,14 +1877,14 @@ type RegexNode struct {
 	RegexType regex.RegexType
 }
 
-func (r *RegexNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(r, ofTypes) {
+func (r *RegexNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(r, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(r, dontSearch) {
+	if nodeIsOfType(r, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, r.Pattern)
+	return sc.searchNodes(r.Pattern)
 }
 
 func (r *RegexNode) expressionNode() {}
@@ -1985,14 +1985,14 @@ type DateTimeNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
-func (dt *DateTimeNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(dt, ofTypes) {
+func (dt *DateTimeNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(dt, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(dt, dontSearch) {
+	if nodeIsOfType(dt, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, dt.Pattern)
+	return sc.searchNodes(dt.Pattern)
 }
 
 func (dt *DateTimeNode) expressionNode() {}
@@ -2073,14 +2073,14 @@ type DurationNode struct {
 	Pattern Node // pattern string, to be interpreted later
 }
 
-func (d *DurationNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(d, ofTypes) {
+func (d *DurationNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, dontSearch) {
+	if nodeIsOfType(d, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, d.Pattern)
+	return sc.searchNodes(d.Pattern)
 }
 
 func (d *DurationNode) expressionNode() {}
@@ -2149,8 +2149,8 @@ type NumberNode struct {
 	Imaginary bool
 }
 
-func (n *NumberNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(n, ofTypes)
+func (n *NumberNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(n, sc.OfTypes)
 }
 
 func (n *NumberNode) expressionNode() {}
@@ -2250,14 +2250,14 @@ type ListNode struct {
 	Elements []Node
 }
 
-func (a *ListNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(a, ofTypes) {
+func (a *ListNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(a, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(a, dontSearch) {
+	if nodeIsOfType(a, sc.DontSearch) {
 		return false
 	}
-	return searchNodeSlice(ofTypes, dontSearch, a.Elements)
+	return sc.searchNodeSlice(a.Elements)
 }
 
 func (a *ListNode) expressionNode() {}
@@ -2332,14 +2332,14 @@ type IndexNode struct {
 	Alternate Node
 }
 
-func (i *IndexNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(i, ofTypes) {
+func (i *IndexNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, dontSearch) {
+	if nodeIsOfType(i, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, i.Left, i.Index, i.Alternate)
+	return sc.searchNodes(i.Left, i.Index, i.Alternate)
 }
 
 func (i *IndexNode) expressionNode() {}
@@ -2443,16 +2443,16 @@ type HashNode struct {
 	Pairs []KeyValuePair
 }
 
-func (d *HashNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(d, ofTypes) {
+func (d *HashNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, dontSearch) {
+	if nodeIsOfType(d, sc.DontSearch) {
 		return false
 	}
 
 	for _, kv := range d.Pairs {
-		if found = searchNodes(ofTypes, dontSearch, kv.Key, kv.Value); found {
+		if found = sc.searchNodes(kv.Key, kv.Value); found {
 			return
 		}
 	}
@@ -2540,14 +2540,14 @@ type PrefixExpressionNode struct {
 	Right    Node
 }
 
-func (pe *PrefixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(pe, ofTypes) {
+func (pe *PrefixExpressionNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, dontSearch) {
+	if nodeIsOfType(pe, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, pe.Right)
+	return sc.searchNodes(pe.Right)
 }
 
 func (pe *PrefixExpressionNode) expressionNode() {}
@@ -2624,14 +2624,14 @@ type PostfixExpressionNode struct {
 	Operator token.Token
 }
 
-func (pe *PostfixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(pe, ofTypes) {
+func (pe *PostfixExpressionNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, dontSearch) {
+	if nodeIsOfType(pe, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, pe.Left)
+	return sc.searchNodes(pe.Left)
 }
 
 func (pe *PostfixExpressionNode) expressionNode() {}
@@ -2685,14 +2685,14 @@ type InfixExpressionNode struct {
 	Right    Node
 }
 
-func (ie *InfixExpressionNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(ie, ofTypes) {
+func (ie *InfixExpressionNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(ie, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(ie, dontSearch) {
+	if nodeIsOfType(ie, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, ie.Left, ie.Right)
+	return sc.searchNodes(ie.Left, ie.Right)
 }
 
 func (ie *InfixExpressionNode) expressionNode() {}
@@ -2905,14 +2905,14 @@ type BlockNode struct {
 	HasScope   bool
 }
 
-func (b *BlockNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(b, ofTypes) {
+func (b *BlockNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(b, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(b, dontSearch) {
+	if nodeIsOfType(b, sc.DontSearch) {
 		return false
 	}
-	return searchNodeSlice(ofTypes, dontSearch, b.Statements)
+	return sc.searchNodeSlice(b.Statements)
 }
 
 func (b *BlockNode) expressionNode() {}
@@ -3045,21 +3045,21 @@ type IfNode struct {
     DefaultElse     Node
 }
 
-func (i *IfNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(i, ofTypes) {
+func (i *IfNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, dontSearch) {
+	if nodeIsOfType(i, sc.DontSearch) {
 		return false
 	}
 	
 	for _, td := range i.TestsAndActions {
-		if found = searchNodes(ofTypes, dontSearch, td.Test, td.Do); found {
+		if found = sc.searchNodes(td.Test, td.Do); found {
 			return
 		}
 	}
 
-	return searchNodes(ofTypes, dontSearch, i.DefaultElse)
+	return sc.searchNodes(i.DefaultElse)
 }
 
 func (i *IfNode) expressionNode() {}
@@ -3171,30 +3171,30 @@ type SwitchNode struct {
     DefaultDefault   Node
 }
 
-func (g *SwitchNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(g, ofTypes) {
+func (g *SwitchNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(g, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(g, dontSearch) {
+	if nodeIsOfType(g, sc.DontSearch) {
 		return false
 	}
 
 	for _, cd := range g.CasesAndActions {
-		found = searchNodes(ofTypes, dontSearch, cd.Do) ||
-			searchNodeSlice(ofTypes, dontSearch, cd.MatchConditions) ||
-			searchNodeSlice(ofTypes, dontSearch, cd.OtherConditions)
+		found = sc.searchNodes(cd.Do) ||
+			sc.searchNodeSlice(cd.MatchConditions) ||
+			sc.searchNodeSlice(cd.OtherConditions)
 
 		if found {
 			return
 		}
 	}
 	for _, pe := range g.Expressions {
-		if found = searchNodes(ofTypes, dontSearch, pe.Expr); found {
+		if found = sc.searchNodes(pe.Expr); found {
 			return
 		}
 	}
 
-	return searchNodes(ofTypes, dontSearch, g.DefaultDefault)
+	return sc.searchNodes(g.DefaultDefault)
 }
 
 func (g *SwitchNode) expressionNode() {}
@@ -3379,8 +3379,8 @@ type FallThroughNode struct {
 	Token token.Token
 }
 
-func (f *FallThroughNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	return nodeIsOfType(f, ofTypes)
+func (f *FallThroughNode) Search(sc *searchCriteria) (found bool) {
+	return nodeIsOfType(f, sc.OfTypes)
 }
 
 func (f *FallThroughNode) statementNode() {}
@@ -3419,14 +3419,14 @@ type TryCatchNode struct {
 	Else         Node
 }
 
-func (t *TryCatchNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(t, ofTypes) {
+func (t *TryCatchNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(t, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(t, dontSearch) {
+	if nodeIsOfType(t, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, t.Try, t.ExceptionVar, t.Catch, t.Else)
+	return sc.searchNodes(t.Try, t.ExceptionVar, t.Catch, t.Else)
 }
 
 func (t *TryCatchNode) expressionNode() {}
@@ -3552,14 +3552,14 @@ type ThrowNode struct {
 	Exception Node
 }
 
-func (t *ThrowNode) Search(ofTypes, dontSearch []Node) (found bool) {
-	if nodeIsOfType(t, ofTypes) {
+func (t *ThrowNode) Search(sc *searchCriteria) (found bool) {
+	if nodeIsOfType(t, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(t, dontSearch) {
+	if nodeIsOfType(t, sc.DontSearch) {
 		return false
 	}
-	return searchNodes(ofTypes, dontSearch, t.Exception)
+	return sc.searchNodes(t.Exception)
 }
 
 func (t *ThrowNode) statementNode() {}

@@ -6,6 +6,26 @@ import (
 	"reflect"
 )
 
+type searchCriteria struct{
+	OfTypes		[]Node
+	DontSearch	[]Node
+}
+
+// a convenience function to list nodes to search
+func (sc *searchCriteria) searchNodes(checkNodes ...Node) (found bool) {
+	return sc.searchNodeSlice(checkNodes)
+}
+func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
+	for _, n := range checkNodes {
+		if n != nil {
+			if found = n.Search(sc); found {
+				return
+			}
+		}
+	}
+	return
+}
+
 func nodeIsOfType(node Node, ofTypes []Node) bool {
 	for _, n := range ofTypes {
 		if reflect.TypeOf(node) == reflect.TypeOf(n) {
@@ -67,22 +87,6 @@ func EndsWithDefiniteJump(nodes []Node) bool {
 		}
 	}
 	return false
-}
-
-// a convenience function to list nodes to search
-func searchNodes(ofTypes, dontSearch []Node, checkNodes ...Node) (found bool) {
-	return searchNodeSlice(ofTypes, dontSearch, checkNodes)
-}
-
-func searchNodeSlice(ofTypes, dontSearch []Node, checkNodes []Node) (found bool) {
-	for _, n := range checkNodes {
-		if n != nil {
-			if found = n.Search(ofTypes, dontSearch); found {
-				return
-			}
-		}
-	}
-	return
 }
 
 // for testing whether to wrap into scope
