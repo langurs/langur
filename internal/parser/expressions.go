@@ -32,6 +32,12 @@ func (p *Parser) likelyInfixPosition() bool {
 
 func (p *Parser) parseExpression(prec precedence) ast.Node {
 	prefix := p.prefixParseFns[p.tok.Type]
+
+	// ... intervening for not in or not of
+	if p.tok.Type == token.NOT && (p.peekTok.Type == token.IN || p.peekTok.Type == token.OF) {
+		prefix = p.parseInfixNilLeftExpression
+	}
+
 	if prefix == nil {
 		// some kind of error
 		if p.tok.Type == token.SEMICOLON && p.tok.Literal == lexer.IMPLIED_EXPRESSION_TERMINATOR_LITERAL {

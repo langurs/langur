@@ -1863,6 +1863,38 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
+func TestSwitchWithInOperator(t *testing.T) {
+	tests := []vmTestCase{
+		{`
+			switch 123 {
+				case in 1..44 : 1
+				case in 3..200: 2
+				default: 3
+			}`,
+			2, object.NUMBER_OBJ,
+		},
+
+		{`
+			switch 123 {
+				case not in 1..44 : 1
+				case not in 3..200: 2
+				default: 3
+			}`,
+			1, object.NUMBER_OBJ,
+		},
+		{`
+			switch 123 {
+				case not in 1..444 : 1
+				case not in 3..20: 2
+				default: 3
+			}`,
+			2, object.NUMBER_OBJ,
+		},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestSwitchWithAlternateExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		// extra conditions (after semicolon within case condition list)

@@ -136,6 +136,8 @@ func (p *Parser) setParseFunctionMaps() {
 		token.GT_OR_EQUAL:      p.parseInfixNilLeftExpression,
 		token.DIVISIBLE_BY:     p.parseInfixNilLeftExpression,
 		token.NOT_DIVISIBLE_BY: p.parseInfixNilLeftExpression,
+		token.IN:               p.parseInfixNilLeftExpression,
+		token.OF:               p.parseInfixNilLeftExpression,
 	}
 
 	// postfix functions

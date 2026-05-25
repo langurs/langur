@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.2
+- fix: parser to allow use of *in*/*not in*/*of*/*not of* operators within switch expression tests
+
+
 2026-05-25 - 0.21.1
 - added use of *in* operator on ranges (test if a value is within a range)
 - updated range type string to include the subtype, such as Range<Number>
