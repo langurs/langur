@@ -16,8 +16,6 @@ import (
 	"strings"
 )
 
-// NOTE: If adding node types, you may need to add them to functions in ast/search.go.
-
 func cannotDirectlyCompile(s string) (opcode.InsPackage, error) {
 	return opcode.InsPackage{}, fmt.Errorf("Cannot directly compile node of type %s", s)
 }
@@ -28,6 +26,10 @@ type Program struct {
 	Statements   []Node
 	VarNamesUsed []string
 }
+
+// NOTE: We're not using the Search() method directly from Nodes, ... 
+// ... as some internal Nodes could be correctly set to nil and this would generate a panic in the compiler.
+// Instead, we use sc.searchNodes() or sc.searchNodeSlice().
 
 func (p *Program) Search(sc *searchCriteria) (found bool) {
 	if nodeMatching(p, sc.OfTypes) {
@@ -338,7 +340,7 @@ func (r *ReturnNode) TokenInfo() token.Token {
 	return r.Token
 }
 
-// LINE DECLARATION EXPRESSION
+// DECLARATION EXPRESSION STATEMENT
 type DeclarationNode struct {
 	Token      token.Token
 	Assignment Node // assignment or variable
@@ -1224,11 +1226,7 @@ func (n *ForNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	// 3. body
 	// 4. increment
 	//	(jump back to test)
-	// ... (as of 0.7+ ...)
 	// 5. for loop value
-
-	// Prior to 0.7, we would use init = c.noValueIns here to make sure something is on the stack.
-	// Now, we set the for loop value a different way.
 
 	for _, each := range n.Init {
 		var i opcode.InsPackage
