@@ -271,9 +271,9 @@ func TestDeclarations(t *testing.T) {
 
 		stmt := program.Statements[0].(*ast.ExpressionStatementNode).Expression
 
-		decl, ok := stmt.(*ast.LineDeclarationNode)
+		decl, ok := stmt.(*ast.DeclarationNode)
 		if !ok {
-			t.Fatalf("stmt not *ast.LineDeclarationNode, received=%T", stmt)
+			t.Fatalf("stmt not *ast.DeclarationNode, received=%T", stmt)
 		}
 		if !testLiteralExpression(t, decl.Assignment.(*ast.AssignmentNode).Values[0], tt.expectedValue) {
 			return
@@ -1141,9 +1141,9 @@ func TestFunctionDefinitionParsing(t *testing.T) {
 			program.Statements[0])
 	}
 
-	decl, ok := stmt.Expression.(*ast.LineDeclarationNode)
+	decl, ok := stmt.Expression.(*ast.DeclarationNode)
 	if !ok {
-		t.Fatalf("program.Statements[0].(*ast.ExpressionStatementNode) not *ast.LineDeclarationNode. got=%T",
+		t.Fatalf("program.Statements[0].(*ast.ExpressionStatementNode) not *ast.DeclarationNode. got=%T",
 			stmt.Expression)
 	}
 

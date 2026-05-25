@@ -157,7 +157,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 		param, isByName, expansion, vtype, value = p.parseIdentForParameter()
 
 		if value == nil {
-			param = &ast.LineDeclarationNode{
+			param = &ast.DeclarationNode{
 				Token:      param.TokenInfo(),
 				Mutable:    mutable,
 				Assignment: param,

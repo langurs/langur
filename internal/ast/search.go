@@ -6,12 +6,12 @@ import (
 	"reflect"
 )
 
-func nodeMatching(node Node, ofTypes *matchCriteria) bool {
-	for _, m := range ofTypes.Types {
+func nodeMatching(node Node, mc *matchCriteria) bool {
+	for _, m := range mc.Types {
 		if reflect.TypeOf(node) == reflect.TypeOf(m) {
 			switch n := node.(type) {
 			case *BlockNode:
-				if ofTypes.Match_BlockNode_HasScope {
+				if mc.Match_BlockNode_HasScope {
 					return n.HasScope == m.(*BlockNode).HasScope
 				}
 			}
@@ -28,8 +28,8 @@ type matchCriteria struct{
 }
 
 type searchCriteria struct{
-	OfTypes		*matchCriteria
-	DontSearch	*matchCriteria
+	OfTypes    *matchCriteria
+	DontSearch *matchCriteria
 }
 
 func (sc *searchCriteria) searchNodes(checkNodes ...Node) (found bool) {
@@ -59,7 +59,7 @@ var copyBeforeAssignment_searchCritera = &searchCriteria{
 	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},
 	DontSearch: &matchCriteria{
 		Types: []Node{
-			&LineDeclarationNode{}, &AssignmentNode{}, &ModeNode{},
+			&DeclarationNode{}, &AssignmentNode{}, &ModeNode{},
 			&CallNode{}, &FunctionNode{},
 			&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
 		},
@@ -71,9 +71,12 @@ func NodeContainsFirstScopeLevelDeclaration(node Node) bool {
 	return node.Search(firstScopeLevelDeclaration_searchCriteria)
 }
 var firstScopeLevelDeclaration_searchCriteria = &searchCriteria{
-	OfTypes: &matchCriteria{Types: []Node{&LineDeclarationNode{}}},
+	OfTypes: &matchCriteria{Types: []Node{&DeclarationNode{}}},
 	DontSearch: &matchCriteria{
-		Types: []Node{&FunctionNode{}, &BlockNode{HasScope: true}},
+		Types: []Node{
+			&FunctionNode{}, &BlockNode{HasScope: true},
+			&IfNode{}, &SwitchNode{}, &ForNode{}, &ForInOfNode{},
+		},
 		Match_BlockNode_HasScope: true,
 	},
 }

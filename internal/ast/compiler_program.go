@@ -72,7 +72,7 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 
 	var modes []*ModeNode
 	var modeNames []string
-	var declarations []*LineDeclarationNode
+	var declarations []*DeclarationNode
 	var imports []*ImportNode
 	var bytes opcode.InsPackage
 
@@ -103,7 +103,7 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 			modeNames = append(modeNames, node.Name)
 
 		case *ExpressionStatementNode:
-			decl, ok := node.Expression.(*LineDeclarationNode)
+			decl, ok := node.Expression.(*DeclarationNode)
 			if !ok {
 				err = c.makeErr(node, "Expected declarations only; cannot use other expressions in module context")
 				return
@@ -112,7 +112,7 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 			modesDone = true
 
 			// if possible, split up multi-variable assignments (or "flatten")
-			var flatten []*LineDeclarationNode
+			var flatten []*DeclarationNode
 			flatten, err = FlattenDeclaration(decl)
 			if err != nil {
 				return
@@ -176,11 +176,11 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 	return
 }
 
-func (c *Compiler) fixModuleDeclarations(declarations []*LineDeclarationNode) (
-	decl []*LineDeclarationNode, err error) {
+func (c *Compiler) fixModuleDeclarations(declarations []*DeclarationNode) (
+	decl []*DeclarationNode, err error) {
 
 	L := len(declarations)
-	decl = make([]*LineDeclarationNode, L)
+	decl = make([]*DeclarationNode, L)
 
 	for i := range declarations {
 		if declarations[i].Mutable {

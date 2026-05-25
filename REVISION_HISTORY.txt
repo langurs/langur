@@ -12,6 +12,7 @@ https://langurlang.org
 - (internal) changed checking for first scope level declaration to use Node.Search() method
 - (internal) removed some unused duration string functions
 - (internal) added opcode.OpCopy; changed to add OpCopy and removed Copy() from OpSet in the VM; still needs to determine when copy is necessary (more work to do)
+- (internal) renamed ast.LineDeclarationNode as ast.DeclarationNode
 
 
 2026-05-03 - 0.21.0

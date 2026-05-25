@@ -67,9 +67,9 @@ func (c *Compiler) makeOpSetDefineInstructions(node Node) (
 	return
 }
 
-// called by LineDeclarationNode.Compile()
+// called by DeclarationNode.Compile()
 func (c *Compiler) compileDeclarationAndAssignments(
-	decl *LineDeclarationNode) (
+	decl *DeclarationNode) (
 	pkg opcode.InsPackage, err error) {
 
 	assign, ok := decl.Assignment.(*AssignmentNode)

@@ -59,11 +59,11 @@ func AssignmentToDeclaration(assignment Node, mutable, public bool) (decl Node, 
 		err = fmt.Errorf("Cannot convert non-assignment to declaration")
 		return assign, err
 	}
-	return &LineDeclarationNode{
+	return &DeclarationNode{
 		Token: assign.Token, Assignment: assign, Mutable: mutable, Public: public}, nil
 }
 
-func FlattenDeclaration(decl *LineDeclarationNode) (declarations []*LineDeclarationNode, err error) {
+func FlattenDeclaration(decl *DeclarationNode) (declarations []*DeclarationNode, err error) {
 	assign, ok := decl.Assignment.(*AssignmentNode)
 	if !ok {
 		err = fmt.Errorf("Expected assignment in declaration")
@@ -75,12 +75,12 @@ func FlattenDeclaration(decl *LineDeclarationNode) (declarations []*LineDeclarat
 			declarations = append(declarations,
 				MakeDeclarationAssignmentExpression(
 					assign.Identifiers[i], assign.Values[i],
-					assign.SystemAssignment, decl.Mutable).(*LineDeclarationNode))
+					assign.SystemAssignment, decl.Mutable).(*DeclarationNode))
 		}
 
 	} else {
 		// nothing we can flatten
-		declarations = []*LineDeclarationNode{decl}
+		declarations = []*DeclarationNode{decl}
 	}
 
 	return
@@ -100,7 +100,7 @@ func MakeDeclarationAssignmentStatement(
 func MakeDeclarationAssignmentExpression(
 	identifierNode, valueNode Node, systemAssignment, mutable bool) Node {
 
-	return &LineDeclarationNode{
+	return &DeclarationNode{
 		Token:      identifierNode.TokenInfo(),
 		Mutable:    mutable,
 		Assignment: MakeAssignmentExpression(identifierNode, valueNode, systemAssignment),
@@ -422,7 +422,7 @@ func SplitArgumentSliceToPositionalAndByName(args []Node) (
 	for _, arg := range args {
 		bynameArg := false
 		switch a := arg.(type) {
-		case *LineDeclarationNode:
+		case *DeclarationNode:
 			switch a.Assignment.(type) {
 			case *AssignmentNode:
 				bynameArg = true
@@ -458,7 +458,7 @@ func AddTypeToIdent(node, t Node) error {
 			// has alias (with *as* keyword)
 			node = n.Left
 			
-		case *LineDeclarationNode:
+		case *DeclarationNode:
 			node = n.Assignment
 			
 		case *AssignmentNode:

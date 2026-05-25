@@ -339,14 +339,14 @@ func (r *ReturnNode) TokenInfo() token.Token {
 }
 
 // LINE DECLARATION EXPRESSION
-type LineDeclarationNode struct {
+type DeclarationNode struct {
 	Token      token.Token
 	Assignment Node // assignment or variable
 	Mutable    bool
 	Public     bool
 }
 
-func (d *LineDeclarationNode) Search(sc *searchCriteria) (found bool) {
+func (d *DeclarationNode) Search(sc *searchCriteria) (found bool) {
 	if nodeMatching(d, sc.OfTypes) {
 		return true
 	}
@@ -356,10 +356,10 @@ func (d *LineDeclarationNode) Search(sc *searchCriteria) (found bool) {
 	return sc.searchNodes(d.Assignment)
 }
 
-func (d *LineDeclarationNode) expressionNode() {}
+func (d *DeclarationNode) expressionNode() {}
 
-func (d *LineDeclarationNode) Copy() Node {
-	return &LineDeclarationNode{
+func (d *DeclarationNode) Copy() Node {
+	return &DeclarationNode{
 		Token:      d.Token.Copy(),
 		Assignment: copyOrNil(d.Assignment),
 		Mutable:    d.Mutable,
@@ -367,15 +367,15 @@ func (d *LineDeclarationNode) Copy() Node {
 	}
 }
 
-func (d *LineDeclarationNode) Evaluate() object.Object {
+func (d *DeclarationNode) Evaluate() object.Object {
 	return nil
 }
 
-func (d *LineDeclarationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+func (d *DeclarationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	return c.compileDeclarationAndAssignments(d)
 }
 
-func (d *LineDeclarationNode) TokenRepresentation() string {
+func (d *DeclarationNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
 	if d.Public {
@@ -391,7 +391,7 @@ func (d *LineDeclarationNode) TokenRepresentation() string {
 
 	return out.String()
 }
-func (d *LineDeclarationNode) String() string {
+func (d *DeclarationNode) String() string {
 	var out bytes.Buffer
 
 	if d.Public {
@@ -408,7 +408,7 @@ func (d *LineDeclarationNode) String() string {
 	return out.String()
 }
 
-func (d *LineDeclarationNode) TokenInfo() token.Token {
+func (d *DeclarationNode) TokenInfo() token.Token {
 	return d.Token
 }
 
@@ -1246,7 +1246,7 @@ func (n *ForNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	}
 	init = init.Append(loopValueInit)
 
-	loopValueVar := n.LoopValueInit.(*ExpressionStatementNode).Expression.(*LineDeclarationNode).Assignment.(*AssignmentNode).Identifiers[0]
+	loopValueVar := n.LoopValueInit.(*ExpressionStatementNode).Expression.(*DeclarationNode).Assignment.(*AssignmentNode).Identifiers[0]
 	// for setting break value when not specified as something else
 	c.loopVarStack = append(c.loopVarStack, loopValueVar)
 	defer func() {

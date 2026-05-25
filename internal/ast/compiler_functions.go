@@ -221,7 +221,7 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 		param.InternalName = p.Name
 		system = p.System
 
-	case *LineDeclarationNode:
+	case *DeclarationNode:
 		// to use var token to make parameter mutable
 		switch assign := p.Assignment.(type) {
 		case *IdentNode:
@@ -387,7 +387,7 @@ func addParameterType(param *object.Parameter, pnode Node) error {
 			// alias with *as* keyword
 			pnode = p.Left
 			
-		case *LineDeclarationNode:
+		case *DeclarationNode:
 			pnode = p.Assignment
 			
 		case *AssignmentNode:

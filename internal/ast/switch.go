@@ -170,7 +170,7 @@ func ExtractDeclarationsAndAssignmentsForSwitchTests(sw *SwitchNode) (nodes []No
 	var extract func(node *Node)
 	extract = func(node *Node) {
 		switch n := (*node).(type) {
-		case *LineDeclarationNode:
+		case *DeclarationNode:
 			declarationsAndAssignments = append(declarationsAndAssignments, n)
 			if len(n.Assignment.(*AssignmentNode).Identifiers) == 1 {
 				*node = n.Assignment.(*AssignmentNode).Identifiers[0]
@@ -213,7 +213,7 @@ func ShouldConvertSwitchTestToSystemAssignment(node Node) bool {
 		return false
 	}
 	switch n := node.(type) {
-	case *LineDeclarationNode, *AssignmentNode:
+	case *DeclarationNode, *AssignmentNode:
 		return false
 	case *ExpressionStatementNode:
 		return ShouldConvertSwitchTestToSystemAssignment(n.Expression)
