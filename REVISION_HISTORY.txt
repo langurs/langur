@@ -8,6 +8,8 @@ https://langurlang.org
 - fix: some naivite of duration greater than comparisons and conversion to nanoseconds to use arbitrary precision decimal (not int64)
 - fix: objects needing to be copied with OpDefine, not just with OpSet codes
 - limited scope blocks to statement context
+- (internal) added Search() method to Node interface
+- (internal) changed checking for first scope level declaration to use Node.Search() method
 - (internal) removed some unused duration string functions
 - (internal) added opcode.OpCopy; changed to add OpCopy and removed Copy() from OpSet in the VM; still needs to determine when copy is necessary (more work to do)
 
