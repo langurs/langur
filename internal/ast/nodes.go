@@ -30,10 +30,10 @@ type Program struct {
 }
 
 func (p *Program) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(p, sc.OfTypes) {
+	if nodeMatching(p, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(p, sc.DontSearch) {
+	if nodeMatching(p, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodeSlice(p.Statements)
@@ -125,7 +125,7 @@ type ModuleNode struct {
 }
 
 func (m *ModuleNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(m, sc.OfTypes)
+	return nodeMatching(m, sc.OfTypes)
 }
 
 func (m *ModuleNode) statementNode() {}
@@ -198,7 +198,7 @@ type ImportNode struct {
 }
 
 func (i *ImportNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(i, sc.OfTypes)
+	return nodeMatching(i, sc.OfTypes)
 }
 
 func (i *ImportNode) statementNode() {}
@@ -286,10 +286,10 @@ type ReturnNode struct {
 }
 
 func (r *ReturnNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(r, sc.OfTypes) {
+	if nodeMatching(r, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(r, sc.DontSearch) {
+	if nodeMatching(r, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(r.ReturnValue)
@@ -347,10 +347,10 @@ type LineDeclarationNode struct {
 }
 
 func (d *LineDeclarationNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(d, sc.OfTypes) {
+	if nodeMatching(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, sc.DontSearch) {
+	if nodeMatching(d, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(d.Assignment)
@@ -421,10 +421,10 @@ type AssignmentNode struct {
 }
 
 func (a *AssignmentNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(a, sc.OfTypes) {
+	if nodeMatching(a, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(a, sc.DontSearch) {
+	if nodeMatching(a, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodeSlice(a.Identifiers) ||
@@ -530,10 +530,10 @@ type ExpressionStatementNode struct {
 }
 
 func (es *ExpressionStatementNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(es, sc.OfTypes) {
+	if nodeMatching(es, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(es, sc.DontSearch) {
+	if nodeMatching(es, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(es.Expression)
@@ -583,10 +583,10 @@ type CallNode struct {
 }
 
 func (fc *CallNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(fc, sc.OfTypes) {
+	if nodeMatching(fc, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(fc, sc.DontSearch) {
+	if nodeMatching(fc, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(fc.Function) ||
@@ -764,10 +764,10 @@ type FunctionNode struct {
 }
 
 func (f *FunctionNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(f, sc.OfTypes) {
+	if nodeMatching(f, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(f, sc.DontSearch) {
+	if nodeMatching(f, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(f.Body, f.ReturnType) ||
@@ -883,10 +883,10 @@ type ExpansionNode struct {
 }
 
 func (pe *ExpansionNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(pe, sc.OfTypes) {
+	if nodeMatching(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, sc.DontSearch) {
+	if nodeMatching(pe, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(pe.Limits, pe.Continuation)
@@ -951,7 +951,7 @@ type SelfNode struct {
 }
 
 func (s *SelfNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(s, sc.OfTypes)
+	return nodeMatching(s, sc.OfTypes)
 }
 
 func (s *SelfNode) expressionNode() {}
@@ -1016,10 +1016,10 @@ type IdentNode struct {
 }
 
 func (i *IdentNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(i, sc.OfTypes) {
+	if nodeMatching(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, sc.DontSearch) {
+	if nodeMatching(i, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(i.Type)
@@ -1101,10 +1101,10 @@ type ModeNode struct {
 }
 
 func (m *ModeNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(m, sc.OfTypes) {
+	if nodeMatching(m, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(m, sc.DontSearch) {
+	if nodeMatching(m, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(m.Setting)
@@ -1180,10 +1180,10 @@ type ForNode struct {
 }
 
 func (n *ForNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(n, sc.OfTypes) {
+	if nodeMatching(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, sc.DontSearch) {
+	if nodeMatching(n, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(n.LoopValueInit, n.Test, n.Body) ||
@@ -1393,10 +1393,10 @@ type ForInOfNode struct {
 }
 
 func (n *ForInOfNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(n, sc.OfTypes) {
+	if nodeMatching(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, sc.DontSearch) {
+	if nodeMatching(n, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(n.LoopValueInit, n.Var, n.Over, n.Body)
@@ -1475,10 +1475,10 @@ type BreakNode struct {
 }
 
 func (n *BreakNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(n, sc.OfTypes) {
+	if nodeMatching(n, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(n, sc.DontSearch) {
+	if nodeMatching(n, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(n.Value)
@@ -1553,7 +1553,7 @@ type NextNode struct {
 }
 
 func (n *NextNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(n, sc.OfTypes)
+	return nodeMatching(n, sc.OfTypes)
 }
 
 func (n *NextNode) statementNode() {}
@@ -1593,7 +1593,7 @@ type BooleanNode struct {
 }
 
 func (b *BooleanNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(b, sc.OfTypes)
+	return nodeMatching(b, sc.OfTypes)
 }
 
 func (b *BooleanNode) expressionNode() {}
@@ -1632,7 +1632,7 @@ type NullNode struct {
 }
 
 func (n *NullNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(n, sc.OfTypes)
+	return nodeMatching(n, sc.OfTypes)
 }
 
 func (n *NullNode) expressionNode() {}
@@ -1675,7 +1675,7 @@ type NoneNode struct {
 }
 
 func (no *NoneNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(no, sc.OfTypes)
+	return nodeMatching(no, sc.OfTypes)
 }
 
 func (no *NoneNode) expressionNode() {}
@@ -1719,10 +1719,10 @@ type StringNode struct {
 }
 
 func (s *StringNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(s, sc.OfTypes) {
+	if nodeMatching(s, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(s, sc.DontSearch) {
+	if nodeMatching(s, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodeSlice(s.Interpolations)
@@ -1814,10 +1814,10 @@ type InterpolatedNode struct {
 }
 
 func (i *InterpolatedNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(i, sc.OfTypes) {
+	if nodeMatching(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, sc.DontSearch) {
+	if nodeMatching(i, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(i.Value)
@@ -1878,10 +1878,10 @@ type RegexNode struct {
 }
 
 func (r *RegexNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(r, sc.OfTypes) {
+	if nodeMatching(r, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(r, sc.DontSearch) {
+	if nodeMatching(r, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(r.Pattern)
@@ -1986,10 +1986,10 @@ type DateTimeNode struct {
 }
 
 func (dt *DateTimeNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(dt, sc.OfTypes) {
+	if nodeMatching(dt, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(dt, sc.DontSearch) {
+	if nodeMatching(dt, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(dt.Pattern)
@@ -2074,10 +2074,10 @@ type DurationNode struct {
 }
 
 func (d *DurationNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(d, sc.OfTypes) {
+	if nodeMatching(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, sc.DontSearch) {
+	if nodeMatching(d, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(d.Pattern)
@@ -2150,7 +2150,7 @@ type NumberNode struct {
 }
 
 func (n *NumberNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(n, sc.OfTypes)
+	return nodeMatching(n, sc.OfTypes)
 }
 
 func (n *NumberNode) expressionNode() {}
@@ -2251,10 +2251,10 @@ type ListNode struct {
 }
 
 func (a *ListNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(a, sc.OfTypes) {
+	if nodeMatching(a, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(a, sc.DontSearch) {
+	if nodeMatching(a, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodeSlice(a.Elements)
@@ -2333,10 +2333,10 @@ type IndexNode struct {
 }
 
 func (i *IndexNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(i, sc.OfTypes) {
+	if nodeMatching(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, sc.DontSearch) {
+	if nodeMatching(i, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(i.Left, i.Index, i.Alternate)
@@ -2444,10 +2444,10 @@ type HashNode struct {
 }
 
 func (d *HashNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(d, sc.OfTypes) {
+	if nodeMatching(d, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(d, sc.DontSearch) {
+	if nodeMatching(d, sc.DontSearch) {
 		return false
 	}
 
@@ -2541,10 +2541,10 @@ type PrefixExpressionNode struct {
 }
 
 func (pe *PrefixExpressionNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(pe, sc.OfTypes) {
+	if nodeMatching(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, sc.DontSearch) {
+	if nodeMatching(pe, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(pe.Right)
@@ -2625,10 +2625,10 @@ type PostfixExpressionNode struct {
 }
 
 func (pe *PostfixExpressionNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(pe, sc.OfTypes) {
+	if nodeMatching(pe, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(pe, sc.DontSearch) {
+	if nodeMatching(pe, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(pe.Left)
@@ -2686,10 +2686,10 @@ type InfixExpressionNode struct {
 }
 
 func (ie *InfixExpressionNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(ie, sc.OfTypes) {
+	if nodeMatching(ie, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(ie, sc.DontSearch) {
+	if nodeMatching(ie, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(ie.Left, ie.Right)
@@ -2906,10 +2906,10 @@ type BlockNode struct {
 }
 
 func (b *BlockNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(b, sc.OfTypes) {
+	if nodeMatching(b, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(b, sc.DontSearch) {
+	if nodeMatching(b, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodeSlice(b.Statements)
@@ -2936,12 +2936,15 @@ func (node *BlockNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 
 	if node.HasScope {
 		// only wrap expressions containing declarations (as an efficiency improvement)
-		if NodeContainsFirstScopeLevelDeclaration(node) {
-			defer func() {
-				pkg = c.wrapInstructionsWithExecute(pkg, node.Token)
-				c.popVariableScope()
-			}()
-			c.pushVariableScope()
+		for _, n := range node.Statements {
+			if NodeContainsFirstScopeLevelDeclaration(n) {
+				defer func() {
+					pkg = c.wrapInstructionsWithExecute(pkg, node.Token)
+					c.popVariableScope()
+				}()
+				c.pushVariableScope()
+				break
+			}
 		}
 	}
 
@@ -3046,10 +3049,10 @@ type IfNode struct {
 }
 
 func (i *IfNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(i, sc.OfTypes) {
+	if nodeMatching(i, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(i, sc.DontSearch) {
+	if nodeMatching(i, sc.DontSearch) {
 		return false
 	}
 	
@@ -3172,10 +3175,10 @@ type SwitchNode struct {
 }
 
 func (g *SwitchNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(g, sc.OfTypes) {
+	if nodeMatching(g, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(g, sc.DontSearch) {
+	if nodeMatching(g, sc.DontSearch) {
 		return false
 	}
 
@@ -3380,7 +3383,7 @@ type FallThroughNode struct {
 }
 
 func (f *FallThroughNode) Search(sc *searchCriteria) (found bool) {
-	return nodeIsOfType(f, sc.OfTypes)
+	return nodeMatching(f, sc.OfTypes)
 }
 
 func (f *FallThroughNode) statementNode() {}
@@ -3420,10 +3423,10 @@ type TryCatchNode struct {
 }
 
 func (t *TryCatchNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(t, sc.OfTypes) {
+	if nodeMatching(t, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(t, sc.DontSearch) {
+	if nodeMatching(t, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(t.Try, t.ExceptionVar, t.Catch, t.Else)
@@ -3553,10 +3556,10 @@ type ThrowNode struct {
 }
 
 func (t *ThrowNode) Search(sc *searchCriteria) (found bool) {
-	if nodeIsOfType(t, sc.OfTypes) {
+	if nodeMatching(t, sc.OfTypes) {
 		return true
 	}
-	if nodeIsOfType(t, sc.DontSearch) {
+	if nodeMatching(t, sc.DontSearch) {
 		return false
 	}
 	return sc.searchNodes(t.Exception)

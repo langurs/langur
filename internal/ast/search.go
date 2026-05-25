@@ -6,9 +6,30 @@ import (
 	"reflect"
 )
 
+func nodeMatching(node Node, ofTypes *matchCriteria) bool {
+	for _, m := range ofTypes.Types {
+		if reflect.TypeOf(node) == reflect.TypeOf(m) {
+			switch n := node.(type) {
+			case *BlockNode:
+				if ofTypes.Match_BlockNode_HasScope {
+					return n.HasScope == m.(*BlockNode).HasScope
+				}
+			}
+
+			return true
+		}
+	}
+	return false
+}
+
+type matchCriteria struct{
+	Types []Node
+	Match_BlockNode_HasScope bool
+}
+
 type searchCriteria struct{
-	OfTypes		[]Node
-	DontSearch	[]Node
+	OfTypes		*matchCriteria
+	DontSearch	*matchCriteria
 }
 
 func (sc *searchCriteria) searchNodes(checkNodes ...Node) (found bool) {
@@ -25,15 +46,6 @@ func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
 	return
 }
 
-func nodeIsOfType(node Node, ofTypes []Node) bool {
-	for _, n := range ofTypes {
-		if reflect.TypeOf(node) == reflect.TypeOf(n) {
-			return true
-		}
-	}
-	return false
-}
-
 func CopyBeforeAssignment(val Node) bool {
 	// copy value before assignment?
 	// inefficient to always copy
@@ -44,11 +56,13 @@ func CopyBeforeAssignment(val Node) bool {
 	// return val.Search(copyBeforeAssignment_searchCritera)
 }
 var copyBeforeAssignment_searchCritera = &searchCriteria{
-	OfTypes: []Node{&IdentNode{}},
-	DontSearch: []Node{
-		&LineDeclarationNode{}, &AssignmentNode{}, &ModeNode{},
-		&CallNode{}, &FunctionNode{},
-		&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
+	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},
+	DontSearch: &matchCriteria{
+		Types: []Node{
+			&LineDeclarationNode{}, &AssignmentNode{}, &ModeNode{},
+			&CallNode{}, &FunctionNode{},
+			&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
+		},
 	},
 }
 
@@ -57,9 +71,10 @@ func NodeContainsFirstScopeLevelDeclaration(node Node) bool {
 	return node.Search(firstScopeLevelDeclaration_searchCriteria)
 }
 var firstScopeLevelDeclaration_searchCriteria = &searchCriteria{
-	OfTypes: []Node{&LineDeclarationNode{}},
-	DontSearch: []Node{
-		&FunctionNode{},
+	OfTypes: &matchCriteria{Types: []Node{&LineDeclarationNode{}}},
+	DontSearch: &matchCriteria{
+		Types: []Node{&FunctionNode{}, &BlockNode{HasScope: true}},
+		Match_BlockNode_HasScope: true,
 	},
 }
 
