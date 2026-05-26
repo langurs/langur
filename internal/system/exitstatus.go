@@ -40,6 +40,26 @@ var exitStatus = map[int]int{
 	ExitStatusArgToExitOutOfRange: 255,
 }
 
+// Amiga exit status codes
+// maybe hypothetical and may not be right; I don't own an Amiga as I put this together (davis).
+// https://wiki.amigaos.net/wiki/AmigaOS_Manual:_AmigaDOS_Using_Scripts#Condition_Flags
+
+const generalStatusErrorAmiga = 10
+
+var exitStatusAmiga = map[int]int{
+	ExitStatusGeneral:             generalStatusErrorAmiga,
+	ExitStatusNoScript:            3,
+	ExitStatusHelp:                1,
+	ExitStatusTest:                0,
+	ExitStatusFailedArgs:          20,
+	ExitStatusFailedReadFile:      20,
+	ExitStatusFailedParse:         20,
+	ExitStatusFailedCompile:       20,
+	ExitStatusFailedRun:           15,
+	ExitStatusArgToExitBad:        5,
+	ExitStatusArgToExitOutOfRange: 6,
+}
+
 // Windows exit status codes
 // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
 // It may be that there are better codes to use on Windows, so that these could be revised.
@@ -69,6 +89,13 @@ func GetExitStatus(s int) int {
 			return status
 		}
 		return generalStatusErrorWindows
+
+	case AMIGA:
+		status, ok := exitStatusAmiga[s]
+		if ok {
+			return status
+		}
+		return generalStatusErrorAmiga
 
 	default:
 		status, ok := exitStatus[s]

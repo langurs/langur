@@ -11,16 +11,22 @@ var Type int
 const (
 	OTHER int = iota
 	WINDOWS
+	AMIGA
 )
+
+var OnWindows bool
 
 func init() {
 	// check and set this once
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		Type = WINDOWS
 		OnWindows = true
-	} else {
+
+	case "amiga":
+		Type = AMIGA
+
+	default:
 		Type = OTHER
 	}
 }
-
-var OnWindows bool
