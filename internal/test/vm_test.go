@@ -1863,8 +1863,9 @@ func TestSwitchWithIsAndIsNotOperators(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestSwitchWithInOperator(t *testing.T) {
+func TestSwitchWithInOfOperators(t *testing.T) {
 	tests := []vmTestCase{
+		// in operator
 		{`
 			switch 123 {
 				case in 1..44 : 1
@@ -1889,6 +1890,36 @@ func TestSwitchWithInOperator(t *testing.T) {
 				default: 3
 			}`,
 			2, object.NUMBER_OBJ,
+		},
+
+		// of operator
+		{`
+			switch 1 {
+				case of 1..44 : 1
+				default: 3
+			}`,
+			1, object.NUMBER_OBJ,
+		},
+		{`
+			switch 3 {
+				case of 1..44 : 1
+				default: 33
+			}`,
+			33, object.NUMBER_OBJ,
+		},
+		{`
+			switch 1 {
+				case not of 1..44 : 1
+				default: 33
+			}`,
+			33, object.NUMBER_OBJ,
+		},
+		{`
+			switch 3 {
+				case not of 1..44 : 1
+				default: 33
+			}`,
+			1, object.NUMBER_OBJ,
 		},
 	}
 
