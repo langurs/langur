@@ -110,22 +110,10 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 4
 			err = pr.pushFunction(constIndex, freeCount, optionalsCount)
 
-		case opcode.OpSetGlobal:
-			globalIndex := opcode.ReadUInt16(ins[ip+1:])
-			ip += 2
-			// retrieve() doesn't pop, so that assignment is an expression
-			pr.startFrame.locals[globalIndex] = pr.retrieve()
-
 		case opcode.OpGetGlobal:
 			globalIndex := opcode.ReadUInt16(ins[ip+1:])
 			ip += 2
 			err = pr.push(pr.startFrame.locals[globalIndex])
-
-		case opcode.OpSetLocal:
-			localIndex := int(ins[ip+1])
-			ip += 1
-			// retrieve() doesn't pop, so that assignment is an expression
-			fr.setLocal(localIndex, pr.retrieve())
 
 		case opcode.OpGetLocal:
 			localIndex := int(ins[ip+1])
@@ -134,14 +122,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				err = pr.push(result)
 			}
-
-		case opcode.OpSetNonLocal:
-			index := int(ins[ip+1])
-			level := int(ins[ip+2])
-			ip += 2
-
-			// retrieve() doesn't pop, so that assignment is an expression
-			fr.setNonLocal(index, level, pr.retrieve())
 
 		case opcode.OpGetNonLocal:
 			index := int(ins[ip+1])
@@ -152,16 +132,6 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				err = pr.push(result)
 			}
-
-		case opcode.OpSetDefine:
-			// for setting indexed values
-			// ... and for dot notation (future use)
-			objIdx := pr.pop()
-			target := pr.pop()
-			// retrieve() doesn't pop, so that assignment is an expression
-			setTo := pr.retrieve()
- 
-			err = setDefine(target, objIdx, setTo)
 
 		case opcode.OpGetFree:
 			freeIndex := int(ins[ip+1])
@@ -176,6 +146,41 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				err = pr.push(result)
 			}
+
+		case opcode.OpSetGlobal:
+			globalIndex := opcode.ReadUInt16(ins[ip+1:])
+			ip += 2
+			// retrieve() doesn't pop, so that assignment is an expression
+			// FIXME: Copy() to prevent clobbering; inefficient
+			pr.startFrame.locals[globalIndex] = pr.retrieve().Copy()
+
+		case opcode.OpSetLocal:
+			localIndex := int(ins[ip+1])
+			ip += 1
+			// retrieve() doesn't pop, so that assignment is an expression
+			// FIXME: Copy() to prevent clobbering; inefficient
+			fr.setLocal(localIndex, pr.retrieve().Copy())
+
+		case opcode.OpSetNonLocal:
+			index := int(ins[ip+1])
+			level := int(ins[ip+2])
+			ip += 2
+
+			// retrieve() doesn't pop, so that assignment is an expression
+			// FIXME: Copy() to prevent clobbering; inefficient
+			fr.setNonLocal(index, level, pr.retrieve().Copy())
+
+		case opcode.OpSetDefine:
+			// for setting indexed values
+			// ... and for dot notation (future use)
+			objIdx := pr.pop()
+			target := pr.pop()
+
+			// retrieve() doesn't pop, so that assignment is an expression
+			// FIXME: Copy() to prevent clobbering; inefficient
+			setTo := pr.retrieve().Copy()
+ 
+			err = setDefine(target, objIdx, setTo)
 
 		case opcode.OpJump:
 			// ip + opcode.OP_JUMP_LEN + ... since it is a relative offset

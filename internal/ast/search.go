@@ -46,21 +46,21 @@ func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
 	return
 }
 
-func CopyBeforeAssignment(val Node) bool {
-	// copy value before assignment?
-	// inefficient to always copy
-	return val.Search(copyBeforeAssignment_searchCritera)
-}
-var copyBeforeAssignment_searchCritera = &searchCriteria{
-	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},
-	DontSearch: &matchCriteria{
-		Types: []Node{
-			&DeclarationNode{}, &AssignmentNode{}, &ModeNode{},
-			&CallNode{}, &FunctionNode{},
-			&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
-		},
-	},
-}
+// func CopyBeforeAssignment(val Node) bool {
+// 	// copy value before assignment?
+// 	// inefficient to always copy
+// 	return val.Search(copyBeforeAssignment_searchCritera)
+// }
+// var copyBeforeAssignment_searchCritera = &searchCriteria{
+// 	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},
+// 	DontSearch: &matchCriteria{
+// 		Types: []Node{
+// 			&DeclarationNode{}, &AssignmentNode{}, &ModeNode{},
+// 			&CallNode{}, &FunctionNode{},
+// 			&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
+// 		},
+// 	},
+// }
 
 // for testing whether to wrap into scope
 func NodeContainsFirstScopeLevelDeclaration(node Node) bool {

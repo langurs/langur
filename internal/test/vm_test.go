@@ -9887,6 +9887,15 @@ func TestSemiDeepCopy(t *testing.T) {
 		 `,
 			"[[2, 3], [1, 2], [2, 1]]", object.STRING_OBJ,
 		},
+
+		{`var f = fn(a) { a }
+		  var x = [1, 2]
+		  var y = f(x)
+		  y[2] = 12
+		  string(x)
+		 `,
+			"[1, 2]", object.STRING_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)

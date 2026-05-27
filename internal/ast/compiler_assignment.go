@@ -110,9 +110,9 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		}
 		pkg = pkg.Append(temp)
 
-		if CopyBeforeAssignment(assign.Values[i]) {
-			pkg = pkg.Append(opcode.MakePkg(decl.Token, opcode.OpCopy))
-		}
+		// if CopyBeforeAssignment(assign.Values[i]) {
+		// 	pkg = pkg.Append(opcode.MakePkg(decl.Token, opcode.OpCopy))
+		// }
 	}
 
 	for i, id := range assign.Identifiers {
@@ -345,9 +345,9 @@ func (c *Compiler) compileAssignment(node *AssignmentNode) (pkg opcode.InsPackag
 		}
 		pkg = pkg.Append(temp)
 
-		if CopyBeforeAssignment(node.Values[i]) {
-			pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
-		}
+		// if CopyBeforeAssignment(node.Values[i]) {
+		// 	pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpCopy))
+		// }
 	}
 
 	for i, id := range node.Identifiers {

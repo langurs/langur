@@ -102,7 +102,8 @@ var bi_more = &object.BuiltIn{
 		const fnName = "more"
 
 		// with parameter expansion, add will always be a list
-		add := args[1].Copy().(*object.List).Elements
+		// add := args[1].Copy().(*object.List).Elements
+		add := args[1].(*object.List).Elements
 
 		switch with := args[0].(type) {
 		case *object.List:

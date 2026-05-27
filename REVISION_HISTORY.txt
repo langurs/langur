@@ -1,6 +1,9 @@
 langur revision history
 https://langurlang.org
 
+2026-05-26 - 0.21.3
+- always copy for assignment; need better method to avoid variable clobbering
+
 2026-05-26 - 0.21.2
 - fix: parser to allow use of *in*/*not in*/*of*/*not of* operators within switch expression tests
 - added AmigaDOS exit status error codes
