@@ -15,15 +15,19 @@ const nonmoduleorder = "imports/expressions(including modes and declarations)"
 func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 	pkg opcode.InsPackage, err error) {
 
-	var bSlc opcode.InsPackage
-
-	importsDone := false
-
 	defer func() {
 		if err == nil {
 			err = c.checkStatementCounts()
 		}
 	}()
+
+	if node.Search(nil, modeNotGlobal_searchCriteria) {
+		err = c.makeErr(node, fmt.Sprintf("This implementation can only set modes in global context, or in the %s function", common.MainFnName))
+		return
+	}
+
+	var mainStatementsStart int
+	importsDone := false
 
 	for i, s := range node.Statements {
 		switch n := s.(type) {
@@ -50,11 +54,6 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
 				return
 			}
-			bSlc, err = s.Compile(c)
-			if err != nil {
-				return
-			}
-			pkg = pkg.Append(bSlc)
 
 		case nil:
 			err = c.makeErr(node, "Unexpected nil node")
@@ -62,14 +61,25 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 
 		default:
 			// not a module or import node
-			importsDone = true
-			bSlc, err = c.compileNodeWithPopIfExprStmt(s)
-			if err != nil {
-				return
+			if !importsDone {
+				mainStatementsStart = i
 			}
-			pkg = pkg.Append(bSlc)
+			importsDone = true
 		}
 	}
+
+	// wrap remaining instructions into main function and continue
+	if importsDone {
+		nodes := make([]Node, len(node.Statements[:mainStatementsStart])+1)
+		copy(nodes, node.Statements[:mainStatementsStart])
+		nodes[len(nodes)-1] = MakeMainFnDeclaration(node.Statements[mainStatementsStart:])
+
+		// assume non-module level may contain impure effects, such as console or file changes
+		c.moduleDeclaredImpureEffects = true
+		return c.compileModule(nodes, true)
+	}
+
+	err = c.makeErr(node, "Expected statements/expressions")
 	return
 }
 

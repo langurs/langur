@@ -147,6 +147,10 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.Obje
 	return sym, nil
 }
 
+func (st *SymbolTable) RemoveSymbol(name string) {
+	delete(st.store, name)
+}
+
 func (st *SymbolTable) defineRootSymbol(name string, mutable bool) (Symbol, error) {
 	if st.Outer == nil {
 		return st.defineSymbol(name, mutable, 0)

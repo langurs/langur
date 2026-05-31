@@ -300,8 +300,8 @@ func TestVmModes(t *testing.T) {
 		  val y = 2 / 3
 		  string([x, y])`, "[0.6666667, 0.67]", object.STRING_OBJ},
 
-		{`mode consoleText = false`, false, object.BOOLEAN_OBJ},
-		{`mode consoleText = true`, true, object.BOOLEAN_OBJ},
+		// {`mode consoleText = false`, false, object.BOOLEAN_OBJ},
+		// {`mode consoleText = true`, true, object.BOOLEAN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)

@@ -3,20 +3,37 @@
 package ast
 
 import (
+	"langur/common"
 	"reflect"
 )
 
-func nodeMatching(node Node, mc *matchCriteria) bool {
-	for _, m := range mc.Types {
-		if reflect.TypeOf(node) == reflect.TypeOf(m) {
-			switch n := node.(type) {
-			case *BlockNode:
-				if mc.Match_BlockNode_HasScope {
-					return n.HasScope == m.(*BlockNode).HasScope
-				}
-			}
+func nodeMatching(node, parent Node, mc *matchCriteria) bool {
+	if mc != nil {
+		for _, m := range mc.Types {
+			if reflect.TypeOf(node) == reflect.TypeOf(m) {
+				// check special cases
+				switch n := node.(type) {
+				case *BlockNode:
+					if mc.Match_BlockNode_HasScope {
+						return n.HasScope == m.(*BlockNode).HasScope
+					}
 
-			return true
+				case *ModeNode:
+					if mc.Match_ModeNode_NotGlobal {
+						switch p := parent.(type) {
+						case *Program:
+							return false
+						case *FunctionNode:
+							if p.Name == common.MainFnName {
+								return false
+							}
+						}
+					}
+				}
+
+				// no special case matches; return true
+				return true
+			}
 		}
 	}
 	return false
@@ -25,6 +42,7 @@ func nodeMatching(node Node, mc *matchCriteria) bool {
 type matchCriteria struct{
 	Types []Node
 	Match_BlockNode_HasScope bool
+	Match_ModeNode_NotGlobal bool
 }
 
 type searchCriteria struct{
@@ -32,13 +50,13 @@ type searchCriteria struct{
 	DontSearch *matchCriteria
 }
 
-func (sc *searchCriteria) searchNodes(checkNodes ...Node) (found bool) {
-	return sc.searchNodeSlice(checkNodes)
+func (sc *searchCriteria) searchNodes(parent Node, checkNodes ...Node) (found bool) {
+	return sc.searchNodeSlice(parent, checkNodes)
 }
-func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
+func (sc *searchCriteria) searchNodeSlice(parent Node, checkNodes []Node) (found bool) {
 	for _, n := range checkNodes {
 		if n != nil {
-			if found = n.Search(sc); found {
+			if found = n.Search(parent, sc); found {
 				return
 			}
 		}
@@ -49,7 +67,7 @@ func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
 // func CopyBeforeAssignment(val Node) bool {
 // 	// copy value before assignment?
 // 	// inefficient to always copy
-// 	return val.Search(copyBeforeAssignment_searchCritera)
+// 	return val.Search(nil, copyBeforeAssignment_searchCritera)
 // }
 // var copyBeforeAssignment_searchCritera = &searchCriteria{
 // 	OfTypes: &matchCriteria{Types: []Node{&IdentNode{}}},
@@ -64,7 +82,7 @@ func (sc *searchCriteria) searchNodeSlice(checkNodes []Node) (found bool) {
 
 // for testing whether to wrap into scope
 func NodeContainsFirstScopeLevelDeclaration(node Node) bool {
-	return node.Search(firstScopeLevelDeclaration_searchCriteria)
+	return node.Search(nil, firstScopeLevelDeclaration_searchCriteria)
 }
 var firstScopeLevelDeclaration_searchCriteria = &searchCriteria{
 	OfTypes: &matchCriteria{Types: []Node{&DeclarationNode{}}},
@@ -74,6 +92,13 @@ var firstScopeLevelDeclaration_searchCriteria = &searchCriteria{
 			&IfNode{}, &SwitchNode{}, &ForNode{}, &ForInOfNode{},
 		},
 		Match_BlockNode_HasScope: true,
+	},
+}
+
+var modeNotGlobal_searchCriteria = &searchCriteria{
+	OfTypes: &matchCriteria{
+		Types: []Node{&ModeNode{}},
+		Match_ModeNode_NotGlobal: true,
 	},
 }
 

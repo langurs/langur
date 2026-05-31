@@ -20,7 +20,7 @@ var ExecuteMain = &CallNode{Function: &IdentNode{Name: common.MainFnName, System
 // NOTE: For error reporting, we attach tokens to the nodes (besides operators).
 // Besides the literal, tokens contain line numbers, etc.
 type Node interface {
-	Search(sc *searchCriteria) (found bool)
+	Search(parent Node, sc *searchCriteria) (found bool)
 	Copy() Node
 	Evaluate() object.Object
 	Compile(*Compiler) (opcode.InsPackage, error)

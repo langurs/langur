@@ -4,6 +4,7 @@ package ast
 
 import (
 	"fmt"
+	"langur/common"
 	"langur/str"
 	"langur/token"
 )
@@ -84,6 +85,18 @@ func FlattenDeclaration(decl *DeclarationNode) (declarations []*DeclarationNode,
 	}
 
 	return
+}
+
+func MakeMainFnDeclaration(nodes []Node) Node {
+	tok := nodes[0].TokenInfo()
+	return MakeDeclarationAssignmentStatement(
+		NewVariableNode(tok, common.MainFnName, true),
+		&FunctionNode{
+			Token: tok, Name: common.MainFnName,
+			Body: &BlockNode{Statements: nodes},
+			ImpureEffects: true,
+		},
+		true, false)
 }
 
 func MakeDeclarationAssignmentStatement(
