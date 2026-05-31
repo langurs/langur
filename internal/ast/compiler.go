@@ -97,8 +97,8 @@ func (c *Compiler) makeWarning(node Node, err string) error {
 	return c.makeErr(node, "warning: "+err)
 }
 
+// We do this so often that it seems best to make a small function for it.
 func (c *Compiler) constantIns(obj object.Object) opcode.InsPackage {
-	// We do this so often that it seems best to make a small function for it.
 	return opcode.MakePkg(token.Token{}, opcode.OpConstant, c.addConstant(obj))
 }
 
@@ -130,7 +130,7 @@ func sameConstant(obj1, obj2 object.Object) bool {
 	} else if obj1.Type() == object.COMPILED_CODE_OBJ && obj2.Type() == object.COMPILED_CODE_OBJ {
 		// Note that sometimes compiled code constants are modified by the compiler to fix jumps ...
 		// ... AFTER being added, so we'll not call them equal even if they have the same bytecodes.
-		// TODO: maybe check compiled code for placeholders and compare if not present
+		// You could maybe check compiled code for placeholders and compare if not present.
 		return false
 	}
 

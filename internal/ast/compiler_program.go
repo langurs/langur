@@ -10,7 +10,7 @@ import (
 )
 
 const moduleorder = "module/imports/modes/declarations"
-const nonmoduleorder = "imports/expressions"
+const nonmoduleorder = "imports/expressions(including modes and declarations)"
 
 func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 	pkg opcode.InsPackage, err error) {
@@ -44,7 +44,7 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
 				return
 			}
-			bSlc, err = c.compileNodeWithPopIfExprStmt(s)
+			bSlc, err = s.Compile(c)
 			if err != nil {
 				return
 			}
@@ -105,7 +105,7 @@ func (c *Compiler) compileModule(nodes []Node, execute bool) (
 		case *ExpressionStatementNode:
 			decl, ok := node.Expression.(*DeclarationNode)
 			if !ok {
-				err = c.makeErr(node, "Expected declarations only; cannot use other expressions in module context")
+				err = c.makeErr(node, fmt.Sprintf("Expected declarations only; cannot use other expressions in module context; use %s for a main function (if applicable)", common.MainFnName))
 				return
 			}
 			importsDone = true
