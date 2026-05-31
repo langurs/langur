@@ -67,10 +67,6 @@ func (node *Program) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	temp, err = c.compileProgram(node, true)
 	c.InsPackage = c.InsPackage.Append(temp)
 
-	if err == nil {
-		err = c.checkStatementCounts()
-	}
-
 	return
 }
 
@@ -84,10 +80,6 @@ func (node *Program) CompileAnother(c *Compiler) (pkg opcode.InsPackage, err err
 	}()
 
 	c.InsPackage, err = c.compileProgram(node, true)
-
-	if err == nil {
-		err = c.checkStatementCounts()
-	}
 
 	return	
 }

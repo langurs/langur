@@ -19,6 +19,12 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 
 	importsDone := false
 
+	defer func() {
+		if err == nil {
+			err = c.checkStatementCounts()
+		}
+	}()
+
 	for i, s := range node.Statements {
 		switch n := s.(type) {
 		case *ModuleNode:
