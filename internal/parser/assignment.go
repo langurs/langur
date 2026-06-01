@@ -10,7 +10,6 @@ import (
 func (p *Parser) parseDeclaration() ast.Node {
 	mutable := false
 	public := false
-	// tok := p.tok
 
 	if p.tok.Type == token.PUBLIC {
 		public = true

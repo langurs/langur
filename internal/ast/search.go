@@ -29,6 +29,11 @@ func nodeMatching(node, parent Node, mc *matchCriteria) bool {
 							}
 						}
 					}
+
+				case *IdentNode:
+					if mc.Match_IdentNode_Name {
+						return n.Name == m.(*IdentNode).Name
+					}
 				}
 
 				// no special case matches; return true
@@ -43,6 +48,7 @@ type matchCriteria struct{
 	Types []Node
 	Match_BlockNode_HasScope bool
 	Match_ModeNode_NotGlobal bool
+	Match_IdentNode_Name     bool
 }
 
 type searchCriteria struct{
