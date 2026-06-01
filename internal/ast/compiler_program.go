@@ -68,11 +68,13 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 		}
 	}
 
-	// wrap remaining instructions into main function and continue
+	// wrap remaining instructions into main function and continue, passing it all to compileModule
 	if importsDone {
+		main := MakeMainFnDeclaration(node.Statements[mainStatementsStart:])
+		
 		nodes := make([]Node, len(node.Statements[:mainStatementsStart])+1)
 		copy(nodes, node.Statements[:mainStatementsStart])
-		nodes[len(nodes)-1] = MakeMainFnDeclaration(node.Statements[mainStatementsStart:])
+		nodes[len(nodes)-1] = main
 
 		// assume non-module level may contain impure effects, such as console or file changes
 		c.moduleDeclaredImpureEffects = true
@@ -81,6 +83,24 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 
 	err = c.makeErr(node, "Expected statements/expressions")
 	return
+}
+
+// ensure function ends with a return
+func ensureValue(node, returnof Node) Node {
+	if returnof == nil {
+		returnof = &NumberNode{Token: node.TokenInfo(), Value: "0"}
+	}
+	var returnWhat = &ReturnNode{Token: node.TokenInfo(), ReturnValue: returnof}
+
+	if fn, ok := node.(*FunctionNode); ok {
+		if body, ok := fn.Body.(*BlockNode); ok {
+			if !EndsWithDefiniteJump(body.Statements) {
+				body.Statements = append(body.Statements, returnWhat)
+			}
+		}
+	}
+
+	return node
 }
 
 func (c *Compiler) compileModule(nodes []Node, execute bool) (
@@ -224,6 +244,11 @@ func (c *Compiler) fixModuleDeclarations(declarations []*DeclarationNode) (
 						_, isFunction := a.Values[0].(*FunctionNode)
 						if !isFunction {
 							return decl, c.makeErr(declarations[i], fmt.Sprintf("%s must be a function", id.Name))
+						}
+						
+						// while we're here, fix the main function to ensure it ends with a return
+						if c.RunRemotely {
+							a.Values[0] = ensureValue(a.Values[0], nil)
 						}
 					}
 				}

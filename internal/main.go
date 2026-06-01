@@ -133,6 +133,7 @@ func main() {
 	}
 
 	comp, err := ast.NewCompiler(compile_modes, true)
+	comp.RunRemotely = true
 	if err != nil {
 		if printErrors {
 			printLnErr("langur: new compiler error: " + err.Error())

@@ -34,6 +34,7 @@ type Compiler struct {
 	lateIDsUsed   []string
 	Modes         *modes.CompileModes
 	doAllBindings bool
+	RunRemotely   bool	// not interactive mode or a test
 
 	// compile once and reuse...
 	noValueIns opcode.InsPackage
