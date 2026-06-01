@@ -24,7 +24,7 @@ var bi_tan = &object.BuiltIn{
 		case *object.Number:
 			return n.Tangent()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected a number")
 	},
 }
 
@@ -44,7 +44,7 @@ var bi_atan = &object.BuiltIn{
 		case *object.Number:
 			return n.ArcTangent()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected a number")
 	},
 }
 
@@ -64,7 +64,7 @@ var bi_sin = &object.BuiltIn{
 		case *object.Number:
 			return n.Sine()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected a number")
 	},
 }
 
@@ -84,6 +84,6 @@ var bi_cos = &object.BuiltIn{
 		case *object.Number:
 			return n.Cosine()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected a number")
 	},
 }

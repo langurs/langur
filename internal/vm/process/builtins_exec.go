@@ -32,7 +32,7 @@ var bi_execT = &object.BuiltIn{
 			return object.NewString(out)
 		} else {
 			es := err.Error()
-			err := object.NewError(object.ERR_GENERAL, fnName,
+			err := object.NewException(object.ERR_GENERAL, fnName,
 				es+": "+formatErrString(out))
 
 			// add the exit status to the hash

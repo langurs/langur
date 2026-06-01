@@ -43,7 +43,7 @@ var bi_replace = &object.BuiltIn{
 		if !isRegex {
 			find, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
@@ -61,26 +61,26 @@ var bi_replace = &object.BuiltIn{
 		case *object.List:
 			fns = repl.Elements
 			if len(fns) == 0 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName,
+				return object.NewException(object.ERR_ARGUMENTS, fnName,
 					"Expected string or function or list of functions for argument with")
 			}
 			for i, f := range fns {
 				if f == object.NONE {
 					fns[i] = nil
 				} else if !object.IsCallable(f) && f.Type() != object.STRING_OBJ {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable, no-op, or string", i+1))
+					return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable, no-op, or string", i+1))
 				}
 			}
 			fn = fns[0] // initialiaze fn to first function
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName,
+			return object.NewException(object.ERR_ARGUMENTS, fnName,
 				"Expected string or function or list of functions for argument with")
 		}
 
 		max, err := args[3].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		doSubmatchInterpolation := args[4].IsTruthy()
@@ -89,7 +89,7 @@ var bi_replace = &object.BuiltIn{
 			if fn == nil && fns == nil {
 				result, err := object.RegexReplace(src.String(), re, replacementString, max, doSubmatchInterpolation)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				return result
 			}
@@ -111,7 +111,7 @@ func regexReplaceWithFunctionsAndStrings(
 
 	arr, err := object.RegexSplitAndKeep(re, src, max)
 	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 	}
 
 	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, re, fn, fns, doSubmatchInterpolation)
@@ -125,7 +125,7 @@ func stringReplaceWithFunctionsAndStrings(
 
 	arr, err := object.StringSplitAndKeep(find, src, max)
 	if err != nil {
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 	}
 	return replaceWithFunctionsAndStrings(pr, arr.(*object.List).Elements, nil, fn, fns, false)
 }
@@ -146,7 +146,7 @@ func replaceWithFunctionsAndStrings(
 			if re != nil {
 				if doSubmatchInterpolation {
 					// TODO: To account for submatch interpolation ($1, etc.)
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with regex")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with regex")
 				}
 			}
 			elements[i] = fn
@@ -154,7 +154,7 @@ func replaceWithFunctionsAndStrings(
 		default:
 			result, err := pr.callback(fn, elements[i])
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			elements[i] = result
 		}
@@ -206,31 +206,31 @@ var bi_tran = &object.BuiltIn{
 				keys, values := h.IndexKeys(), h.Values()
 				list1, err = listToGraphemeStringSlice(keys)
 				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on keys of hash argument with: %s", err.Error()))
+					return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on keys of hash argument with: %s", err.Error()))
 				}
 				list2, err = listToGraphemeStringSlice(values)
 				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on values of hash argument with: %s", err.Error()))
+					return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on values of hash argument with: %s", err.Error()))
 				}
 
 			} else {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Argument with must be hash when argument by not passed")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Argument with must be hash when argument by not passed")
 			}
 
 		} else {
 			list1, err = listToGraphemeStringSlice(args[1])
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument by: %s", err.Error()))
+				return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument by: %s", err.Error()))
 			}
 			list2, err = listToGraphemeStringSlice(args[2])
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
+				return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Error on argument with: %s", err.Error()))
 			}
 		}
 
 		// should have 2 lists of equal length
 		if len(list1) != len(list2) {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same number of items for lists in arguments by and with")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same number of items for lists in arguments by and with")
 		}
 
 		previousMatch := false

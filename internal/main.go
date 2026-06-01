@@ -187,4 +187,3 @@ func main() {
 	exitCode := object.ObjectToExitCode(machine.LastValue())
 	os.Exit(exitCode)
 }
-

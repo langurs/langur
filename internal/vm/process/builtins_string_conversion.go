@@ -50,7 +50,7 @@ var bi_b2s = &object.BuiltIn{
 		case *object.Number:
 			b, err := arg.ToByte()
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return utf8bytesToString(fnName, []byte{b})
 
@@ -64,16 +64,16 @@ var bi_b2s = &object.BuiltIn{
 				case *object.Number:
 					b, err = v.ToByte()
 					if err != nil {
-						return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+						return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 					}
 				default:
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
 				}
 				bSlc[i] = b
 			}
 			return utf8bytesToString(fnName, bSlc)
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer or list of integers")
 	},
 }
 
@@ -83,10 +83,10 @@ func utf8bytesToString(fnName string, bSlc []byte) object.Object {
 		if err == nil {
 			return s
 		}
-		return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+		return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		// return object.StringFromByteSlice(bSlc)
 	}
-	return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid UTF-8 byte sequence")
+	return object.NewException(object.ERR_ARGUMENTS, fnName, "Invalid UTF-8 byte sequence")
 }
 
 var bi_cp2s = &object.BuiltIn{
@@ -104,7 +104,7 @@ var bi_cp2s = &object.BuiltIn{
 
 		rSlc, err := object.CodePointsToFlatRuneSlice(args[0])
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 		
 		return object.NewString(string(rSlc))
@@ -140,7 +140,7 @@ var bi_s2cp = &object.BuiltIn{
 			if alt != nil {
 				return alt
 			}
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		return result
@@ -216,7 +216,7 @@ var bi_s2s = &object.BuiltIn{
 			if alt != nil {
 				return alt
 			}
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		return result
@@ -246,19 +246,19 @@ var bi_s2n = &object.BuiltIn{
 		case *object.Number:
 			cp, err := arg.ToRune()
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Invalid code point")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Invalid code point")
 			}
 			rSlc = []rune{cp}
 			one = true
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or code point for argument string")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or code point for argument string")
 		}
 
 		if one {
 			n, err := cpoint.Base36ToNumber(rSlc[0])
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return object.NumberFromInt(n)
 		}
@@ -267,7 +267,7 @@ var bi_s2n = &object.BuiltIn{
 		for i, cp := range rSlc {
 			n, err := cpoint.Base36ToNumber(cp)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			elements[i] = object.NumberFromInt(n)
 		}

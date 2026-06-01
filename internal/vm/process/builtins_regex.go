@@ -39,14 +39,14 @@ var bi_matching = &object.BuiltIn{
 		if !isRegex {
 			check, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
 		if isRegex {
 			success, err := object.RegexMatching(re, s)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return success
 		}
@@ -77,7 +77,7 @@ var bi_match = &object.BuiltIn{
 
 		result, err := object.RegexMatchOnce(re, s)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if result == object.NONE && args[2] != nil {
@@ -112,12 +112,12 @@ var bi_matches = &object.BuiltIn{
 
 		max, err := args[2].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		list, err := object.RegexMatchProgressive(re, s, max)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return list
 	},
@@ -144,7 +144,7 @@ var bi_submatch = &object.BuiltIn{
 
 		result, err := object.RegexSubMatches(re, s)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -171,7 +171,7 @@ var bi_submatchH = &object.BuiltIn{
 
 		result, err := object.RegexSubMatchesHash(re, s)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -199,12 +199,12 @@ var bi_submatches = &object.BuiltIn{
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		result, err := object.RegexProgressiveSubMatches(re, s, cnt)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -232,12 +232,12 @@ var bi_submatchesH = &object.BuiltIn{
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
 		result, err := object.RegexProgressiveSubMatchesHashList(re, s, cnt)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -277,32 +277,32 @@ var bi_split = &object.BuiltIn{
 		case *object.Number:
 			countEach, isCountEach = object.NumberToInt(by)
 			if !isCountEach {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
 			}
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
 		}
 
 		count, ok := args[2].(*object.Number)
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument max")
 		}
 		max, err := count.ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if isRegex {
 			result, err := object.RegexSplit(re, s, max)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return result
 
 		} else if isCountEach {
 			sSlc, err := str.SplitByNumber(s, countEach, max)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return object.StringSliceToList(sSlc)
 
@@ -338,7 +338,7 @@ var bi_index = &object.BuiltIn{
 		if !isRegex {
 			sub, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
@@ -352,7 +352,7 @@ var bi_index = &object.BuiltIn{
 		}
 
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if result == object.NONE && args[2] != nil {
@@ -391,13 +391,13 @@ var bi_indices = &object.BuiltIn{
 		if !isRegex {
 			sub, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
 			}
 		}
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		var result object.Object
@@ -407,7 +407,7 @@ var bi_indices = &object.BuiltIn{
 			result, err = object.StringProgressiveIndices(sub.String(), s, cnt)
 		}
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -434,7 +434,7 @@ var bi_subindex = &object.BuiltIn{
 
 		result, err := object.RegexSubMatchesIndices(re, s)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},
@@ -462,12 +462,12 @@ var bi_subindices = &object.BuiltIn{
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		result, err := object.RegexProgressiveSubMatchesIndices(re, s, cnt)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return result
 	},

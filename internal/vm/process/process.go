@@ -75,7 +75,7 @@ func (pr *Process) executeTryCatch(fr *frame, tryIndex, catchIndex, elseIndex in
 
 		// catch error returned from try frame
 		// The error variable is a langur hash that is guaranteed to contain certain keys, even if they have no data.
-		errObj := object.NewErrorFromAnything(err, "")
+		errObj := object.NewExceptionFromAnything(err, "")
 		// The compiler already set up this late-binding assignment in the catch code, ...
 		// ... so we pass the exception hash to be pushed onto the stack of the catch frame (errObj.Contents)
 
@@ -87,7 +87,7 @@ func (pr *Process) executeTryCatch(fr *frame, tryIndex, catchIndex, elseIndex in
 }
 
 func (pr *Process) throw(fr *frame, what object.Object) error {
-	errObj := object.NewErrorFromObject(what)
+	errObj := object.NewExceptionFromObject(what)
 
 	// write function name source to hash if source not already set (is ZLS)
 	src, err := errObj.Contents.GetValue(object.ERR_HASHKEY_SOURCE)

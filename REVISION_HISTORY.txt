@@ -5,6 +5,7 @@ https://langurlang.org
 - fix: exit status to always be set from main function return value
 - (internal) wrap script (non-module) compile into main function
 - (internal) updated Node.Search with parent Node parameter
+- (internal) changed object.Error type name to object.Exception
 
 
 2026-05-26 - 0.21.3

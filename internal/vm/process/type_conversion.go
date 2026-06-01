@@ -32,25 +32,25 @@ var bi_string = &object.BuiltIn{
 			case *object.Number:
 				base, ok := object.NumberToInt(format)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt when converting number to string")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt when converting number to string")
 				}
 
 				i, err := n.ToInt()
 				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Failed to convert number to string using the given base")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Failed to convert number to string using the given base")
 				}
 				return object.NewString(str.IntToStr(i, base))
 
 			case *object.DateTime:
 				format, ok := format.(*object.String)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt when converting datetime to string")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt when converting datetime to string")
 				}
 				s := n.FormatString(format.String())
 				return object.NewString(s)
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Unexpected argument fmt for this conversion")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Unexpected argument fmt for this conversion")
 			}
 		}
 		return object.ToString(from)
@@ -79,12 +79,12 @@ var bi_number = &object.BuiltIn{
 		if format != nil {
 			base, ok = object.NumberToInt(format)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument fmt")
 			}
 		}
 		n, ok := object.ToNumber(from, base)
 		if !ok {
-			return object.NewError(object.ERR_GENERAL, fnName, "Failed to convert to number")
+			return object.NewException(object.ERR_GENERAL, fnName, "Failed to convert to number")
 		}
 		return n
 	},
@@ -110,10 +110,10 @@ var bi_complex = &object.BuiltIn{
 			case *object.Number:
 				return object.NewComplex(real.(*object.Number), imaginary.(*object.Number))
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument imag")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected number for argument imag")
 			}
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument real")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected number for argument real")
 		}
 	},
 }
@@ -143,36 +143,36 @@ var bi_hash = &object.BuiltIn{
 		case *object.Range:
 			list1, err = arg.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 
 		case *object.DateTime:
 			if len(args) != 1 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given date-time")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given date-time")
 			}
 			return arg.ToHash()
 
 		case *object.Duration:
 			if len(args) != 1 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given duration")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given duration")
 			}
 			return arg.ToHash()
 
 		case *object.Hash:
 			// pass-through hash
 			if len(args) != 1 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given hash")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Unexpected second argument when given hash")
 			}
 			return arg
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or date-time for first argument")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or date-time for first argument")
 		}
 
 		if len(args) == 1 {
 			hash, err := object.NewHashFromSlice(list1.Elements, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return hash
 		}
@@ -183,15 +183,15 @@ var bi_hash = &object.BuiltIn{
 		case *object.Range:
 			list2, err = arg2.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range for second argument")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or range for second argument")
 		}
 
 		hash, err := object.NewHashFromParallelSlices(list1.Elements, list2.Elements, false)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return hash
 	},
@@ -226,7 +226,7 @@ var bi_datetime = &object.BuiltIn{
 				fmtStr = format.String()
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt")
 			}
 
 		case *object.DateTime:
@@ -243,13 +243,13 @@ var bi_datetime = &object.BuiltIn{
 			// offset in seconds?
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt (time zone/location string) when converting datetime to datetime")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string for argument fmt (time zone/location string) when converting datetime to datetime")
 			}
 		}
 
 		dt, err := object.ToDateTime(from, fmtStr)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		return dt
@@ -271,21 +271,21 @@ var bi_duration = &object.BuiltIn{
 		case *object.String:
 			o, err := object.NewDurationFromString(arg.String())
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return o
 
 		case *object.Number:
 			n, err := arg.ToInt64()
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, "Number not an INTEGER")
+				return object.NewException(object.ERR_GENERAL, fnName, "Number not an INTEGER")
 			}
 			return object.NewDurationFromNanoseconds(n)
 
 		case *object.Hash:
 			o, err := arg.ToDuration()
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return o
 
@@ -293,7 +293,7 @@ var bi_duration = &object.BuiltIn{
 			return arg
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected string, number, hash, or duration")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, number, hash, or duration")
 		}
 	},
 }

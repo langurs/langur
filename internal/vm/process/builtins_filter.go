@@ -33,7 +33,7 @@ var bi_filter = &object.BuiltIn{
 			var ok bool
 			re, ok = by.(*object.Regex)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to filter by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to filter by")
 			}
 			isRegex = true
 		}
@@ -48,7 +48,7 @@ var bi_filter = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = object.RegexMatchingOrError(re, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						newArr.Elements = append(newArr.Elements, v)
@@ -59,7 +59,7 @@ var bi_filter = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = pr.callback(by, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						newArr.Elements = append(newArr.Elements, v)
@@ -81,7 +81,7 @@ var bi_filter = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = object.RegexMatchingOrError(re, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						elements = append(elements, kv.Key, kv.Value)
@@ -92,7 +92,7 @@ var bi_filter = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = pr.callback(by, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						elements = append(elements, kv.Key, kv.Value)
@@ -109,12 +109,12 @@ var bi_filter = &object.BuiltIn{
 
 			hash, err := object.NewHashFromSlice(elements, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash to filter")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash to filter")
 	},
 }
 
@@ -144,7 +144,7 @@ var bi_count = &object.BuiltIn{
 			var ok bool
 			re, ok = by.(*object.Regex)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to count by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to count by")
 			}
 			isRegex = true
 		}
@@ -158,7 +158,7 @@ var bi_count = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = object.RegexMatchingOrError(re, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						count++
@@ -169,7 +169,7 @@ var bi_count = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = pr.callback(by, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						count++
@@ -189,7 +189,7 @@ var bi_count = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = object.RegexMatchingOrError(re, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						count++
@@ -200,7 +200,7 @@ var bi_count = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = pr.callback(by, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						count++
@@ -216,7 +216,7 @@ var bi_count = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash to count entries")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash to count entries")
 		}
 
 		return object.NumberFromInt64(count)

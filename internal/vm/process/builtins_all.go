@@ -32,7 +32,7 @@ var bi_all = &object.BuiltIn{
 				var ok bool
 				re, ok = by.(*object.Regex)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
 				}
 				isRegex = true
 			}
@@ -51,7 +51,7 @@ var bi_all = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = object.RegexMatchingOrError(re, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result != object.TRUE {
 						return object.FALSE
@@ -62,7 +62,7 @@ var bi_all = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = pr.callback(by, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result != object.TRUE {
 						return object.FALSE
@@ -86,7 +86,7 @@ var bi_all = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = object.RegexMatchingOrError(re, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result != object.TRUE {
 						return object.FALSE
@@ -97,7 +97,7 @@ var bi_all = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = pr.callback(by, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result != object.TRUE {
 						return object.FALSE
@@ -113,7 +113,7 @@ var bi_all = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
 		}
 
 		return object.TRUE
@@ -144,7 +144,7 @@ var bi_any = &object.BuiltIn{
 				var ok bool
 				re, ok = by.(*object.Regex)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
 				}
 				isRegex = true
 			}
@@ -163,7 +163,7 @@ var bi_any = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = object.RegexMatchingOrError(re, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						return object.TRUE
@@ -174,7 +174,7 @@ var bi_any = &object.BuiltIn{
 				for _, v := range arg.Elements {
 					result, err = pr.callback(by, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						return object.TRUE
@@ -198,7 +198,7 @@ var bi_any = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = object.RegexMatchingOrError(re, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						return object.TRUE
@@ -209,7 +209,7 @@ var bi_any = &object.BuiltIn{
 				for _, kv := range arg.Pairs {
 					result, err = pr.callback(by, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					if result == object.TRUE {
 						return object.TRUE
@@ -225,7 +225,7 @@ var bi_any = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash")
 		}
 
 		return object.FALSE

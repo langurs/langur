@@ -104,7 +104,7 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	defer func() {
 		if pr.Modes.GoPanicToLangurException {
 			if p := recover(); p != nil {
-				err = object.NewErrorFromAnything(p, "panic:"+bi.FullName())
+				err = object.NewExceptionFromAnything(p, "panic:"+bi.FullName())
 			}
 		}
 	}()
@@ -119,10 +119,10 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	// (interface{} required to prevent a circular reference)
 	result = bi.Fn.(BuiltInFunction)(pr, args...)
 
-	// if received an Error Object (from a built-in function), ... 
+	// if received an Exception Object (from a built-in function), ... 
 	// ... swap so that error is second value returned from this function
-	if r, isErrObj := result.(*object.Error); isErrObj {
-		return nil, r // result.(*object.Error)
+	if r, isException := result.(*object.Exception); isException {
+		return nil, r // result.(*object.Exception)
 	} else {
 		return result, nil
 	}
@@ -140,7 +140,7 @@ func reformArgumentsBySignature(
 
 	// check positional argument counts after expansion/compression
 	if len(positional) != len(sig.ParamPositional) {
-		err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+		err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
 			fmt.Sprintf("Positional argument/parameter count mismatch, expected=%s, received=%d",
 				sig.MinMaxString(), len(positional)))
 		return
@@ -154,7 +154,7 @@ func reformArgumentsBySignature(
 			if param.Type != positional[argPtr].Type() {
 				argTypeName := object.TypeToTypeName(positional[argPtr].Type())
 				paramTypeName := object.TypeToTypeName(param.Type)
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+				err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
 					fmt.Sprintf("Argument %d type (%s) does not match parameter %s type (%s)", 
 						argPtr+1, argTypeName, str.Nz(param.InternalName, param.ExternalName), paramTypeName))
 				return
@@ -196,7 +196,7 @@ func reformArgumentsBySignature(
 
 		if !found {
 			if param.Required {
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+				err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
 					fmt.Sprintf("Required parameter by name (%s) not passed", param.ExternalName))
 				return
 			}
@@ -214,7 +214,7 @@ func reformArgumentsBySignature(
 			if param.Type != args[argPtr].Type() {
 				argTypeName := object.TypeToTypeName(args[argPtr].Type())
 				paramTypeName := object.TypeToTypeName(param.Type)
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+				err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
 					fmt.Sprintf("Argument %s type (%s) does not match parameter %s type (%s)", 
 						param.ExternalName, argTypeName, param.ExternalName, paramTypeName))
 				return
@@ -241,7 +241,7 @@ func reformArgumentsBySignature(
 			}
 		}
 		if !found {
-			err = object.NewError(object.ERR_ARGUMENTS, sig.Name,
+			err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
 				fmt.Sprintf("Invalid optional argument (%s) passed", str.ReformatInput(nv.Name)))
 			return
 		}
@@ -265,7 +265,7 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 			params = append(positional[:len(sig.ParamPositional)-1], &object.List{Elements: last})
 	
 			if sig.ParamExpansionMax != -1 && len(last) > sig.ParamExpansionMax {
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
+				err = object.NewException(object.ERR_ARGUMENTS, sig.Name, 
 					fmt.Sprintf("Parameter expansion max (%d) exceeded (%d)", sig.ParamExpansionMax, len(last)))
 			}
 	
@@ -275,7 +275,7 @@ func parameterCompression(sig *object.Signature, positional []object.Object) (
 		}
 	
 		if len(last) < sig.ParamExpansionMin {
-				err = object.NewError(object.ERR_ARGUMENTS, sig.Name, 
+				err = object.NewException(object.ERR_ARGUMENTS, sig.Name, 
 					fmt.Sprintf("Parameter expansion min (%d) not met (%d)", sig.ParamExpansionMin, len(last)))
 		}
 	}

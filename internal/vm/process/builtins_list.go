@@ -44,7 +44,7 @@ var bi_less = &object.BuiltIn{
 			// remove specific indices
 			list, err := over.IndexInverse(of, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
 			return list
 
@@ -59,30 +59,30 @@ var bi_less = &object.BuiltIn{
 				if err == nil {
 					return s
 				}
-				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, "Error removing indices from list: "+err.Error())
 			}
 
 			str, err := over.IndexInverse(of, true)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, "Error removing indices from string: "+err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, "Error removing indices from string: "+err.Error())
 			}
 			return str
 
 		case *object.Hash:
 			if of == nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected key or list of keys to remove from hash")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected key or list of keys to remove from hash")
 			}
 			if len(over.Pairs) == 0 {
 				return over
 			}
 			hash, err := over.IndexInverse(of, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, "Error removing keys from hash: "+err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, "Error removing keys from hash: "+err.Error())
 			}
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash or string")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash or string")
 	},
 }
 
@@ -126,11 +126,11 @@ var bi_more = &object.BuiltIn{
 					if err == nil {
 						ns.WriteRune(r)
 					} else {
-						return object.NewError(object.ERR_ARGUMENTS, fnName, "error adding to string")
+						return object.NewException(object.ERR_ARGUMENTS, fnName, "error adding to string")
 					}
 
 				default:
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "error adding to string")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "error adding to string")
 				}
 			}
 			return object.NewString(ns.String())
@@ -141,16 +141,16 @@ var bi_more = &object.BuiltIn{
 			for i := range add {
 				from, ok := add[i].(*object.Hash)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected hashes to add to hash")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected hashes to add to hash")
 				}
 				for _, kv := range from.Pairs {
 					// adding values not already present in original hash
 					if hash.KeyExists(kv.Key) {
-						return object.NewError(object.ERR_ARGUMENTS, fnName, "Duplicate keys in adding hashes (Use append to overwrite)")
+						return object.NewException(object.ERR_ARGUMENTS, fnName, "Duplicate keys in adding hashes (Use append to overwrite)")
 					}
 					err := hash.WritePair(kv.Key, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 				}
 			}
@@ -158,7 +158,7 @@ var bi_more = &object.BuiltIn{
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, or string for first argument")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, or string for first argument")
 	},
 }
 
@@ -182,7 +182,7 @@ var bi_reverse = &object.BuiltIn{
 			// reverse keys/values of hash if possible
 			hash, err := over.Reverse()
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return hash
 
@@ -196,7 +196,7 @@ var bi_reverse = &object.BuiltIn{
 			return over.Reverse()
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, string, or range")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, string, or range")
 		}
 	},
 }
@@ -223,7 +223,7 @@ var bi_rotate = &object.BuiltIn{
 			var ok bool
 			distance, ok = object.NumberToInt(args[1])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer distance to rotate")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer distance to rotate")
 			}
 		}
 
@@ -234,14 +234,14 @@ var bi_rotate = &object.BuiltIn{
 		if theRange != nil {
 			rng, ok = theRange.(*object.Range)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
+				return object.NewException(object.ERR_ARGUMENTS, fnName, expectedRng)
 			}
 		}
 
 		switch over := args[0].(type) {
 		case *object.List:
 			if theRange != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
 			}
 			distance = determineRotation(distance, len(over.Elements))
 			if distance == 0 {
@@ -253,12 +253,12 @@ var bi_rotate = &object.BuiltIn{
 
 		case *object.String:
 			if theRange != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "unexpected range argument")
 			}
 
 			// TODO: determine rotation on strings; see notes on reverse() for string by Unicode rules
 			// rotate by grapheme instead?
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "string rotate not developed yet (by code point or grapheme?)")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "string rotate not developed yet (by code point or grapheme?)")
 
 			// simple rotation on string code points (not graphemes)
 			// 	rotation = determineRotation(rotation, arg.LenCP())
@@ -275,11 +275,11 @@ var bi_rotate = &object.BuiltIn{
 			if theRange != nil {
 				start, ok = object.NumberToInt(rng.Start)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
+					return object.NewException(object.ERR_ARGUMENTS, fnName, expectedRng)
 				}
 				end, ok = object.NumberToInt(rng.End)
 				if !ok {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
+					return object.NewException(object.ERR_ARGUMENTS, fnName, expectedRng)
 				}
 				if start > end {
 					start, end = end, start
@@ -290,12 +290,12 @@ var bi_rotate = &object.BuiltIn{
 				}
 
 			} else {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, expectedRng)
+				return object.NewException(object.ERR_ARGUMENTS, fnName, expectedRng)
 			}
 
 			i, ok := object.NumberToInt(over)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "expected integer")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "expected integer")
 			}
 			if i < start || i > end {
 				// number outside the range passed through
@@ -308,8 +308,8 @@ var bi_rotate = &object.BuiltIn{
 			return object.NumberFromInt(i)
 
 		default:
-			// return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or string for first argument")
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for first argument")
+			// return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or string for first argument")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list for first argument")
 		}
 	},
 }

@@ -257,7 +257,7 @@ func InfixNonLogicalOperation(op opcode.OpCode, left, right Object, code int) (r
 // already checked that err != nil
 func AsMathError(err error, source string) error {
 	msg := err.Error()
-	return NewError(ERR_MATH, source, msg)
+	return NewException(ERR_MATH, source, msg)
 }
 
 // NOTE: If adding or removing codes here, also update InfixOperation().

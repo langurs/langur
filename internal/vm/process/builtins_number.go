@@ -29,7 +29,7 @@ var bi_abs = &object.BuiltIn{
 		case object.INumericNegation:
 			return num.Abs()
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, "abs", fmt.Sprintf("Cannot find absolute value of type %s", num.TypeString()))
+			return object.NewException(object.ERR_ARGUMENTS, "abs", fmt.Sprintf("Cannot find absolute value of type %s", num.TypeString()))
 		}
 	},
 }
@@ -48,7 +48,7 @@ var bi_ceiling = &object.BuiltIn{
 		case *object.Number:
 			return num.Ceiling()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "ceiling", "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, "ceiling", "Expected a number")
 	},
 }
 
@@ -66,7 +66,7 @@ var bi_floor = &object.BuiltIn{
 		case *object.Number:
 			return num.Floor()
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "floor", "Expected a number")
+		return object.NewException(object.ERR_ARGUMENTS, "floor", "Expected a number")
 	},
 }
 
@@ -93,14 +93,14 @@ var bi_gcd = &object.BuiltIn{
 		for i, v := range elements {
 			a, ok := v.(*object.Number)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of numbers only")
 			}
 			if !a.IsInteger() {
 				// TODO: non-integers with testing
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of integer numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of integer numbers only")
 			}
 			if a.IsZero() {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
 			}
 			numbers[i] = a.Abs().(*object.Number)
 		}
@@ -109,13 +109,13 @@ var bi_gcd = &object.BuiltIn{
 
 		switch len(numbers) {
 		case 0:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list")
 		case 1:
 			return elements[0]
 		case 2:
 			b, err = object.Gcd(numbers[0], numbers[1])
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 		default:
 			// more than 2
@@ -123,7 +123,7 @@ var bi_gcd = &object.BuiltIn{
 			for i := 1; i < len(numbers); i++ {
 				b, err = object.Gcd(b, numbers[i])
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 			}
 		}
@@ -155,13 +155,13 @@ var bi_lcm = &object.BuiltIn{
 		for i, v := range elements {
 			a, ok := v.(*object.Number)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of numbers only")
 			}
 			if !a.IsInteger() {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of integer numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of integer numbers only")
 			}
 			if a.IsZero() {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list of non-zero numbers only")
 			}
 			numbers[i] = a.Abs().(*object.Number)
 		}
@@ -170,13 +170,13 @@ var bi_lcm = &object.BuiltIn{
 
 		switch len(numbers) {
 		case 0:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list")
 		case 1:
 			return elements[0]
 		case 2:
 			b, err = object.Lcm(numbers[0], numbers[1])
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 		default:
 			// more than 2
@@ -184,7 +184,7 @@ var bi_lcm = &object.BuiltIn{
 			for i := 1; i < len(numbers); i++ {
 				b, err = object.Lcm(b, numbers[i])
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 			}
 		}
@@ -233,18 +233,18 @@ var bi_max = &object.BuiltIn{
 			return object.NumberFromInt(object.ParamMax(c))
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
 		}
 
 		if len(elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
 		}
 
 		max := elements[0]
 		for i := 1; i < len(elements); i++ {
 			gt, ok := object.GreaterThan(elements[i], max)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName,
+				return object.NewException(object.ERR_ARGUMENTS, fnName,
 					fmt.Sprintf("Could not compare %s with %s", max.TypeString(), elements[i].TypeString()))
 			}
 			if gt {
@@ -296,18 +296,18 @@ var bi_min = &object.BuiltIn{
 			return object.NumberFromInt(object.ParamMin(c))
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
 		}
 
 		if len(elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
 		}
 
 		min := elements[0]
 		for i := 1; i < len(elements); i++ {
 			lt, ok := object.GreaterThan(min, elements[i])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName,
+				return object.NewException(object.ERR_ARGUMENTS, fnName,
 					fmt.Sprintf("Could not compare %s with %s", min.TypeString(), elements[i].TypeString()))
 			}
 			if lt {
@@ -359,11 +359,11 @@ var bi_minmax = &object.BuiltIn{
 			return object.NewRange(object.NumberFromInt(object.ParamMin(c)), object.NumberFromInt(object.ParamMax(c)))
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, range, string, or function")
 		}
 
 		if len(elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list, hash, range, string, or a function")
 		}
 
 		min := elements[0]
@@ -371,7 +371,7 @@ var bi_minmax = &object.BuiltIn{
 		for i := 1; i < len(elements); i++ {
 			lt, ok := object.GreaterThan(min, elements[i])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName,
+				return object.NewException(object.ERR_ARGUMENTS, fnName,
 					fmt.Sprintf("Could not compare %s with %s", min.TypeString(), elements[i].TypeString()))
 			}
 			if lt {
@@ -379,7 +379,7 @@ var bi_minmax = &object.BuiltIn{
 			}
 			gt, ok := object.GreaterThan(elements[i], max)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName,
+				return object.NewException(object.ERR_ARGUMENTS, fnName,
 					fmt.Sprintf("Could not compare %s with %s", max.TypeString(), elements[i].TypeString()))
 			}
 			if gt {
@@ -421,11 +421,11 @@ var bi_mean = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash, or a range")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash, or a range")
 		}
 
 		if len(elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list or hash, or a range")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list or hash, or a range")
 		}
 
 		var nums = make([]*object.Number, len(elements))
@@ -433,7 +433,7 @@ var bi_mean = &object.BuiltIn{
 		for i := range elements {
 			n, ok := elements[i].(*object.Number)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected numbers only")
 			}
 			nums[i] = n
 		}
@@ -472,11 +472,11 @@ var bi_mid = &object.BuiltIn{
 			}
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or hash, or a range")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or hash, or a range")
 		}
 
 		if len(elements) == 0 {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected non-empty list or hash, or a range")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected non-empty list or hash, or a range")
 		}
 
 		var nums = make([]*object.Number, len(elements))
@@ -484,7 +484,7 @@ var bi_mid = &object.BuiltIn{
 		for i := range elements {
 			n, ok := elements[i].(*object.Number)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected numbers only")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected numbers only")
 			}
 			nums[i] = n
 		}
@@ -515,7 +515,7 @@ var bi_round = &object.BuiltIn{
 
 		places, ok := object.NumberToInt(args[1])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
 		addTrailingZeroes := false
@@ -529,7 +529,7 @@ var bi_round = &object.BuiltIn{
 		case object.FALSE:
 			trimTrailingZeroes = true
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
 		}
 
 		var mode modes.RoundingMode
@@ -540,14 +540,14 @@ var bi_round = &object.BuiltIn{
 		} else {
 			m, ok := object.NumberToInt(args[3])
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument mode (from "+modes.RoundHashName+" hash")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument mode (from "+modes.RoundHashName+" hash")
 			}
 			mode = modes.RoundingMode(m)
 		}
 
 		num, err := n.RoundByMode(places, addTrailingZeroes, trimTrailingZeroes, mode)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		return num
@@ -575,7 +575,7 @@ var bi_trunc = &object.BuiltIn{
 
 		places, ok := object.NumberToInt(args[1])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for argument places")
 		}
 
 		addTrailingZeroes := false
@@ -589,13 +589,13 @@ var bi_trunc = &object.BuiltIn{
 		case object.FALSE:
 			trimTrailingZeroes = true
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected bool or null for argument zeroes")
 		}
 
 		num, err := n.Truncate(places, addTrailingZeroes, trimTrailingZeroes)
 
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		return num
@@ -619,7 +619,7 @@ var bi_simplify = &object.BuiltIn{
 			return n.Simplify()
 		
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Expected type that can be simplified for argument num (not %s)", args[0].TypeString()))
+			return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Expected type that can be simplified for argument num (not %s)", args[0].TypeString()))
 		}
 	},
 }

@@ -35,7 +35,7 @@ var bi__limit = &object.BuiltIn{
 						return object.Zero
 					}
 				}
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer")
 			}
 
 		case *object.List:
@@ -62,14 +62,14 @@ var bi__limit = &object.BuiltIn{
 						}
 					}
 				}
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer range")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer range")
 			}
 
 		case *object.String:
 			count = len(over.String())
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, integer, integer range, or string")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, integer, integer range, or string")
 		}
 
 		// negative range or number on for of gives no result; not an error
@@ -108,19 +108,19 @@ var bi__values = &object.BuiltIn{
 			// number as implicit ascending range
 			list, err := over.ToList(object.One)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return list
 
 		case *object.Range:
 			list, err := over.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return list
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list, hash, integer, integer range, or string")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list, hash, integer, integer range, or string")
 		}
 	},
 }

@@ -30,14 +30,14 @@ var bi_sort = &object.BuiltIn{
 		var pmax int
 		if fn != nil {
 			if !object.IsCallable(fn) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected callable for argument by")
 			}
 			pmax = object.ParamMax(fn)
 			if pmax == -1 {
 				// if a function that takes an "unlimited" number of parameters, pass 2
 				pmax = 2
 			} else if pmax < 1 || pmax > 2 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected callable that may be passed 1 or 2 arguments for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected callable that may be passed 1 or 2 arguments for argument by")
 			}
 		}
 
@@ -49,19 +49,19 @@ var bi_sort = &object.BuiltIn{
 			if pmax == 0 {
 				sorted, err = quickSort(arr.Elements)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 
 			} else if pmax == 1 {
 				sorted, err = quickSortFromSingleParameterFunction(pr, fn, arr.Elements)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 
 			} else {
 				sorted, err = quickSortFromTwoParameterFunction(pr, fn, arr.Elements)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 			}
 			return &object.List{Elements: sorted}
@@ -75,28 +75,28 @@ var bi_sort = &object.BuiltIn{
 				if pmax == 0 {
 					less, err = object.InfixComparison(opcode.OpLessThan, rng.Start, rng.End, 0)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 
 				} else if pmax == 1 {
 					first, err := pr.callback(fn, rng.Start)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					second, err := pr.callback(fn, rng.End)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 
 					less, err = object.InfixComparison(opcode.OpLessThan, first, second, 0)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 
 				} else {
 					less, err = pr.callback(fn, rng.Start, rng.End)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 				}
 
@@ -113,7 +113,7 @@ var bi_sort = &object.BuiltIn{
 			}
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range for argument over")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or range for argument over")
 	},
 }
 

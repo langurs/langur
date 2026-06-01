@@ -28,7 +28,7 @@ var bi_readfile = &object.BuiltIn{
 		filename := args[0].String()
 		bSlc, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		s := string(bSlc)
 
@@ -60,17 +60,17 @@ var bi_writefile = &object.BuiltIn{
 		if perm != nil {
 			p, ok := object.NumberToInt(perm)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions; example: 8x664 (NOT 0664, BTW)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions; example: 8x664 (NOT 0664, BTW)")
 			}
 			if p < 0 || p > 0777 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions in range of 0 to 8x777 (NOT 0777, BTW)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions in range of 0 to 8x777 (NOT 0777, BTW)")
 			}
 			permissions = os.FileMode(p)
 		}
 
 		err := ioutil.WriteFile(file, []byte(contents), permissions)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		// returns number of bytes written
 		return object.NumberFromInt(len(contents))
@@ -102,10 +102,10 @@ var bi_appendfile = &object.BuiltIn{
 		if perm != nil {
 			p, ok := object.NumberToInt(perm)
 			if !ok {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions; example: 8x664 (NOT 0664, BTW)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions; example: 8x664 (NOT 0664, BTW)")
 			}
 			if p < 0 || p > 0777 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions in range of 0 to 8x777 (NOT 0777, BTW)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for permissions in range of 0 to 8x777 (NOT 0777, BTW)")
 			}
 			permissions = os.FileMode(p)
 		}
@@ -114,11 +114,11 @@ var bi_appendfile = &object.BuiltIn{
 		defer f.Close()
 
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if _, err = f.WriteString(contents); err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		// returns number of bytes written

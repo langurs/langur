@@ -262,7 +262,7 @@ func (d *Duration) ToHash() *Hash {
 }
 
 func noNegatives(src string) error {
-	return NewError(ERR_ARGUMENTS, src, "Duration values cannot be negative.")
+	return NewException(ERR_ARGUMENTS, src, "Duration values cannot be negative.")
 }
 
 func (d *Hash) ToDuration() (dr *Duration, err error) {

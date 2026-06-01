@@ -31,7 +31,7 @@ var bi_cd = &object.BuiltIn{
 		if pathObj != nil {
 			err = os.Chdir(pathObj.String())
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 		}
 
@@ -40,7 +40,7 @@ var bi_cd = &object.BuiltIn{
 		if err == nil {
 			return object.NewString(pwd)
 		}
-		return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+		return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 	},
 }
 
@@ -82,7 +82,7 @@ var bi_prop = &object.BuiltIn{
 
 			hash, err := object.NewHashFromSlice(hashkv, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return hash
 		}

@@ -35,9 +35,9 @@ var bi_lcase = &object.BuiltIn{
 			if err == nil {
 				return object.NumberFromRune(cpoint.Lcase(n))
 			}
-			return object.NewError(object.ERR_ARGUMENTS, "lcase", "Integer outside expected range")
+			return object.NewException(object.ERR_ARGUMENTS, "lcase", "Integer outside expected range")
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "lcase", "Expected string or integer")
+		return object.NewException(object.ERR_ARGUMENTS, "lcase", "Expected string or integer")
 	},
 }
 
@@ -60,9 +60,9 @@ var bi_tcase = &object.BuiltIn{
 			if err == nil {
 				return object.NumberFromRune(cpoint.Tcase(n))
 			}
-			return object.NewError(object.ERR_ARGUMENTS, "tcase", "Integer outside expected range")
+			return object.NewException(object.ERR_ARGUMENTS, "tcase", "Integer outside expected range")
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "tcase", "Expected string or integer")
+		return object.NewException(object.ERR_ARGUMENTS, "tcase", "Expected string or integer")
 	},
 }
 
@@ -85,9 +85,9 @@ var bi_ucase = &object.BuiltIn{
 			if err == nil {
 				return object.NumberFromRune(cpoint.Ucase(n))
 			}
-			return object.NewError(object.ERR_ARGUMENTS, "ucase", "Integer outside expected range")
+			return object.NewException(object.ERR_ARGUMENTS, "ucase", "Integer outside expected range")
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "ucase", "Expected string or integer")
+		return object.NewException(object.ERR_ARGUMENTS, "ucase", "Expected string or integer")
 	},
 }
 
@@ -161,7 +161,7 @@ var bi_join = &object.BuiltIn{
 
 			s, err := object.AutoString(e)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, "join", err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, "join", err.Error())
 			}
 			sb.WriteString(s.String())
 		}

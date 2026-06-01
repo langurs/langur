@@ -40,7 +40,7 @@ func (l *Range) Append(o2 Object) Object {
 	}
 
 	if err != nil {
-		return NewError(ERR_GENERAL, "Append", fmt.Sprintf("failure to append to range: %s", err.Error()))
+		return NewException(ERR_GENERAL, "Append", fmt.Sprintf("failure to append to range: %s", err.Error()))
 	}
 
 	return s
@@ -49,7 +49,7 @@ func (l *Range) Append(o2 Object) Object {
 func (l *Range) AppendToNone() Object {
 	r, err := l.ToString()
 	if err != nil {
-		return NewError(ERR_GENERAL, "Append", fmt.Sprintf("failure to convert range to string: %s", err.Error()))
+		return NewException(ERR_GENERAL, "Append", fmt.Sprintf("failure to convert range to string: %s", err.Error()))
 	}
 	return r
 }

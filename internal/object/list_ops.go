@@ -28,7 +28,7 @@ func (left *List) Multiply(o2 Object) Object {
 	case *Number:
 		n, err := right.ToInt()
 		if err != nil {
-			return NewError(ERR_GENERAL, "Multiply", "failure to convert number to integer for list multiplication")
+			return NewException(ERR_GENERAL, "Multiply", "failure to convert number to integer for list multiplication")
 		}
 		L := len(left.Elements)
 

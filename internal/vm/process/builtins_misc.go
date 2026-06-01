@@ -63,7 +63,7 @@ var bi_keys = &object.BuiltIn{
 			return over.IndexKeys()
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, "keys", "Expected indexable item")
+			return object.NewException(object.ERR_ARGUMENTS, "keys", "Expected indexable item")
 		}
 	},
 }
@@ -82,7 +82,7 @@ var bi_len = &object.BuiltIn{
 		case object.IIndex:
 			return object.NumberFromInt(arg.IndexCount())
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "len", "Expected indexable item")
+		return object.NewException(object.ERR_ARGUMENTS, "len", "Expected indexable item")
 	},
 }
 
@@ -111,7 +111,7 @@ var bi_nn = &object.BuiltIn{
 			// return alternate
 			return args[1]
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "nn", "No suitable value found")
+		return object.NewException(object.ERR_ARGUMENTS, "nn", "No suitable value found")
 	},
 }
 
@@ -134,7 +134,7 @@ var bi_sleep = &object.BuiltIn{
 			time.Sleep(time.Duration(d) * time.Millisecond)
 			return object.TRUE
 		}
-		return object.NewError(object.ERR_ARGUMENTS, "sleep", "Expected number of milliseconds")
+		return object.NewException(object.ERR_ARGUMENTS, "sleep", "Expected number of milliseconds")
 	},
 }
 

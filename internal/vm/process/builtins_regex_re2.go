@@ -23,7 +23,7 @@ var bi_reCompile = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		re, err := object.NewRegex(args[0].String(), regex.RE2)
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, "reCompile", err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, "reCompile", err.Error())
 		}
 		return re
 	},
@@ -43,7 +43,7 @@ var bi_reEsc = &object.BuiltIn{
 
 		newStrObj, err := object.EscString(pattern, regex.RE2)
 		if err != nil {
-			return object.NewError(object.ERR_ARGUMENTS, "reEsc", err.Error())
+			return object.NewException(object.ERR_ARGUMENTS, "reEsc", err.Error())
 		}
 		return newStrObj
 	},

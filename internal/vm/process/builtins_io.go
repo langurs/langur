@@ -154,7 +154,7 @@ var bi_read = &object.BuiltIn{
 			} else {
 				fn = args[1]
 				if !object.IsCallable(fn) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or regex for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or regex for validation argument")
 				}
 			}
 		}
@@ -168,7 +168,7 @@ var bi_read = &object.BuiltIn{
 		// "maxattempts" argument
 		maxattempts, ok := object.NumberToInt(args[3])
 		if !ok {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected integer for maximum attempts")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for maximum attempts")
 		}
 
 		// "alt" argument
@@ -179,7 +179,7 @@ var bi_read = &object.BuiltIn{
 			fmt.Print(prompt)
 			input, err := readLine(os.Stdin)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 
 			if pr.Modes.ConsoleTextMode {
@@ -195,7 +195,7 @@ var bi_read = &object.BuiltIn{
 					verify, err = pr.callback(fn, object.NewString(input))
 				}
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				if verify == object.TRUE {
 					return object.NewString(input)
@@ -209,7 +209,7 @@ var bi_read = &object.BuiltIn{
 		}
 
 		if alternate == nil {
-			return object.NewError(object.ERR_GENERAL, fnName, "Input failed to match expected")
+			return object.NewException(object.ERR_GENERAL, fnName, "Input failed to match expected")
 		}
 		return alternate
 	},

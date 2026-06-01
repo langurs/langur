@@ -34,14 +34,14 @@ var bi_map = &object.BuiltIn{
 		if !object.IsCallable(fn) {
 			arr, ok := fn.(*object.List)
 			if !ok || len(arr.Elements) == 0 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions for first argument")
 			}
 			fns = arr.Elements
 			for i, f := range fns {
 				if f == object.NONE {
 					fns[i] = nil
 				} else if !object.IsCallable(f) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable or no-op", i+1))
+					return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("List element %d not callable or no-op", i+1))
 				}
 			}
 			fn = fns[0] // initialiaze fn to first function
@@ -75,7 +75,7 @@ var bi_map = &object.BuiltIn{
 				} else {
 					result, err := pr.callback(fn, v)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					arr.Elements = append(arr.Elements, result)
 				}
@@ -91,7 +91,7 @@ var bi_map = &object.BuiltIn{
 		case *object.Range:
 			from, err := arg.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			return mapToList(from.Elements)
 
@@ -106,7 +106,7 @@ var bi_map = &object.BuiltIn{
 				} else {
 					result, err := pr.callback(fn, kv.Value)
 					if err != nil {
-						return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
 					elements = append(elements, kv.Key, result)
 				}
@@ -114,12 +114,12 @@ var bi_map = &object.BuiltIn{
 			}
 			hash, err := object.NewHashFromSlice(elements, false)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			return hash
 		}
 
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes after first argument")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes after first argument")
 	},
 }
 
@@ -137,10 +137,10 @@ func mapBetween(
 		switch o.(type) {
 		case *object.List:
 			if hashes != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
 			}
 			if length > -1 && length != len(o.(*object.List).Elements) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists to map")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists to map")
 			}
 			length = len(o.(*object.List).Elements)
 			lists = append(lists, o)
@@ -148,26 +148,26 @@ func mapBetween(
 		case *object.Range:
 			// ranges converted to lists
 			if hashes != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
 			}
 			arr, err := o.(*object.Range).ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			if length > -1 && length != len(arr.Elements) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to map")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to map")
 			}
 			length = len(arr.Elements)
 			lists = append(lists, arr)
 
 		case *object.Hash:
 			if lists != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same type for multiple things to map (lists (or ranges) or hashes)")
 			}
 			hashes = append(hashes, o)
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes only to map")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes only to map")
 		}
 	}
 
@@ -199,7 +199,7 @@ func mapBetween(
 			} else {
 				result, err := pr.callback(fn, items...)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				arr.Elements = append(arr.Elements, result)
 			}
@@ -216,7 +216,7 @@ func mapBetween(
 			for _, h := range hashes {
 				val, err := h.(*object.Hash).GetValue(kv.Key)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				items = append(items, val)
 			}
@@ -227,7 +227,7 @@ func mapBetween(
 			} else {
 				result, err := pr.callback(fn, items...)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				elements = append(elements, kv.Key, result)
 			}
@@ -235,12 +235,12 @@ func mapBetween(
 		}
 		hash, err := object.NewHashFromSlice(elements, false)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 		return hash
 	}
 
-	return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes")
+	return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) or hashes")
 }
 
 var bi_mapX = &object.BuiltIn{
@@ -265,7 +265,7 @@ var bi_mapX = &object.BuiltIn{
 		fn := args[1]
 
 		if !object.IsCallable(fn) {
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function for first argument")
 		}
 
 		return crossMap(pr, fnName, fn, lists...)
@@ -295,7 +295,7 @@ func crossMap(
 			// ranges converted to lists
 			arr, err := o.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			workinglists = append(workinglists, arr)
 
@@ -318,7 +318,7 @@ func crossMap(
 		} else {
 			result, err := pr.callback(fn, items...)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 			resultlist.Elements = append(resultlist.Elements, result)
 		}

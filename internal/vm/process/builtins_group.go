@@ -34,7 +34,7 @@ var bi_group = &object.BuiltIn{
 		case *object.Number:
 			integer, ok = object.NumberToInt(by)
 			if !ok || integer == 0 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for argument by")
 			}
 
 		case nil:
@@ -45,7 +45,7 @@ var bi_group = &object.BuiltIn{
 			fn = by
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for argument by")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or non-zero integer for argument by")
 		}
 
 		switch over := over.(type) {
@@ -80,7 +80,7 @@ var bi_group = &object.BuiltIn{
 			return groupList
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
 		}
 	},
 }
@@ -112,7 +112,7 @@ var bi_groupby = &object.BuiltIn{
 			// not passed; okay
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for argument by")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function for argument by")
 		}
 
 		switch over := over.(type) {
@@ -120,7 +120,7 @@ var bi_groupby = &object.BuiltIn{
 			return groupByFunctionOrTruthiness(fnName, pr, fn, true, over)
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
 		}
 	},
 }
@@ -152,7 +152,7 @@ var bi_groupbyH = &object.BuiltIn{
 			// not passed; okay
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function for argument by")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function for argument by")
 		}
 
 		switch over := over.(type) {
@@ -160,7 +160,7 @@ var bi_groupbyH = &object.BuiltIn{
 			return groupByIntoHash(fnName, pr, fn, over)
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list for argument over")
 		}
 	},
 }
@@ -197,7 +197,7 @@ func groupByFunctionOrTruthiness(
 		} else {
 			key, err = pr.callback(fn, obj)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 		}
 
@@ -258,7 +258,7 @@ func groupByIntoHash(
 		} else {
 			key, err = pr.callback(fn, obj)
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 		}
 
@@ -273,7 +273,7 @@ func groupByIntoHash(
 
 		err = hash.WritePair(key, value)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 	}
 

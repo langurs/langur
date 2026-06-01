@@ -40,7 +40,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 		if pr.Modes.GoPanicToLangurException {
 			if p := recover(); p != nil {
 				name, _ := fr.getFnName()
-				err = object.NewErrorFromAnything(p, "panic:"+name)
+				err = object.NewExceptionFromAnything(p, "panic:"+name)
 			}
 		}
 
@@ -65,20 +65,20 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			pr.stack = pr.stack[:sp]
 		}
 
-		// to ensure to return an Error Object with Where field set...
+		// to ensure to return an Exception Object with Where field set...
 		if err != nil {
-			if e, isErrObj := err.(*object.Error); isErrObj {
-				// only set Where field of Error Object if not already set
+			if e, isException := err.(*object.Exception); isException {
+				// only set Where field of Exception Object if not already set
 				// with 0 not being a valid line number (1-based)
 				if e.Where.Line == 0 {
 					e.Where = trace.FindLocation(fr.code.InsPackage.Where, errIP)
 				}
 
 			} else {
-				// not an Error Object; create one so we can attach the location
+				// not an Exception Object; create one so we can attach the location
 				fnName, _ := fr.getFnName()
-				err = object.NewErrorFromAnything(err, fnName)
-				err.(*object.Error).Where = trace.FindLocation(fr.code.InsPackage.Where, errIP)
+				err = object.NewExceptionFromAnything(err, fnName)
+				err.(*object.Exception).Where = trace.FindLocation(fr.code.InsPackage.Where, errIP)
 			}
 		}
 	}()
@@ -498,7 +498,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			if err == nil {
 				err = pr.push(result)
 			} else {
-				err = object.NewError(object.ERR_INDEX, "", err.Error())
+				err = object.NewException(object.ERR_INDEX, "", err.Error())
 			}
 
 		case opcode.OpIndex:
@@ -522,7 +522,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 
 				} else {
 					// error indexing; no alternate
-					err = object.NewError(object.ERR_INDEX, "", err.Error())
+					err = object.NewException(object.ERR_INDEX, "", err.Error())
 				}
 			}
 

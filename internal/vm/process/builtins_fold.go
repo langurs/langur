@@ -33,12 +33,12 @@ var bi_fold = &object.BuiltIn{
 		if !object.IsCallable(fn) {
 			fnArr, _ := fn.(*object.List)
 			if len(fnArr.Elements) == 0 {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or list of functions")
 			}
 			fns = fnArr.Elements
 			for i, f := range fns {
 				if !object.IsCallable(f) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Function list element %d not callable", i+1))
+					return object.NewException(object.ERR_ARGUMENTS, fnName, fmt.Sprintf("Function list element %d not callable", i+1))
 				}
 			}
 			fn = fns[0] // initialiaze fn to first function
@@ -56,12 +56,12 @@ var bi_fold = &object.BuiltIn{
 			case *object.Range:
 				from, err := arg.ToList(object.One, true)
 				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+					return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 				}
 				list = from
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected list or range")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected list or range")
 			}
 			if len(list.Elements) == 0 {
 				// empty list
@@ -85,7 +85,7 @@ var bi_fold = &object.BuiltIn{
 		for i := start; i < len(list.Elements); i++ {
 			result, err = pr.callback(fn, result, list.Elements[i])
 			if err != nil {
-				return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
 
 			if fns != nil {
@@ -112,7 +112,7 @@ func foldBetweenLists(
 	const fnName = "fold"
 
 	if result == nil {
-		return object.NewError(object.ERR_ARGUMENTS, fnName, "Cannot fold between lists without initialization")
+		return object.NewException(object.ERR_ARGUMENTS, fnName, "Cannot fold between lists without initialization")
 	}
 
 	var length int = -1
@@ -121,23 +121,23 @@ func foldBetweenLists(
 		switch arg := o.(type) {
 		case *object.List:
 			if length > -1 && length != len(arg.Elements) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
 			}
 			length = len(arg.Elements)
 
 		case *object.Range:
 			from, err := arg.ToList(object.One, true)
 			if err != nil {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+				return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 			}
 			if length > -1 && length != len(from.Elements) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to fold from")
 			}
 			length = len(from.Elements)
 			lists[i] = from
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) only for foldfrom")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected lists (or ranges) only for foldfrom")
 		}
 	}
 	if length == 0 {
@@ -160,7 +160,7 @@ func foldBetweenLists(
 	for i := 0; i < length; i++ {
 		result, err = pr.callback(fn, append([]object.Object{result}, gather(i)...)...)
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		if fns != nil {
@@ -198,7 +198,7 @@ var bi_zip = &object.BuiltIn{
 		fn := args[1]
 		if fn != nil {
 			if !object.IsCallable(fn) {
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected function")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function")
 			}
 		}
 
@@ -209,23 +209,23 @@ var bi_zip = &object.BuiltIn{
 			switch arg := o.(type) {
 			case *object.List:
 				if length > -1 && length != len(arg.Elements) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
 				}
 				length = len(arg.Elements)
 
 			case *object.Range:
 				from, err := arg.ToList(object.One, true)
 				if err != nil {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, err.Error())
+					return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 				}
 				if length > -1 && length != len(from.Elements) {
-					return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected same size for multiple lists (or ranges) to zip from")
 				}
 				length = len(from.Elements)
 				lists[i] = from
 
 			default:
-				return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected lists only to zip")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected lists only to zip")
 			}
 		}
 
@@ -240,7 +240,7 @@ var bi_zip = &object.BuiltIn{
 				}
 				result, err := pr.callback(fn, items...)
 				if err != nil {
-					return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				switch r := result.(type) {
 				case *object.List:

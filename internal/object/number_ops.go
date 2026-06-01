@@ -87,7 +87,7 @@ func (left *Number) Append(o2 Object) Object {
 	}
 
 	if err != nil {
-		return NewError(ERR_GENERAL, "Append", fmt.Sprintf("failed to append to number: %s", err.Error()))
+		return NewException(ERR_GENERAL, "Append", fmt.Sprintf("failed to append to number: %s", err.Error()))
 	}
 
 	return s
@@ -96,17 +96,17 @@ func (left *Number) Append(o2 Object) Object {
 func (l *Number) AppendToNone() Object {
 	n, err := l.ToRune()
 	if err != nil {
-		return NewError(ERR_GENERAL, "Append", "number not an integer usable for code point")
+		return NewException(ERR_GENERAL, "Append", "number not an integer usable for code point")
 
 	} else if n < 0 {
-		return NewError(ERR_GENERAL, "Append", "number not an integer usable for code point")
+		return NewException(ERR_GENERAL, "Append", "number not an integer usable for code point")
 
 	}
 	s, err := NewStringFromParts(n)
 	if err == nil {
 		return s
 	}
-	return NewError(ERR_GENERAL, "Append", err.Error())
+	return NewException(ERR_GENERAL, "Append", err.Error())
 }
 
 func (left *Number) Add(o2 Object) Object {

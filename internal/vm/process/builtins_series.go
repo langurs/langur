@@ -49,7 +49,7 @@ var bi_series = &object.BuiltIn{
 			inc = e
 
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected number for argument inc")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected number for argument inc")
 		}
 
 		// check source
@@ -65,11 +65,11 @@ var bi_series = &object.BuiltIn{
 			result, err = arg.ToList(inc)
 			
 		default:
-			return object.NewError(object.ERR_ARGUMENTS, fnName, "Expected range or number for argument from")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected range or number for argument from")
 		}
 
 		if err != nil {
-			return object.NewError(object.ERR_GENERAL, fnName, err.Error())
+			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
 		return result

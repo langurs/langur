@@ -12,15 +12,15 @@ func (l *DateTime) Add(dt2 Object) Object {
 	case *Duration:
 		years, ok := native.ToInt(r.Years)
 		if !ok {
-			return NewError(ERR_MATH, "Add", "failure to convert years of duration to native Go int")
+			return NewException(ERR_MATH, "Add", "failure to convert years of duration to native Go int")
 		}
 		months, ok := native.ToInt(r.Months)
 		if !ok {
-			return NewError(ERR_MATH, "Add", "failure to convert months of duration to native Go int")
+			return NewException(ERR_MATH, "Add", "failure to convert months of duration to native Go int")
 		}
 		days, ok := native.ToInt(r.Days)
 		if !ok {
-			return NewError(ERR_MATH, "Add", "failure to convert days of duration to native Go int")
+			return NewException(ERR_MATH, "Add", "failure to convert days of duration to native Go int")
 		}
 		return &DateTime{Time: l.Time.AddDate(years, months, days).Add(
 			time.Duration(r.Hours*nsPerHour + r.Minutes*nsPerMin + r.Seconds*nsPerSec + r.Nanoseconds))}
@@ -28,7 +28,7 @@ func (l *DateTime) Add(dt2 Object) Object {
 	case *Number:
 		nsec, err := r.ToInt64()
 		if err != nil {
-			return NewError(ERR_MATH, "Add", "failure to convert number to native Go int64")
+			return NewException(ERR_MATH, "Add", "failure to convert number to native Go int64")
 		}
 		return &DateTime{Time: l.Time.Add(time.Duration(nsec)).Round(0)}
 
@@ -45,15 +45,15 @@ func (l *DateTime) Subtract(dt2 Object) Object {
 	case *Duration:
 		years, ok := native.ToIntNegated(r.Years)
 		if !ok {
-			return NewError(ERR_MATH, "Subtract", "failure to convert years of duration to native Go int")
+			return NewException(ERR_MATH, "Subtract", "failure to convert years of duration to native Go int")
 		}
 		months, ok := native.ToIntNegated(r.Months)
 		if !ok {
-			return NewError(ERR_MATH, "Subtract", "failure to convert months of duration to native Go int")
+			return NewException(ERR_MATH, "Subtract", "failure to convert months of duration to native Go int")
 		}
 		days, ok := native.ToIntNegated(r.Days)
 		if !ok {
-			return NewError(ERR_MATH, "Subtract", "failure to convert days of duration to native Go int")
+			return NewException(ERR_MATH, "Subtract", "failure to convert days of duration to native Go int")
 		}
 		return &DateTime{Time: l.Time.AddDate(years, months, days).Add(
 			time.Duration(-(r.Hours*nsPerHour + r.Minutes*nsPerMin + r.Seconds*nsPerSec + r.Nanoseconds)))}
@@ -61,7 +61,7 @@ func (l *DateTime) Subtract(dt2 Object) Object {
 	case *Number:
 		nsec, err := r.ToInt64()
 		if err != nil {
-			return NewError(ERR_MATH, "Subtract", "failure to convert number to native Go int64")
+			return NewException(ERR_MATH, "Subtract", "failure to convert number to native Go int64")
 		}
 		return &DateTime{Time: l.Time.Add(time.Duration(-nsec)).Round(0)}
 

@@ -1,4 +1,4 @@
-// langur/object/error.go
+// langur/object/exception.go
 
 package object
 
@@ -9,7 +9,7 @@ import (
 	"langur/trace"
 )
 
-// The Error type fulfils the Error interface and the langur Object interface.
+// The Exception type fulfils the Error interface and the langur Object interface.
 
 const (
 	// categories
@@ -25,46 +25,46 @@ var ERR_HASHKEY_SOURCE = NewString("src")
 var ERR_HASHKEY_MESSAGE = NewString("msg")
 var ERR_HASHKEY_HISTORY = NewString("hst")
 
-type Error struct {
+type Exception struct {
 	Contents *Hash
 	Where    trace.Where
 }
 
-func (e *Error) Copy() Object {
-	return &Error{Contents: e.Contents.Copy().(*Hash), Where: e.Where.Copy()}
+func (e *Exception) Copy() Object {
+	return &Exception{Contents: e.Contents.Copy().(*Hash), Where: e.Where.Copy()}
 }
 
 // fulfilling the Object interface; not necessarily to be called
-func (l *Error) Equal(eo2 Object) bool {
-	r, ok := eo2.(*Error)
+func (l *Exception) Equal(eo2 Object) bool {
+	r, ok := eo2.(*Exception)
 	if !ok {
 		return false
 	}
 	return l.Contents.Equal(r.Contents) && l.Where.Equal(r.Where)
 }
 
-func (e *Error) Type() ObjectType {
+func (e *Exception) Type() ObjectType {
 	return ERROR_OBJ
 }
-func (e *Error) TypeString() string {
+func (e *Exception) TypeString() string {
 	return common.ErrorTypeName
 }
 
-func (e *Error) IsTruthy() bool {
+func (e *Exception) IsTruthy() bool {
 	return false
 }
 
-func (e *Error) ReplString() string {
+func (e *Exception) ReplString() string {
 	return common.ErrorTypeName + " (" + e.Error() + ")"
 }
 
-func (e *Error) String() string {
+func (e *Exception) String() string {
 	// langur string; should not happen
 	return INTERNAL_OBJECT_ONLY
 }
 
 // also fulfilling the Go error interface...
-func (e *Error) Error() string {
+func (e *Exception) Error() string {
 	// enforced types for these values already (see NOTE below)
 	cat := ERR_GENERAL
 	category, err := e.Contents.GetValue(ERR_HASHKEY_CATEGORY)
@@ -86,7 +86,7 @@ func (e *Error) Error() string {
 
 	hst := ""
 	history, err := e.Contents.GetValue(ERR_HASHKEY_HISTORY)
-	if err == nil && history != noErrorHistory {
+	if err == nil && history != noExceptionHistory {
 		hst = "*"
 	}
 
@@ -99,57 +99,57 @@ func (e *Error) Error() string {
 
 const unknownLinePos = -1
 
-var noErrorHistory = NULL
+var noExceptionHistory = NULL
 
-func NewErrorFromAnything(err interface{}, source string) *Error {
+func NewExceptionFromAnything(err interface{}, source string) *Exception {
 	switch err := err.(type) {
-	case *Error:
+	case *Exception:
 		return err
 	case Object:
-		obj := NewErrorFromObject(err)
+		obj := NewExceptionFromObject(err)
 		obj.Contents.WritePair(ERR_HASHKEY_SOURCE, NewString(source))
 		return obj
 	case error:
-		return NewError(ERR_GENERAL, source, err.Error())
+		return NewException(ERR_GENERAL, source, err.Error())
 	case string:
-		return NewError(ERR_GENERAL, source, err)
+		return NewException(ERR_GENERAL, source, err)
 	default:
-		return NewError(ERR_GENERAL, source, fmt.Sprintf("Unknown error type (%T)", err))
+		return NewException(ERR_GENERAL, source, fmt.Sprintf("Unknown error type (%T)", err))
 	}
 }
 
-func NewErrorFromObject(obj Object) *Error {
+func NewExceptionFromObject(obj Object) *Exception {
 	switch obj := obj.(type) {
-	case *Error:
+	case *Exception:
 		return obj
 	case *Hash:
-		return NewErrorFromHash(obj)
+		return NewExceptionFromHash(obj)
 	case *String:
-		return NewError(ERR_CUSTOM, "", obj.String())
+		return NewException(ERR_CUSTOM, "", obj.String())
 	default:
-		return NewError(ERR_CUSTOM, "", obj.String())
+		return NewException(ERR_CUSTOM, "", obj.String())
 	}
 }
 
-func NewError(category, source, message string) *Error {
+func NewException(category, source, message string) *Exception {
 	hash := &Hash{}
 	hash.WritePair(ERR_HASHKEY_CATEGORY, NewString(category))
 	hash.WritePair(ERR_HASHKEY_SOURCE, NewString(source))
 	hash.WritePair(ERR_HASHKEY_MESSAGE, NewString(message))
-	hash.WritePair(ERR_HASHKEY_HISTORY, noErrorHistory)
-	return &Error{Contents: hash}
+	hash.WritePair(ERR_HASHKEY_HISTORY, noExceptionHistory)
+	return &Exception{Contents: hash}
 }
 
 // called when throwing a hash as an error
 // enforces the field types
-func NewErrorFromHash(hash *Hash) *Error {
+func NewExceptionFromHash(hash *Hash) *Exception {
 	// Add required fields if not present, and enforce their type if they are.
 	// Other fields are allowed (optional).
 	enforceHashString(hash, ERR_HASHKEY_CATEGORY, NewString(ERR_GENERAL))
 	enforceHashString(hash, ERR_HASHKEY_SOURCE, ZeroLengthString())
 	enforceHashString(hash, ERR_HASHKEY_MESSAGE, NewString("Unknown Error"))
-	enforceHashErrorHistory(hash, ERR_HASHKEY_HISTORY)
-	return &Error{Contents: hash}
+	enforceHashExceptionHistory(hash, ERR_HASHKEY_HISTORY)
+	return &Exception{Contents: hash}
 }
 
 func enforceHashString(hash *Hash, key Object, altValue Object) {
@@ -186,16 +186,16 @@ func enforceHashString(hash *Hash, key Object, altValue Object) {
 // 	}
 // }
 
-func enforceHashErrorHistory(hash *Hash, key Object) {
+func enforceHashExceptionHistory(hash *Hash, key Object) {
 	// must be previous error or langur NULL
 	val, err := hash.GetValue(key)
 	if err == nil {
 		if val.Type() == HASH_OBJ {
-			hash.WritePair(key, NewErrorFromHash(val.(*Hash)))
-		} else if val != noErrorHistory {
-			hash.WritePair(key, NewErrorFromObject(val))
+			hash.WritePair(key, NewExceptionFromHash(val.(*Hash)))
+		} else if val != noExceptionHistory {
+			hash.WritePair(key, NewExceptionFromObject(val))
 		}
 	} else {
-		hash.WritePair(key, noErrorHistory)
+		hash.WritePair(key, noExceptionHistory)
 	}
 }

@@ -43,7 +43,7 @@ func (l *String) Append(o2 Object) Object {
 	}
 
 	if err != nil {
-		return NewError(ERR_GENERAL, "Append", fmt.Sprintf("failure to append to string: %s", err.Error()))
+		return NewException(ERR_GENERAL, "Append", fmt.Sprintf("failure to append to string: %s", err.Error()))
 	}
 
 	return s
@@ -58,7 +58,7 @@ func (l *String) Multiply(o2 Object) Object {
 	case *Number:
 		n, err := r.ToInt()
 		if err != nil {
-			return NewError(ERR_GENERAL, "Multipy", "could to convert to int for string multiplication")
+			return NewException(ERR_GENERAL, "Multipy", "could to convert to int for string multiplication")
 		}
 		// negative number same as 0
 		if n < 1 {
