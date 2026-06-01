@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"langur/object"
 	"langur/str"
-	"langur/system"
 	"os"
 	"time"
 )
@@ -29,30 +28,8 @@ var bi_exit = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		var err error
-		code := 0 // 0 = success
+		code := object.ObjectToExitCode(args[0])
 		strArg := args[1]
-
-		switch codeArg := args[0].(type) {
-		case *object.Number:
-			code, err = codeArg.ToInt()
-			if err != nil {
-				// failure to convert to native integer
-				code = system.GetExitStatus(system.ExitStatusArgToExitBad)
-			}
-			code = system.FixExitStatus(code)
-
-		case *object.Boolean:
-			//  true: success (code 0)
-			// false: general failure
-			if !codeArg.Value {
-				code = system.GetExitStatus(system.ExitStatusGeneral)
-			}
-
-		default:
-			// invalid code argument to exit()
-			code = system.GetExitStatus(system.ExitStatusArgToExitBad)
-		}
 
 		if code != 0 && strArg.IsTruthy() {
 			// if non-zero return code, write string to standard error, appending a newline
@@ -66,7 +43,7 @@ var bi_exit = &object.BuiltIn{
 		}
 		os.Exit(code)
 
-		// no need to return, but the compiler requires it...
+		// no need to return, but the Go compiler requires it...
 		return object.NONE
 	},
 }

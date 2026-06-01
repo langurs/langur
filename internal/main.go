@@ -184,5 +184,7 @@ func main() {
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedRun))
 	}
 
-	os.Exit(0)
+	exitCode := object.ObjectToExitCode(machine.LastValue())
+	os.Exit(exitCode)
 }
+
