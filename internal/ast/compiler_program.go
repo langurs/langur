@@ -26,6 +26,7 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 		return
 	}
 
+	var bSlc opcode.InsPackage
 	var mainStatementsStart int
 	importsDone := false
 
@@ -54,6 +55,13 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 				err = c.makeErr(node, fmt.Sprintf("Instructions out of required order; expected %s", nonmoduleorder))
 				return
 			}
+			if !c.RunRemotely {
+				bSlc, err = c.compileNodeWithPopIfExprStmt(s)
+				if err != nil {
+					return
+				}
+				pkg = pkg.Append(bSlc)
+			}
 
 		case nil:
 			err = c.makeErr(node, "Unexpected nil node")
@@ -65,23 +73,34 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 				mainStatementsStart = i
 			}
 			importsDone = true
+
+			if !c.RunRemotely {
+				bSlc, err = c.compileNodeWithPopIfExprStmt(s)
+				if err != nil {
+					return
+				}
+				pkg = pkg.Append(bSlc)
+			}
 		}
 	}
 
-	// wrap remaining instructions into main function and continue, passing it all to compileModule
-	if importsDone {
-		main := MakeMainFnDeclaration(node.Statements[mainStatementsStart:])
-		
-		nodes := make([]Node, len(node.Statements[:mainStatementsStart])+1)
-		copy(nodes, node.Statements[:mainStatementsStart])
-		nodes[len(nodes)-1] = main
+	if c.RunRemotely {
+		// wrap remaining instructions into main function and continue, passing it all to compileModule
+		if importsDone {
+			main := MakeMainFnDeclaration(node.Statements[mainStatementsStart:])
 
-		// assume non-module level may contain impure effects, such as console or file changes
-		c.moduleDeclaredImpureEffects = true
-		return c.compileModule(nodes, true)
+			nodes := make([]Node, len(node.Statements[:mainStatementsStart])+1)
+			copy(nodes, node.Statements[:mainStatementsStart])
+			nodes[len(nodes)-1] = main
+	
+			// assume non-module level may contain impure effects, such as console or file changes
+			c.moduleDeclaredImpureEffects = true
+			return c.compileModule(nodes, true)
+		}
+
+		err = c.makeErr(node, "Expected statements/expressions")
 	}
 
-	err = c.makeErr(node, "Expected statements/expressions")
 	return
 }
 
@@ -245,7 +264,7 @@ func (c *Compiler) fixModuleDeclarations(declarations []*DeclarationNode) (
 						if !isFunction {
 							return decl, c.makeErr(declarations[i], fmt.Sprintf("%s must be a function", id.Name))
 						}
-						
+
 						// while we're here, fix the main function to ensure it ends with a return
 						if c.RunRemotely {
 							a.Values[0] = ensureValue(a.Values[0], nil)
