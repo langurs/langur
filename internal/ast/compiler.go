@@ -88,18 +88,21 @@ func NewCompilerWithState(
 }
 
 func (c *Compiler) makeErr(node Node, err string) error {
+	return fmt.Errorf(c.makeErrString(node, err))
+}
+func (c *Compiler) makeErrString(node Node, err string) string {
 	tok := node.TokenInfo()
 	if node == nil {
-		return fmt.Errorf("%s", err)
+		return err
 	}
-	return fmt.Errorf("[%s] %s", tok.Where.String(), err)
+	return fmt.Sprintf("[%s] %s", tok.Where.String(), err)
 }
 
 // NOTE: must check if error or nil returned from makeWarning before deciding whether to continue or not
 func (c *Compiler) makeWarning(node Node, err string) error {
-	warning := "warning: "+err
+	warning := "warning: "+c.makeErrString(node, err)
 	if c.Modes.WarningsAsFatalErrors {
-		return c.makeErr(node, warning)
+		return fmt.Errorf(warning)
 	}
 	// NOTE: Don't use the go runtime println() function. That's for debugging, not for production code.
 	str.PrintLnErr(warning)
