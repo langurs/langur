@@ -132,7 +132,8 @@ func (pr *Process) pushFunction(constIndex, freeCount, optionalsCount int) error
 		// copy to prevent one closure from clobbering another closure's free slice ...
 		// ... when there is a single *object.CompiledCode, but more than one definition
 		compiledFn = compiledFn.Copy().(*object.CompiledCode)
-		compiledFn.Free = pr.popMultiple(freeCount)
+		// CopySlice in case of composed object that changes; shouldn't change in closure
+		compiledFn.Free = object.CopySlice(pr.popMultiple(freeCount))
 	}
 
 	return pr.push(compiledFn)

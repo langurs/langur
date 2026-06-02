@@ -9896,6 +9896,17 @@ func TestSemiDeepCopy(t *testing.T) {
 		 `,
 			"[1, 2]", object.STRING_OBJ,
 		},
+
+		// copying closure value?
+		{`var list1 = [5, 6, 7]
+		  val f = fn() {
+			 return list1[2]
+		  }
+		  list1[2] = 77
+		  f()
+		 `,
+			6, object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
