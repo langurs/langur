@@ -3,7 +3,6 @@
 package process
 
 import (
-	"fmt"
 	"langur/object"
 	"langur/str"
 	"os"
@@ -38,7 +37,7 @@ var bi_exit = &object.BuiltIn{
 				s = str.ReplaceNewLinesWithSystem(s)
 			}
 			if len(s) != 0 {
-				fmt.Fprint(os.Stderr, s)
+				str.PrintLnErr(s)
 			}
 		}
 		os.Exit(code)

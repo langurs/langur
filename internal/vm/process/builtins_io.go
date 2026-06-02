@@ -14,6 +14,8 @@ import (
 
 // write, writeln, writeErr, writelnErr, read
 
+var newLine = object.NewString(str.SysNewLine)
+
 var bi_write = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "write",
@@ -61,7 +63,7 @@ var bi_writeln = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		return bi_write.Fn.(BuiltInFunction)(pr,
 			&object.List{
-				Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
+				Elements: append(args[0].(*object.List).Elements, newLine)})
 	},
 }
 
@@ -93,7 +95,7 @@ var bi_writeErr = &object.BuiltIn{
 		if len(s) == 0 {
 			return object.NULL
 		}
-		fmt.Fprint(os.Stderr, s)
+		str.PrintErr(s)
 		return object.TRUE
 	},
 }
@@ -112,7 +114,7 @@ var bi_writelnErr = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		return bi_writeErr.Fn.(BuiltInFunction)(pr,
 			&object.List{
-				Elements: append(args[0].(*object.List).Elements, object.NewString(str.SysNewLine))})
+				Elements: append(args[0].(*object.List).Elements, newLine)})
 	},
 }
 
