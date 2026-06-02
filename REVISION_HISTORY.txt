@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.6
+- updated str.PrintLnErr() to use SysNewLine
+
+
 2026-06-02 - 0.21.5
 - fix: copy closure free variables in case of composed values that may change
 - fix: MIMGA - Make Interactive Mode Great Again (broken in 0.21.4)

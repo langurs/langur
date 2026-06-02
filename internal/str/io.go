@@ -11,5 +11,5 @@ func PrintErr(s string) {
 	fmt.Fprint(os.Stderr, s)
 }
 func PrintLnErr(s string) {
-	PrintErr(s + "\n")
+	PrintErr(s + SysNewLine)
 }
