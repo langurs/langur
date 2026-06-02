@@ -272,9 +272,9 @@ func (left *Number) Modulus(o2 Object) Object {
 func (left *Number) Power(o2 Object) Object {
 	switch right := o2.(type) {
 	case *Number:
-		// FIXME: patched to remove extraneous zeroes when using negative exponents
 		// return numberFromDecimal(left.ToDecimal().Pow(right.ToDecimal()))
-		return numberFromDecimal(left.ToDecimal().Pow(right.ToDecimal())).Simplify()
+		// using Power() function which corrects deficits in the Pow() function
+		return numberFromDecimal(left.ToDecimal().Power(right.ToDecimal()))
 	}
 
 	return nil

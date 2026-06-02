@@ -187,13 +187,24 @@ func Lcm(d1, d2 Decimal) Decimal {
 	return d1.Mul(d2).DivTruncate(Gcd(d1, d2), 0)
 }
 
+// The decimal library Pow() function is short-changing large negative exponents, by using a very limited precision.
+// We go around that by calculating the positive exponent and then dividing 1 by the result.
+// Also, after calculating on negative exponents, we use Simplify to remove extra trailing zeroes.
+func (d Decimal) Power(exp Decimal) Decimal {
+	if exp.IsNegative() {
+		return One.Div(d.Pow(exp.Abs())).Simplify()
+	}
+	return d.Pow(exp)
+}
+
 // Why Pow2()?: The decimal library Pow() function is short-changing fractional exponents.
 // Since we have a Root() function, we can create a fraction and do this in 2 steps to get a better result.
 // 2 ^ 3.5 == (2 ^ 35) ^/ 10
-func (d Decimal) Pow2(exp Decimal) Decimal {
-	if exp.IsInteger() {
-		return d.Pow(exp)
-	}
-	expNumerator, expDenominator := exp.ToFraction()
-	return d.Pow(expNumerator).Root(expDenominator)
-}
+// NOTE: too slow for some fractions, but works great with others
+// func (d Decimal) Pow2(exp Decimal) Decimal {
+// 	if exp.IsInteger() {
+// 		return d.Pow(exp)
+// 	}
+// 	expNumerator, expDenominator := exp.ToFraction()
+// 	return d.Pow(expNumerator).Root(expDenominator)
+// }

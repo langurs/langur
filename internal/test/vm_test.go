@@ -98,9 +98,17 @@ func TestMath(t *testing.T) {
 
 		{`2 ^ -3`, "0.125", object.NUMBER_OBJ},
 		{`2 ^ -1`, "0.5", object.NUMBER_OBJ},
+		{`2 ^ -12`, "0.000244140625", object.NUMBER_OBJ},
+		{`2 ^ -50`, "0.000000000000000888178419700125232", object.NUMBER_OBJ},
+		{`2 ^ -50 == 1 / (2 ^ 50)`, true, object.BOOLEAN_OBJ},
+		{`21.7 ^ -200 == 1 / (21.7 ^ 200)`, true, object.BOOLEAN_OBJ},
+
+		// NOTE: -3 ^ 2 is effectively -(3 ^ 2) b/c of orders of operation
+		{`(-2) ^ -12`, "0.000244140625", object.NUMBER_OBJ},
+		{`(-3) ^ -3`, "-0.037037037037037037037037037037037", object.NUMBER_OBJ},
+		{`(-3) ^ -2`, "0.111111111111111111111111111111111", object.NUMBER_OBJ},
 
 		// FIXME: unsatisfactory results from fractional exponents
-
 		// {`2 ^ 3.5`, "11.313708498984760390413509793677585", object.NUMBER_OBJ},
 		// {`2 ^ -3.5`, "0.088388347648318440550105545263106", object.NUMBER_OBJ},
 

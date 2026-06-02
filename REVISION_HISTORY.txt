@@ -4,8 +4,8 @@ https://langurlang.org
 ... - 0.21.5
 - fix: copy closure free variables in case of composed values that may change
 - fix: MIMGA - Make Interactive Mode Great Again (broken in 0.21.4)
+- fix: full precision result when using large negative exponents
 - (internal) added CompileModes.WarningsAsFatalErrors (default true)
-
 
 2026-06-01 - 0.21.4
 - fix: exit status to always be set from main function return value

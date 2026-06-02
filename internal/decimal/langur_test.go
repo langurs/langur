@@ -185,33 +185,33 @@ func TestToFraction(t *testing.T) {
 	}
 }
 
-func TestPow2(t *testing.T) {
-	tests := []struct {
-		base string
-		exp string
-		result string
-	}{
-		{"2", "3", "8"},
-		{"2", "-3", "0.125"},
-		{"2", "-1", "0.5"},
-		{"2", "3.5", "11.313708498984760390413509793677585"},
-		// {"2", "-3.5", "0.088388347648318440550105545263106"},
-		// {"-2", "-3.5", "-0.088388347648318440550105545263106"},
-		{"1.5", "34", "970739.7373664756887592375278472900390625"},
-		{"1.5", "34.33", "1109718.748389653202836265514985705560694"},
-	}
+// func TestPow2(t *testing.T) {
+// 	tests := []struct {
+// 		base string
+// 		exp string
+// 		result string
+// 	}{
+// 		{"2", "3", "8"},
+// 		{"2", "-3", "0.125"},
+// 		{"2", "-1", "0.5"},
+// 		{"2", "3.5", "11.313708498984760390413509793677585"},
+// 		// {"2", "-3.5", "0.088388347648318440550105545263106"},
+// 		// {"-2", "-3.5", "-0.088388347648318440550105545263106"},
+// 		{"1.5", "34", "970739.7373664756887592375278472900390625"},
+// 		{"1.5", "34.33", "1109718.748389653202836265514985705560694"},
+// 	}
 
-	for _, tt := range tests {
-		base := RequireFromString(tt.base)
-		exp := RequireFromString(tt.exp)
-		result := base.Pow2(exp)
+// 	for _, tt := range tests {
+// 		base := RequireFromString(tt.base)
+// 		exp := RequireFromString(tt.exp)
+// 		result := base.Pow2(exp)
 
-		if result.String() != tt.result {
-			t.Errorf("Pow2() failed: expected=%s, received=%s",
-				tt.result, result)
-		}
-	}
-}
+// 		if result.String() != tt.result {
+// 			t.Errorf("Pow2() failed: expected=%s, received=%s",
+// 				tt.result, result)
+// 		}
+// 	}
+// }
 
 func TestGcd(t *testing.T) {
 	tests := []struct {
