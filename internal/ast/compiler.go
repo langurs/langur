@@ -3,13 +3,14 @@
 package ast
 
 import (
-	"langur/token"
 	"fmt"
-	"langur/object"
-	"langur/modes"
-	"langur/symbol"
-	"langur/opcode"
 	"langur/bytecode"
+	"langur/modes"
+	"langur/object"
+	"langur/opcode"
+	"langur/str"
+	"langur/symbol"
+	"langur/token"
 )
 
 // to pass from compiler to VM
@@ -94,8 +95,15 @@ func (c *Compiler) makeErr(node Node, err string) error {
 	return fmt.Errorf("[%s] %s", tok.Where.String(), err)
 }
 
+// NOTE: must check if error or nil returned from makeWarning before deciding whether to continue or not
 func (c *Compiler) makeWarning(node Node, err string) error {
-	return c.makeErr(node, "warning: "+err)
+	warning := "warning: "+err
+	if c.Modes.WarningsAsFatalErrors {
+		return c.makeErr(node, warning)
+	}
+	// NOTE: Don't use the go runtime println() function. That's for debugging, not for production code.
+	str.PrintLnErr(warning)
+	return nil
 }
 
 // We do this so often that it seems best to make a small function for it.

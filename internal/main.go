@@ -34,20 +34,13 @@ const (
 	printStackTrace = false
 )
 
-func printErr(s string) {
-	fmt.Fprint(os.Stderr, s)
-}
-func printLnErr(s string) {
-	printErr(s + "\n")
-}
-
 func main() {
 	var where *trace.Where
 
 	defer func() {
 		if p := recover(); p != nil {
 			if printErrors {
-				printLnErr(object.UnhandledPanicString(p))
+				str.PrintLnErr(object.UnhandledPanicString(p))
 				if printStackTrace {
 					panic(p)
 				}
@@ -62,18 +55,18 @@ func main() {
 	// langur, langurArgs, file, fileArgs, err := args.OsArgsToArgs()
 	_, langurArgs, file, _, err := args.OsArgsToArgs()
 	if err != nil {
-		printLnErr("langur: " + err.Error())
+		str.PrintLnErr("langur: " + err.Error())
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	compile_modes, err = modes.CompileModesFromArgs(langurArgs, system.OnWindows)
 	if err != nil {
-		printLnErr("langur: " + err.Error() + "\n\n" + use)
+		str.PrintLnErr("langur: " + err.Error() + "\n\n" + use)
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedArgs))
 	}
 
 	if compile_modes.Help {
-		printLnErr(fmt.Sprintf("langur %s (langurlang.org)\n\n %s\n%s",
+		str.PrintLnErr(fmt.Sprintf("langur %s (langurlang.org)\n\n %s\n%s",
 			bytecode.LangurRev, use, args.GetArgsDescription()))
 
 		os.Exit(system.GetExitStatus(system.ExitStatusHelp))
@@ -100,7 +93,7 @@ func main() {
 		if err != nil {
 			if printErrors {
 				s := str.Limit(file, 100, "...")
-				printLnErr(fmt.Sprintf("langur: error reading from file (%s): %s", s, err.Error()))
+				str.PrintLnErr(fmt.Sprintf("langur: error reading from file (%s): %s", s, err.Error()))
 			}
 			os.Exit(system.GetExitStatus(system.ExitStatusFailedReadFile))
 		}
@@ -111,7 +104,7 @@ func main() {
 	// Most lexer errors are passed to the parser, so they don't have to be checked here.
 	lex, err := lexer.New(source, file, compile_modes)
 	if err != nil {
-		printLnErr("langur: lexer error: " + err.Error())
+		str.PrintLnErr("langur: lexer error: " + err.Error())
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
 	}
 	p := parser.New(lex, compile_modes)
@@ -119,14 +112,14 @@ func main() {
 	var program *ast.Program
 	program, err = p.ParseProgram()
 	if err != nil {
-		printLnErr("langur: parsing error: " + err.Error())
+		str.PrintLnErr("langur: parsing error: " + err.Error())
 	}
 
 	if len(p.Errs) != 0 {
 		if printErrors {
-			printLnErr("langur: parsing errors")
+			str.PrintLnErr("langur: parsing errors")
 			for _, msg := range p.Errs {
-				printLnErr("\t" + msg.Error())
+				str.PrintLnErr("\t" + msg.Error())
 			}
 		}
 		os.Exit(system.GetExitStatus(system.ExitStatusFailedParse))
@@ -136,12 +129,12 @@ func main() {
 	comp.RunRemotely = true
 	if err != nil {
 		if printErrors {
-			printLnErr("langur: new compiler error: " + err.Error())
+			str.PrintLnErr("langur: new compiler error: " + err.Error())
 
 			if printCodeLocationTrace {
 				tr := trace.LocationTrace(where, source, file)
 				if tr != "" {
-					printLnErr("\n" + tr)
+					str.PrintLnErr("\n" + tr)
 				}
 			}
 		}
@@ -151,12 +144,12 @@ func main() {
 	_, err = program.Compile(comp)
 	if err != nil {
 		if printErrors {
-			printLnErr("langur: compilation errors\n" + err.Error())
+			str.PrintLnErr("langur: compilation errors\n" + err.Error())
 
 			if printCodeLocationTrace {
 				tr := trace.LocationTrace(where, source, file)
 				if tr != "" {
-					printLnErr("\n" + tr)
+					str.PrintLnErr("\n" + tr)
 				}
 			}
 		}
@@ -164,7 +157,7 @@ func main() {
 	}
 
 	if compile_modes.TestCompile {
-		printLnErr("langur: no errors (parse and compile success)")
+		str.PrintLnErr("langur: no errors (parse and compile success)")
 		os.Exit(system.GetExitStatus(system.ExitStatusTest))
 	}
 
@@ -173,12 +166,12 @@ func main() {
 	err, where = machine.Run()
 	if err != nil {
 		if printErrors {
-			printLnErr("langur: vm errors\n" + err.Error())
+			str.PrintLnErr("langur: vm errors\n" + err.Error())
 
 			if printCodeLocationTrace {
 				tr := trace.LocationTrace(where, source, file)
 				if tr != "" {
-					printLnErr("\n" + tr)
+					str.PrintLnErr("\n" + tr)
 				}
 			}
 		}

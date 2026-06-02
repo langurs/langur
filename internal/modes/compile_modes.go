@@ -10,6 +10,7 @@ import (
 type CompileModes struct {
 	WarnOnIntegerLiteralsStartingWithZero bool
 	WarnOnSurrogateCodes                  bool
+	WarningsAsFatalErrors                 bool
 	ExecuteSourceStringInsteadOfFile      bool
 	TestCompile                           bool
 	Help                                  bool
@@ -22,10 +23,13 @@ const Default_WarnOnIntegerLiteralsStartingWithZero = true
 // Surrogate codes (used for UTF-16) should probably not be present.
 const Default_WarnOnSurrogateCodes = true
 
+const Default_WarningsAsFatalErrors = true
+
 func NewCompileModes() *CompileModes {
 	return &CompileModes{
 		WarnOnIntegerLiteralsStartingWithZero: Default_WarnOnIntegerLiteralsStartingWithZero,
 		WarnOnSurrogateCodes:                  Default_WarnOnSurrogateCodes,
+		WarningsAsFatalErrors:                 Default_WarningsAsFatalErrors,
 	}
 }
 
@@ -33,6 +37,7 @@ func (m *CompileModes) Copy() *CompileModes {
 	return &CompileModes{
 		WarnOnIntegerLiteralsStartingWithZero: m.WarnOnIntegerLiteralsStartingWithZero,
 		WarnOnSurrogateCodes:                  m.WarnOnSurrogateCodes,
+		WarningsAsFatalErrors:                 m.WarningsAsFatalErrors,
 	}
 }
 

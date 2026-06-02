@@ -15,7 +15,9 @@ func (c *Compiler) compileNumberObject(node *NumberNode) (number *object.Number,
 		if node.Token.Type == token.INT && len(node.Value) > 1 &&
 			node.Token.Code2 == token.CODE_DEFAULT && node.Value[0] == '0' {
 			err = c.makeWarning(node, "Integer literal starting with zero (might be confused for a base 8 number (as used in other languages)")
-			return
+			if err != nil {
+				return
+			}
 		}
 	}
 
