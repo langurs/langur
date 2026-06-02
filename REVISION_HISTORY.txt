@@ -1,7 +1,7 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.5
+2026-06-02 - 0.21.5
 - fix: copy closure free variables in case of composed values that may change
 - fix: MIMGA - Make Interactive Mode Great Again (broken in 0.21.4)
 - fix: full precision result when using large negative exponents
