@@ -3,11 +3,13 @@
 package object
 
 import (
+	"langur/str"
 	"langur/system"
+	"os"
 )
 
 // should not panic/throw
-func ObjectToExitCode(o Object) int {
+func objectToExitCode(o Object) int {
 	code := 0 // 0 = success
 	var err error
 
@@ -33,4 +35,17 @@ func ObjectToExitCode(o Object) int {
 	}
 
 	return code
+}
+
+func Exit(codeObj, msgObj Object, consoleTextMode bool) {
+	code := objectToExitCode(codeObj)
+
+	if code != 0 && msgObj != nil && msgObj.IsTruthy() {
+		// if non-zero return code, write string to standard error, appending a newline
+		s := msgObj.String()
+		if len(s) != 0 {
+			str.PrintLnErr(s, consoleTextMode)
+		}
+	}
+	os.Exit(code)
 }

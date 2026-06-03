@@ -105,7 +105,7 @@ func (c *Compiler) makeWarning(node Node, err string) error {
 		return fmt.Errorf(warning)
 	}
 	// NOTE: Don't use the go runtime println() function. That's for debugging, not for production code.
-	str.PrintLnErr(warning)
+	str.PrintLnErr(warning, c.Modes.CompilerConsoleTextMode)
 	return nil
 }
 

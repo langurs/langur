@@ -37,14 +37,11 @@ var bi_write = &object.BuiltIn{
 		}
 
 		s := out.String()
-		if pr.Modes.ConsoleTextMode {
-			s = str.ReplaceNewLinesWithSystem(s)
-		}
-
 		if len(s) == 0 {
 			return object.NULL
 		}
-		fmt.Print(s)
+
+		str.Print(s, pr.Modes.ConsoleTextMode)
 		return object.TRUE
 	},
 }
@@ -88,14 +85,11 @@ var bi_writeErr = &object.BuiltIn{
 		}
 
 		s := out.String()
-		if pr.Modes.ConsoleTextMode {
-			s = str.ReplaceNewLinesWithSystem(s)
-		}
-
 		if len(s) == 0 {
 			return object.NULL
 		}
-		str.PrintErr(s)
+
+		str.PrintErr(s, pr.Modes.ConsoleTextMode)
 		return object.TRUE
 	},
 }

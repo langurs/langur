@@ -6,8 +6,10 @@ import (
 	"math"
 )
 
+type ExitStatus = int
+
 const (
-	ExitStatusGeneral = iota
+	ExitStatusGeneral ExitStatus = iota
 	ExitStatusNoScript
 	ExitStatusHelp
 	ExitStatusTest

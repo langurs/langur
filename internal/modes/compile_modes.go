@@ -8,6 +8,7 @@ import (
 )
 
 type CompileModes struct {
+	CompilerConsoleTextMode               bool
 	WarnOnIntegerLiteralsStartingWithZero bool
 	WarnOnSurrogateCodes                  bool
 	WarningsAsFatalErrors                 bool
@@ -25,11 +26,14 @@ const Default_WarnOnSurrogateCodes = true
 
 const Default_WarningsAsFatalErrors = true
 
+const Default_CompilerConsoleTextMode = true
+
 func NewCompileModes() *CompileModes {
 	return &CompileModes{
 		WarnOnIntegerLiteralsStartingWithZero: Default_WarnOnIntegerLiteralsStartingWithZero,
 		WarnOnSurrogateCodes:                  Default_WarnOnSurrogateCodes,
 		WarningsAsFatalErrors:                 Default_WarningsAsFatalErrors,
+		CompilerConsoleTextMode:               Default_CompilerConsoleTextMode,
 	}
 }
 
@@ -38,6 +42,7 @@ func (m *CompileModes) Copy() *CompileModes {
 		WarnOnIntegerLiteralsStartingWithZero: m.WarnOnIntegerLiteralsStartingWithZero,
 		WarnOnSurrogateCodes:                  m.WarnOnSurrogateCodes,
 		WarningsAsFatalErrors:                 m.WarningsAsFatalErrors,
+		CompilerConsoleTextMode:               m.CompilerConsoleTextMode,
 	}
 }
 

@@ -4,8 +4,6 @@ package process
 
 import (
 	"langur/object"
-	"langur/str"
-	"os"
 	"time"
 )
 
@@ -27,20 +25,7 @@ var bi_exit = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		code := object.ObjectToExitCode(args[0])
-		strArg := args[1]
-
-		if code != 0 && strArg.IsTruthy() {
-			// if non-zero return code, write string to standard error, appending a newline
-			s := strArg.String()
-			if pr.Modes.ConsoleTextMode {
-				s = str.ReplaceNewLinesWithSystem(s)
-			}
-			if len(s) != 0 {
-				str.PrintLnErr(s)
-			}
-		}
-		os.Exit(code)
+		object.Exit(args[0], args[1], pr.Modes.ConsoleTextMode)
 
 		// no need to return, but the Go compiler requires it...
 		return object.NONE
