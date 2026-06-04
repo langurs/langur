@@ -26,12 +26,12 @@ import (
 
 const (
 	use = "use: langur [OPTION, ...] SCRIPT [SCRIPTARG, ...]"
-	
+
 	printErrors = true
 	printCodeLocationTrace = true
 
 	// NOTE: printStackTrace should generally be false; might be abused otherwise?
-	printStackTrace = true
+	printStackTrace = false
 )
 
 var consoleTextMode = true
