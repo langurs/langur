@@ -13,6 +13,7 @@ import (
 	"langur/ast"
 	"langur/bytecode"
 	"langur/interactive"
+	"langur/io"
 	"langur/lexer"
 	"langur/modes"
 	"langur/object"
@@ -38,7 +39,7 @@ var consoleTextMode = true
 
 func exitMain(status system.ExitStatus, s string) {
 	if s != "" {
-		str.PrintLnErr(s, consoleTextMode)
+		io.PrintLnErr(s, consoleTextMode)
 	}
 	code := system.GetExitStatus(status)
 	os.Exit(code)
@@ -51,7 +52,7 @@ func main() {
 	defer func() {
 		if p := recover(); p != nil {
 			if printErrors {
-				str.PrintLnErr(object.UnhandledPanicString(p), consoleTextMode)
+				io.PrintLnErr(object.UnhandledPanicString(p), consoleTextMode)
 				if printStackTrace {
 					panic(p)
 				}

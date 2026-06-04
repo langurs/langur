@@ -15,6 +15,7 @@
 package interactive		/// importable
 
 import (
+	"langur/io"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -101,16 +102,23 @@ func resetEnvironment() {
 	firstRun = true
 }
 
+func replPrintLn(s string) {
+	io.PrintLn(s, vmModes.ConsoleTextMode)
+}
+func replPrint(s string) {
+	io.Print(s, vmModes.ConsoleTextMode)
+}
+
 // for REPL not run from langur command (not "interactive" mode)
 func main() {
 	const loadFile = ""
 
 	defer func() {
 		if p := recover(); p != nil {
-			fmt.Println(object.UnhandledPanicString(p))
+			replPrintLn(object.UnhandledPanicString(p))
 
 			// NOTE: since not a command line REPL, okay to print a stack trace
-			fmt.Print("Print stack trace? y/n: ")
+			replPrint("Print stack trace? y/n: ")
 			answer, _ := readLine(false)
 			if answer == "y" || answer == "Y" {
 				panic(p)
@@ -123,13 +131,13 @@ func main() {
 	resetEnvironment()
 
 	if loadFile != "" {
-		fmt.Printf("loading file (%s)...\n", loadFile)
+		replPrintLn(fmt.Sprintf("loading file (%s)...", loadFile))
 		b, err := ioutil.ReadFile(loadFile)
 
 		if err == nil {
 			repl(string(b), options)
 		} else {
-			fmt.Printf("failed to load file: %s\n", err.Error())
+			replPrintLn(fmt.Sprintf("failed to load file: %s\n", err.Error()))
 		}
 		firstRun = false
 	}
@@ -144,12 +152,12 @@ func Interactive(opts *InteractiveOptions) {
 }
 
 func loop(opts *InteractiveOptions) {
-	fmt.Printf("langur %s (langurlang.org)\n", bytecode.LangurRev)
-	fmt.Println("Type “exit()” or press ctrl-D to quit.")
-	fmt.Println("Type “reset()” for a new environment.")
+	replPrintLn(fmt.Sprintf("langur %s (langurlang.org)\n", bytecode.LangurRev))
+	replPrintLn("Type “exit()” or press ctrl-D to quit.")
+	replPrintLn("Type “reset()” for a new environment.")
 
 	for {
-		fmt.Print(opts.Prompt)
+		replPrint(opts.Prompt)
 		line, ok := readLine(true)
 		if !ok {
 			return
@@ -161,7 +169,7 @@ func loop(opts *InteractiveOptions) {
 			continue
 
 		case "exit":
-			fmt.Print("Type exit() to quit.\n")
+			replPrintLn("Type exit() to quit.")
 			continue
 
 		case "exit()":
@@ -170,12 +178,12 @@ func loop(opts *InteractiveOptions) {
 
 		// FIXME: "reset" not a reserved keyword; therefore could potentially conflict with variable name
 		case "reset":
-			fmt.Print("Type reset() to reset the environment.\n")
+			replPrintLn("Type reset() to reset the environment.")
 			continue
 
 		case "reset()":
 			resetEnvironment()
-			fmt.Print("Environment Reset\n")
+			replPrintLn("Environment Reset")
 			continue
 		}
 
@@ -199,7 +207,7 @@ func repl(source string, opts *InteractiveOptions) {
 		if err != nil && opts.PrintCodeLocationTrace {
 			tr := trace.LocationTrace(where, source, "")
 			if tr != "" {
-				fmt.Printf("\n" + tr)
+				replPrint("\n" + tr)
 			}
 		}
 	}()
@@ -208,20 +216,20 @@ func repl(source string, opts *InteractiveOptions) {
 		// print lexical tokens
 		lex, err = lexer.New(source, "RLPL", compileModes)
 		if err == nil {
-			fmt.Println("Tokens")
+			replPrintLn("Tokens")
 			for tok, err := lex.NextToken(); tok.Type != token.EOF; tok, err = lex.NextToken() {
 				if err != nil {
-					fmt.Print(err.Error())
+					replPrintLn(err.Error())
 					return
 				}
-				fmt.Printf("%+v\n", tok.String())
+				replPrintLn(fmt.Sprintf("%+v", tok.String()))
 			}
 		}
 	}
 
 	lex, err = lexer.New(source, "REPL", compileModes)
 	if err != nil {
-		fmt.Print(err.Error())
+		replPrintLn(err.Error())
 		return
 	}
 
@@ -232,31 +240,31 @@ func repl(source string, opts *InteractiveOptions) {
 		p = parser.New(lex, compileModes)
 		program, err = p.ParseProgram()
 		if err != nil {
-			fmt.Printf("Parser Error: %s", err.Error())
+			replPrintLn("Parser Error: " + err.Error())
 		}
 
 		if len(p.Errs) != 0 {
-			fmt.Println("Parser Errors")
+			replPrintLn("Parser Errors")
 			for _, msg := range p.Errs {
-				fmt.Println("\t"+msg.Error())
+				replPrintLn("\t"+msg.Error())
 			}
 		}
 	}
 
 	if opts.printParseTokenRepresentation {
-		fmt.Println("Parsed Token Representation")
-		fmt.Println(program.TokenRepresentation())
+		replPrintLn("Parsed Token Representation")
+		replPrintLn(program.TokenRepresentation())
 	}
 
 	if opts.printParseNodes {
-		fmt.Println("Nodes")
-		fmt.Println(program.String())
+		replPrintLn("Nodes")
+		replPrintLn(program.String())
 	}
 
 	if opts.printParsedVarNames {
-		fmt.Println("Variable Names Used")
+		replPrintLn("Variable Names Used")
 		for i := range program.VarNamesUsed {
-			fmt.Println(program.VarNamesUsed[i])
+			replPrintLn(program.VarNamesUsed[i])
 		}
 	}
 
@@ -269,7 +277,7 @@ func repl(source string, opts *InteractiveOptions) {
 
 		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, firstRun)
 		if err != nil {
-			fmt.Print(fmt.Sprintf("New Compiler Error: %s", err.Error()))
+			replPrintLn("New Compiler Error: " + err.Error())
 
 		} else {
 			if firstRun {
@@ -278,18 +286,18 @@ func repl(source string, opts *InteractiveOptions) {
 				_, err = program.CompileAnother(comp)
 			}
 			if err != nil {
-				fmt.Printf("Compile Errors\n%s\n", err)
+				replPrintLn("Compile Errors\n" + err.Error())
 			}
 	
 			byteCode = comp.ByteCode()
 			if opts.printCompiledInstructions {
-				fmt.Printf("ByteCode Instructions\n%s\n",
+				replPrintLn("ByteCode Instructions\n" +
 					InstructionsString(byteCode.StartCode.InsPackage.Instructions, byteCode.Constants))
 			}
 			if opts.printCompiledConstants {
-				fmt.Println("ByteCode Constants")
+				replPrintLn("ByteCode Constants")
 				for i := range byteCode.Constants {
-					fmt.Printf("%d: %s\n", i, byteCode.Constants[i].ReplString())
+					replPrintLn(fmt.Sprintf("%d: %s", i, byteCode.Constants[i].ReplString()))
 				}
 			}
 		}
@@ -306,7 +314,7 @@ func repl(source string, opts *InteractiveOptions) {
 
 		err, where = machine.Run()
 		if err != nil {
-			fmt.Printf("VM Errors\n%s\n", err)
+			replPrintLn("VM Errors\n" + err.Error())
 			return
 		}
 		result := machine.LastValue()
@@ -314,28 +322,28 @@ func repl(source string, opts *InteractiveOptions) {
 		vmModes = machine.LastModes() // so modes persist in the REPL
 
 		if result == nil {
-			fmt.Println("VM Result Nil (bug?)")
+			replPrintLn("VM Result Nil (bug?)")
 			return
 		}
 		if opts.PrintVmResultEscaped {
 			if opts.PrintVmResultDescriptions {
-				fmt.Print("langur escaped result: ")
+				replPrint("langur escaped result: ")
 			}
-			fmt.Println(str.Escape(result.String()))
+			replPrintLn(str.Escape(result.String()))
 		}
 
 		if opts.PrintVmResultGoEscaped {
 			if opts.PrintVmResultDescriptions {
-				fmt.Print("Go escaped result: ")
+				replPrint("Go escaped result: ")
 			}
-			fmt.Println(str.EscapeGo(result.String()))
+			replPrintLn(str.EscapeGo(result.String()))
 		}
 
 		if opts.PrintVmResultRaw {
 			if opts.PrintVmResultDescriptions {
-				fmt.Print("raw result string: ")
+				replPrint("raw result string: ")
 			}
-			fmt.Println(result.String())
+			replPrintLn(result.String())
 		}
 	}
 }

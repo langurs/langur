@@ -3,10 +3,8 @@
 package process
 
 import (
-	"bufio"
 	"bytes"
-	"fmt"
-	"io"
+	"langur/io"
 	"langur/object"
 	"langur/str"
 	"os"
@@ -41,7 +39,7 @@ var bi_write = &object.BuiltIn{
 			return object.NULL
 		}
 
-		str.Print(s, pr.Modes.ConsoleTextMode)
+		io.Print(s, pr.Modes.ConsoleTextMode)
 		return object.TRUE
 	},
 }
@@ -89,7 +87,7 @@ var bi_writeErr = &object.BuiltIn{
 			return object.NULL
 		}
 
-		str.PrintErr(s, pr.Modes.ConsoleTextMode)
+		io.PrintErr(s, pr.Modes.ConsoleTextMode)
 		return object.TRUE
 	},
 }
@@ -172,8 +170,8 @@ var bi_read = &object.BuiltIn{
 
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
-			fmt.Print(prompt)
-			input, err := readLine(os.Stdin)
+			io.Print(prompt, pr.Modes.ConsoleTextMode)
+			input, err := io.ReadLine(os.Stdin)
 			if err != nil {
 				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -196,7 +194,7 @@ var bi_read = &object.BuiltIn{
 				if verify == object.TRUE {
 					return object.NewString(input)
 				} else {
-					fmt.Print(errMsg)
+					io.Print(errMsg, pr.Modes.ConsoleTextMode)
 				}
 
 			} else {
@@ -209,13 +207,4 @@ var bi_read = &object.BuiltIn{
 		}
 		return alternate
 	},
-}
-
-func readLine(in io.Reader) (string, error) {
-	scanner := bufio.NewScanner(in)
-	scanned := scanner.Scan()
-	if !scanned {
-		return "", fmt.Errorf("Unknown failure to scan input text")
-	}
-	return scanner.Text(), nil
 }
