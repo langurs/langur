@@ -99,9 +99,13 @@ func TestMath(t *testing.T) {
 		{`2 ^ -3`, "0.125", object.NUMBER_OBJ},
 		{`2 ^ -1`, "0.5", object.NUMBER_OBJ},
 		{`2 ^ -12`, "0.000244140625", object.NUMBER_OBJ},
+
+		// including large negative exponents
 		{`2 ^ -50`, "0.000000000000000888178419700125232", object.NUMBER_OBJ},
 		{`2 ^ -50 == 1 / (2 ^ 50)`, true, object.BOOLEAN_OBJ},
 		{`21.7 ^ -200 == 1 / (21.7 ^ 200)`, true, object.BOOLEAN_OBJ},
+		// presently not smart enough; must manually set divMaxScale first
+		{`mode divMaxScale = 100; 2 ^ -123`, "0.0000000000000000000000000000000000000940395480657830006374989229777796542254932445417670017207001365", object.NUMBER_OBJ},
 
 		// NOTE: -3 ^ 2 is effectively -(3 ^ 2) b/c of orders of operation
 		{`(-2) ^ -12`, "0.000244140625", object.NUMBER_OBJ},
@@ -9914,6 +9918,14 @@ func TestSemiDeepCopy(t *testing.T) {
 		  f()
 		 `,
 			6, object.NUMBER_OBJ,
+		},
+
+		// copying necessary for function more() ?
+		{`val list1 = [5, 6, 7]
+		  more(list1, 4)
+		  len(list1)
+		 `,
+			3, object.NUMBER_OBJ,
 		},
 	}
 
