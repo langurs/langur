@@ -211,15 +211,17 @@ var bi_read = &object.BuiltIn{
 
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
+			stop := false
 			io.Print(prompt, textMode)
 
-			// var input string
-			// input, ok = io.ReadLn(textMode)
-			// if !ok {
-			// 	// user may have used ctrl-D
-			// }
+			var input string
+			input, ok = io.ReadLn(textMode)
+			if !ok {
+				// FIXME:? user pressed ctrl-D?; action to take?
+				// stop for loop after verification
+				stop = true
+			}
 
-			input, _ := io.ReadLn(textMode)
 			if validationByRegex || fn != nil {
 				var verify object.Object
 
@@ -239,6 +241,10 @@ var bi_read = &object.BuiltIn{
 
 			} else {
 				return object.NewString(input)
+			}
+
+			if stop {
+				break
 			}
 		}
 
