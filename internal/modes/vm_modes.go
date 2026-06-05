@@ -28,13 +28,13 @@ var ModeNames = map[string]ModeNumber{
 }
 
 const Default_DivisionMaxScale = 33
-const Default_ConsoleTextMode = false
+const Default_ConsoleTextMode = true
 const Default_NewFilePerm os.FileMode = 0664 // in langur, 8x664
 const Default_Rounding = RoundHalfAwayFromZero
 
 var DefaultSubLexString = map[ModeNumber]string{
 	MODE_DIVISION_MAX_SCALE:   "33",
-	MODE_CONSOLE_TEXT_MODE:    "false",
+	MODE_CONSOLE_TEXT_MODE:    "true",
 	MODE_NEW_FILE_PERMISSIONS: "8x664",
 	MODE_ROUNDING:             RoundHashName + "'" + RoundHashModeNames[Default_Rounding],
 }
