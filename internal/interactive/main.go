@@ -161,7 +161,8 @@ func loop(opts *InteractiveOptions) {
 		replPrint(opts.Prompt)
 		line, err := replReadLn()
 		if err != nil {
-			replPrintLn(err.Error())
+			// don't print error; may be ctrl-D
+			replPrintLn("")
 			return
 		}
 		line = strings.TrimSpace(line)
