@@ -106,7 +106,7 @@ func replPrintLn(s string) {
 func replPrint(s string) {
 	io.Print(s, vmModes.ConsoleTextMode)
 }
-func replReadLn() (string, error) {
+func replReadLn() (string, bool) {
 	return io.ReadLn(vmModes.ConsoleTextMode)
 }
 
@@ -159,9 +159,9 @@ func loop(opts *InteractiveOptions) {
 
 	for {
 		replPrint(opts.Prompt)
-		line, err := replReadLn()
-		if err != nil {
-			// don't print error; may be ctrl-D
+		line, ok := replReadLn()
+		if !ok {
+			// don't print error; may be ctrl-D; print a line and exit...
 			replPrintLn("")
 			return
 		}

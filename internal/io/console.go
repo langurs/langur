@@ -29,15 +29,15 @@ func PrintLn(s string, replaceNewLines bool) {
 	Print(s + str.SysNewLine, replaceNewLines)
 }
 
-func ReadLn(replaceNewLines bool) (string, error) {
+func ReadLn(replaceNewLines bool) (s string, scanned bool) {
 	scanner := bufio.NewScanner(os.Stdin)
-	scanned := scanner.Scan()
+	scanned = scanner.Scan()
 	if !scanned {
-		return "", fmt.Errorf("Unknown failure to scan input text")
+		return
 	}
-	text := scanner.Text()
+	s = scanner.Text()
 	if replaceNewLines {
-		text = str.ReplaceNewLinesWithLinux(text)
+		s = str.ReplaceNewLinesWithLinux(s)
 	}
-	return text, nil
+	return
 }

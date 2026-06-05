@@ -168,6 +168,7 @@ var bi_read = &object.BuiltIn{
 		const fnName = "read"
 
 		var ok bool
+		var err error
 
 		// Gather arguments.
 		// "prompt" argument
@@ -211,11 +212,14 @@ var bi_read = &object.BuiltIn{
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
 			io.Print(prompt, textMode)
-			input, err := io.ReadLn(textMode)
-			if err != nil {
-				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
-			}
 
+			// var input string
+			// input, ok = io.ReadLn(textMode)
+			// if !ok {
+			// 	// user may have used ctrl-D
+			// }
+
+			input, _ := io.ReadLn(textMode)
 			if validationByRegex || fn != nil {
 				var verify object.Object
 
