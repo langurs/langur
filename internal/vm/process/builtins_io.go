@@ -23,11 +23,21 @@ var bi_write = &object.BuiltIn{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
 		args = args[0].(*object.List).Elements
+
+		// "textmode" argument
+		textMode := pr.Modes.ConsoleTextMode
+		if args[1] != nil {
+			textMode = args[1].IsTruthy()
+		}
 
 		for _, v := range args {
 			out.WriteString(v.String())
@@ -38,7 +48,7 @@ var bi_write = &object.BuiltIn{
 			return object.NULL
 		}
 
-		io.Print(s, pr.Modes.ConsoleTextMode)
+		io.Print(s, textMode)
 		return object.TRUE
 	},
 }
@@ -47,17 +57,23 @@ var bi_writeln = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "writeln",
 		ImpureEffects: true,
-		Description:   "writes to the console, adding a system newline at the end",
+		Description:   "writes to the console, adding a newline at the end",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		textMode := &object.NameValue{Name: "textmode", Value: args[1]}
+
 		return bi_write.Fn.(BuiltInFunction)(pr,
-			&object.List{
-				Elements: append(args[0].(*object.List).Elements, newLine)})
+			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
+			textMode)
 	},
 }
 
@@ -71,11 +87,21 @@ var bi_writeErr = &object.BuiltIn{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
 		args = args[0].(*object.List).Elements
+
+		// "textmode" argument
+		textMode := pr.Modes.ConsoleTextMode
+		if args[1] != nil {
+			textMode = args[1].IsTruthy()
+		}
 
 		for _, v := range args {
 			out.WriteString(v.String())
@@ -86,7 +112,7 @@ var bi_writeErr = &object.BuiltIn{
 			return object.NULL
 		}
 
-		io.PrintErr(s, pr.Modes.ConsoleTextMode)
+		io.PrintErr(s, textMode)
 		return object.TRUE
 	},
 }
@@ -95,17 +121,23 @@ var bi_writelnErr = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "writelnErr",
 		ImpureEffects: true,
-		Description:   "writes to standard error, adding a system newline at the end",
+		Description:   "writes to standard error, adding a newline at the end",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{},
 		},
 		ParamExpansionMax: -1,
+
+		ParamByName: []object.Parameter{
+			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
+		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
+		textMode := &object.NameValue{Name: "textmode", Value: args[1]}
+
 		return bi_writeErr.Fn.(BuiltInFunction)(pr,
-			&object.List{
-				Elements: append(args[0].(*object.List).Elements, newLine)})
+			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
+			textMode)
 	},
 }
 
