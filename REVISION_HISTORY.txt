@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.21.6
 - changed vm default for ConsoleTextMode to true
+- added *textmode* argument to read() function
 - (internal) updates to exit status from main(); updates to calls to print; using str.PrintErr(), etc.
 - (internal) add langur/io package; instead of using fmt.Print, use langur/io.Print, io.ReadLn, etc.
 

@@ -121,6 +121,7 @@ var bi_read = &object.BuiltIn{
 			object.Parameter{ExternalName: "errmsg", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "maxattempts", Type: object.NUMBER_OBJ, DefaultValue: object.One},
 			object.Parameter{ExternalName: "alt"},
+			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -131,9 +132,6 @@ var bi_read = &object.BuiltIn{
 		// Gather arguments.
 		// "prompt" argument
 		prompt := args[0].String()
-		if pr.Modes.ConsoleTextMode {
-			prompt = str.ReplaceNewLinesWithSystem(prompt)
-		}
 
 		// "validation" argument
 		var fn object.Object
@@ -154,9 +152,6 @@ var bi_read = &object.BuiltIn{
 
 		// "errmsg" argument
 		errMsg := args[2].String()
-		if pr.Modes.ConsoleTextMode {
-			errMsg = str.ReplaceNewLinesWithSystem(errMsg)
-		}
 
 		// "maxattempts" argument
 		maxattempts, ok := object.NumberToInt(args[3])
@@ -167,16 +162,18 @@ var bi_read = &object.BuiltIn{
 		// "alt" argument
 		alternate := args[4]
 
+		// "textmode" argument
+		textMode := pr.Modes.ConsoleTextMode
+		if args[5] != nil {
+			textMode = args[5].IsTruthy()
+		}
+
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
-			io.Print(prompt, pr.Modes.ConsoleTextMode)
-			input, err := io.ReadLn(pr.Modes.ConsoleTextMode)
+			io.Print(prompt, textMode)
+			input, err := io.ReadLn(textMode)
 			if err != nil {
 				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
-			}
-
-			if pr.Modes.ConsoleTextMode {
-				input = str.ReplaceNewLinesWithLinux(input)
 			}
 
 			if validationByRegex || fn != nil {
@@ -193,7 +190,7 @@ var bi_read = &object.BuiltIn{
 				if verify == object.TRUE {
 					return object.NewString(input)
 				} else {
-					io.Print(errMsg, pr.Modes.ConsoleTextMode)
+					io.Print(errMsg, textMode)
 				}
 
 			} else {
