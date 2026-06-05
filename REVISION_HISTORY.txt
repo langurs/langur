@@ -1,12 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.6
+2026-06-05 - 0.21.6
 - changed vm default for ConsoleTextMode to true
 - added *textmode* argument to read(), write(), writeln(), writeErr(), and writelnErr() functions
+- account for user press of ctrl-D in read() function
 - (internal) updates to exit status from main(); updates to calls to print; using str.PrintErr(), etc.
-- (internal) add langur/io package; instead of using fmt.Print, use langur/io.Print, io.ReadLn, etc.
-
+- (internal) add langur/text_io package; instead of using fmt.Print, use langur/text_io.Print, text_io.ReadLn, etc.
 
 2026-06-02 - 0.21.5
 - fix: copy closure free variables in case of composed values that may change
