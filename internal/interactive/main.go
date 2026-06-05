@@ -16,7 +16,6 @@ package interactive		/// importable
 
 import (
 	"langur/io"
-	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -32,7 +31,6 @@ import (
 	"langur/token"
 	"langur/trace"
 	"langur/vm"
-	"os"
 	"strings"
 )
 
@@ -108,6 +106,9 @@ func replPrintLn(s string) {
 func replPrint(s string) {
 	io.Print(s, vmModes.ConsoleTextMode)
 }
+func replReadLn() (string, error) {
+	return io.ReadLn(vmModes.ConsoleTextMode)
+}
 
 // for REPL not run from langur command (not "interactive" mode)
 func main() {
@@ -119,7 +120,7 @@ func main() {
 
 			// NOTE: since not a command line REPL, okay to print a stack trace
 			replPrint("Print stack trace? y/n: ")
-			answer, _ := readLine(false)
+			answer, _ := replReadLn()
 			if answer == "y" || answer == "Y" {
 				panic(p)
 			} else {
@@ -158,8 +159,9 @@ func loop(opts *InteractiveOptions) {
 
 	for {
 		replPrint(opts.Prompt)
-		line, ok := readLine(true)
-		if !ok {
+		line, err := replReadLn()
+		if err != nil {
+			replPrintLn(err.Error())
 			return
 		}
 		line = strings.TrimSpace(line)
@@ -375,23 +377,4 @@ func InstructionsString(ins opcode.Instructions, constants []object.Object) stri
 	}
 
 	return sb.String()
-}
-
-func readLine(fixNewLines bool) (text string, scanned bool) {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanned = scanner.Scan()
-	if !scanned {
-		return
-	}
-	text = scanner.Text()
-
-	// allow input from plain text editor, ...
-	// ... which seems to insist on using Unicode line endings for copying ...
-	// ... even when no Unicode line endings present in the original text
-	if fixNewLines {
-		text = strings.Replace(text, "\u2029", "\n", -1)
-		text = strings.Replace(text, "\u2028", "\n", -1)
-	}
-
-	return
 }

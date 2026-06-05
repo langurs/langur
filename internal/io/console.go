@@ -5,7 +5,6 @@ package io
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"langur/str"
 	"os"
 )
@@ -30,11 +29,15 @@ func PrintLn(s string, replaceNewLines bool) {
 	Print(s + str.SysNewLine, replaceNewLines)
 }
 
-func ReadLine(in io.Reader) (string, error) {
-	scanner := bufio.NewScanner(in)
+func ReadLn(replaceNewLines bool) (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
 	scanned := scanner.Scan()
 	if !scanned {
 		return "", fmt.Errorf("Unknown failure to scan input text")
 	}
-	return scanner.Text(), nil
+	text := scanner.Text()
+	if replaceNewLines {
+		text = str.ReplaceNewLinesWithLinux(text)
+	}
+	return text, nil
 }

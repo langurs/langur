@@ -7,7 +7,6 @@ import (
 	"langur/io"
 	"langur/object"
 	"langur/str"
-	"os"
 )
 
 // write, writeln, writeErr, writelnErr, read
@@ -171,7 +170,7 @@ var bi_read = &object.BuiltIn{
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
 			io.Print(prompt, pr.Modes.ConsoleTextMode)
-			input, err := io.ReadLine(os.Stdin)
+			input, err := io.ReadLn(pr.Modes.ConsoleTextMode)
 			if err != nil {
 				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}

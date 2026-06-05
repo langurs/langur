@@ -3,7 +3,7 @@ https://langurlang.org
 
 ... - 0.21.6
 - (internal) updates to exit status from main(); updates to calls to print; using str.PrintErr(), etc.
-- (internal) add langur/io package; instead of using fmt.Print, use langur/io.Print, etc.
+- (internal) add langur/io package; instead of using fmt.Print, use langur/io.Print, io.ReadLn, etc.
 
 
 2026-06-02 - 0.21.5

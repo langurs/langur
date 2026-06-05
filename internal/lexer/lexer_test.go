@@ -176,8 +176,6 @@ func TestGeneralTokens(t *testing.T) {
 		{"zls", &token.Token{Type: token.STRING, Literal: ""}, false},
 	}
 
-	// fmt.Println("System Newline : " + constants["N"])
-
 	for _, tt := range tests {
 		l, err := New(tt.input, "test", nil)
 		if err != nil {
