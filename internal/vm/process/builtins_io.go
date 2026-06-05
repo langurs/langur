@@ -9,7 +9,9 @@ import (
 	"langur/str"
 )
 
-// write, writeln, writeErr, writelnErr, read
+// write, writeln
+// writeErr, writelnErr
+// read
 
 var newLine = object.NewString(str.SysNewLine)
 
@@ -20,7 +22,7 @@ var bi_write = &object.BuiltIn{
 		Description:   "writes to the console",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "text"},
 		},
 		ParamExpansionMax: -1,
 
@@ -31,13 +33,13 @@ var bi_write = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
-		args = args[0].(*object.List).Elements
-
 		// "textmode" argument
 		textMode := pr.Modes.ConsoleTextMode
 		if args[1] != nil {
 			textMode = args[1].IsTruthy()
 		}
+
+		args = args[0].(*object.List).Elements
 
 		for _, v := range args {
 			out.WriteString(v.String())
@@ -60,7 +62,7 @@ var bi_writeln = &object.BuiltIn{
 		Description:   "writes to the console, adding a newline at the end",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "text"},
 		},
 		ParamExpansionMax: -1,
 
@@ -69,7 +71,10 @@ var bi_writeln = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		textMode := &object.NameValue{Name: "textmode", Value: args[1]}
+		var textMode object.Object
+		if args[1] != nil {
+			textMode = args[1].Copy()
+		}
 
 		return bi_write.Fn.(BuiltInFunction)(pr,
 			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
@@ -84,7 +89,7 @@ var bi_writeErr = &object.BuiltIn{
 		Description:   "writes to standard error",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "text"},
 		},
 		ParamExpansionMax: -1,
 
@@ -95,13 +100,13 @@ var bi_writeErr = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		var out bytes.Buffer
 
-		args = args[0].(*object.List).Elements
-
 		// "textmode" argument
 		textMode := pr.Modes.ConsoleTextMode
 		if args[1] != nil {
 			textMode = args[1].IsTruthy()
 		}
+
+		args = args[0].(*object.List).Elements
 
 		for _, v := range args {
 			out.WriteString(v.String())
@@ -124,7 +129,7 @@ var bi_writelnErr = &object.BuiltIn{
 		Description:   "writes to standard error, adding a newline at the end",
 
 		ParamPositional: []object.Parameter{
-			object.Parameter{},
+			object.Parameter{ExternalName: "text"},
 		},
 		ParamExpansionMax: -1,
 
@@ -133,7 +138,10 @@ var bi_writelnErr = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		textMode := &object.NameValue{Name: "textmode", Value: args[1]}
+		var textMode object.Object
+		if args[1] != nil {
+			textMode = args[1].Copy()
+		}
 
 		return bi_writeErr.Fn.(BuiltInFunction)(pr,
 			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
