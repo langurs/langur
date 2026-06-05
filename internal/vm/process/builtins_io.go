@@ -4,9 +4,9 @@ package process
 
 import (
 	"bytes"
-	"langur/io"
 	"langur/object"
 	"langur/str"
+	"langur/text_io"
 )
 
 // write, writeln
@@ -50,7 +50,7 @@ var bi_write = &object.BuiltIn{
 			return object.NULL
 		}
 
-		io.Print(s, textMode)
+		text_io.Print(s, textMode)
 		return object.TRUE
 	},
 }
@@ -117,7 +117,7 @@ var bi_writeErr = &object.BuiltIn{
 			return object.NULL
 		}
 
-		io.PrintErr(s, textMode)
+		text_io.PrintErr(s, textMode)
 		return object.TRUE
 	},
 }
@@ -212,10 +212,10 @@ var bi_read = &object.BuiltIn{
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
 			stop := false
-			io.Print(prompt, textMode)
+			text_io.Print(prompt, textMode)
 
 			var input string
-			input, ok = io.ReadLn(textMode)
+			input, ok = text_io.ReadLn(textMode)
 			if !ok {
 				// FIXME:? user pressed ctrl-D?; action to take?
 				// stop for loop after verification
@@ -236,7 +236,7 @@ var bi_read = &object.BuiltIn{
 				if verify == object.TRUE {
 					return object.NewString(input)
 				} else {
-					io.Print(errMsg, textMode)
+					text_io.Print(errMsg, textMode)
 				}
 
 			} else {

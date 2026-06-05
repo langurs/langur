@@ -5,11 +5,11 @@ package ast
 import (
 	"fmt"
 	"langur/bytecode"
-	"langur/io"
 	"langur/modes"
 	"langur/object"
 	"langur/opcode"
 	"langur/symbol"
+	"langur/text_io"
 	"langur/token"
 )
 
@@ -105,7 +105,7 @@ func (c *Compiler) makeWarning(node Node, err string) error {
 		return fmt.Errorf(warning)
 	}
 	// NOTE: Don't use the go runtime println() function. That's for debugging, not for production code.
-	io.PrintLnErr(warning, c.Modes.CompilerConsoleTextMode)
+	text_io.PrintLnErr(warning, c.Modes.CompilerConsoleTextMode)
 	return nil
 }
 

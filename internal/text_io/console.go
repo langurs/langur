@@ -1,6 +1,6 @@
-// langur/io/console.go
+// langur/text_io/console.go
 
-package io
+package text_io
 
 import (
 	"bufio"

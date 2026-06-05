@@ -15,7 +15,6 @@
 package interactive		/// importable
 
 import (
-	"langur/io"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +27,7 @@ import (
 	"langur/parser"
 	"langur/str"
 	"langur/symbol"
+	"langur/text_io"
 	"langur/token"
 	"langur/trace"
 	"langur/vm"
@@ -101,13 +101,13 @@ func resetEnvironment() {
 }
 
 func replPrintLn(s string) {
-	io.PrintLn(s, vmModes.ConsoleTextMode)
+	text_io.PrintLn(s, vmModes.ConsoleTextMode)
 }
 func replPrint(s string) {
-	io.Print(s, vmModes.ConsoleTextMode)
+	text_io.Print(s, vmModes.ConsoleTextMode)
 }
 func replReadLn() (string, bool) {
-	return io.ReadLn(vmModes.ConsoleTextMode)
+	return text_io.ReadLn(vmModes.ConsoleTextMode)
 }
 
 // for REPL not run from langur command (not "interactive" mode)

@@ -3,8 +3,8 @@
 package object
 
 import (
-	"langur/io"
 	"langur/system"
+	"langur/text_io"
 	"os"
 )
 
@@ -44,7 +44,7 @@ func Exit(codeObj, msgObj Object, consoleTextMode bool) {
 		// if non-zero return code, write string to standard error, appending a newline
 		s := msgObj.String()
 		if len(s) != 0 {
-			io.PrintLnErr(s, consoleTextMode)
+			text_io.PrintLnErr(s, consoleTextMode)
 		}
 	}
 	os.Exit(code)
