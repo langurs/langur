@@ -418,6 +418,10 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 			}
 
 		case '~': // tilde
+			// NOTE: deprecated in favor of & operator
+			tok.Type = token.APPEND
+			lex.advanceCodePoint()
+		case '&':
 			tok.Type = token.APPEND
 			lex.advanceCodePoint()
 

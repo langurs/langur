@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.21.7
+- changed append operator to use & token and deprecated use of ~ (tilde)
 - changed "by name" parameters to "keyword" parameters
 
 

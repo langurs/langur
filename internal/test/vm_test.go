@@ -329,7 +329,7 @@ func TestCombinationOperators(t *testing.T) {
 		{"var x = 12; x rem= 3; x", "0", object.NUMBER_OBJ},
 		{"var x = 12; x mod= 3; x", "0", object.NUMBER_OBJ},
 
-		{`var s = "Z"; s ~= "oetic"; s`, "Zoetic", object.STRING_OBJ},
+		{`var s = "Z"; s &= "oetic"; s`, "Zoetic", object.STRING_OBJ},
 
 		{"var x = true; x and= false; x", false, object.BOOLEAN_OBJ},
 		{"var x = true; x and= true; x", true, object.BOOLEAN_OBJ},
@@ -685,7 +685,7 @@ func TestOfOperator(t *testing.T) {
 		{`-4 not of "abc"`, true, object.BOOLEAN_OBJ},
 
 		{`var x, y = 4, []
-		  while x not of y { y ~= [7] }
+		  while x not of y { y &= [7] }
 		  len y`, 4, object.NUMBER_OBJ},
 	}
 
@@ -885,58 +885,58 @@ func TestDBComparisonOperators(t *testing.T) {
 func TestOtherComparisons(t *testing.T) {
 	tests := []vmTestCase{
 		{`"abc" == "abc"`, true, object.BOOLEAN_OBJ},
-		{`"abc" == "a" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"abc" == "a" & "bc"`, true, object.BOOLEAN_OBJ},
 		{`"abc" != "abc"`, false, object.BOOLEAN_OBJ},
-		{`"abc" != "a" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"abc" != "a" & "bc"`, false, object.BOOLEAN_OBJ},
 		{`"def" == "abc"`, false, object.BOOLEAN_OBJ},
-		{`"def" == "a" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"def" == "a" & "bc"`, false, object.BOOLEAN_OBJ},
 		{`"def" != "abc"`, true, object.BOOLEAN_OBJ},
-		{`"def" != "a" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"def" != "a" & "bc"`, true, object.BOOLEAN_OBJ},
 
 		{`"ABC" > "abc"`, false, object.BOOLEAN_OBJ},
-		{`"ABC" > "a" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"ABC" > "a" & "bc"`, false, object.BOOLEAN_OBJ},
 		{`"ABC" >= "abc"`, false, object.BOOLEAN_OBJ},
-		{`"ABC" >= "a" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"ABC" >= "a" & "bc"`, false, object.BOOLEAN_OBJ},
 		{`"abc" > "ABC"`, true, object.BOOLEAN_OBJ},
-		{`"abc" > "A" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"abc" > "A" & "bc"`, true, object.BOOLEAN_OBJ},
 		{`"abc" >= "ABC"`, true, object.BOOLEAN_OBJ},
-		{`"abc" >= "A" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"abc" >= "A" & "bc"`, true, object.BOOLEAN_OBJ},
 
 		{`"ABC" < "abc"`, true, object.BOOLEAN_OBJ},
-		{`"ABC" < "a" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"ABC" < "a" & "bc"`, true, object.BOOLEAN_OBJ},
 		{`"ABC" <= "abc"`, true, object.BOOLEAN_OBJ},
-		{`"ABC" <= "a" ~ "bc"`, true, object.BOOLEAN_OBJ},
+		{`"ABC" <= "a" & "bc"`, true, object.BOOLEAN_OBJ},
 		{`"abc" < "ABC"`, false, object.BOOLEAN_OBJ},
-		{`"abc" < "A" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"abc" < "A" & "bc"`, false, object.BOOLEAN_OBJ},
 		{`"abc" <= "ABC"`, false, object.BOOLEAN_OBJ},
-		{`"abc" <= "A" ~ "bc"`, false, object.BOOLEAN_OBJ},
+		{`"abc" <= "A" & "bc"`, false, object.BOOLEAN_OBJ},
 
 		{`[1, 2, 3] == [1, 2, 3]`, true, object.BOOLEAN_OBJ},
-		{`[1, 2, 3] == [1, 2] ~ [3]`, true, object.BOOLEAN_OBJ},
+		{`[1, 2, 3] == [1, 2] & [3]`, true, object.BOOLEAN_OBJ},
 		{`[1, 2, 3] != [1, 2, 3]`, false, object.BOOLEAN_OBJ},
-		{`[1, 2, 3] != [1, 2] ~ [3]`, false, object.BOOLEAN_OBJ},
+		{`[1, 2, 3] != [1, 2] & [3]`, false, object.BOOLEAN_OBJ},
 		{`[2, 3, 1] == [1, 2, 3]`, false, object.BOOLEAN_OBJ},
-		{`[2, 3, 1] == [1, 2] ~ [3]`, false, object.BOOLEAN_OBJ},
+		{`[2, 3, 1] == [1, 2] & [3]`, false, object.BOOLEAN_OBJ},
 		{`[2, 3, 1] != [1, 2, 3]`, true, object.BOOLEAN_OBJ},
-		{`[2, 3, 1] != [1, 2] ~ [3]`, true, object.BOOLEAN_OBJ},
+		{`[2, 3, 1] != [1, 2] & [3]`, true, object.BOOLEAN_OBJ},
 
 		{`{1: 2, 3: 4} == {1: 2, 3: 4}`, true, object.BOOLEAN_OBJ},
-		{`{1: 2, 3: 4} == {1: 2} ~ {3: 4}`, true, object.BOOLEAN_OBJ},
+		{`{1: 2, 3: 4} == {1: 2} & {3: 4}`, true, object.BOOLEAN_OBJ},
 		{`{1: 2, 3: 4} != {1: 2, 3: 4}`, false, object.BOOLEAN_OBJ},
-		{`{1: 2, 3: 4} != {1: 2} ~ {3: 4}`, false, object.BOOLEAN_OBJ},
+		{`{1: 2, 3: 4} != {1: 2} & {3: 4}`, false, object.BOOLEAN_OBJ},
 		{`{3: 4, 1: 2} == {1: 2, 3: 4}`, true, object.BOOLEAN_OBJ},
-		{`{3: 4, 1: 2} == {1: 2} ~ {3: 4}`, true, object.BOOLEAN_OBJ},
+		{`{3: 4, 1: 2} == {1: 2} & {3: 4}`, true, object.BOOLEAN_OBJ},
 		{`{3: 4, 1: 2} != {1: 2, 3: 4}`, false, object.BOOLEAN_OBJ},
-		{`{3: 4, 1: 2} != {1: 2} ~ {3: 4}`, false, object.BOOLEAN_OBJ},
+		{`{3: 4, 1: 2} != {1: 2} & {3: 4}`, false, object.BOOLEAN_OBJ},
 
 		{`{1: 7, 3: 4} == {1: 2, 3: 4}`, false, object.BOOLEAN_OBJ},
-		{`{1: 7, 3: 4} == {1: 2} ~ {3: 4}`, false, object.BOOLEAN_OBJ},
+		{`{1: 7, 3: 4} == {1: 2} & {3: 4}`, false, object.BOOLEAN_OBJ},
 		{`{1: 7, 3: 4} != {1: 2, 3: 4}`, true, object.BOOLEAN_OBJ},
-		{`{1: 7, 3: 4} != {1: 2} ~ {3: 4}`, true, object.BOOLEAN_OBJ},
+		{`{1: 7, 3: 4} != {1: 2} & {3: 4}`, true, object.BOOLEAN_OBJ},
 		{`{3: 7, 1: 2} == {1: 2, 3: 4}`, false, object.BOOLEAN_OBJ},
-		{`{3: 7, 1: 2} == {1: 2} ~ {3: 4}`, false, object.BOOLEAN_OBJ},
+		{`{3: 7, 1: 2} == {1: 2} & {3: 4}`, false, object.BOOLEAN_OBJ},
 		{`{3: 7, 1: 2} != {1: 2, 3: 4}`, true, object.BOOLEAN_OBJ},
-		{`{3: 7, 1: 2} != {1: 2} ~ {3: 4}`, true, object.BOOLEAN_OBJ},
+		{`{3: 7, 1: 2} != {1: 2} & {3: 4}`, true, object.BOOLEAN_OBJ},
 
 		{`1..7 == 1..7`, true, object.BOOLEAN_OBJ},
 		{`1..7 == 1..21/3`, true, object.BOOLEAN_OBJ},
@@ -1570,7 +1570,7 @@ func TestSwitchExpressions(t *testing.T) {
 		},
 
 		// an odd test, to be sure it's working right in context
-		{`switch 65 ~ {
+		{`switch 65 & {
 				case 0: 1  # non-zero-length string ... true
 				default: 4
 			}`,
@@ -3039,7 +3039,7 @@ func TestStringBlockQuotes(t *testing.T) {
 		ABC,
 			"7"]
 
-		  lead[1] ~ lead[2]`, "427", object.STRING_OBJ},
+		  lead[1] & lead[2]`, "427", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3066,21 +3066,21 @@ func TestStringAndRegexModifiers(t *testing.T) {
 
 func TestStringAppend(t *testing.T) {
 	tests := []vmTestCase{
-		{"qs/lan/ ~ qs/gurs/", "langurs", object.STRING_OBJ},
-		{`qs/lan/ ~ qs/gurs/ ~ " ♥ bananas"`, "langurs ♥ bananas", object.STRING_OBJ},
+		{"qs/lan/ & qs/gurs/", "langurs", object.STRING_OBJ},
+		{`qs/lan/ & qs/gurs/ & " ♥ bananas"`, "langurs ♥ bananas", object.STRING_OBJ},
 
-		{`"A" ~ "B"`, "AB", object.STRING_OBJ},
-		{`"A" ~ 99`, "Ac", object.STRING_OBJ},
-		{`99 ~ "A"`, "cA", object.STRING_OBJ},
+		{`"A" & "B"`, "AB", object.STRING_OBJ},
+		{`"A" & 99`, "Ac", object.STRING_OBJ},
+		{`99 & "A"`, "cA", object.STRING_OBJ},
 
-		{`99 ~ 65`, "cA", object.STRING_OBJ},
-		{`97 ~ 98 ~ 99`, "abc", object.STRING_OBJ},
+		{`99 & 65`, "cA", object.STRING_OBJ},
+		{`97 & 98 & 99`, "abc", object.STRING_OBJ},
 
-		{`"A" ~ 97 .. 101`, "Aabcde", object.STRING_OBJ},
-		{`"A" ~ 101 .. 97`, "Aedcba", object.STRING_OBJ},
+		{`"A" & 97 .. 101`, "Aabcde", object.STRING_OBJ},
+		{`"A" & 101 .. 97`, "Aedcba", object.STRING_OBJ},
 
 		// in the Latin extended section ...
-		{`"" ~ 16xA1`, "¡", object.STRING_OBJ},
+		{`"" & 16xA1`, "¡", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3217,11 +3217,11 @@ func TestStringInterpolations(t *testing.T) {
 		// ... reading tokens directly in the interpolated section, since ...
 		// ... the }} inside the string inside the interpolation is ...
 		// ... not taken to be a closing mark of any kind.
-		{`"{{"}}"~zls}}"`, "}}", object.STRING_OBJ},
-		{`"{{["}}"~zls]}}"`, "[\"}}\"]", object.STRING_OBJ},
+		{`"{{"}}"&zls}}"`, "}}", object.STRING_OBJ},
+		{`"{{["}}"&zls]}}"`, "[\"}}\"]", object.STRING_OBJ},
 
 		// with double quote, single quote, or forward slash within interpolation...
-		{`val x = 123; "{{"1"~"2"}}"`, "12", object.STRING_OBJ},
+		{`val x = 123; "{{"1"&"2"}}"`, "12", object.STRING_OBJ},
 		{`val x = 123; "{{' '+8}}"`, "40", object.STRING_OBJ},
 		{`val x = 123; "{{1/2}}"`, "0.5", object.STRING_OBJ},
 
@@ -3245,10 +3245,10 @@ func TestStringInterpolationModifiers(t *testing.T) {
 		{`val x = "\x0e\x7f"; "{{x:esc}}"`, "\\x0e\\x7f", object.STRING_OBJ},
 		{`val x = "Z\x0e\u008f\u0090\u0091"; "{{x:esc}}"`, "Z\\x0e\\u008f\\u0090\\u0091", object.STRING_OBJ},
 
-		{`val x = "\u000A"; "You know {{(x~""):esc}}"`, "You know \\n", object.STRING_OBJ},
-		{`val x = '\u000A'; "You know {{(x~""):esc}}"`, "You know \\n", object.STRING_OBJ},
+		{`val x = "\u000A"; "You know {{(x&""):esc}}"`, "You know \\n", object.STRING_OBJ},
+		{`val x = '\u000A'; "You know {{(x&""):esc}}"`, "You know \\n", object.STRING_OBJ},
 		{`val x = '\u000A'; "You know {{(x+0):esc}}"`, "You know 10", object.STRING_OBJ},
-		{`val x = "\u2028 !"; "I know {{(x~"") : esc}} noting"`, "I know \\u2028 ! noting", object.STRING_OBJ},
+		{`val x = "\u2028 !"; "I know {{(x&"") : esc}} noting"`, "I know \\u2028 ! noting", object.STRING_OBJ},
 
 		// code points
 		{`val x = 97; "{{x:cp}}"`, "a", object.STRING_OBJ},
@@ -3425,28 +3425,28 @@ func TestInterpolationModifierForGraphemeLimit(t *testing.T) {
 		{`val farmer = "\U0001F9D1\u200D\U0001F33E"
 	      val flag1 = "\U0001F1FA\U0001F1F8"
 		  val flag2 = "\U0001F1EB\U0001F1EE"
-		  var x = farmer ~ flag1 ~ flag2
+		  var x = farmer & flag1 & flag2
 		  x *= 20  # now at 60 graphemes
 		  "{{x:Lg1}}"`, "\U0001F9D1\u200D\U0001F33E", object.STRING_OBJ},
 
 		{`val farmer = "\U0001F9D1\u200D\U0001F33E"
 	      val flag1 = "\U0001F1FA\U0001F1F8"
 		  val flag2 = "\U0001F1EB\U0001F1EE"
-		  var x = farmer ~ flag1 ~ flag2
+		  var x = farmer & flag1 & flag2
 		  x *= 20  # now at 60 graphemes
 		  "{{x:Lg-1}}"`, "\U0001F1EB\U0001F1EE", object.STRING_OBJ},
 
 		{`val farmer = "\U0001F9D1\u200D\U0001F33E"
 	      val flag1 = "\U0001F1FA\U0001F1F8"
 		  val flag2 = "\U0001F1EB\U0001F1EE"
-		  var x = farmer ~ flag1 ~ flag2
+		  var x = farmer & flag1 & flag2
 		  x *= 20  # now at 60 graphemes
 		  "{{x:Lg4}}"`, "\U0001F9D1\u200D\U0001F33E\U0001F1FA\U0001F1F8\U0001F1EB\U0001F1EE\U0001F9D1\u200D\U0001F33E", object.STRING_OBJ},
 
 		{`val farmer = "\U0001F9D1\u200D\U0001F33E"
 	      val flag1 = "\U0001F1FA\U0001F1F8"
 		  val flag2 = "\U0001F1EB\U0001F1EE"
-		  var x = farmer ~ flag1 ~ flag2
+		  var x = farmer & flag1 & flag2
 		  x *= 20  # now at 60 graphemes
 		  "{{x:Lg-4}}"`, "\U0001F1EB\U0001F1EE\U0001F9D1\u200D\U0001F33E\U0001F1FA\U0001F1F8\U0001F1EB\U0001F1EE", object.STRING_OBJ},
 
@@ -3975,8 +3975,8 @@ func TestListLiterals(t *testing.T) {
 		x == ["1", "2", "3", "abc", "you", "know"]`, true, object.BOOLEAN_OBJ},
 
 		// append
-		{"[1, 2] ~ [3]", []int{1, 2, 3}, object.LIST_OBJ},
-		{"[1, 2] ~ [3, 4]", []int{1, 2, 3, 4}, object.LIST_OBJ},
+		{"[1, 2] & [3]", []int{1, 2, 3}, object.LIST_OBJ},
+		{"[1, 2] & [3, 4]", []int{1, 2, 3, 4}, object.LIST_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -4039,7 +4039,7 @@ func TestHashLiterals(t *testing.T) {
 		},
 
 		// 1.0 same as 1
-		{"{1: 2, 2: 7} ~ {1.0: -7, 3.0: 14}",
+		{"{1: 2, 2: 7} & {1.0: -7, 3.0: 14}",
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(-7)},
 				{object.NumberFromInt(2), object.NumberFromInt(7)},
@@ -4103,17 +4103,17 @@ func TestHashLiterals(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	tests := []vmTestCase{
-		{`97 .. 99 ~ "go"`, "abcgo", object.STRING_OBJ},
-		{`97 .. 99 ~ 101`, "abce", object.STRING_OBJ},
-		{`97 .. 99 ~ 100 .. 99`, "abcdc", object.STRING_OBJ},
+		{`97 .. 99 & "go"`, "abcgo", object.STRING_OBJ},
+		{`97 .. 99 & 101`, "abce", object.STRING_OBJ},
+		{`97 .. 99 & 100 .. 99`, "abcdc", object.STRING_OBJ},
 
-		{`97 ~ 99`, "ac", object.STRING_OBJ},
-		{`97 ~ "joe"`, "ajoe", object.STRING_OBJ},
-		{`97 ~ 100 .. 98`, "adcb", object.STRING_OBJ},
+		{`97 & 99`, "ac", object.STRING_OBJ},
+		{`97 & "joe"`, "ajoe", object.STRING_OBJ},
+		{`97 & 100 .. 98`, "adcb", object.STRING_OBJ},
 
-		{`"A" ~ 99`, "Ac", object.STRING_OBJ},
-		{`"A" ~ "joe"`, "Ajoe", object.STRING_OBJ},
-		{`"A" ~ 100 .. 98`, "Adcb", object.STRING_OBJ},
+		{`"A" & 99`, "Ac", object.STRING_OBJ},
+		{`"A" & "joe"`, "Ajoe", object.STRING_OBJ},
+		{`"A" & 100 .. 98`, "Adcb", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -4122,10 +4122,10 @@ func TestAppend(t *testing.T) {
 func TestAppendNull(t *testing.T) {
 	// acts as no-op, sort of
 	tests := []vmTestCase{
-		{`"abc" ~ null`, "abc", object.STRING_OBJ},
-		{`97 ~ null`, "a", object.STRING_OBJ},
-		{`[1, 2, 3] ~ null`, []int{1, 2, 3}, object.LIST_OBJ},
-		{`{1: 10, 2: 40} ~ null`,
+		{`"abc" & null`, "abc", object.STRING_OBJ},
+		{`97 & null`, "a", object.STRING_OBJ},
+		{`[1, 2, 3] & null`, []int{1, 2, 3}, object.LIST_OBJ},
+		{`{1: 10, 2: 40} & null`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(10)},
 				{object.NumberFromInt(2), object.NumberFromInt(40)},
@@ -4140,28 +4140,28 @@ func TestAppendNull(t *testing.T) {
 func TestAppendToNull(t *testing.T) {
 	// returns right object for certain types
 	tests := []vmTestCase{
-		{`null ~ null`, nil, object.NULL_OBJ},
-		{`null ~ []`, []int{}, object.LIST_OBJ},
-		{`null ~ [1, 3]`, []int{1, 3}, object.LIST_OBJ},
-		{`null ~ {1: 3, 2: 7}`,
+		{`null & null`, nil, object.NULL_OBJ},
+		{`null & []`, []int{}, object.LIST_OBJ},
+		{`null & [1, 3]`, []int{1, 3}, object.LIST_OBJ},
+		{`null & {1: 3, 2: 7}`,
 			[][]object.Object{
 				{object.NumberFromInt(1), object.NumberFromInt(3)},
 				{object.NumberFromInt(2), object.NumberFromInt(7)},
 			},
 			object.HASH_OBJ,
 		},
-		{`null ~ {:}`,
+		{`null & {:}`,
 			[][]object.Object{},
 			object.HASH_OBJ,
 		},
-		{`null ~ ""`, "", object.STRING_OBJ},
-		{`null ~ "omega"`, "omega", object.STRING_OBJ},
-		{`null ~ 65`, "A", object.STRING_OBJ},
-		{`null ~ 97 ~ 98 ~ 99`, "abc", object.STRING_OBJ},
+		{`null & ""`, "", object.STRING_OBJ},
+		{`null & "omega"`, "omega", object.STRING_OBJ},
+		{`null & 65`, "A", object.STRING_OBJ},
+		{`null & 97 & 98 & 99`, "abc", object.STRING_OBJ},
 
-		{`97 ~ null ~ 98 ~ 99`, "abc", object.STRING_OBJ},
+		{`97 & null & 98 & 99`, "abc", object.STRING_OBJ},
 
-		{`null ~ 97 .. 99`, "abc", object.STRING_OBJ},
+		{`null & 97 .. 99`, "abc", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -4427,9 +4427,9 @@ func TestForInLoops(t *testing.T) {
 
 		// over string
 		{`var new = ""		# 0; 1; just thrown in for good measure
-		  for x in "abc" { 0; 1; new ~= ucase(cp2s(x)) ~ "~" }
+		  for x in "abc" { 0; 1; new &= ucase(cp2s(x)) & "&" }
 		  new`,
-			"A~B~C~", object.STRING_OBJ,
+			"A&B&C&", object.STRING_OBJ,
 		},
 
 		// over range
@@ -7020,7 +7020,7 @@ func TestOperatorImpliedFunctions(t *testing.T) {
 		{`fold([16, 2, 2], by=fn{^/})`,
 			2, object.NUMBER_OBJ,
 		},
-		{`fold(["w", "h", "a", "t", "?"], by=fn{~})`,
+		{`fold(["w", "h", "a", "t", "?"], by=fn{&})`,
 			"what?", object.STRING_OBJ,
 		},
 		{`fold([true, true, false], by=fn{and})`,
@@ -7422,7 +7422,7 @@ func TestRe2(t *testing.T) {
 		// passing a function to replace
 		{`replace("abc azc aec afc ", by=re/[e-z]/, with=fn(s) { ucase(s) } )`, "abc aZc aEc aFc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/./, with=fn(s) { ucase(s) } )`, "ABC AZC AEC AFC ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/a./, with=fn(s) { s~"AAA" })`, "abAAAc azAAAc aeAAAc afAAAc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/a./, with=fn(s) { s&"AAA" })`, "abAAAc azAAAc aeAAAc afAAAc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"})`, "ZZZ ZzZ ZZZ ZfZ ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"}, max=2)`, "ZZc azc aec afc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[a-e]/, with=fn(s) {"Z"}, max=1)`, "Zbc azc aec afc ", object.STRING_OBJ},
@@ -7430,9 +7430,9 @@ func TestRe2(t *testing.T) {
 
 		// passing multiple things to replace
 		{`replace("abc azc aec afc ", by="c", with=["Z", _])`, "abZ azc aeZ afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
-		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s~"Y" }], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s&"Y" }])`, "AbYc Azc aYec Afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s&"Y" }], max=2)`, "AbYc azc aec afc ", object.STRING_OBJ},
+		{`replace("abc azc aec afc ", by=re/[ab]/, with=[fn(s) { ucase s }, fn(s) { s&"Y" }], max=3)`, "AbYc Azc aec afc ", object.STRING_OBJ},
 		{`replace("abc azc aec afc ", by=re/[ab]/, with=["Z", fn(s) { ucase s }], interp=false)`, "ZBc Zzc Aec Zfc ", object.STRING_OBJ},
 		// {`replace("abc azc aec afc ", by=re/[ab]/, with=["$1", fn(s) { ucase s }])`, "aBc azc Aec afc ", object.STRING_OBJ},
 
@@ -7513,24 +7513,24 @@ func TestRe2(t *testing.T) {
 		{`reEsc("\\(\x0D\x0Aabc #)\x09+")`, `\\\(\r\nabc\ \#\)\t\+`, object.STRING_OBJ},
 
 		// characters added for free-spacing mode escaped and handled well?
-		{`matching("\n", by=reCompile("(?x:" ~ reEsc("\n") ~ ")"))`, true, object.BOOLEAN_OBJ},
-		{`matching("", by=reCompile("(?x:" ~ reEsc("\n") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\n", by=reCompile("(?x:" & reEsc("\n") & ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" & reEsc("\n") & ")"))`, false, object.BOOLEAN_OBJ},
 		{`matching("\n", by=reCompile(reEsc("\n")))`, true, object.BOOLEAN_OBJ},
 		{`matching("", by=reCompile(reEsc("\n")))`, false, object.BOOLEAN_OBJ},
-		{`matching("\r", by=reCompile("(?x:" ~ reEsc("\r") ~ ")"))`, true, object.BOOLEAN_OBJ},
-		{`matching("", by=reCompile("(?x:" ~ reEsc("\r") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\r", by=reCompile("(?x:" & reEsc("\r") & ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" & reEsc("\r") & ")"))`, false, object.BOOLEAN_OBJ},
 		{`matching("\r", by=reCompile(reEsc("\r")))`, true, object.BOOLEAN_OBJ},
 		{`matching("", by=reCompile(reEsc("\r")))`, false, object.BOOLEAN_OBJ},
-		{`matching("\t", by=reCompile("(?x:" ~ reEsc("\t") ~ ")"))`, true, object.BOOLEAN_OBJ},
-		{`matching("", by=reCompile("(?x:" ~ reEsc("\t") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("\t", by=reCompile("(?x:" & reEsc("\t") & ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" & reEsc("\t") & ")"))`, false, object.BOOLEAN_OBJ},
 		{`matching("\t", by=reCompile(reEsc("\t")))`, true, object.BOOLEAN_OBJ},
 		{`matching("", by=reCompile(reEsc("\t")))`, false, object.BOOLEAN_OBJ},
-		{`matching(" ", by=reCompile("(?x:" ~ reEsc(" ") ~ ")"))`, true, object.BOOLEAN_OBJ},
-		{`matching("", by=reCompile("(?x:" ~ reEsc(" ") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching(" ", by=reCompile("(?x:" & reEsc(" ") & ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" & reEsc(" ") & ")"))`, false, object.BOOLEAN_OBJ},
 		{`matching(" ", by=reCompile(reEsc(" ")))`, true, object.BOOLEAN_OBJ},
 		{`matching("", by=reCompile(reEsc(" ")))`, false, object.BOOLEAN_OBJ},
-		{`matching("#", by=reCompile("(?x:" ~ reEsc("#") ~ ")"))`, true, object.BOOLEAN_OBJ},
-		{`matching("", by=reCompile("(?x:" ~ reEsc("#") ~ ")"))`, false, object.BOOLEAN_OBJ},
+		{`matching("#", by=reCompile("(?x:" & reEsc("#") & ")"))`, true, object.BOOLEAN_OBJ},
+		{`matching("", by=reCompile("(?x:" & reEsc("#") & ")"))`, false, object.BOOLEAN_OBJ},
 		{`matching("#", by=reCompile(reEsc("#")))`, true, object.BOOLEAN_OBJ},
 		{`matching("", by=reCompile(reEsc("#")))`, false, object.BOOLEAN_OBJ},
 	}
@@ -7895,7 +7895,7 @@ func TestSplitByNumber(t *testing.T) {
 		// Do something practical with it.
 		{`join(split("1234567890", delim=-3), delim=",")`, "1,234,567,890", object.STRING_OBJ},
 
-		{`"2x" ~ join(map(split("{{2 ^ 63 - 1 : 2x}}", delim=-8), by=fn(x) { "{{x:8(0)}}" }), delim="_")`,
+		{`"2x" & join(map(split("{{2 ^ 63 - 1 : 2x}}", delim=-8), by=fn(x) { "{{x:8(0)}}" }), delim="_")`,
 			"2x01111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111", object.STRING_OBJ},
 	}
 
@@ -8484,11 +8484,11 @@ func TestMapXFunction(t *testing.T) {
 			[]int{531, 131, 532, 132, 533, 133},
 			object.LIST_OBJ,
 		},
-		{`mapX(fw/a b/, fw/c d/, by=fn{~})`,
+		{`mapX(fw/a b/, fw/c d/, by=fn{&})`,
 			[]string{"ac", "ad", "bc", "bd"},
 			object.LIST_OBJ,
 		},
-		{`mapX(fw/a b/, fw/c d/, fw/e f/, by=fn(x, y, z) { x ~ y ~ z })`,
+		{`mapX(fw/a b/, fw/c d/, fw/e f/, by=fn(x, y, z) { x & y & z })`,
 			[]string{"ace", "acf", "ade", "adf", "bce", "bcf", "bde", "bdf"},
 			object.LIST_OBJ,
 		},
@@ -8538,41 +8538,41 @@ func TestParameterExpansion(t *testing.T) {
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...) { x ~ [a] }
+		{`val f = fn(a, x...) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...[2..3]) { x ~ [a] }
+		{`val f = fn(a, x...[2..3]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x ...[3]) { x ~ [a] }
+		{`val f = fn(a, x ...[3]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...[1..4]) { x ~ [a] }
+		{`val f = fn(a, x...[1..4]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...[0..4]) { x ~ [a] }
+		{`val f = fn(a, x...[0..4]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...[1..]) { x ~ [a] }
+		{`val f = fn(a, x...[1..]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
 
-		{`val f = fn(a, x...[0..]) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x & [a] }
 		  f(7, 21, 32, 45)`,
 			[]int{21, 32, 45, 7}, object.LIST_OBJ,
 		},
-		{`val f = fn(a, x...[0..]) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x & [a] }
 		  f(7)`,
 			[]int{7}, object.LIST_OBJ,
 		},
 
-		{`val f = fn(a, x...[0..]) { x ~ [a] }
+		{`val f = fn(a, x...[0..]) { x & [a] }
 		  f(7)`,
 			[]int{7}, object.LIST_OBJ,
 		},
@@ -9523,7 +9523,7 @@ func TestLateBinding(t *testing.T) {
 
 		// ordering with late bindings
 		{
-			input:        `_file ~ string(_args)`,
+			input:        `_file & string(_args)`,
 			expected:     "[]",
 			expectedType: object.STRING_OBJ,
 		},
@@ -9762,7 +9762,7 @@ func TestVariableScoping(t *testing.T) {
 		},
 
 		{
-			input:        `if x, y = submatch("abc", by=re/a(b)(c)/) { x ~ "!" ~ y }`,
+			input:        `if x, y = submatch("abc", by=re/a(b)(c)/) { x & "!" & y }`,
 			expected:     "b!c",
 			expectedType: object.STRING_OBJ,
 		},
@@ -9820,19 +9820,19 @@ func TestSemiDeepCopy(t *testing.T) {
 		// using append
 		{`var x = [1, 2, 3]
 		   var y = [x]
-		   x ~= [4, 5, 6, 7]
+		   x &= [4, 5, 6, 7]
 		   y[1]`,
 			[]int{1, 2, 3}, object.LIST_OBJ,
 		},
 		{`var x = "abcd "
 		   var y = [x]
-		   x ~= "you know"
+		   x &= "you know"
 		   y[1]`,
 			"abcd ", object.STRING_OBJ,
 		},
 		{`var x = {1: 123}
 		   var y = [x]
-		   x ~= {2: 456}
+		   x &= {2: 456}
 		   len y[1]`,
 			1, object.NUMBER_OBJ,
 		},
@@ -9970,7 +9970,7 @@ func TestAssignmentContexts(t *testing.T) {
 		{`for[x=1] i = 1 ; i < 7; i += 1 { x += 1 }`,
 			7, object.NUMBER_OBJ,
 		},
-		{`len for[x] i = 1 ; i < 7; i += 1 { x ~= [1] }`,
+		{`len for[x] i = 1 ; i < 7; i += 1 { x &= [1] }`,
 			6, object.NUMBER_OBJ,
 		},
 
@@ -9982,7 +9982,7 @@ func TestAssignmentContexts(t *testing.T) {
 		},
 		{`var x = ""
 		  if k, v = submatch("abcd:fish", by=re/(.+):(.+)/) {
-		  	x = k ~ "+" ~ v
+		  	x = k & "+" & v
 		  }
 		  x`,
 			"abcd+fish", object.STRING_OBJ,

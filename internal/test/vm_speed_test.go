@@ -125,14 +125,14 @@ func TestSpeedListAppend(t *testing.T) {
 		},
 		{
 			`len for i = 1; i < 100; i += 1 {
-				_for = _for ~ [i]
+				_for = _for & [i]
 			 }`,
 			99,
 			object.NUMBER_OBJ,
 		},
 		{
 			`len for i = 1; i < 100; i += 1 {
-				_for ~= [i]
+				_for &= [i]
 			 }`,
 			99,
 			object.NUMBER_OBJ,
@@ -153,14 +153,14 @@ func TestSpeedHashAppend(t *testing.T) {
 		},
 		{
 			`len for i = 1; i < 100; i += 1 {
-				_for = _for ~ {i: string(i)}
+				_for = _for & {i: string(i)}
 			 }`,
 			99,
 			object.NUMBER_OBJ,
 		},
 		{
 			`len for i = 1; i < 100; i += 1 {
-				_for ~= {i: string(i)}
+				_for &= {i: string(i)}
 			 }`,
 			99,
 			object.NUMBER_OBJ,
@@ -181,14 +181,14 @@ func TestSpeedStringAppend(t *testing.T) {
 		},
 		{
 			`len for[=""] i = 1; i < 100; i += 1 {
-				_for = _for ~ string(i)
+				_for = _for & string(i)
 			 }`,
 			189,
 			object.NUMBER_OBJ,
 		},
 		{
 			`len for[=""] i = 1; i < 100; i += 1 {
-				_for ~= string(i)
+				_for &= string(i)
 			 }`,
 			189,
 			object.NUMBER_OBJ,
@@ -209,14 +209,14 @@ func TestSpeedStringNumberAppend(t *testing.T) {
 		},
 		{
 			`len for[=""] i = 65; i < 98; i += 1 {
-				_for = _for ~ i
+				_for = _for & i
 			 }`,
 			33,
 			object.NUMBER_OBJ,
 		},
 		{
 			`len for[=""] i = 65; i < 98; i += 1 {
-				_for ~= i
+				_for &= i
 			 }`,
 			33,
 			object.NUMBER_OBJ,
