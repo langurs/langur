@@ -7362,6 +7362,16 @@ func TestTransliterate(t *testing.T) {
 		{`tran("cab", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "-.-. .- -...", object.STRING_OBJ},
 		{`tran("cabs", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "-.-. .- -... s", object.STRING_OBJ},
 		{`tran("zcabs2", with={"a": ".-", "b": "-...", "c": "-.-."}, delim=" ")`, "z -.-. .- -... s2", object.STRING_OBJ},
+
+		// with graphemes (default code points)
+		// graphemes rep. as lists of code points
+
+		// farmer with pitchfork: U+1F9D1 U+200D U+1F33E
+		// USA flag: U+1F1FA U+1F1F8
+		// Finland flag: U+1F1EB U+1F1EE
+
+		{`tran("\U0001F9D1\u200D\U0001F33E now", by=[[16x1F9D1, 16x200D, 16x1F33E], "B", "C"], with=["a", "b", "c"])`, "a now", object.STRING_OBJ},
+		{`tran("\U0001F9D1\u200D\U0001F33E now", by=["A", [16x1F9D1, 16x200D, 16x1F33E], "C"], with=["a", [16x1F1EB, 16x1F1EE], "c"])`, "\U0001F1EB\U0001F1EE now", object.STRING_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
