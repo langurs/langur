@@ -76,6 +76,8 @@ var bi_writeln = &object.BuiltIn{
 			textMode = args[1].Copy()
 		}
 
+		// WARN: Calling a built-in directly has the potential to violate its signature.
+		// Using Process.callback() is safer since it will check the arguments against the signature.
 		return bi_write.Fn.(BuiltInFunction)(pr,
 			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
 			textMode)
@@ -143,6 +145,8 @@ var bi_writelnErr = &object.BuiltIn{
 			textMode = args[1].Copy()
 		}
 
+		// WARN: Calling a built-in directly has the potential to violate its signature.
+		// Using Process.callback() is safer since it will check the arguments against the signature.
 		return bi_writeErr.Fn.(BuiltInFunction)(pr,
 			&object.List{Elements: append(args[0].(*object.List).Elements, newLine)},
 			textMode)
