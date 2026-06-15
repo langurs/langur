@@ -250,6 +250,10 @@ func (p *Parser) ParseProgram() (program *ast.Program, err error) {
 
 	program.VarNamesUsed = p.identifiersUsed
 
+	if p.Errs != nil {
+		err = p.Errs[0]
+	}
+
 	return
 }
 

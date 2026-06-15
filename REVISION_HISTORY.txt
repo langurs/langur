@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.21.7
 - changed append operator to use & token and deprecated use of ~ (tilde)
+- fix: parser failing to return error when it should
 - changed "by name" parameters to "keyword" parameters
 
 
