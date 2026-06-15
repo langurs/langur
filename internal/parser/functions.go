@@ -55,7 +55,7 @@ func (p *Parser) parseFunction() ast.Node {
 			return p.finishSelfReferenceCall()
 		}
 
-		lit.PositionalParameters, lit.ByNameParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
+		lit.PositionalParameters, lit.KeywordParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
 
 	} else {
 		// fn token by itself
@@ -90,17 +90,17 @@ func (p *Parser) parseFunction() ast.Node {
 }
 
 func (p *Parser) parseFunctionParameters(until []token.Type) (
-	positional, byname []ast.Node) {
+	positional, keyword []ast.Node) {
 
 	for !token.InTypeSlice(p.tok.Type, until) {
-		param, isByName := p.parseParameter()
+		param, isKeyword := p.parseParameter()
 
-		if isByName {
-			byname = append(byname, param)
+		if isKeyword {
+			keyword = append(keyword, param)
 
 		} else {
-			if len(byname) != 0 {
-				p.addError("Cannot have positional parameter after parameter by name")
+			if len(keyword) != 0 {
+				p.addError("Cannot have positional parameter after keyword parameter")
 			}
 			positional = append(positional, param)
 		}
@@ -121,7 +121,7 @@ func (p *Parser) parseFunctionParameters(until []token.Type) (
 	return
 }
 
-func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
+func (p *Parser) parseParameter() (param ast.Node, isKeyword bool) {
 	// potential parts of parameter
 	// 1. var keyword for mutable parameter
 	// 2. internal name (required)
@@ -145,7 +145,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 
 	switch p.tok.Type {
 	case token.IDENT:
-		param, isByName, expansion, vtype, value = p.parseIdentForParameter()
+		param, isKeyword, expansion, vtype, value = p.parseIdentForParameter()
 		if value != nil {
 			param = ast.MakeAssignmentExpression(param, value, false)
 			return
@@ -154,7 +154,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	case token.VAR:
 		mutable := true
 		p.advanceToken()
-		param, isByName, expansion, vtype, value = p.parseIdentForParameter()
+		param, isKeyword, expansion, vtype, value = p.parseIdentForParameter()
 
 		if value == nil {
 			param = &ast.DeclarationNode{
@@ -174,13 +174,13 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	if expansion != nil {
 		if value != nil {
 			p.addError("Unexpected assignment on parameter expansion")		
-		} else if isByName {
+		} else if isKeyword {
 			p.addError("Unexpected alias on parameter expansion")
 		}
 		if vtype != nil {
 			p.addError("Unexpected explicit type on parameter expansion")
 		}
-		
+
 		expansion.Continuation = param
 		param = expansion
 	}
@@ -188,7 +188,7 @@ func (p *Parser) parseParameter() (param ast.Node, isByName bool) {
 	return
 }
 
-func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expansion *ast.ExpansionNode, vtype, value ast.Node) {
+func (p *Parser) parseIdentForParameter() (param ast.Node, isKeyword bool, expansion *ast.ExpansionNode, vtype, value ast.Node) {
 	var alias ast.Node
 	var aliasTok token.Token
 
@@ -196,7 +196,7 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 
 	if p.tok.Type == token.AS {
 		// external name specified after as keyword
-		isByName = true
+		isKeyword = true
 		aliasTok = p.tok
 		p.advanceToken() // past as keyword
 		var ok bool
@@ -228,7 +228,7 @@ func (p *Parser) parseIdentForParameter() (param ast.Node, isByName bool, expans
 
 	if p.tok.Type == token.ASSIGN {
 		// default value
-		isByName = true
+		isKeyword = true
 		p.advanceToken()
 		value = p.parseExpression(precedence_LOWEST)
 	}
@@ -353,9 +353,9 @@ func (p *Parser) parsePossibleUnboundedCall(ident ast.Node) (ast.Node, bool) {
 				token.EndUnboundedArgumentList, token.COMMA, true, false, true)
 
 			var err error
-			expr.PositionalArgs, expr.ByNameArgs, err = ast.SplitArgumentSliceToPositionalAndByName(args)
+			expr.PositionalArgs, expr.KeywordArgs, err = ast.SplitArgumentSliceToPositionalAndKeyword(args)
 			if err != nil {
-				p.addError("Error determining positional arguments and by name arguments: " + err.Error())
+				p.addError("Error determining positional arguments and keyword arguments: " + err.Error())
 			}
 
 			return expr, true
@@ -382,9 +382,9 @@ func (p *Parser) parseParenthesizedCallExpression(fn ast.Node) ast.Node {
 	// passes closing parenthesis
 
 	var err error
-	expr.PositionalArgs, expr.ByNameArgs, err = ast.SplitArgumentSliceToPositionalAndByName(args)
+	expr.PositionalArgs, expr.KeywordArgs, err = ast.SplitArgumentSliceToPositionalAndKeyword(args)
 	if err != nil {
-		p.addError("Error determining positional arguments and by name arguments: " + err.Error())
+		p.addError("Error determining positional arguments and keyword arguments: " + err.Error())
 	}
 
 	return expr

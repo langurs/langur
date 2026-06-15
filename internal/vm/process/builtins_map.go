@@ -20,7 +20,7 @@ var bi_map = &object.BuiltIn{
 		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
@@ -254,7 +254,7 @@ var bi_mapX = &object.BuiltIn{
 		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},

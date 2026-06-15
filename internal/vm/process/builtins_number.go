@@ -502,7 +502,7 @@ var bi_round = &object.BuiltIn{
 			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "places", DefaultValue: object.Zero, Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 			object.Parameter{ExternalName: "mode"},
@@ -563,7 +563,7 @@ var bi_trunc = &object.BuiltIn{
 			object.Parameter{ExternalName: "num", Type: object.NUMBER_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "places", DefaultValue: object.Zero, Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "zeroes", DefaultValue: object.TRUE},
 		},

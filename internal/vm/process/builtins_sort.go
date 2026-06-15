@@ -18,7 +18,7 @@ var bi_sort = &object.BuiltIn{
 			object.Parameter{ExternalName: "over"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},

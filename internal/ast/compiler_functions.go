@@ -50,7 +50,7 @@ func (c *Compiler) compileFunctionNode(
 
 	switch sig.Name {
 	case common.MainFnName:
-		if len(node.PositionalParameters) != 0 || len(node.ByNameParameters) != 0 {
+		if len(node.PositionalParameters) != 0 || len(node.KeywordParameters) != 0 {
 			err = c.makeErr(node, fmt.Sprintf("Function %s() cannot have parameters", common.MainFnName))
 			return
 		}
@@ -161,7 +161,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 	}
 
 	// CHECK MAX COUNTS
-	cnt := len(node.PositionalParameters) - len(node.ByNameParameters)
+	cnt := len(node.PositionalParameters) - len(node.KeywordParameters)
 	maxExpansionMax := common.ArgCountMax - cnt + 1
 
 	if sig.ParamExpansionMax == -1 {
@@ -176,17 +176,17 @@ func (c *Compiler) compileFunctionNodeParameters(
 		return
 	}
 
-	// PARAMETERS BY NAME
+	// KEYWORD PARAMETERS
 	var externalNames []string
 
-	for i, p := range node.ByNameParameters {
+	for i, p := range node.KeywordParameters {
 		var defaultIns opcode.InsPackage
 		param, defaultIns, _, _, err = c.compileParameter(p, i+1, false)
 		if err != nil {
 			return
 		}
 
-		sig.ParamByName = append(sig.ParamByName, param)
+		sig.ParamKeyword = append(sig.ParamKeyword, param)
 
 		if len(defaultIns.Instructions) != 0 {
 			name := c.constantIns(object.NewString(param.ExternalName))
@@ -199,7 +199,7 @@ func (c *Compiler) compileFunctionNodeParameters(
 		// Therefore, we check for duplicates to prevent confusion and chaos.
 		if param.ExternalName != "" {
 			if str.IsInSlice(param.ExternalName, externalNames) {
-				err = c.makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for parameters by name", str.ReformatInput(param.ExternalName)))
+				err = c.makeErr(node, fmt.Sprintf("Duplicate external name declared (%s) for keyword parameter", str.ReformatInput(param.ExternalName)))
 				return
 			}
 			externalNames = append(externalNames, param.ExternalName)
@@ -229,7 +229,7 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 			system = assign.System
 
 		case *AssignmentNode:
-			param, defaultIns, err = c.assessParameterByName(assign)
+			param, defaultIns, err = c.assessKeywordParameter(assign)
 			if err != nil {
 				err = c.makeErr(node, err.Error())
 				return
@@ -243,18 +243,18 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 		param.Mutable = p.Mutable
 
 	case *InfixExpressionNode:
-		// required parameter by name
+		// required keyword parameter
 		param = object.Parameter{Required: true}
 
 		if p.Operator.Type == token.AS {
 			param.InternalName = p.Left.(*IdentNode).Name
 			param.ExternalName = p.Right.(*IdentNode).Name
 		} else {
-			err = c.makeErr(p, "Expected identifier or identifier/alias for parameter by name")
+			err = c.makeErr(p, "Expected identifier or identifier/alias for keyword parameter")
 		}
 
 	case *AssignmentNode:
-		param, defaultIns, err = c.assessParameterByName(p)
+		param, defaultIns, err = c.assessKeywordParameter(p)
 		if err != nil {
 			err = c.makeErr(node, err.Error())
 			return
@@ -351,7 +351,7 @@ func (c *Compiler) compileParameter(node Node, pnum int, lastPositional bool) (
 	}
 
 	// DEFINE IN SYMBOL TABLE
-	// An external name (for a parameter by name) may shadow a keyword ...
+	// An external name (for a keyword parameter) may shadow a keyword ...
 	// since the context makes the meaning clear, ...
 	// but an internal name (used within a compiled function) may not.
 
@@ -404,11 +404,11 @@ func addParameterType(param *object.Parameter, pnode Node) error {
 	}
 }
 
-func (c *Compiler) assessParameterByName(assign *AssignmentNode) (
+func (c *Compiler) assessKeywordParameter(assign *AssignmentNode) (
 	param object.Parameter, defaultIns opcode.InsPackage, err error) {
 
 	if len(assign.Identifiers) != 1 {
-		err = c.makeErr(assign, "Expected 1 identifier and 1 value for parameter by name assignment")
+		err = c.makeErr(assign, "Expected 1 identifier and 1 value for keyword parameter assignment")
 		return
 	}
 
@@ -423,12 +423,12 @@ func (c *Compiler) assessParameterByName(assign *AssignmentNode) (
 			param.InternalName = expr.Left.(*IdentNode).Name
 			param.ExternalName = expr.Right.(*IdentNode).Name
 		} else {
-			err = c.makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
+			err = c.makeErr(assign, "Expected identifier or identifier/alias for keyword parameter")
 			return
 		}
 
 	default:
-		err = c.makeErr(assign, "Expected identifier or identifier/alias for parameter by name")
+		err = c.makeErr(assign, "Expected identifier or identifier/alias for keyword parameter")
 		return
 	}
 
@@ -443,7 +443,7 @@ func (c *Compiler) assessParameterByName(assign *AssignmentNode) (
 	}
 	if param.DefaultValue == nil {
 		// default did not evaluate at compile-time
-		// set to no value for now to indicate an optional parameter (not a "required by name" parameter)
+		// set to no value for now to indicate an optional parameter (not a required keyword parameter)
 		// instructions to be evaluated at run-time
 		param.DefaultValue = object.NONE
 	}

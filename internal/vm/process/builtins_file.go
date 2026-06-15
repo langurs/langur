@@ -45,7 +45,7 @@ var bi_writefile = &object.BuiltIn{
 			object.Parameter{ExternalName: "file", Type: object.STRING_OBJ},
 			object.Parameter{ExternalName: "contents", Type: object.STRING_OBJ},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "perm", Type: object.NUMBER_OBJ},
 		},
 	},
@@ -86,7 +86,7 @@ var bi_appendfile = &object.BuiltIn{
 			object.Parameter{ExternalName: "file", Type: object.STRING_OBJ},
 			object.Parameter{ExternalName: "contents", Type: object.STRING_OBJ},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "perm", Type: object.NUMBER_OBJ},
 		},
 	},

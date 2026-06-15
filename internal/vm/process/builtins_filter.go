@@ -17,7 +17,7 @@ var bi_filter = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},
@@ -127,7 +127,7 @@ var bi_count = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},

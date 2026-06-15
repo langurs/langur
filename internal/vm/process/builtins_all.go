@@ -15,7 +15,7 @@ var bi_all = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},
@@ -127,7 +127,7 @@ var bi_any = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},

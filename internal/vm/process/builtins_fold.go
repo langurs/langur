@@ -20,7 +20,7 @@ var bi_fold = &object.BuiltIn{
 		ParamExpansionMin: 1,
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "init"},
 		},
@@ -188,7 +188,7 @@ var bi_zip = &object.BuiltIn{
 		ParamExpansionMin: 2,
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},

@@ -10,12 +10,12 @@ import (
 
 // call from VM (opcodes)
 func (pr *Process) executeFunctionCall(fr *frame,
-	positionalCount, bynameCount int, argExpansion bool) (
+	positionalCount, keywordCount int, argExpansion bool) (
 	fnReturn object.Object, err error) {
 
 	// having put function to call onto stack after arguments, must pop it first
 	fn := pr.pop()
-	byname := pr.popMultiple(bynameCount)
+	keyword := pr.popMultiple(keywordCount)
 	positional := pr.popMultiple(positionalCount)
 
 	if argExpansion {
@@ -33,21 +33,21 @@ func (pr *Process) executeFunctionCall(fr *frame,
 	case *object.CompiledCode:
 		if !fn.HasImpureEffects() &&
 			(object.SliceHasImpureEffects(positional...) ||
-				object.SliceHasImpureEffects(byname...)) {
+				object.SliceHasImpureEffects(keyword...)) {
 
 			err = fmt.Errorf("Cannot pass value with impure effects as argument to function not declared as having impure effects")
 			return
 		}
 
-		fnReturn, _, err = pr.runCompiledCode(fn, fr, positional, byname, nil)
+		fnReturn, _, err = pr.runCompiledCode(fn, fr, positional, keyword, nil)
 
 	case *object.BuiltIn:
 		if object.SliceHasImpureEffects(positional...) ||
-			object.SliceHasImpureEffects(byname...) {
+			object.SliceHasImpureEffects(keyword...) {
 			return nil, fmt.Errorf("Cannot pass impure values as arguments to built-in functions")
 		}
 
-		fnReturn, err = pr.callBuiltIn(fn, positional, byname)
+		fnReturn, err = pr.callBuiltIn(fn, positional, keyword)
 
 	default:
 		err = fmt.Errorf("Call operation on non-function (%s)", fn.TypeString())
@@ -57,7 +57,7 @@ func (pr *Process) executeFunctionCall(fr *frame,
 }
 
 // callback from built-in functions
-// TODO: include params by name for callback
+// TODO: include keyword paramaters for callback
 func (pr *Process) callback(
 	fn object.Object,
 	positional ...object.Object) (
@@ -80,12 +80,12 @@ func (pr *Process) callback(
 
 func (pr *Process) runCompiledCode(
 	code *object.CompiledCode, baseFr *frame,
-	positional, byname, late []object.Object) (
+	positional, keyword, late []object.Object) (
 	fnReturn object.Object, relay *jumpRelay, err error) {
 
 	var args []object.Object
 	if code.FnSignature != nil {
-		args, err = reformArgumentsBySignature(positional, byname, code.FnSignature)
+		args, err = reformArgumentsBySignature(positional, keyword, code.FnSignature)
 		if err != nil {
 			return
 		}
@@ -98,7 +98,7 @@ func (pr *Process) runCompiledCode(
 	return
 }
 
-func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.Object) (
+func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, keyword []object.Object) (
 	result object.Object, err error) {
 
 	defer func() {
@@ -110,7 +110,7 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 	}()
 
 	var args []object.Object
-	args, err = reformArgumentsBySignature(positional, byname, bi.FnSignature)
+	args, err = reformArgumentsBySignature(positional, keyword, bi.FnSignature)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, byname []object.O
 }
 
 func reformArgumentsBySignature(
-	positional, byname []object.Object, sig *object.Signature) (
+	positional, keyword []object.Object, sig *object.Signature) (
 	args []object.Object, err error) {
 
 	// do parameter compression if applicable
@@ -167,25 +167,25 @@ func reformArgumentsBySignature(
 		}
 	}
 
-	if byname == nil && sig.ParamByName == nil {
-		// no arguments passed by name and none expected
+	if keyword == nil && sig.ParamKeyword == nil {
+		// no keyword arguments passed and none expected
 		args = positional
 		return
 	}
 
-	// ---- now to work on parameters by name ----
-	args = make([]object.Object, len(positional)+len(sig.ParamByName))
+	// ---- now to work on keyword parameters ----
+	args = make([]object.Object, len(positional)+len(sig.ParamKeyword))
 	copy(args, positional)
 
-	// parameters by name always following positional parameters
+	// keyword parameters always following positional parameters
 	argPtr := len(positional)
 
-	// check / pick up parameter by name values in order listed in signature
+	// check / pick up keyword parameter values in order listed in signature
 	// order relevant, as they will be picked up in order by the function
-	for _, param := range sig.ParamByName {
+	for _, param := range sig.ParamKeyword {
 		found := false
-		for i := range byname {
-			nv := byname[i].(*object.NameValue)
+		for i := range keyword {
+			nv := keyword[i].(*object.NameValue)
 			if param.ExternalName == nv.Name {
 				found = true
 				// use passed optional value from argument
@@ -197,7 +197,7 @@ func reformArgumentsBySignature(
 		if !found {
 			if param.Required {
 				err = object.NewException(object.ERR_ARGUMENTS, sig.Name,
-					fmt.Sprintf("Required parameter by name (%s) not passed", param.ExternalName))
+					fmt.Sprintf("Required keyword parameter (%s) not passed", param.ExternalName))
 				return
 			}
 
@@ -209,7 +209,7 @@ func reformArgumentsBySignature(
 			// Compiled functions will use another means.
 		}
 
-		// check parameters by name for adherance to explicit typing (in the signature).
+		// check keyword parameters for adherance to explicit typing (in the signature).
 		if found && param.Type != 0 {
 			if param.Type != args[argPtr].Type() {
 				argTypeName := object.TypeToTypeName(args[argPtr].Type())
@@ -230,11 +230,11 @@ func reformArgumentsBySignature(
 	}
 
 	// check if any invalid optional arguments passed
-	for i := range byname {
-		nv := byname[i].(*object.NameValue)
+	for i := range keyword {
+		nv := keyword[i].(*object.NameValue)
 
 		found := false
-		for _, param := range sig.ParamByName {
+		for _, param := range sig.ParamKeyword {
 			if param.ExternalName == nv.Name {
 				found = true
 				break

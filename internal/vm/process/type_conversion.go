@@ -18,7 +18,7 @@ var bi_string = &object.BuiltIn{
 			object.Parameter{ExternalName: "from"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "fmt"},
 		},
 	},
@@ -65,7 +65,7 @@ var bi_number = &object.BuiltIn{
 			object.Parameter{ExternalName: "from"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "fmt"},
 		},
 	},
@@ -205,7 +205,7 @@ var bi_datetime = &object.BuiltIn{
 			object.Parameter{ExternalName: "from"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "fmt"},
 		},
 	},

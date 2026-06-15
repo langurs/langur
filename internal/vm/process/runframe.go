@@ -533,20 +533,20 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 
 		case opcode.OpCall:
 			positionalCount := int(ins[ip+1])
-			bynameCount := int(ins[ip+2])
+			keywordCount := int(ins[ip+2])
 			ip += 2
 
-			result, err = pr.executeFunctionCall(fr, positionalCount, bynameCount, false)
+			result, err = pr.executeFunctionCall(fr, positionalCount, keywordCount, false)
 			if err == nil {
 				err = pr.push(result)
 			}
 
 		case opcode.OpCallWithExpansion:
 			positionalCount := int(ins[ip+1])
-			bynameCount := int(ins[ip+2])
+			keywordCount := int(ins[ip+2])
 			ip += 2
 
-			result, err = pr.executeFunctionCall(fr, positionalCount, bynameCount, true)
+			result, err = pr.executeFunctionCall(fr, positionalCount, keywordCount, true)
 			if err == nil {
 				err = pr.push(result)
 			}

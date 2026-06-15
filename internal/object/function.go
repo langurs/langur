@@ -116,8 +116,8 @@ func (cf *CompiledCode) ReplString() string {
 		if len(cf.FnSignature.ParamPositional) != 0 {
 			out.WriteString(fmt.Sprintf("; Positional Parameters: %s", cf.FnSignature.MinMaxString()))
 		}
-		if len(cf.FnSignature.ParamByName) != 0 {
-			out.WriteString(fmt.Sprintf("; Parameters By Name: %d", len(cf.FnSignature.ParamByName)))
+		if len(cf.FnSignature.ParamKeyword) != 0 {
+			out.WriteString(fmt.Sprintf("; Keyword Parameters: %d", len(cf.FnSignature.ParamKeyword)))
 		}
 
 	} else {

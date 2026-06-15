@@ -18,14 +18,14 @@ type Signature struct {
 	ParamPositional   []Parameter
 	ParamExpansionMin int
 	ParamExpansionMax int
-	ParamByName       []Parameter
+	ParamKeyword       []Parameter
 	ReturnType        ObjectType
 }
 
 func (s *Signature) SetParamDefault(name string, defaultValue Object) error {
-	for i := range s.ParamByName {
-		if s.ParamByName[i].ExternalName == name {
-			s.ParamByName[i].DefaultValue = defaultValue
+	for i := range s.ParamKeyword {
+		if s.ParamKeyword[i].ExternalName == name {
+			s.ParamKeyword[i].DefaultValue = defaultValue
 			return nil
 		}
 	}
@@ -74,7 +74,7 @@ func (s *Signature) Copy() *Signature {
 		ParamPositional:   CopyParamList(s.ParamPositional),
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
-		ParamByName:       CopyParamList(s.ParamByName),
+		ParamKeyword:       CopyParamList(s.ParamKeyword),
 		ReturnType:        s.ReturnType.Copy(),
 	}
 }
@@ -122,15 +122,15 @@ func (s *Signature) String() string {
 
 		sb.WriteString(p.String())
 
-		if !lastPositional || len(s.ParamByName) != 0 {
+		if !lastPositional || len(s.ParamKeyword) != 0 {
 			sb.WriteString(", ")
 		}
 	}
 
-	for i, p := range s.ParamByName {
-		lastByName := i == len(s.ParamByName)-1
+	for i, p := range s.ParamKeyword {
+		lastKeyword := i == len(s.ParamKeyword)-1
 		sb.WriteString(p.String())
-		if !lastByName {
+		if !lastKeyword {
 			sb.WriteString(", ")
 		}
 	}
@@ -147,7 +147,7 @@ func (s *Signature) String() string {
 
 type Parameter struct {
 	InternalName string // variable name within function; may change without affecting API
-	ExternalName string // API / call name for parameter by name
+	ExternalName string // API / call name for keyword parameter
 	Mutable      bool
 	Type         ObjectType
 
@@ -155,7 +155,7 @@ type Parameter struct {
 	// sometimes determined at compile-time, sometimes at run-time when function is defined
 	DefaultValue Object
 
-	// for required by name parameter; not used with positional parameters, as they're always required
+	// for required keyword parameter; not used with positional parameters, as they're always required
 	Required bool
 }
 
@@ -178,12 +178,12 @@ func (p Parameter) String() string {
 	}
 
 	if p.Required {
-		// required by name
+		// required keyword parameter
 		if p.InternalName == "" {
-			// required by name parameter on built-in function
+			// required keyword parameter on built-in function
 			sb.WriteString(p.ExternalName)
 		} else {
-			// required by name parameter on compiled function
+			// required keyword parameter on compiled function
 			sb.WriteString(p.InternalName)
 		}
 		sb.WriteString(" as ")

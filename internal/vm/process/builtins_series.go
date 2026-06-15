@@ -16,7 +16,7 @@ var bi_series = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "from"},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "inc", Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "asconly", DefaultValue: object.FALSE, Type: object.BOOLEAN_OBJ},
 		},

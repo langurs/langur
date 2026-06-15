@@ -15,7 +15,7 @@ var bi_cd = &object.BuiltIn{
 		Description:   "current directory/change directory: may change the current directory of the script; returns present working directory; has no effect on parent processes",
 		ImpureEffects: true,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "path", Type: object.STRING_OBJ},
 		},
 	},

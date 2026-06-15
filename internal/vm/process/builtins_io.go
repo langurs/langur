@@ -26,7 +26,7 @@ var bi_write = &object.BuiltIn{
 		},
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
 		},
 	},
@@ -66,7 +66,7 @@ var bi_writeln = &object.BuiltIn{
 		},
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
 		},
 	},
@@ -95,7 +95,7 @@ var bi_writeErr = &object.BuiltIn{
 		},
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
 		},
 	},
@@ -135,7 +135,7 @@ var bi_writelnErr = &object.BuiltIn{
 		},
 		ParamExpansionMax: -1,
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
 		},
 	},
@@ -159,7 +159,7 @@ var bi_read = &object.BuiltIn{
 		ImpureEffects: true,
 		Description:   "reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "prompt", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "validation"},
 			object.Parameter{ExternalName: "errmsg", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},

@@ -20,7 +20,7 @@ var bi_less = &object.BuiltIn{
 			object.Parameter{ExternalName: "over"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "of"},
 		},
 	},
@@ -210,7 +210,7 @@ var bi_rotate = &object.BuiltIn{
 			object.Parameter{ExternalName: "over"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "distance", Type: object.NUMBER_OBJ},
 			object.Parameter{ExternalName: "range", Type: object.RANGE_OBJ},
 		},

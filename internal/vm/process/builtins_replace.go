@@ -24,7 +24,7 @@ var bi_replace = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "with", DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
@@ -182,7 +182,7 @@ var bi_tran = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 			object.Parameter{ExternalName: "with", Required: true},
 			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},

@@ -427,29 +427,27 @@ func MakeNumberFromString(tok token.Token, s string) *NumberNode {
 	return &NumberNode{Token: tok, Base: 10, Value: s}
 }
 
-const bynameArgsMustFollowPositionalArgs = true
-
-func SplitArgumentSliceToPositionalAndByName(args []Node) (
-	positional, byname []Node, err error) {
+func SplitArgumentSliceToPositionalAndKeyword(args []Node) (
+	positional, keyword []Node, err error) {
 
 	for _, arg := range args {
-		bynameArg := false
+		keywordArg := false
 		switch a := arg.(type) {
 		case *DeclarationNode:
 			switch a.Assignment.(type) {
 			case *AssignmentNode:
-				bynameArg = true
+				keywordArg = true
 			}
 
 		case *AssignmentNode:
-			bynameArg = true
+			keywordArg = true
 		}
 
-		if bynameArg {
-			byname = append(byname, arg)
+		if keywordArg {
+			keyword = append(keyword, arg)
 
-		} else if bynameArgsMustFollowPositionalArgs && len(byname) != 0 {
-			err = fmt.Errorf("Positional arguments must precede arguments by name")
+		} else if len(keyword) != 0 {
+			err = fmt.Errorf("Positional arguments must precede keyword arguments")
 			return
 
 		} else {

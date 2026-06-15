@@ -144,7 +144,7 @@ var bi_join = &object.BuiltIn{
 			object.Parameter{ExternalName: "list", Type: object.LIST_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "delim", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 		},
 	},

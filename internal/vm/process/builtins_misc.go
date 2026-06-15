@@ -20,7 +20,7 @@ var bi_exit = &object.BuiltIn{
 			object.Parameter{ExternalName: "code"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "msg", DefaultValue: object.ZeroLengthString()},
 		},
 	},
@@ -79,7 +79,7 @@ var bi_nn = &object.BuiltIn{
 			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "alt"},
 		},
 	},

@@ -120,7 +120,7 @@ var bi_s2cp = &object.BuiltIn{
 			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "of"},
 			object.Parameter{ExternalName: "alt"},
 		},
@@ -195,7 +195,7 @@ var bi_s2s = &object.BuiltIn{
 			object.Parameter{ExternalName: "string", Type: object.STRING_OBJ},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "of"},
 			object.Parameter{ExternalName: "alt"},
 		},

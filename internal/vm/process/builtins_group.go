@@ -16,7 +16,7 @@ var bi_group = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by"},
 		},
 	},
@@ -93,7 +93,7 @@ var bi_groupby = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Type: object.COMPILED_CODE_OBJ},
 		},
 	},
@@ -133,7 +133,7 @@ var bi_groupbyH = &object.BuiltIn{
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over", Type: object.LIST_OBJ},
 		},
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Type: object.COMPILED_CODE_OBJ, Required: true},
 		},
 	},

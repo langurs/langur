@@ -576,7 +576,7 @@ type CallNode struct {
 	Token          token.Token
 	Function       Node // Identifier or Function Literal
 	PositionalArgs []Node
-	ByNameArgs     []Node
+	KeywordArgs    []Node
 }
 
 func (fc *CallNode) Search(parent Node, sc *searchCriteria) (found bool) {
@@ -588,7 +588,7 @@ func (fc *CallNode) Search(parent Node, sc *searchCriteria) (found bool) {
 	}
 	return sc.searchNodes(fc, fc.Function) ||
 		sc.searchNodeSlice(fc, fc.PositionalArgs) ||
-		sc.searchNodeSlice(fc, fc.ByNameArgs)
+		sc.searchNodeSlice(fc, fc.KeywordArgs)
 }
 
 func (fc *CallNode) expressionNode() {}
@@ -598,7 +598,7 @@ func (fc *CallNode) Copy() Node {
 		Token:          fc.Token.Copy(),
 		Function:       copyOrNil(fc.Function),
 		PositionalArgs: CopyNodeSlice(fc.PositionalArgs),
-		ByNameArgs:     CopyNodeSlice(fc.ByNameArgs),
+		KeywordArgs:    CopyNodeSlice(fc.KeywordArgs),
 	}
 }
 
@@ -644,7 +644,7 @@ func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 
 	var externalNames []string
 
-	for _, arg := range fc.ByNameArgs {
+	for _, arg := range fc.KeywordArgs {
 		externalName := ""
 
 		if assign, ok := arg.(*AssignmentNode); ok {
@@ -656,7 +656,7 @@ func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 				return
 			}
 
-			// compiling to name/value object (internally used for argument by name)
+			// compiling to name/value object (internally used for keyword argument)
 			var value opcode.InsPackage
 			value, err = assign.Values[0].Compile(c)
 			if err != nil {
@@ -667,7 +667,7 @@ func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 			// check for duplicate external (argument) names
 			if externalName != "" {
 				if str.IsInSlice(externalName, externalNames) {
-					err = c.makeErr(arg, fmt.Sprintf("Duplicate of argument by name (%s)", str.ReformatInput(externalName)))
+					err = c.makeErr(arg, fmt.Sprintf("Duplicate of keyword argument (%s)", str.ReformatInput(externalName)))
 					return
 				}
 				externalNames = append(externalNames, externalName)
@@ -675,7 +675,7 @@ func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 
 		} else {
 			// not an assignment node
-			err = c.makeErr(arg, fmt.Sprintf("Expected assignment node for argument by name (%s)", str.ReformatInput(externalName)))
+			err = c.makeErr(arg, fmt.Sprintf("Expected assignment node for keyword argument (%s)", str.ReformatInput(externalName)))
 			return
 		}
 	}
@@ -687,7 +687,7 @@ func (fc *CallNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	if hasExpansion {
 		op = opcode.OpCallWithExpansion
 	}
-	pkg = pkg.Append(opcode.MakePkg(fc.Token, op, len(fc.PositionalArgs), len(fc.ByNameArgs)))
+	pkg = pkg.Append(opcode.MakePkg(fc.Token, op, len(fc.PositionalArgs), len(fc.KeywordArgs)))
 
 	return
 }
@@ -703,12 +703,12 @@ func (fc *CallNode) TokenRepresentation() string {
 			out.WriteString(", ")
 		}
 	}
-	if len(fc.PositionalArgs) != 0 && len(fc.ByNameArgs) != 0 {
+	if len(fc.PositionalArgs) != 0 && len(fc.KeywordArgs) != 0 {
 		out.WriteString(", ")
 	}
-	for i, a := range fc.ByNameArgs {
+	for i, a := range fc.KeywordArgs {
 		out.WriteString(tokenRepOrNil(a))
-		if i < len(fc.ByNameArgs)-1 {
+		if i < len(fc.KeywordArgs)-1 {
 			out.WriteString(", ")
 		}
 	}
@@ -730,12 +730,12 @@ func (fc *CallNode) String() string {
 			out.WriteString(", ")
 		}
 	}
-	if len(fc.PositionalArgs) != 0 && len(fc.ByNameArgs) != 0 {
+	if len(fc.PositionalArgs) != 0 && len(fc.KeywordArgs) != 0 {
 		out.WriteString(", ")
 	}
-	for i, a := range fc.ByNameArgs {
+	for i, a := range fc.KeywordArgs {
 		out.WriteString(stringOrNil(a))
-		if i < len(fc.ByNameArgs)-1 {
+		if i < len(fc.KeywordArgs)-1 {
 			out.WriteString(", ")
 		}
 	}
@@ -755,7 +755,7 @@ type FunctionNode struct {
 	ReturnType           Node // nil for no explicit return type
 	Name                 string
 	PositionalParameters []Node
-	ByNameParameters     []Node
+	KeywordParameters     []Node
 	Body                 Node
 	ImpureEffects        bool
 }
@@ -769,7 +769,7 @@ func (f *FunctionNode) Search(parent Node, sc *searchCriteria) (found bool) {
 	}
 	return sc.searchNodes(f, f.Body, f.ReturnType) ||
 		sc.searchNodeSlice(f, f.PositionalParameters) ||
-		sc.searchNodeSlice(f, f.ByNameParameters)
+		sc.searchNodeSlice(f, f.KeywordParameters)
 }
 
 func (f *FunctionNode) expressionNode() {}
@@ -780,7 +780,7 @@ func (f *FunctionNode) Copy() Node {
 		ReturnType:           copyOrNil(f.ReturnType),
 		Name:                 f.Name,
 		PositionalParameters: CopyNodeSlice(f.PositionalParameters),
-		ByNameParameters:     CopyNodeSlice(f.ByNameParameters),
+		KeywordParameters:     CopyNodeSlice(f.KeywordParameters),
 		Body:                 copyOrNil(f.Body),
 		ImpureEffects:        f.ImpureEffects,
 	}
@@ -799,7 +799,7 @@ func (f *FunctionNode) TokenRepresentation() string {
 	for _, p := range f.PositionalParameters {
 		params = append(params, tokenRepOrNil(p))
 	}
-	for _, p := range f.ByNameParameters {
+	for _, p := range f.KeywordParameters {
 		params = append(params, tokenRepOrNil(p))
 	}
 
@@ -829,9 +829,9 @@ func (f *FunctionNode) String() string {
 	for _, p := range f.PositionalParameters {
 		positional = append(positional, stringOrNil(p))
 	}
-	byname := []string{}
-	for _, p := range f.ByNameParameters {
-		byname = append(byname, stringOrNil(p))
+	keyword := []string{}
+	for _, p := range f.KeywordParameters {
+		keyword = append(keyword, stringOrNil(p))
 	}
 
 	var sb strings.Builder
@@ -848,13 +848,13 @@ func (f *FunctionNode) String() string {
 		sb.WriteString("Positional: ")
 	}
 	sb.WriteString(strings.Join(positional, ", "))
-	if len(positional) != 0 && len(byname) != 0 {
+	if len(positional) != 0 && len(keyword) != 0 {
 		sb.WriteString(", ")
 	}
-	if len(byname) != 0 {
-		sb.WriteString("ByName: ")
+	if len(keyword) != 0 {
+		sb.WriteString("Keyword: ")
 	}
-	sb.WriteString(strings.Join(byname, ", "))
+	sb.WriteString(strings.Join(keyword, ", "))
 
 	sb.WriteString(") ")
 

@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.7
+- changed "by name" parameters to "keyword" parameters
+
+
 2026-06-05 - 0.21.6
 - changed vm default for ConsoleTextMode to true
 - added *textmode* argument to read(), write(), writeln(), writeErr(), and writelnErr() functions

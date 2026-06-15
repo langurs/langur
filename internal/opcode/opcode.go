@@ -162,7 +162,7 @@ var definitions = map[OpCode]*Definition{
 	OpConstant: {Name: "Constant", OperandWidths: []int{OperandWidth_Constant}},
 	OpExecute:  {Name: "Execute", OperandWidths: []int{OperandWidth_Constant}},
 
-	// operands: constant, freecount, variables by name count
+	// operands: constant, freecount, keyword parameter count
 	OpFunction: {Name: "Function", OperandWidths: []int{OperandWidth_Constant, 1, 1}},
 
 	OpMode: {Name: "Mode", OperandWidths: []int{1}},
@@ -189,7 +189,7 @@ var definitions = map[OpCode]*Definition{
 	OpTryCatch: {Name: "TryCatch", OperandWidths: []int{OperandWidth_Constant, OperandWidth_Constant, OperandWidth_Constant}},
 	OpThrow:    {Name: "Throw"},
 
-	// operands: positionalCount, bynameCount
+	// operands: positionalCount, keywordCount
 	OpCall:              {Name: "Call", OperandWidths: []int{1, 1}},
 	OpCallWithExpansion: {Name: "CallWithExpansion", OperandWidths: []int{1, 1}},
 

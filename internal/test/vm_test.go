@@ -5747,7 +5747,7 @@ func TestOptionalParameters(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestParametersRequiredByName(t *testing.T) {
+func TestRequiredKeywordParameters(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input: `
@@ -7308,7 +7308,7 @@ func TestParameterMutability(t *testing.T) {
 			object.NUMBER_OBJ,
 		},
 
-		// on parameter by name
+		// on keyword parameter
 		{`
 			val mult = fn(a, var b=12) { b -= 1 ; a * b }
 			mult(4)
@@ -8669,7 +8669,7 @@ func TestParameterExpansionMinMax(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestParameterExpansionFollowedByParametersByName(t *testing.T) {
+func TestParameterExpansionFollowedByKeywordParameters(t *testing.T) {
 	tests := []vmTestCase{
 		{`string(fn(a..., b=21, c=14) {
 			 a

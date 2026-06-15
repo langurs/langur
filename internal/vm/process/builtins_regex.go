@@ -23,7 +23,7 @@ var bi_matching = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 		},
 	},
@@ -64,7 +64,7 @@ var bi_match = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "alt"},
 		},
@@ -99,7 +99,7 @@ var bi_matches = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
@@ -132,7 +132,7 @@ var bi_submatch = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
@@ -159,7 +159,7 @@ var bi_submatchH = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
@@ -186,7 +186,7 @@ var bi_submatches = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
@@ -219,7 +219,7 @@ var bi_submatchesH = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
@@ -252,7 +252,7 @@ var bi_split = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "delim", DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
@@ -321,7 +321,7 @@ var bi_index = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "alt"},
 		},
@@ -374,7 +374,7 @@ var bi_indices = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
@@ -422,7 +422,7 @@ var bi_subindex = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 		},
 	},
@@ -449,7 +449,7 @@ var bi_subindices = &object.BuiltIn{
 			object.Parameter{ExternalName: "anything"},
 		},
 
-		ParamByName: []object.Parameter{
+		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
