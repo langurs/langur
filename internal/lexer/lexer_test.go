@@ -18,7 +18,7 @@ func TestGeneralTokens(t *testing.T) {
 	}{
 		{"", &token.Token{Type: token.EOF, Literal: ""}, false},
 
-		{"α", &token.Token{Type: token.INVALID, Literal: "α"}, false},
+		{"α", &token.Token{Type: token.INVALID, Literal: "α"}, true},
 		{"abc", &token.Token{Type: token.IDENT, Literal: "abc"}, false},
 		{"_systemVar", &token.Token{Type: token.IDENT, Literal: "_systemVar"}, false},
 		{"123", &token.Token{Type: token.INT, Literal: "123"}, false},
@@ -206,7 +206,7 @@ func TestGeneralTokens(t *testing.T) {
 
 		if !tt.expectErrors && tok.Errs != nil {
 			for _, e := range tok.Errs {
-				t.Errorf("Lex Error (Count: %d): %s", e.Count, e.Err.Error())
+				t.Errorf("(%q) Lex Error (Count: %d): %s", tt.input, e.Count, e.Err.Error())
 			}
 		} else if tt.expectErrors && tok.Errs == nil {
 			t.Errorf("(%q) token expected to generate error, but no error generated", tt.input)

@@ -476,6 +476,7 @@ func (lex *Lexer) NextToken() (tok token.Token, err error) {
 				// Anything not defined is not a valid token.
 				tok.Type = token.INVALID
 				lex.advanceCodePoint()
+				addError(&tok, fmt.Errorf("Invalid token"))
 			}
 		}
 	}
