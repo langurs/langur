@@ -18,7 +18,7 @@ type Signature struct {
 	ParamPositional   []Parameter
 	ParamExpansionMin int
 	ParamExpansionMax int
-	ParamKeyword       []Parameter
+	ParamKeyword      []Parameter
 	ReturnType        ObjectType
 }
 
@@ -74,7 +74,7 @@ func (s *Signature) Copy() *Signature {
 		ParamPositional:   CopyParamList(s.ParamPositional),
 		ParamExpansionMin: s.ParamExpansionMin,
 		ParamExpansionMax: s.ParamExpansionMax,
-		ParamKeyword:       CopyParamList(s.ParamKeyword),
+		ParamKeyword:      CopyParamList(s.ParamKeyword),
 		ReturnType:        s.ReturnType.Copy(),
 	}
 }
@@ -109,18 +109,11 @@ func (s *Signature) String() string {
 	for i, p := range s.ParamPositional {
 		lastPositional := i == len(s.ParamPositional)-1
 
-		if lastPositional &&
-			(s.ParamExpansionMin != 0 || s.ParamExpansionMax != 0) {
-			sb.WriteString("...[")
-			sb.WriteString(str.IntToStr(s.ParamExpansionMin, 10))
-			sb.WriteString("..")
-			if s.ParamExpansionMax != -1 {
-				sb.WriteString(str.IntToStr(s.ParamExpansionMax, 10))
-			}
-			sb.WriteString("] ")
+		if lastPositional {
+			sb.WriteString(p.StringWith(s.ParamExpansionMin, s.ParamExpansionMax, true))
+		} else {
+			sb.WriteString(p.StringWith(0, 0, true))
 		}
-
-		sb.WriteString(p.String())
 
 		if !lastPositional || len(s.ParamKeyword) != 0 {
 			sb.WriteString(", ")
@@ -129,19 +122,19 @@ func (s *Signature) String() string {
 
 	for i, p := range s.ParamKeyword {
 		lastKeyword := i == len(s.ParamKeyword)-1
-		sb.WriteString(p.String())
+		sb.WriteString(p.StringWith(0, 0, false))
 		if !lastKeyword {
 			sb.WriteString(", ")
 		}
 	}
 
 	sb.WriteRune(')')
-	
+
 	if s.ReturnType != 0 {
 		sb.WriteRune(' ')
 		sb.WriteString(TypeToTypeName(s.ReturnType))
 	}
-	
+
 	return sb.String()
 }
 
@@ -170,7 +163,7 @@ func (p Parameter) Copy() Parameter {
 	}
 }
 
-func (p Parameter) String() string {
+func (p Parameter) StringWith(paramExpansionMin, paramExpansionMax int, positional bool) string {
 	var sb strings.Builder
 
 	if p.Mutable {
@@ -204,6 +197,16 @@ func (p Parameter) String() string {
 		}
 	}
 
+	if paramExpansionMin != 0 || paramExpansionMax != 0 {
+		sb.WriteString(" ...[")
+		sb.WriteString(str.IntToStr(paramExpansionMin, 10))
+		sb.WriteString("..")
+		if paramExpansionMax != -1 {
+			sb.WriteString(str.IntToStr(paramExpansionMax, 10))
+		}
+		sb.WriteString("]")
+	}
+
 	if p.Type != 0 {
 		sb.WriteRune(' ')
 		sb.WriteString(TypeToTypeName(p.Type))
@@ -212,6 +215,10 @@ func (p Parameter) String() string {
 	if p.DefaultValue != nil {
 		sb.WriteRune('=')
 		sb.WriteString(p.DefaultValue.String())
+
+	} else if !positional && !p.Required {
+		// optional parameter without a public default value
+		sb.WriteRune('=')
 	}
 
 	return sb.String()
