@@ -34,7 +34,7 @@ func (p *Parser) parseExpression(prec precedence) ast.Node {
 	prefix := p.prefixParseFns[p.tok.Type]
 
 	// ... intervening for not in or not of
-	if p.tok.Type == token.NOT && (p.peekTok.Type == token.IN || p.peekTok.Type == token.OF) {
+	if p.tok.Type == token.NOT && token.MayFollowNotAsSingleOp(p.peekTok.Type) {
 		prefix = p.parseInfixNilLeftExpression
 	}
 

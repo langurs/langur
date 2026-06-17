@@ -269,3 +269,12 @@ func BeginsFlowBreakingStatement(tt Type) bool {
 func IsNoneBySymbol(tok Token) bool {
 	return tok.Type == NONE && tok.Literal == "_"
 }
+
+func MayFollowNotAsSingleOp(tt Type) bool {
+	switch tt {
+	case IN, OF:
+		// not in, not of
+		return true
+	}
+	return false
+}
