@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.8
+- removed old append operator (use & now)
+
+
 2026-06-15 - 0.21.7
 - changed append operator to use & token and deprecated use of ~ (tilde)
 - fix: parser failing to return error when it should
