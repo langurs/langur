@@ -340,7 +340,6 @@ type DeclarationNode struct {
 	Token      token.Token
 	Assignment Node // assignment or variable
 	Mutable    bool
-	Public     bool
 }
 
 func (d *DeclarationNode) Search(parent Node, sc *searchCriteria) (found bool) {
@@ -360,7 +359,6 @@ func (d *DeclarationNode) Copy() Node {
 		Token:      d.Token.Copy(),
 		Assignment: copyOrNil(d.Assignment),
 		Mutable:    d.Mutable,
-		Public:     d.Public,
 	}
 }
 
@@ -375,10 +373,6 @@ func (d *DeclarationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error
 func (d *DeclarationNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
-	if d.Public {
-		out.WriteString("public ")
-	}
-
 	if d.Mutable {
 		out.WriteString("var ")
 	} else {
@@ -390,10 +384,6 @@ func (d *DeclarationNode) TokenRepresentation() string {
 }
 func (d *DeclarationNode) String() string {
 	var out bytes.Buffer
-
-	if d.Public {
-		out.WriteString("Public ")
-	}
 
 	if d.Mutable {
 		out.WriteString("Var ")

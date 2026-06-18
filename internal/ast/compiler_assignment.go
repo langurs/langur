@@ -80,11 +80,11 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		return
 	}
 
-	if decl.Public {
-		// not ready to compile public declarations (future use)
-		err = c.makeErr(assign, "Cannot compile public declaration (future use)")
-		return
-	}
+	// if decl.Public {
+	// 	// not ready to compile public declarations (future use)
+	// 	err = c.makeErr(assign, "Cannot compile public declaration (future use)")
+	// 	return
+	// }
 
 	if assign.Values == nil || len(assign.Values) == len(assign.Identifiers) {
 		// good to go; not a decoupling assignment
