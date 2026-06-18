@@ -244,8 +244,8 @@ func TestDeclarations(t *testing.T) {
 		{"val yoyo = y;", "yoyo", "y", false, false},
 		{"var x = 123", "x", 123, true, false},
 
-		{"public var x = 123", "x", 123, true, true},
-		{"public val x = 123", "x", 123, false, true},
+		// {"var X = 123", "X", 123, true, true},
+		// {"val X = 123", "X", 123, false, true},
 	}
 
 	for _, tt := range tests {

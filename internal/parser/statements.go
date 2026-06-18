@@ -50,7 +50,7 @@ func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 
 	case token.IDENT, token.NONE:
 		stmt = p.parseIdentifierStatement()
-	case token.VAL, token.VAR, token.PUBLIC:
+	case token.VAL, token.VAR:
 		stmt = p.parseDeclarationStatement()
 
 	default:

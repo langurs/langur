@@ -37,7 +37,6 @@ const (
 	STRING    = "STRING"
 	REGEX_RE2 = "REGEX_RE2"
 
-	PUBLIC = "PUBLIC"
 	VAR    = "VAR"
 	VAL    = "VAL"
 	ASSIGN = "ASSIGN"
@@ -156,7 +155,6 @@ var Keywords = map[string]Type{
 
 	"mode": MODE,
 
-	"public": PUBLIC,
 	"var": VAR,
 	"val": VAL,
 

@@ -11,11 +11,6 @@ func (p *Parser) parseDeclaration() ast.Node {
 	mutable := false
 	public := false
 
-	if p.tok.Type == token.PUBLIC {
-		public = true
-		p.advanceToken()
-	}
-
 	switch p.tok.Type {
 	case token.VAL:
 		p.advanceToken() // past the val token
