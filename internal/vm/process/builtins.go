@@ -151,6 +151,8 @@ var BuiltIns = []*object.BuiltIn{
 	bi_subindices,
 
 	bi_read,
+	bi_readBytes,
+	bi_readCp,
 	bi_write,
 	bi_writeln,
 	bi_writeErr,

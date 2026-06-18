@@ -3,7 +3,6 @@
 package text_io
 
 import (
-	"io"
 	"bufio"
 	"fmt"
 	"langur/str"
@@ -45,17 +44,36 @@ func ReadLn(replaceNewLines bool) (s string, scanned bool) {
 }
 
 func ReadBytes(byteCount int, replaceNewLines bool) (s string, scanned bool) {
+	if byteCount < 0 {
+		return
+	}
+
 	buf := make([]byte, byteCount)
-	_, err := io.ReadFull(os.Stdin, buf)
-	scanned = err == nil
+	r := bufio.NewReader(os.Stdin)
+	var err error
+
+	for i := 0; i < byteCount; i++ {
+		// not using ReadFull; not reading more than specified number of bytes
+		buf[i], err = r.ReadByte()
+		if err != nil {
+			break
+		}
+	}
+
 	s = string(buf)
+	scanned = err == nil
 	if replaceNewLines {
 		s = str.ReplaceNewLinesWithLinux(s)
 	}
+
 	return
 }
 
 func ReadCodePoints(cpCount int, replaceNewLines bool) (s string, err error) {
+	if cpCount < 0 {
+		return
+	}
+
 	// Last we knew, the Unicode standard wouldn't have more than 4 bytes in a UTF-8 sequence.
 	byteMax := 4
 

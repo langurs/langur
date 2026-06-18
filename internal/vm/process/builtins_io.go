@@ -164,8 +164,8 @@ var bi_read = &object.BuiltIn{
 			object.Parameter{ExternalName: "validation"},
 			object.Parameter{ExternalName: "errmsg", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
 			object.Parameter{ExternalName: "maxattempts", Type: object.NUMBER_OBJ, DefaultValue: object.One},
-			object.Parameter{ExternalName: "alt"},
 			object.Parameter{ExternalName: "textmode", Type: object.BOOLEAN_OBJ},
+			object.Parameter{ExternalName: "alt"},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
@@ -204,14 +204,14 @@ var bi_read = &object.BuiltIn{
 			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer for maximum attempts")
 		}
 
-		// "alt" argument
-		alternate := args[4]
-
 		// "textmode" argument
-		textMode := pr.Modes.ConsoleTextMode
-		if args[5] != nil {
-			textMode = args[5].IsTruthy()
+		textMode := false
+		if args[4] != nil {
+			textMode = args[4].IsTruthy()
 		}
+
+		// "alt" argument
+		alternate := args[5]
 
 		// parameters gathered...
 		for i := 0; maxattempts == -1 || i < maxattempts; i++ {
@@ -256,5 +256,64 @@ var bi_read = &object.BuiltIn{
 			return object.NewException(object.ERR_GENERAL, fnName, "Input failed to match expected")
 		}
 		return alternate
+	},
+}
+
+var bi_readBytes = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:          "readBytes",
+		ImpureEffects: true,
+		Description:   "reads specified number of bytes from the console",
+
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "count", Type: object.NUMBER_OBJ},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "readBytes"
+
+		count, ok := object.NumberToInt(args[0])
+		if !ok || count < 1 {
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer greater than 0 for count")
+		}
+		textMode := false
+
+		var input string
+		input, ok = text_io.ReadBytes(count, textMode)
+		if !ok {
+			return object.NewException(object.ERR_GENERAL, fnName, "Error reading bytes")
+		}
+
+		return object.NewString(input)
+	},
+}
+
+var bi_readCp = &object.BuiltIn{
+	FnSignature: &object.Signature{
+		Name:          "readCp",
+		ImpureEffects: true,
+		Description:   "reads specified number of code points from the console; since not a byte count, does not break in the middle of a code point",
+
+		ParamPositional: []object.Parameter{
+			object.Parameter{ExternalName: "count", Type: object.NUMBER_OBJ},
+		},
+	},
+	Fn: func(pr *Process, args ...object.Object) object.Object {
+		const fnName = "readCp"
+
+		count, ok := object.NumberToInt(args[0])
+		if !ok || count < 1 {
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer greater than 0 for count")
+		}
+		textMode := false
+
+		var input string
+		var err error
+		input, err = text_io.ReadCodePoints(count, textMode)
+		if err != nil {
+			return object.NewException(object.ERR_GENERAL, fnName, "Error reading code points: "+err.Error())
+		}
+
+		return object.NewString(input)
 	},
 }
