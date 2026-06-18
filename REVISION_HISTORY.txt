@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.21.8
 - added built-in functions readBytes() and readCp() to read a specified number of bytes or code points
+- dropped keyword *public* (was for future use); checks for public variable declaration by initial capital letter
 - removed old append operator (use & now)
 - improved printing of function signature
 - (internal) added token.MayFollowNotAsSingleOp() - presently for not in or not of

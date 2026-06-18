@@ -67,6 +67,13 @@ func (c *Compiler) makeOpSetDefineInstructions(node Node) (
 	return
 }
 
+func publicIdentByName(s string) bool {
+	if s[0] >= 'A' && s[0] <= 'Z' {
+		return true
+	}
+	return false
+}
+
 // called by DeclarationNode.Compile()
 func (c *Compiler) compileDeclarationAndAssignments(
 	decl *DeclarationNode) (
@@ -79,12 +86,6 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		bug("compileDeclarationAndAssignments", err.Error())
 		return
 	}
-
-	// if decl.Public {
-	// 	// not ready to compile public declarations (future use)
-	// 	err = c.makeErr(assign, "Cannot compile public declaration (future use)")
-	// 	return
-	// }
 
 	if assign.Values == nil || len(assign.Values) == len(assign.Identifiers) {
 		// good to go; not a decoupling assignment
@@ -120,6 +121,12 @@ func (c *Compiler) compileDeclarationAndAssignments(
 		if !ok {
 			err = c.makeErr(decl, fmt.Sprintf("Expected identifier for Declaration Assignment, not %s", token.TypeDescription(id.TokenInfo().Type)))
 			bug("compileDeclarationAndAssignments", err.Error())
+			return
+		}
+
+		if publicIdentByName(variable.Name) {
+			// not ready to compile public declarations (future use)
+			err = c.makeErr(assign, "Cannot compile public declaration (future use)")
 			return
 		}
 

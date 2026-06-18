@@ -3275,8 +3275,8 @@ func TestStringInterpolationModifiers(t *testing.T) {
 		{`val x = 14; "{{x:X2:-5}}"`, " E   ", object.STRING_OBJ},
 
 		// custom formatting function
-		{`val x = 255; val F = fn(s) { ucase s }; "{{x:x:fn F}}"`, "FF", object.STRING_OBJ},
-		{`val x = "   sdf sdf  "; val T = fn(s) { trim s }; "{{x : fn T }}"`, "sdf sdf", object.STRING_OBJ},
+		{`val x = 255; val f = fn(s) { ucase s }; "{{x:x:fn f}}"`, "FF", object.STRING_OBJ},
+		{`val x = "   sdf sdf  "; val t = fn(s) { trim s }; "{{x : fn t }}"`, "sdf sdf", object.STRING_OBJ},
 
 		// type string
 		{`val x = 255; "{{x:T}}"`, common.NumberTypeName, object.STRING_OBJ},
