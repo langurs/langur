@@ -1,13 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.8
+2026-06-19 - 0.21.8
 - added built-in functions readBytes() and readCp() to read a specified number of bytes or code points
 - dropped keyword *public* (was for future use); checks for public variable declaration by initial capital letter
-- removed old append operator (use & now)
+- removed old append operator
 - improved printing of function signature
-- (internal) added token.MayFollowNotAsSingleOp() - presently for not in or not of
-
+- (internal) added token.MayFollowNotAsSingleOp() - presently for *not in* or *not of*
 
 2026-06-15 - 0.21.7
 - changed append operator to use & token and deprecated use of ~ (tilde)
