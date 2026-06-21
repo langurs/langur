@@ -288,32 +288,32 @@ var bi_readBytes = &object.BuiltIn{
 	},
 }
 
-var bi_readCp = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:          "readCp",
-		ImpureEffects: true,
-		Description:   "reads specified number of code points from the console; since not a byte count, does not break in the middle of a code point",
+// var bi_readCp = &object.BuiltIn{
+// 	FnSignature: &object.Signature{
+// 		Name:          "readCp",
+// 		ImpureEffects: true,
+// 		Description:   "reads specified number of code points from the console; since not a byte count, does not break in the middle of a code point",
 
-		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "count", Type: object.NUMBER_OBJ},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		const fnName = "readCp"
+// 		ParamPositional: []object.Parameter{
+// 			object.Parameter{ExternalName: "count", Type: object.NUMBER_OBJ},
+// 		},
+// 	},
+// 	Fn: func(pr *Process, args ...object.Object) object.Object {
+// 		const fnName = "readCp"
 
-		count, ok := object.NumberToInt(args[0])
-		if !ok || count < 1 {
-			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer greater than 0 for count")
-		}
-		textMode := false
+// 		count, ok := object.NumberToInt(args[0])
+// 		if !ok || count < 1 {
+// 			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected integer greater than 0 for count")
+// 		}
+// 		textMode := false
 
-		var input string
-		var err error
-		input, err = text_io.ReadCodePoints(count, textMode)
-		if err != nil {
-			return object.NewException(object.ERR_GENERAL, fnName, "Error reading code points: "+err.Error())
-		}
+// 		var input string
+// 		var err error
+// 		input, err = text_io.ReadCodePoints(count, textMode)
+// 		if err != nil {
+// 			return object.NewException(object.ERR_GENERAL, fnName, "Error reading code points: "+err.Error())
+// 		}
 
-		return object.NewString(input)
-	},
-}
+// 		return object.NewString(input)
+// 	},
+// }

@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.9
+- comment out readCp(); The function readBytes() has a specific use, but what is the use of readCp()?
+
+
 2026-06-19 - 0.21.8
 - added built-in functions readBytes() and readCp() to read a specified number of bytes or code points
 - dropped keyword *public* (was for future use); checks for public variable declaration by initial capital letter
