@@ -3,12 +3,12 @@
 package vm
 
 import (
-	"langur/trace"
 	"fmt"
 	"langur/args"
 	"langur/bytecode"
 	"langur/modes"
 	"langur/object"
+	"langur/trace"
 	"langur/vm/process"
 	"os"
 	"strings"

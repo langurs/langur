@@ -11,7 +11,7 @@ import (
 
 // write, writeln
 // writeErr, writelnErr
-// read
+// read, readBytes
 
 var newLine = object.NewString(str.SysNewLine)
 
