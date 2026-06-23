@@ -4709,15 +4709,15 @@ func TestForLoopMisc(t *testing.T) {
 		},
 
 		// catch in a for loop
-		{`var alist = []
-		  for x in series(-3 .. 3) {
-			 var calc = 1 / x
-			 catch { calc = 0 }
-			 alist = more(alist, calc)
+		{`var sum = 0
+		  for x in series(-3 .. 4) {
+			# -1/3, -1/2, -1, 7, 1, 1/2, 1/3, 1/4
+			 sum += 1 / x
+			 catch { sum += 7 }
 		  }
-		  alist[4]
+		  simplify(sum)
 		  `,
-			"0", object.NUMBER_OBJ,
+			"7.25", object.NUMBER_OBJ,
 		},
 
 		// for loop that never runs
@@ -4996,9 +4996,9 @@ func TestForLoopNext(t *testing.T) {
 		// next embedded in catch else
 		{`var sum = 0
 		  for x = -3; x < 11; x += 1 {
-			  1 / (x rem 2)
-			  catch { 50 } else { next }
+			  1 / (x rem 2)	# without this ... result would be 14, not 7
 		      sum += 1
+			  catch { } else { next }
 		  }
 		  sum`,
 			"7", object.NUMBER_OBJ,
@@ -9096,13 +9096,15 @@ func TestTryCatch(t *testing.T) {
 
 		{
 			input: `
-				throw 456
-				100
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
+				{
+					throw 456
+					100
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+					}
 				}
 				catch: _err'msg		# catching the rethrown exception
 					`,
@@ -9112,14 +9114,16 @@ func TestTryCatch(t *testing.T) {
 
 		{
 			input: `
-				throw 111
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
-					default: 4
-					# catch switch with default section will not rethrow if no switch case tests match
+				{
+					throw 111
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+						default: 4
+						# catch switch with default section will not rethrow if no switch case tests match
+					}
 				}
 				catch: _err'msg		# to catch a rethrown error
 					`,
@@ -9141,9 +9145,11 @@ func TestTryCatch(t *testing.T) {
 		},
 		{
 			input: `
-				1 / 0
-				catch[e][and] e'cat, e'msg {
-					case "math", -> re/asdf/: 45
+				{
+					1 / 0
+					catch[e][and] e'cat, e'msg {
+						case "math", -> re/asdf/: 45
+					}
 				}
 				catch: _err'cat
 					`,
@@ -9152,9 +9158,11 @@ func TestTryCatch(t *testing.T) {
 		},
 		{
 			input: `
-				1 / 0
-				catch[e][or] e'cat, e'msg {
-					case "math", -> re/asdf/: 45
+				{
+					1 / 0
+					catch[e][or] e'cat, e'msg {
+						case "math", -> re/asdf/: 45
+					}
 				}
 				catch: _err'cat
 					`,
@@ -9197,8 +9205,10 @@ func TestTryCatch(t *testing.T) {
 
 		{
 			input: `
-				val x = 123 / 0
-				catch { if _err["cat"] == "math" { 890 } else { 456 } }
+				{
+					val x = 123 / 0
+					catch { if _err["cat"] == "math" { 890 } else { 456 } }
+				}
 				catch { 789 }
 				`,
 			expected:     "890",
@@ -9216,8 +9226,10 @@ func TestTryCatch(t *testing.T) {
 		},
 		{
 			input: `
-				val x = 123 / 0
-				catch: if _err["cat"] == "math" { 890 } else { 456 }
+				{
+					val x = 123 / 0
+					catch: if _err["cat"] == "math" { 890 } else { 456 }
+				}
 				catch: 789
 				`,
 			expected:     "890",
@@ -9254,8 +9266,10 @@ func TestTryCatch(t *testing.T) {
 
 		{ // using same _err variable name in catches in sequence
 			input: `
-				val x = 123 / 0
-				catch { if _err["cat"] == "math" { 890 } else { 456 } }
+				{
+					val x = 123 / 0
+					catch { if _err["cat"] == "math" { 890 } else { 456 } }
+				}
 				val y = 789
 				456
 				78 / 0
@@ -9284,9 +9298,11 @@ func TestTryCatch(t *testing.T) {
 		{ // return correctly from function frame out of a try section?
 			input: `
 				val tryme = fn() {
-					if true { return 7 }
-					catch { 90 }
-					777
+					{
+						if true { return 7 }
+						catch { 90 }
+					}
+					return 777
 				}
 				tryme()
 				`,
@@ -9297,9 +9313,11 @@ func TestTryCatch(t *testing.T) {
 		{ // return correctly from function frame out of a catch?
 			input: `
 				val tryme = fn() {
-					1 / 0
-					catch { return 90 }
-					7
+					{
+						1 / 0
+						catch { return 90 }
+					}
+					return 7
 				}
 				tryme()
 				`,
@@ -9431,15 +9449,17 @@ func TestTryCatchElse(t *testing.T) {
 
 		{
 			input: `
-				throw 100
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
-					# catch switch with no default section will rethrow if no switch case tests match
-				} else {
-					42
+				{
+					throw 100
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+						# catch switch with no default section will rethrow if no switch case tests match
+					} else {
+						42
+					}
 				}
 				catch: _err'msg		# to catch a rethrown error
 				`,
@@ -9449,15 +9469,17 @@ func TestTryCatchElse(t *testing.T) {
 
 		{
 			input: `
-				throw 111
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
-					# catch switch with no default section will rethrow if no switch case tests match
-				} else {
-					42
+				{
+					throw 111
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+						# catch switch with no default section will rethrow if no switch case tests match
+					} else {
+						42
+					}
 				}
 				catch: _err'msg		# to catch a rethrown error
 					`,
@@ -9467,15 +9489,17 @@ func TestTryCatchElse(t *testing.T) {
 
 		{
 			input: `
-				111
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
-					# catch switch with no default section will rethrow if no switch case tests match
-				} else {
-					42
+				{
+					111
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+						# catch switch with no default section will rethrow if no switch case tests match
+					} else {
+						42
+					}
 				}
 				catch: _err'msg		# to catch a rethrown error
 					`,
@@ -9485,16 +9509,18 @@ func TestTryCatchElse(t *testing.T) {
 
 		{
 			input: `
-				throw 111
-
-				catch _err'msg {
-					case "100": 1
-					case "123": 2
-					case "234": 3
-					default: 4
-					# catch switch with default section will not rethrow if no switch case tests match
-				} else {
-					42
+				{
+					throw 111
+	
+					catch _err'msg {
+						case "100": 1
+						case "123": 2
+						case "234": 3
+						default: 4
+						# catch switch with default section will not rethrow if no switch case tests match
+					} else {
+						42
+					}
 				}
 				catch: _err'msg		# to catch a rethrown error
 					`,
@@ -9539,39 +9565,39 @@ func TestVariableScoping(t *testing.T) {
 	tests := []vmTestCase{
 		// for catch blocks
 		{
-			input:        `val x = 123; 1 / 0; catch { val x = 78 }`,
+			input:        `val x = 123; { 1 / 0; catch { val x = 78 } }`,
 			expected:     "78",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `val x = 123; 1 / 0; catch { val x = 78 }; x`,
+			input:        `val x = 123; { 1 / 0; catch { val x = 78 } }; x`,
 			expected:     "123",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = 123; 1 / 0; catch { x = 78 }; x`,
+			input:        `var x = 123; { 1 / 0; catch { x = 78 } }; x`,
 			expected:     "78",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = 123; 1 / 1; catch { x = 78 }; x`,
+			input:        `var x = 123; { 1 / 1; catch { x = 78 } }; x`,
 			expected:     "123",
 			expectedType: object.NUMBER_OBJ,
 		},
 
 		// reusing the same error variable in nested catches (not possible without scoping)
 		{
-			input:        `var x = 123; 1 / 1; catch { x = 78; 1 / 0; catch { _err["cat"] }}; x`,
+			input:        `var x = 123; { 1 / 1; catch { x = 78; 1 / 0; catch { _err["cat"] }} }; x`,
 			expected:     "123",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = 123; 1 / 1; catch[e] { x = 78; 1 / 0; catch[e] { e["cat"] }}`,
+			input:        `var x = 123; { 1 / 1; catch[e] { x = 78; 1 / 0; catch[e] { e["cat"] }} }`,
 			expected:     "1",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = 123; 1 / 0; catch[e] { x = 78; 1 / 0; catch[e] { e["cat"] }}`,
+			input:        `var x = 123; { 1 / 0; catch[e] { x = 78; 1 / 0; catch[e] { e["cat"] }} }`,
 			expected:     "math",
 			expectedType: object.STRING_OBJ,
 		},
@@ -9772,12 +9798,12 @@ func TestVariableScoping(t *testing.T) {
 
 		// Reassignments should be possible within deeper scopes (if mutable and not past a function boundary).
 		{
-			input:        `var x = 123; 1 / 0; catch { x = 78; 0 }; x`,
+			input:        `var x = 123; { 1 / 0; catch { x = 78; 0 } }; x`,
 			expected:     "78",
 			expectedType: object.NUMBER_OBJ,
 		},
 		{
-			input:        `var x = 123; 1 / 1; catch { x = 78; 0 }; x`,
+			input:        `var x = 123; { 1 / 1; catch { x = 78; 0 } }; x`,
 			expected:     "123",
 			expectedType: object.NUMBER_OBJ,
 		},

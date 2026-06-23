@@ -54,7 +54,7 @@ func New(
 }
 
 func (pr *Process) SetStartFrameLocals(slc []object.Object) {
-	pr.startFrame.locals = slc
+	pr.startFrame.locals = replaceNilInObjectSlice(slc)
 }
 
 func (pr *Process) executeTryCatch(fr *frame, tryIndex, catchIndex, elseIndex int) (

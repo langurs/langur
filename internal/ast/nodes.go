@@ -745,7 +745,7 @@ type FunctionNode struct {
 	ReturnType           Node // nil for no explicit return type
 	Name                 string
 	PositionalParameters []Node
-	KeywordParameters     []Node
+	KeywordParameters    []Node
 	Body                 Node
 	ImpureEffects        bool
 }

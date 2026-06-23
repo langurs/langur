@@ -79,7 +79,7 @@ func (pr *Process) releaseFrame(fr *frame) {
 		pr.fap--
 	}
 
-	// frees some memory?
+	// free some memory if many frames
 	if pr.fap*3 < len(pr.frameAlloc) {
 		pr.frameAlloc = pr.frameAlloc[:pr.fap+1]
 	}

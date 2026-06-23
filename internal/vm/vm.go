@@ -37,7 +37,7 @@ func New(byteCode *bytecode.ByteCode, m *modes.VmModes) *VM {
 	return vm
 }
 
-// used by the REPL
+// used by the REPL/interactive mode
 func NewWithGlobalStore(byteCode *bytecode.ByteCode, globals []object.Object, m *modes.VmModes) *VM {
 	vm := New(byteCode, m)
 	vm.process.SetStartFrameLocals(globals)
@@ -53,7 +53,7 @@ func (vm *VM) Run() (err error, where *trace.Where) {
 	if err != nil {
 		return
 	}
-	
+
 	_, _, err = vm.process.RunFrame(nil, late)
 
 	// extract location of exception
