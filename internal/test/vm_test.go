@@ -9279,22 +9279,6 @@ func TestTryCatch(t *testing.T) {
 			expectedType: object.NUMBER_OBJ,
 		},
 
-		{
-			input: `
-				val x = fn() {
-					123 / 0
-					catch { if _err["cat"] == "math" { 890 } else { 456 } }
-					159
-					val y = 789
-					78 / 0
-					catch { y }
-				}()
-				x - 89 + 77
-				`,
-			expected:     "777",
-			expectedType: object.NUMBER_OBJ,
-		},
-
 		{ // return correctly from function frame out of a try section?
 			input: `
 				val tryme = fn() {

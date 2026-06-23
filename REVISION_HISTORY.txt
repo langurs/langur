@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.21.9
+- restricted catch statement to last part of a block of statements
 - fix: bug in REPL/interactive with uninitialized variables causing Go panic (nil pointer dereference) after langur exception
 - comment out readCp(); The function readBytes() has a specific use, but what is the use of readCp()?
 

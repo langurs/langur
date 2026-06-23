@@ -179,7 +179,11 @@ loop:
 		}
 
 		if i == 0 {
-			return nil, fmt.Errorf("Catch cannot be first in a block of statements")
+			return nil, fmt.Errorf("Catch statement cannot be first in a block of statements")
+		}
+		if i != len(nodes)-1 {
+			// now restricting catch statement to last statement of block
+			return nil, fmt.Errorf("Catch statement must be last in a block of statements")
 		}
 
 		// move all preceding nodes within the statement slice into Try as a Block

@@ -3434,6 +3434,11 @@ func (t *TryCatchNode) Evaluate() object.Object {
 func (node *TryCatchNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	var try, catch, tcelse opcode.InsPackage
 
+	if node.Try == nil {
+		err = c.makeErr(node, "Try node missing")
+		return
+	}
+
 	// The try frame doesn't have scope, but catch and else frames do.
 	c.pushNonScope()
 	try, err = node.Try.Compile(c)
