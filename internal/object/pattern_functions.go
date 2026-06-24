@@ -1,43 +1,43 @@
-// langur/object/regex_functions.go
+// langur/object/pattern_functions.go
 
 package object
 
 import (
 	"fmt"
-	"langur/regex"
+	"langur/pattern"
 	"langur/regexp" // a modified copy of Go's standard regexp (re2) package
 	"langur/str"
 )
 
-func RegexMatching(re *Regex, s string) (Object, error) {
-	if re.RegexType == regex.RE2 {
+func PatternMatching(re *Pattern, s string) (Object, error) {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		return NativeBoolToObject(compiled.MatchString(s)), nil
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 }
 
-func RegexMatchOnce(re *Regex, s string) (Object, error) {
-	if re.RegexType == regex.RE2 {
+func PatternMatchOnce(re *Pattern, s string) (Object, error) {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		if compiled.MatchString(s) {
 			return NewString(compiled.FindString(s)), nil
 		}
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 	return NONE, nil
 }
 
-func RegexMatchProgressive(re *Regex, s string, max int) (Object, error) {
+func PatternMatchProgressive(re *Pattern, s string, max int) (Object, error) {
 	var sSlc []string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		sSlc = compiled.FindAllString(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -47,14 +47,14 @@ func RegexMatchProgressive(re *Regex, s string, max int) (Object, error) {
 	return arr, nil
 }
 
-func RegexSubMatches(re *Regex, s string) (Object, error) {
+func PatternSubMatches(re *Pattern, s string) (Object, error) {
 	var sSlc []string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		sSlc = compiled.FindStringSubmatch(s)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -65,15 +65,15 @@ func RegexSubMatches(re *Regex, s string) (Object, error) {
 	return arr, nil
 }
 
-func RegexSubMatchesHash(re *Regex, s string) (Object, error) {
+func PatternSubMatchesHash(re *Pattern, s string) (Object, error) {
 	var sSlc, names []string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		sSlc = compiled.FindStringSubmatch(s)
 		names = compiled.SubexpNames()
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	hash := &Hash{}
@@ -95,14 +95,14 @@ func RegexSubMatchesHash(re *Regex, s string) (Object, error) {
 	return hash, nil
 }
 
-func RegexProgressiveSubMatches(re *Regex, s string, max int) (Object, error) {
+func PatternProgressiveSubMatches(re *Pattern, s string, max int) (Object, error) {
 	var slcOfSlc [][]string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		slcOfSlc = compiled.FindAllStringSubmatch(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -119,16 +119,16 @@ func RegexProgressiveSubMatches(re *Regex, s string, max int) (Object, error) {
 	return arr, nil
 }
 
-func RegexProgressiveSubMatchesHashList(re *Regex, s string, max int) (Object, error) {
+func PatternProgressiveSubMatchesHashList(re *Pattern, s string, max int) (Object, error) {
 	var slcOfSlc [][]string
 	var names []string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		slcOfSlc = compiled.FindAllStringSubmatch(s, max)
 		names = compiled.SubexpNames()
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -158,14 +158,14 @@ func RegexProgressiveSubMatchesHashList(re *Regex, s string, max int) (Object, e
 
 var prepForNoSubmatchInterpolation = regexp.MustCompile("\\$")
 
-func RegexReplace(src string, re *Regex, repl string, max int, doSubmatchInterpolation bool) (Object, error) {
+func PatternReplace(src string, re *Pattern, repl string, max int, doSubmatchInterpolation bool) (Object, error) {
 	var newStr string
 
 	if !doSubmatchInterpolation {
 		repl = prepForNoSubmatchInterpolation.ReplaceAllString(repl, "$$$$")
 	}
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 
 		if max == -1 {
@@ -175,36 +175,36 @@ func RegexReplace(src string, re *Regex, repl string, max int, doSubmatchInterpo
 			newStr = compiled.ReplaceString(src, repl, max)
 		}
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	return NewString(newStr), nil
 }
 
-func RegexSplit(re *Regex, s string, max int) (Object, error) {
+func PatternSplit(re *Pattern, s string, max int) (Object, error) {
 	var sSlc []string
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		sSlc = compiled.Split(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	return StringSliceToList(sSlc), nil
 }
 
-func RegexSplitAndKeep(re *Regex, s string, max int) (Object, error) {
+func PatternSplitAndKeep(re *Pattern, s string, max int) (Object, error) {
 	// keeping all the parts
 	var indices [][]int
 	var sSlc []string
 	var err error
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		indices = compiled.FindAllStringIndex(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	if re.Pattern == "" {
@@ -218,15 +218,15 @@ func RegexSplitAndKeep(re *Regex, s string, max int) (Object, error) {
 	return StringSliceToList(sSlc), nil
 }
 
-// regex counterpart to StringIndex()
-func RegexIndex(re *Regex, s string) (Object, error) {
+// pattern counterpart to StringIndex()
+func PatternIndex(re *Pattern, s string) (Object, error) {
 	var index []int
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		index = compiled.FindStringIndex(s)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	if len(index) == 0 {
@@ -237,14 +237,14 @@ func RegexIndex(re *Regex, s string) (Object, error) {
 	return &Range{Start: NumberFromInt(start), End: NumberFromInt(end)}, err
 }
 
-func RegexProgressiveIndices(re *Regex, s string, max int) (Object, error) {
+func PatternProgressiveIndices(re *Pattern, s string, max int) (Object, error) {
 	var indices [][]int
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		indices = compiled.FindAllStringIndex(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -258,14 +258,14 @@ func RegexProgressiveIndices(re *Regex, s string, max int) (Object, error) {
 	return arr, nil
 }
 
-func RegexSubMatchesIndices(re *Regex, s string) (Object, error) {
+func PatternSubMatchesIndices(re *Pattern, s string) (Object, error) {
 	var indices [][]int
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		indices = compiled.FindAllStringSubmatchIndex(s, 1)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}
@@ -282,14 +282,14 @@ func RegexSubMatchesIndices(re *Regex, s string) (Object, error) {
 	return arr, nil
 }
 
-func RegexProgressiveSubMatchesIndices(re *Regex, s string, max int) (Object, error) {
+func PatternProgressiveSubMatchesIndices(re *Pattern, s string, max int) (Object, error) {
 	var indices [][]int
 
-	if re.RegexType == regex.RE2 {
+	if re.PatternType == pattern.RE2 {
 		compiled := re.Compiled.(*regexp.Regexp)
 		indices = compiled.FindAllStringSubmatchIndex(s, max)
 	} else {
-		return nil, fmt.Errorf("Unknown regex type")
+		return nil, fmt.Errorf("Unknown pattern type")
 	}
 
 	arr := &List{}

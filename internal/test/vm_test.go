@@ -1275,7 +1275,7 @@ func TestSwitchExpressions(t *testing.T) {
 			"3", object.NUMBER_OBJ,
 		},
 
-		// with regex literal as condition
+		// with pattern literal as condition
 		{`val x = 123; val y = 159
 			switch x { 
 				case 120: 1
@@ -1285,7 +1285,7 @@ func TestSwitchExpressions(t *testing.T) {
 			}`,
 			"3", object.NUMBER_OBJ,
 		},
-		// with regex literal as variable
+		// with pattern literal as variable
 		{`val x = 123; val y = 159
 			switch -> RE/\d0$/ { 
 				case 123: 1
@@ -1296,12 +1296,12 @@ func TestSwitchExpressions(t *testing.T) {
 			}`,
 			"4", object.NUMBER_OBJ,
 		},
-		// with regex literal as both, without using the matching operator
+		// with pattern literal as both, without using the matching operator
 		{`val x = 123; val y = 159
 			switch RE/\d0$/ { 
 				case 123: 1
 				case y: 2
-				case RE/\d0$/: 3			# matches here (regex == regex)
+				case RE/\d0$/: 3			# matches here (pattern == pattern)
 				case 40: 4				
 				default: 5
 			}`,
@@ -2886,7 +2886,7 @@ func TestDecouplingDeclarationWithExpansion(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestDecouplingAssignmentFromRegexInIfElse(t *testing.T) {
+func TestDecouplingAssignmentFromPatternInIfElse(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			`if val x, y = submatch("jklwer489werjk27,.dsjfkl56", by=RE/(\d+).+?(\d+)/) {
@@ -3045,7 +3045,7 @@ func TestStringBlockQuotes(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestStringAndRegexModifiers(t *testing.T) {
+func TestStringAndPatternModifiers(t *testing.T) {
 	tests := []vmTestCase{
 		{"QS:any'\uF8FF'", "\uF8FF", object.STRING_OBJ},
 		{"matching(QS:any'\uF8FF', by=re:any'\uF8FF')", true, object.BOOLEAN_OBJ},
@@ -3056,9 +3056,9 @@ func TestStringAndRegexModifiers(t *testing.T) {
 
 		{"qs:marks/abcd/", "/abcd/", object.STRING_OBJ},
 
-		{"re:marks\"abcd\"", "\"abcd\"", object.REGEX_OBJ},
-		{"re:marks'abcd'", "'abcd'", object.REGEX_OBJ},
-		{"re:marks/abcd/", "/abcd/", object.REGEX_OBJ},
+		{"re:marks\"abcd\"", "\"abcd\"", object.PATTERN_OBJ},
+		{"re:marks'abcd'", "'abcd'", object.PATTERN_OBJ},
+		{"re:marks/abcd/", "/abcd/", object.PATTERN_OBJ},
 	}
 
 	runVmTests(t, tests, false, false)
@@ -3286,7 +3286,7 @@ func TestStringInterpolationModifiers(t *testing.T) {
 		{`val x = len; "{{x:T}}"`, common.BuiltInTypeName, object.STRING_OBJ},
 		{`val x = "255"; "{{x:T}}"`, common.StringTypeName, object.STRING_OBJ},
 		{`val x = 255; "{{x:7:T}}"`, common.StringTypeName, object.STRING_OBJ},
-		{`val x = re/255/; "{{x:T}}"`, common.RegexTypeName, object.STRING_OBJ},
+		{`val x = re/255/; "{{x:T}}"`, common.PatternTypeName, object.STRING_OBJ},
 		{`val x = null; "{{x:T}}"`, common.NullTypeName, object.STRING_OBJ},
 		{`val x = true; "{{x:T}}"`, common.BooleanTypeName, object.STRING_OBJ},
 		{`val x = []; "{{x:T}}"`, common.ListTypeName, object.STRING_OBJ},
@@ -7143,17 +7143,17 @@ func TestIsAndIsNotOperators(t *testing.T) {
 			x is not string`,
 			false, object.BOOLEAN_OBJ},
 
-		{`re// is regex`,
+		{`re// is pattern`,
 			true, object.BOOLEAN_OBJ},
-		{`re// is not regex`,
+		{`re// is not pattern`,
 			false, object.BOOLEAN_OBJ},
 		{`re// is list`,
 			false, object.BOOLEAN_OBJ},
 		{`val x = re//
-			x is regex`,
+			x is pattern`,
 			true, object.BOOLEAN_OBJ},
 		{`val x = re//
-			x is not regex`,
+			x is not pattern`,
 			false, object.BOOLEAN_OBJ},
 
 		{`dt// is datetime`,
@@ -7382,13 +7382,13 @@ func TestTransliterate(t *testing.T) {
 
 func TestRe2(t *testing.T) {
 	tests := []vmTestCase{
-		{"re/abc/ is regex", true, object.BOOLEAN_OBJ},
-		{"qs/abc/ is regex", false, object.BOOLEAN_OBJ},
+		{"re/abc/ is pattern", true, object.BOOLEAN_OBJ},
+		{"qs/abc/ is pattern", false, object.BOOLEAN_OBJ},
 
 		{`matching(" abc ", by=re/a.*c/)`, true, object.BOOLEAN_OBJ},
 		{`matching(" abc ", by=re/a.*d/)`, false, object.BOOLEAN_OBJ},
 
-		// regex functions accepting non-strings (auto-stringification)
+		// pattern functions accepting non-strings (auto-stringification)
 		{`matching(123.0, by=RE/\d+\.\d+/)`, true, object.BOOLEAN_OBJ},
 		{`matching(123, by=RE/\d+\.\d+/)`, false, object.BOOLEAN_OBJ},
 
@@ -7591,7 +7591,7 @@ func TestSubMatchesHashList(t *testing.T) {
 func TestRe2Modifiers(t *testing.T) {
 	tests := []vmTestCase{
 		// https://github.com/google/re2/wiki/Syntax (see "flags")
-		// http://rexegg.com/regex-modifiers.html
+		// http://rexegg.com/pattern-modifiers.html
 
 		// case insensitive
 		{`matching("ABC", by=re/a.*c/)`, false, object.BOOLEAN_OBJ},
@@ -7701,33 +7701,33 @@ END
 	runVmTests(t, tests, false, false)
 }
 
-func TestInterpolationIntoNonFreeSpacingRegex(t *testing.T) {
+func TestInterpolationIntoNonFreeSpacingPattern(t *testing.T) {
 	tests := []vmTestCase{
-		{ // non-free-spacing regex interpolated into a non-free-spacing regex literal
+		{ // non-free-spacing pattern interpolated into a non-free-spacing pattern literal
 			`val re1 = re/yo joe/
 		     val re2 = re/{{re1}}/
 		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // free-spacing regex interpolated into a non-free-spacing regex literal
+		{ // free-spacing pattern interpolated into a non-free-spacing pattern literal
 			`val re1 = re:x/yo joe/
 		     val re2 = re/{{re1}}/
 		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a non-free-spacing regex literal without escaping
+		{ // string interpolated into a non-free-spacing pattern literal without escaping
 			`val re1 = "yo joe"
 		     val re2 = re/{{re1}}/
 		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a non-free-spacing regex literal with escaping
+		{ // string interpolated into a non-free-spacing pattern literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:esc/{{re1}}/
 		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a non-free-spacing regex literal with escaping
+		{ // string interpolated into a non-free-spacing pattern literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re/{{re1:esc}}/
 		     matching("yo joes", by=re2)`,
@@ -7738,33 +7738,33 @@ func TestInterpolationIntoNonFreeSpacingRegex(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestInterpolationIntoFreeSpacingRegex(t *testing.T) {
+func TestInterpolationIntoFreeSpacingPattern(t *testing.T) {
 	tests := []vmTestCase{
-		{ // non-free-spacing regex interpolated into a free-spacing regex literal
+		{ // non-free-spacing pattern interpolated into a free-spacing pattern literal
 			`val re1 = re/yo joe/
 		     val re2 = re:x/{{re1}}/
 		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // free-spacing regex interpolated into a free-spacing regex literal
+		{ // free-spacing pattern interpolated into a free-spacing pattern literal
 			`val re1 = re:x/yo joe/
 		     val re2 = re:x/{{re1}}/
 		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a free-spacing regex literal without escaping
+		{ // string interpolated into a free-spacing pattern literal without escaping
 			`val re1 = "yo joe"
 		     val re2 = re:x/{{re1}}/
 		     matching("yojoes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a free-spacing regex literal with escaping
+		{ // string interpolated into a free-spacing pattern literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:esc:x/{{re1}}/
 		     matching("yo joes", by=re2)`,
 			true, object.BOOLEAN_OBJ,
 		},
-		{ // string interpolated into a free-spacing regex literal with escaping
+		{ // string interpolated into a free-spacing pattern literal with escaping
 			`val re1 = "yo joe"
 		     val re2 = re:x/{{re1:esc}}/
 		     matching("yo joes", by=re2)`,
@@ -7775,8 +7775,8 @@ func TestInterpolationIntoFreeSpacingRegex(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestRegexFunctionsWithPlainStrings(t *testing.T) {
-	// some of the same functions with plain strings instead of regexes
+func TestPatternFunctionsWithPlainStrings(t *testing.T) {
+	// some of the same functions with plain strings instead of patterns
 	tests := []vmTestCase{
 		{`replace(" abc abc ", by="abc", with="7", max=1)`, " 7 abc ", object.STRING_OBJ},
 		{`replace(" abc abc ", by="abc", with="7")`, " 7 7 ", object.STRING_OBJ},
@@ -8305,7 +8305,7 @@ func TestCallingBuiltInsFromBuiltIns(t *testing.T) {
 	runVmTests(t, tests, false, false)
 }
 
-func TestCallingRegexFromBuiltIns(t *testing.T) {
+func TestCallingPatternFromBuiltIns(t *testing.T) {
 	tests := []vmTestCase{
 		{`filter([16, 16, 25, 36, 42, 29, 49], by=re/[19]/)`,
 			[]int{16, 16, 29, 49}, object.LIST_OBJ,

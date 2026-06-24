@@ -9,40 +9,40 @@ import (
 	"langur/format"
 	"langur/object"
 	"langur/opcode"
-	"langur/regex"
+	"langur/pattern"
 	"langur/regexp"
 	"langur/str"
 )
 
 // NOTE: Coordinate these things with the use of opFormat (in the VM).
 
-var modifierRegexForFn = regexp.MustCompile(`^` + common.FunctionTokenLiteral +
-	` (?P<fn>` + common.IdentifierRegexString + `)$`)
+var modifierPatternForFn = regexp.MustCompile(`^` + common.FunctionTokenLiteral +
+	` (?P<fn>` + common.IdentifierPatternString + `)$`)
 
-// var modifierRegexForFn = regexp.MustCompile(`^-> (?P<fn>` + common.IdentifierRegexString + `)$`)
+// var modifierPatternForFn = regexp.MustCompile(`^-> (?P<fn>` + common.IdentifierPatternString + `)$`)
 
-var modifierRegexForDateTime = regexp.MustCompile(
+var modifierPatternForDateTime = regexp.MustCompile(
 	`^` + common.DateTimeTokenLiteral + `\((?P<format>.+)\)$|^` +
-		common.DateTimeTokenLiteral + ` (?P<var>` + common.IdentifierRegexString + `)$`)
+		common.DateTimeTokenLiteral + ` (?P<var>` + common.IdentifierPatternString + `)$`)
 
-var modifierRegexForTruncate = regexp.MustCompile(
+var modifierPatternForTruncate = regexp.MustCompile(
 	`^t(?:(?P<max>-?[0-9]+)(?P<trailingZeroes>[!\-])?)?$`)
-var modifierRegexForRounding = regexp.MustCompile(
+var modifierPatternForRounding = regexp.MustCompile(
 	`^r(?:(?P<max>-?[0-9]+)(?P<trailingZeroes>[!\-])?)?$`)
 
-var modifierRegexForAlign = regexp.MustCompile(
+var modifierPatternForAlign = regexp.MustCompile(
 	`^(?P<align>-?[1-9][0-9]*)(?:\((?:(?P<withcp>.)|(?P<withcpnum>[0-9a-fA-F]{2,8}))\))?$`)
 
-// var modifierRegexForAlignGraphemes = regexp.MustCompile(
+// var modifierPatternForAlignGraphemes = regexp.MustCompile(
 // 	`^g(?P<align>-?[1-9][0-9]*)(?:\((?:(?P<withcp>.)|(?P<withcpnum>[0-9a-fA-F]{2,8}))\))?$`)
 
-var modifierRegexForLimit = regexp.MustCompile(
+var modifierPatternForLimit = regexp.MustCompile(
 	`^L(?P<limit>-?[1-9][0-9]*)(?:\((?P<internal>[^)]*)\))?$`)
 
-var modifierRegexForLimitGraphemes = regexp.MustCompile(
+var modifierPatternForLimitGraphemes = regexp.MustCompile(
 	`^Lg(?P<limit>-?[1-9][0-9]*)(?:\((?P<internal>[^)]*)\))?$`)
 
-var modifierRegexForFixed = regexp.MustCompile(`(?x)
+var modifierPatternForFixed = regexp.MustCompile(`(?x)
 	^
 	(?P<sign>[+])?
 	(?P<base>[1-9][0-9]*)?
@@ -51,7 +51,7 @@ var modifierRegexForFixed = regexp.MustCompile(`(?x)
 	(?:(?P<point>[.,])(?P<frac>[0-9]+)(?P<trailingZeroes>[!\-])?)?
 	$`)
 
-var modifierRegexForScientificNotation = regexp.MustCompile(`(?x)
+var modifierPatternForScientificNotation = regexp.MustCompile(`(?x)
 	^
 	(?P<sign>[+])?
 	(?:
@@ -77,11 +77,11 @@ func subMatchByName(name string, subs, names []string) string {
 	return "ERROR"
 }
 
-func (c *Compiler) compileInterpolationModifiers(node Node, modifiers []string, regexType regex.RegexType) (
+func (c *Compiler) compileInterpolationModifiers(node Node, modifiers []string, patternType pattern.PatternType) (
 	pkg opcode.InsPackage, err error) {
 
 	for _, mod := range modifiers {
-		temp, err := c.compileInterpolationModifierIns(node, mod, regexType)
+		temp, err := c.compileInterpolationModifierIns(node, mod, patternType)
 		if err != nil {
 			return temp, err
 		}
@@ -93,12 +93,12 @@ func (c *Compiler) compileInterpolationModifiers(node Node, modifiers []string, 
 }
 
 func (c *Compiler) compileInterpolationModifierIns(
-	node Node, mod string, regexType regex.RegexType) (
+	node Node, mod string, patternType pattern.PatternType) (
 	pkg opcode.InsPackage, err error) {
 
 	if mod == format.MODSTRING_ESCAPE {
-		reType := object.NumberFromInt(int(regexType))
-		pkg = pkg.Append(c.constantIns(reType))
+		patternType := object.NumberFromInt(int(patternType))
+		pkg = pkg.Append(c.constantIns(patternType))
 		pkg = pkg.Append(opcode.MakePkg(node.TokenInfo(), opcode.OpFormat, format.FORMAT_ESCAPE))
 
 	} else if mod == "T" {
@@ -107,34 +107,34 @@ func (c *Compiler) compileInterpolationModifierIns(
 	} else if mod == "cp" {
 		pkg = pkg.Append(opcode.MakePkg(node.TokenInfo(), opcode.OpFormat, format.FORMAT_CODE_POINT))
 
-	} else if m := modifierRegexForAlign.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForAlign.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForAlignment(node, m)
 
-		// } else if m := modifierRegexForAlignGraphemes.FindStringSubmatch(mod); m != nil {
+		// } else if m := modifierPatternForAlignGraphemes.FindStringSubmatch(mod); m != nil {
 		// 	return c.compileModifierInsForAlignmentGraphemes(node, m)
 
-	} else if m := modifierRegexForLimit.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForLimit.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForLimit(node, m)
 
-	} else if m := modifierRegexForLimitGraphemes.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForLimitGraphemes.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForLimitGraphemes(node, m)
 
-	} else if m := modifierRegexForTruncate.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForTruncate.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForTruncate(node, m)
 
-	} else if m := modifierRegexForRounding.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForRounding.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForRounding(node, m)
 
-	} else if m := modifierRegexForFn.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForFn.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForCustomFn(node, m)
 
-	} else if m := modifierRegexForFixed.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForFixed.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForFixedNotation(node, m)
 
-	} else if m := modifierRegexForScientificNotation.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForScientificNotation.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForScientificNotation(node, m)
 
-	} else if m := modifierRegexForDateTime.FindStringSubmatch(mod); m != nil {
+	} else if m := modifierPatternForDateTime.FindStringSubmatch(mod); m != nil {
 		return c.compileModifierInsForDateTime(node, m)
 
 	} else {
@@ -147,7 +147,7 @@ func (c *Compiler) compileInterpolationModifierIns(
 func (c *Compiler) compileModifierInsForAlignment(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForAlign.SubexpNames()
+	names := modifierPatternForAlign.SubexpNames()
 
 	var align *object.Number
 	align, err = object.NumberFromString(subMatchByName("align", m, names))
@@ -175,7 +175,7 @@ func (c *Compiler) compileModifierInsForAlignment(node Node, m []string) (
 func (c *Compiler) compileModifierInsForLimit(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForLimit.SubexpNames()
+	names := modifierPatternForLimit.SubexpNames()
 
 	var limit *object.Number
 	limit, err = object.NumberFromString(subMatchByName("limit", m, names))
@@ -198,7 +198,7 @@ func (c *Compiler) compileModifierInsForLimit(node Node, m []string) (
 func (c *Compiler) compileModifierInsForLimitGraphemes(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForLimitGraphemes.SubexpNames()
+	names := modifierPatternForLimitGraphemes.SubexpNames()
 
 	var limit *object.Number
 	limit, err = object.NumberFromString(subMatchByName("limit", m, names))
@@ -221,7 +221,7 @@ func (c *Compiler) compileModifierInsForLimitGraphemes(node Node, m []string) (
 func (c *Compiler) compileModifierInsForCustomFn(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForFn.SubexpNames()
+	names := modifierPatternForFn.SubexpNames()
 
 	// custom formatting function
 	var customFn opcode.InsPackage
@@ -239,7 +239,7 @@ func (c *Compiler) compileModifierInsForCustomFn(node Node, m []string) (
 func (c *Compiler) compileModifierInsForTruncate(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForTruncate.SubexpNames()
+	names := modifierPatternForTruncate.SubexpNames()
 
 	var max *object.Number
 	mm := subMatchByName("max", m, names)
@@ -280,7 +280,7 @@ func (c *Compiler) compileModifierInsForTruncate(node Node, m []string) (
 func (c *Compiler) compileModifierInsForRounding(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForRounding.SubexpNames()
+	names := modifierPatternForRounding.SubexpNames()
 
 	var max *object.Number
 	mm := subMatchByName("max", m, names)
@@ -323,7 +323,7 @@ func (c *Compiler) compileModifierInsForFixedNotation(node Node, m []string) (
 
 	var integer, frac *object.Number
 
-	names := modifierRegexForFixed.SubexpNames()
+	names := modifierPatternForFixed.SubexpNames()
 
 	// base from 2 to 36
 	b := subMatchByName("base", m, names)
@@ -433,7 +433,7 @@ func (c *Compiler) compileModifierInsForFixedNotation(node Node, m []string) (
 func (c *Compiler) compileModifierInsForScientificNotation(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForScientificNotation.SubexpNames()
+	names := modifierPatternForScientificNotation.SubexpNames()
 
 	var scale object.Object
 	mm := subMatchByName("scale", m, names)
@@ -530,7 +530,7 @@ func (c *Compiler) compileModifierInsForScientificNotation(node Node, m []string
 func (c *Compiler) compileModifierInsForDateTime(node Node, m []string) (
 	pkg opcode.InsPackage, err error) {
 
-	names := modifierRegexForDateTime.SubexpNames()
+	names := modifierPatternForDateTime.SubexpNames()
 
 	dtvar := subMatchByName("var", m, names)
 	if dtvar == "" {

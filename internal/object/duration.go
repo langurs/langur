@@ -178,11 +178,11 @@ func durationStringToObject(s string) (*Duration, error) {
 		return &Duration{}, nil
 	}
 
-	m := dtRegexDuration.FindStringSubmatch(s)
+	m := dtPatternDuration.FindStringSubmatch(s)
 	if m == nil {
 		return nil, fmt.Errorf("Invalid duration string")
 	}
-	names := dtRegexDuration.SubexpNames()
+	names := dtPatternDuration.SubexpNames()
 
 	years, okyears := subMatchToInt64("years", m, names)
 	months, okmonths := subMatchToInt64("months", m, names)

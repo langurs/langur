@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"langur/format"
 	"langur/object"
-	"langur/regex"
+	"langur/pattern"
 	"langur/str"
 )
 
@@ -116,14 +116,14 @@ func (pr *Process) format(code int) (result object.Object, err error) {
 	case format.FORMAT_ESCAPE:
 		things := pr.popMultiple(2)
 		original := things[0]
-		regexType := things[1]
+		patternType := things[1]
 
-		reType, ok := object.NumberToInt(regexType)
+		pattType, ok := object.NumberToInt(patternType)
 		if !ok {
-			err = fmt.Errorf("Unable to convert integer for string/regex type for interpolation")
+			err = fmt.Errorf("Unable to convert integer for string/pattern type for interpolation")
 			return
 		}
-		result, err = object.EscString(original, regex.RegexType(reType))
+		result, err = object.EscString(original, pattern.PatternType(pattType))
 
 	case format.FORMAT_FIXED:
 		things := pr.popMultiple(10)

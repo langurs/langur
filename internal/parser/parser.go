@@ -115,7 +115,7 @@ func (p *Parser) setParseFunctionMaps() {
 		token.FOR:   p.parseForLoop,
 		token.WHILE: p.parseWhileLoop,
 
-		token.REGEX_RE2: p.parseRegex,
+		token.PATTERN_RE2: p.parsePattern,
 		token.DATETIME:  p.parseDateTime,
 		token.DURATION:  p.parseDuration,
 		token.STRING:    p.parseString,

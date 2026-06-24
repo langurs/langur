@@ -83,7 +83,7 @@ func IsAllowed(cp rune, pua, allVertSpc, invisibleSpc bool) bool {
 
 func IsAllowableInvisibleSpace(cp rune) bool {
 	// space code points not included in the Unicode Graphic or Space categories
-	// optionally allowed on string and regex literals
+	// optionally allowed on string and pattern literals
 	switch cp {
 	case
 		// excluding FEFF, since its use as a space is deprecated

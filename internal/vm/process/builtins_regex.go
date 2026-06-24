@@ -1,4 +1,4 @@
-// langur/vm/process/builtins_regex.go
+// langur/vm/process/builtins_pattern.go
 
 package process
 
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// Note: Several of these are not purely regex functions (may accept a plain string).
+// Note: Several of these are not purely pattern functions (may accept a plain string).
 
 // matching, match, submatch, index, subindex
 // matches, submatches, indices, subindices
@@ -17,7 +17,7 @@ import (
 var bi_matching = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "matching",
-		Description: "accepts compiled regex and returns Boolean indicating whether the string matches the pattern",
+		Description: "accepts compiled pattern and returns Boolean indicating whether the string matches the pattern",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -35,16 +35,16 @@ var bi_matching = &object.BuiltIn{
 
 		s := args[0].String()
 
-		re, isRegex := args[1].(*object.Regex)
-		if !isRegex {
+		re, isPattern := args[1].(*object.Pattern)
+		if !isPattern {
 			check, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or pattern for argument by")
 			}
 		}
 
-		if isRegex {
-			success, err := object.RegexMatching(re, s)
+		if isPattern {
+			success, err := object.PatternMatching(re, s)
 			if err != nil {
 				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -58,14 +58,14 @@ var bi_matching = &object.BuiltIn{
 var bi_match = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "match",
-		Description: "accepts compiled regex and returns matching string, or returns null or alternate value (optional) for no match",
+		Description: "accepts compiled pattern and returns matching string, or returns null or alternate value (optional) for no match",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 			object.Parameter{ExternalName: "alt"},
 		},
 	},
@@ -73,9 +73,9 @@ var bi_match = &object.BuiltIn{
 		const fnName = "match"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
-		result, err := object.RegexMatchOnce(re, s)
+		result, err := object.PatternMatchOnce(re, s)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -93,14 +93,14 @@ var bi_match = &object.BuiltIn{
 var bi_matches = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "matches",
-		Description: "accepts compiled regex and returns list of progressive matches (empty list if no matches)",
+		Description: "accepts compiled pattern and returns list of progressive matches (empty list if no matches)",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
@@ -108,14 +108,14 @@ var bi_matches = &object.BuiltIn{
 		const fnName = "matches"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
 		max, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		list, err := object.RegexMatchProgressive(re, s, max)
+		list, err := object.PatternMatchProgressive(re, s, max)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -133,16 +133,16 @@ var bi_submatch = &object.BuiltIn{
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatch"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
-		result, err := object.RegexSubMatches(re, s)
+		result, err := object.PatternSubMatches(re, s)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -160,16 +160,16 @@ var bi_submatchH = &object.BuiltIn{
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "submatchH"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
-		result, err := object.RegexSubMatchesHash(re, s)
+		result, err := object.PatternSubMatchesHash(re, s)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -187,7 +187,7 @@ var bi_submatches = &object.BuiltIn{
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
@@ -195,14 +195,14 @@ var bi_submatches = &object.BuiltIn{
 		const fnName = "submatches"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatches(re, s, cnt)
+		result, err := object.PatternProgressiveSubMatches(re, s, cnt)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -220,7 +220,7 @@ var bi_submatchesH = &object.BuiltIn{
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
@@ -228,14 +228,14 @@ var bi_submatchesH = &object.BuiltIn{
 		const fnName = "submatchesH"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewException(object.ERR_ARGUMENTS, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatchesHashList(re, s, cnt)
+		result, err := object.PatternProgressiveSubMatchesHashList(re, s, cnt)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -246,7 +246,7 @@ var bi_submatchesH = &object.BuiltIn{
 var bi_split = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "split",
-		Description: "accepts regex or string delimiter and splits anything into a list of strings",
+		Description: "accepts pattern or string delimiter and splits anything into a list of strings",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -263,24 +263,24 @@ var bi_split = &object.BuiltIn{
 		// default delimiter as ZLS
 		var delim, s string
 		var countEach int
-		var isRegex, isCountEach bool
-		var re *object.Regex
+		var isPattern, isCountEach bool
+		var re *object.Pattern
 
 		s = args[0].String()
 
-		// check for regex/string/integer count to split by
+		// check for pattern/string/integer count to split by
 		switch by := args[1].(type) {
-		case *object.Regex:
-			re, isRegex = by, true
+		case *object.Pattern:
+			re, isPattern = by, true
 		case *object.String:
 			delim = by.String()
 		case *object.Number:
 			countEach, isCountEach = object.NumberToInt(by)
 			if !isCountEach {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, pattern, or integer for argument delim")
 			}
 		default:
-			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, regex, or integer for argument delim")
+			return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string, pattern, or integer for argument delim")
 		}
 
 		count, ok := args[2].(*object.Number)
@@ -292,8 +292,8 @@ var bi_split = &object.BuiltIn{
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
-		if isRegex {
-			result, err := object.RegexSplit(re, s, max)
+		if isPattern {
+			result, err := object.PatternSplit(re, s, max)
 			if err != nil {
 				return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 			}
@@ -315,7 +315,7 @@ var bi_split = &object.BuiltIn{
 var bi_index = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "index",
-		Description: "accepts regex and returns code point range for match, or returns null or alternate value (optional) for no match",
+		Description: "accepts pattern and returns code point range for match, or returns null or alternate value (optional) for no match",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -334,19 +334,19 @@ var bi_index = &object.BuiltIn{
 
 		s := args[0].String()
 
-		re, isRegex := args[1].(*object.Regex)
-		if !isRegex {
+		re, isPattern := args[1].(*object.Pattern)
+		if !isPattern {
 			sub, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or pattern for argument by")
 			}
 		}
 
 		var result object.Object
 		var err error
 
-		if isRegex {
-			result, err = object.RegexIndex(re, s)
+		if isPattern {
+			result, err = object.PatternIndex(re, s)
 		} else {
 			result, err = object.StringIndex(sub.String(), s)
 		}
@@ -368,7 +368,7 @@ var bi_index = &object.BuiltIn{
 var bi_indices = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "indices",
-		Description: `accepts regex and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match`,
+		Description: `accepts pattern and returns list of code point ranges for progressive matches (a.k.a. "global"), or empty list for no match`,
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -387,11 +387,11 @@ var bi_indices = &object.BuiltIn{
 
 		s := args[0].String()
 
-		re, isRegex := args[1].(*object.Regex)
-		if !isRegex {
+		re, isPattern := args[1].(*object.Pattern)
+		if !isPattern {
 			sub, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or pattern for argument by")
 			}
 		}
 
@@ -401,8 +401,8 @@ var bi_indices = &object.BuiltIn{
 		}
 
 		var result object.Object
-		if isRegex {
-			result, err = object.RegexProgressiveIndices(re, s, cnt)
+		if isPattern {
+			result, err = object.PatternProgressiveIndices(re, s, cnt)
 		} else {
 			result, err = object.StringProgressiveIndices(sub.String(), s, cnt)
 		}
@@ -416,23 +416,23 @@ var bi_indices = &object.BuiltIn{
 var bi_subindex = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "subindex",
-		Description: `accepts regex and returns list of code point ranges for submatches, or empty list for no match`,
+		Description: `accepts pattern and returns list of code point ranges for submatches, or empty list for no match`,
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "subindex"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
-		result, err := object.RegexSubMatchesIndices(re, s)
+		result, err := object.PatternSubMatchesIndices(re, s)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
@@ -443,14 +443,14 @@ var bi_subindex = &object.BuiltIn{
 var bi_subindices = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "subindices",
-		Description: `accepts regex and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match`,
+		Description: `accepts pattern and returns list of lists of code point ranges for progressive submatches (a.k.a. "global"), or empty list for no match`,
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
 		},
 
 		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "by", Required: true, Type: object.REGEX_OBJ},
+			object.Parameter{ExternalName: "by", Required: true, Type: object.PATTERN_OBJ},
 			object.Parameter{ExternalName: "max", DefaultValue: object.IndicatorNoMax, Type: object.NUMBER_OBJ},
 		},
 	},
@@ -458,14 +458,14 @@ var bi_subindices = &object.BuiltIn{
 		const fnName = "subindices"
 
 		s := args[0].String()
-		re := args[1].(*object.Regex)
+		re := args[1].(*object.Pattern)
 
 		cnt, err := args[2].(*object.Number).ToInt()
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}
 
-		result, err := object.RegexProgressiveSubMatchesIndices(re, s, cnt)
+		result, err := object.PatternProgressiveSubMatchesIndices(re, s, cnt)
 		if err != nil {
 			return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 		}

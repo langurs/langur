@@ -15,13 +15,13 @@ func init() {
 	}
 }
 
-var RegexNewLineString = "\x0D\x0A|[\x0D\x0A\u0085\u2028\u2029]"
-var RegexNewLine = regexp.MustCompile(RegexNewLineString)
+var PatternNewLineString = "\x0D\x0A|[\x0D\x0A\u0085\u2028\u2029]"
+var PatternNewLine = regexp.MustCompile(PatternNewLineString)
 
 func ReplaceNewLinesWithSystem(s string) string {
-	return RegexNewLine.ReplaceAllString(s, SysNewLine)
+	return PatternNewLine.ReplaceAllString(s, SysNewLine)
 }
 
 func ReplaceNewLinesWithLinux(s string) string {
-	return RegexNewLine.ReplaceAllString(s, "\x0A")
+	return PatternNewLine.ReplaceAllString(s, "\x0A")
 }

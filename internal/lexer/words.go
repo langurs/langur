@@ -31,8 +31,8 @@ func (lex *Lexer) readAndInterpretWordToken(tok *token.Token, cpPosition int) (e
 		case token.FREE_WORD_LIST:
 			err = lex.readFreeWordList(tok)
 
-		case token.REGEX_RE2:
-			err = lex.readRe2Regex(tok)
+		case token.PATTERN_RE2:
+			err = lex.readRe2Pattern(tok)
 
 		case token.DATETIME:
 			err = lex.readDateTimeLiteral(tok)

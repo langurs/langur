@@ -32,23 +32,23 @@ as of langur 0.12.6, following the lead of others in using fractional seconds on
  6 digits: https://docs.oracle.com/en/database/oracle/oracle-database/21/adjsn/iso-8601-date-time-and-duration-support.html
 */
 
-var dtRegexDurationDaysString = `(?x:
+var dtPatternDurationDaysString = `(?x:
 	(?:(?P<years>[0-9]+)[Yy])?\ ?
 	(?:(?P<months>[0-9]+)[Mm])?\ ?
 	(?:(?P<days>[0-9]+)[Dd])?\ ?
 )`
 
-var dtRegexDurationTimeString = `(?x:T\ ?
+var dtPatternDurationTimeString = `(?x:T\ ?
 	(?:(?P<hours>[0-9]+)[Hh])?\ ?
 	(?:(?P<minutes>[0-9]+)[Mm])?\ ?
 	(?:(?P<seconds>[0-9]+) (?:\.(?P<secondsfraction>[0-9]{1,9}))? [Ss])?
 )`
 
-var dtRegexDurationWeeksString = `(?P<weeks>[0-9]+)[Ww]`
+var dtPatternDurationWeeksString = `(?P<weeks>[0-9]+)[Ww]`
 
-var dtRegexDuration = regexp.MustCompile(
-	"^P?(?:" + dtRegexDurationDaysString + ")?(?:" + dtRegexDurationTimeString + ")?$|^P?" +
-		dtRegexDurationWeeksString + "$")
+var dtPatternDuration = regexp.MustCompile(
+	"^P?(?:" + dtPatternDurationDaysString + ")?(?:" + dtPatternDurationTimeString + ")?$|^P?" +
+		dtPatternDurationWeeksString + "$")
 
 // A "month" and a "year" are hard to define in terms of nanoseconds.
 const (
@@ -77,11 +77,11 @@ func IsValidDurationString(s string) bool {
 		return true
 	}
 
-	m := dtRegexDuration.FindStringSubmatch(s)
+	m := dtPatternDuration.FindStringSubmatch(s)
 	if m == nil {
 		return false
 	}
-	names := dtRegexDuration.SubexpNames()
+	names := dtPatternDuration.SubexpNames()
 
 	// must have at least one submatch
 	_, ok := subMatchToInt64("years", m, names)

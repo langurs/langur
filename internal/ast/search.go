@@ -81,7 +81,7 @@ func (sc *searchCriteria) searchNodeSlice(parent Node, checkNodes []Node) (found
 // 		Types: []Node{
 // 			&DeclarationNode{}, &AssignmentNode{}, &ModeNode{},
 // 			&CallNode{}, &FunctionNode{},
-// 			&StringNode{}, &RegexNode{}, &DateTimeNode{}, &DurationNode{},
+// 			&StringNode{}, &PatternNode{}, &DateTimeNode{}, &DurationNode{},
 // 		},
 // 	},
 // }
@@ -113,7 +113,7 @@ func IsSimple(node Node) bool {
 	case *StringNode:
 		return len(n.Interpolations) == 0
 
-	case *RegexNode:
+	case *PatternNode:
 		return IsSimple(n.Pattern)
 
 	case *DateTimeNode:

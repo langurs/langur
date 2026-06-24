@@ -7,7 +7,7 @@ import (
 	"langur/object"
 	"langur/opcode"
 	"langur/token"
-	"langur/regex"
+	"langur/pattern"
 )
 
 func (c *Compiler) compileNumberObject(node *NumberNode) (number *object.Number, err error) {
@@ -99,7 +99,7 @@ func (c *Compiler) checkForComplexNumber(node *InfixExpressionNode, op opcode.Op
 }
 
 func (c *Compiler) compileString(
-	node *StringNode, regexType regex.RegexType) (
+	node *StringNode, patternType pattern.PatternType) (
 	pkg opcode.InsPackage, err error) {
 
 	if len(node.Interpolations) != len(node.Values)-1 {
@@ -133,12 +133,12 @@ func (c *Compiler) compileString(
 					return
 				}
 
-				if regexType != regex.NONE {
-					// interpolating regex into regex?
-					// check that regex types match
-					re, ok := interp.Value.(*RegexNode)
-					if ok && re.RegexType != regexType {
-						err = c.makeErr(interp, fmt.Sprintf("Interpolated regex type value (%s) does not match regex literal type (%s)", re.RegexType.String(), regexType.String()))
+				if patternType != pattern.NONE {
+					// interpolating pattern into pattern?
+					// check that pattern types match
+					re, ok := interp.Value.(*PatternNode)
+					if ok && re.PatternType != patternType {
+						err = c.makeErr(interp, fmt.Sprintf("Interpolated pattern type value (%s) does not match pattern literal type (%s)", re.PatternType.String(), patternType.String()))
 						return
 					}
 				}
@@ -150,7 +150,7 @@ func (c *Compiler) compileString(
 				pkg = pkg.Append(interpolation)
 				count++
 
-				mods, err := c.compileInterpolationModifiers(node, interp.Modifiers, regexType)
+				mods, err := c.compileInterpolationModifiers(node, interp.Modifiers, patternType)
 				if err != nil {
 					return pkg, err
 				}

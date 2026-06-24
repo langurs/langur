@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// plain string counterpart to RegexIndex()
+// plain string counterpart to PatternIndex()
 func StringIndex(sub, s string) (Object, error) {
 	start := strings.Index(s, sub)
 
@@ -19,7 +19,7 @@ func StringIndex(sub, s string) (Object, error) {
 	return &Range{Start: NumberFromInt(start), End: NumberFromInt(end)}, err
 }
 
-// plain string counterpart to RegexProgressiveIndices()
+// plain string counterpart to PatternProgressiveIndices()
 func StringProgressiveIndices(find, s string, max int) (Object, error) {
 	arr := &List{}
 	offset := 0

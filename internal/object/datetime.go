@@ -234,9 +234,9 @@ func StringForNowDateTime(s string, literal bool) bool {
 	}
 	// case 2: a time zone string
 	if literal {
-		return !dtRegexTZLiteral.MatchString(s)
+		return !dtPatternTZLiteral.MatchString(s)
 	}
-	return !dtRegexTZ.MatchString(s)
+	return !dtPatternTZ.MatchString(s)
 }
 
 func NewDateTimeFromLiteralString(s string, nowIncludesFractionalSeconds bool) (dt *DateTime, err error) {
@@ -265,18 +265,18 @@ func NewDateTimeFromString(s string, nowIncludesFractionalSeconds, literal bool)
 	}
 	err = nil
 
-	m := dtRegex.FindStringSubmatch(s)
+	m := dtPattern.FindStringSubmatch(s)
 	var names []string
 	if m == nil {
 		// possible second case for "now"
-		m = dtRegexTZ.FindStringSubmatch(s)
+		m = dtPatternTZ.FindStringSubmatch(s)
 		if m == nil {
 			err = fmt.Errorf("Invalid Date-Time String")
 			return
 		}
 
 		// current date and time with a specific time zone offset
-		names = dtRegexTZ.SubexpNames()
+		names = dtPatternTZ.SubexpNames()
 		tzhours := subMatchByName("tzhours", m, names)
 		tzminutes := subMatchByName("tzminutes", m, names)
 
@@ -295,7 +295,7 @@ func NewDateTimeFromString(s string, nowIncludesFractionalSeconds, literal bool)
 		return
 	}
 
-	names = dtRegex.SubexpNames()
+	names = dtPattern.SubexpNames()
 
 	year, _ := subMatchToInt("year", m, names)
 	month, _ := subMatchToInt("month", m, names)
@@ -370,50 +370,50 @@ For RFC 3339, a -00 offset is an "Unknown Local Offset Convention." For ISO 8601
 
 */
 
-// regex for date-time literal string verification
+// pattern for date-time literal string verification
 // no short form; colons and dashes required
-var dtRegexDateLiteralString = "(?P<year>[0-9]{4})-(?P<month>1[0-2]|0[1-9])-(?P<day>3[01]|[12][0-9]|0[1-9])"
+var dtPatternDateLiteralString = "(?P<year>[0-9]{4})-(?P<month>1[0-2]|0[1-9])-(?P<day>3[01]|[12][0-9]|0[1-9])"
 
-var dtRegexTimeLiteralString = `(?x)
+var dtPatternTimeLiteralString = `(?x)
 	(?P<hour>2[0-3]|[01][0-9])
     	(?: :(?P<minute>[0-5][0-9])
         	(?: :(?P<second>[0-5][0-9]) (?: \. (?P<secondsfraction>[0-9]{1,9}))? )?
 		)?`
 
-var dtRegexTimeZoneLiteralString = `(?x)
+var dtPatternTimeZoneLiteralString = `(?x)
     (?:(?P<tzutc>Z)
     	|
         (?P<tzhours>[+-] (?: 2[0-3]|[01][0-9]))
         (?: :(?P<tzminutes>[0-5][0-9]) )?
     )?`
 
-var dtRegexLiteral = regexp.MustCompile(
-	"^" + dtRegexDateLiteralString + "(?:(?: |T)" + dtRegexTimeLiteralString + dtRegexTimeZoneLiteralString + ")?$")
+var dtPatternLiteral = regexp.MustCompile(
+	"^" + dtPatternDateLiteralString + "(?:(?: |T)" + dtPatternTimeLiteralString + dtPatternTimeZoneLiteralString + ")?$")
 
-var dtRegexTZLiteral = regexp.MustCompile("^" + dtRegexTimeZoneLiteralString + "$")
+var dtPatternTZLiteral = regexp.MustCompile("^" + dtPatternTimeZoneLiteralString + "$")
 
-// regex not just for date-time literals (less restrictive)
+// pattern not just for date-time literals (less restrictive)
 // colons and dashes optional
 // allowing conversion of a string to a date-time from the short form
-var dtRegexDateString = "(?P<year>[0-9]{4})-?(?P<month>1[0-2]|0[1-9])-?(?P<day>3[01]|[12][0-9]|0[1-9])"
+var dtPatternDateString = "(?P<year>[0-9]{4})-?(?P<month>1[0-2]|0[1-9])-?(?P<day>3[01]|[12][0-9]|0[1-9])"
 
-var dtRegexTimeString = `(?x)
+var dtPatternTimeString = `(?x)
 	(?P<hour>2[0-3]|[01][0-9])
     	(?: :?(?P<minute>[0-5][0-9])
         	(?: :?(?P<second>[0-5][0-9]) (?: \. (?P<secondsfraction>[0-9]{1,9}))? )?
 		)?`
 
-var dtRegexTimeZoneString = `(?x)
+var dtPatternTimeZoneString = `(?x)
     (?:(?P<tzutc>Z)
     	|
         (?P<tzhours>[+-] (?: 2[0-3]|[01][0-9]))
         (?: :?(?P<tzminutes>[0-5][0-9]) )?
     )?`
 
-var dtRegex = regexp.MustCompile(
-	"^" + dtRegexDateString + "(?:(?: |T)" + dtRegexTimeString + dtRegexTimeZoneString + ")?$")
+var dtPattern = regexp.MustCompile(
+	"^" + dtPatternDateString + "(?:(?: |T)" + dtPatternTimeString + dtPatternTimeZoneString + ")?$")
 
-var dtRegexTZ = regexp.MustCompile("^" + dtRegexTimeZoneString + "$")
+var dtPatternTZ = regexp.MustCompile("^" + dtPatternTimeZoneString + "$")
 
 func IsValidDateTimeString(s string, literal bool) bool {
 	_, err := stringToLocation(s, literal)
@@ -424,24 +424,24 @@ func IsValidDateTimeString(s string, literal bool) bool {
 	var m, names []string
 
 	if literal {
-		m = dtRegexLiteral.FindStringSubmatch(s)
+		m = dtPatternLiteral.FindStringSubmatch(s)
 	} else {
-		m = dtRegex.FindStringSubmatch(s)
+		m = dtPattern.FindStringSubmatch(s)
 	}
 
 	if m == nil {
 		if literal {
-			m = dtRegexTZLiteral.FindStringSubmatch(s)
+			m = dtPatternTZLiteral.FindStringSubmatch(s)
 		} else {
-			m = dtRegexTZ.FindStringSubmatch(s)
+			m = dtPatternTZ.FindStringSubmatch(s)
 		}
 		if m == nil {
 			return false
 		}
-		names = dtRegexTZ.SubexpNames()
+		names = dtPatternTZ.SubexpNames()
 
 	} else {
-		names = dtRegex.SubexpNames()
+		names = dtPattern.SubexpNames()
 	}
 
 	// no -00 offset (+00 okay)
@@ -592,14 +592,14 @@ func stringToLocation(s string, literal bool) (*time.Location, error) {
 	var m, names []string
 
 	if literal {
-		m = dtRegexTZLiteral.FindStringSubmatch(s)
+		m = dtPatternTZLiteral.FindStringSubmatch(s)
 	} else {
-		m = dtRegexTZ.FindStringSubmatch(s)
+		m = dtPatternTZ.FindStringSubmatch(s)
 	}
 	if m == nil {
 		return nil, fmt.Errorf("Invalid time zone string")
 	}
-	names = dtRegexTZ.SubexpNames()
+	names = dtPatternTZ.SubexpNames()
 
 	tzhours := subMatchByName("tzhours", m, names)
 	tzminutes := subMatchByName("tzminutes", m, names)

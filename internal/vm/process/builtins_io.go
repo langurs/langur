@@ -157,7 +157,7 @@ var bi_read = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:          "read",
 		ImpureEffects: true,
-		Description:   "reads from the console, validating the string is good by the regex or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
+		Description:   "reads from the console, validating the string is good by the pattern or function passed, and giving the error message specified if the string is no good; If no alternate is given, this may ultimately generate an error.",
 
 		ParamKeyword: []object.Parameter{
 			object.Parameter{ExternalName: "prompt", Type: object.STRING_OBJ, DefaultValue: object.ZeroLengthString()},
@@ -180,17 +180,17 @@ var bi_read = &object.BuiltIn{
 
 		// "validation" argument
 		var fn object.Object
-		var re *object.Regex
-		validationByRegex := false
+		var re *object.Pattern
+		validationByPattern := false
 
 		if args[1] != nil {
-			re, ok = args[1].(*object.Regex)
+			re, ok = args[1].(*object.Pattern)
 			if ok {
-				validationByRegex = true
+				validationByPattern = true
 			} else {
 				fn = args[1]
 				if !object.IsCallable(fn) {
-					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or regex for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected function or pattern for validation argument")
 				}
 			}
 		}
@@ -226,11 +226,11 @@ var bi_read = &object.BuiltIn{
 				stop = true
 			}
 
-			if validationByRegex || fn != nil {
+			if validationByPattern || fn != nil {
 				var verify object.Object
 
-				if validationByRegex {
-					verify, err = object.RegexMatching(re, input)
+				if validationByPattern {
+					verify, err = object.PatternMatching(re, input)
 				} else {
 					verify, err = pr.callback(fn, object.NewString(input))
 				}

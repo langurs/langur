@@ -22,7 +22,7 @@ type Token struct {
 	Code2 int
 
 	// Attachments
-	// 1. string/regex interpolation
+	// 1. string/pattern interpolation
 	Attachments []interface{}
 
 	// for error reporting

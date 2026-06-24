@@ -1,27 +1,27 @@
-// langur/vm/process/builtins_regex_re2.go
+// langur/vm/process/builtins_pattern_re2.go
 
 package process
 
 import (
 	"langur/object"
-	"langur/regex"
+	"langur/pattern"
 )
 
 // reCompile, reEsc
 
-// re2 functions (see also builtin_regex.go)...
+// re2 functions (see also builtin_pattern.go)...
 
 var bi_reCompile = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "reCompile",
-		Description: "compiles string pattern into re2 regex",
+		Description: "compiles string pattern into re2 pattern",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "from", Type: object.STRING_OBJ},
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		re, err := object.NewRegex(args[0].String(), regex.RE2)
+		re, err := object.NewPattern(args[0].String(), pattern.RE2)
 		if err != nil {
 			return object.NewException(object.ERR_ARGUMENTS, "reCompile", err.Error())
 		}
@@ -39,9 +39,9 @@ var bi_reEsc = &object.BuiltIn{
 		},
 	},
 	Fn: func(pr *Process, args ...object.Object) object.Object {
-		pattern := object.ToString(args[0])
+		p := object.ToString(args[0])
 
-		newStrObj, err := object.EscString(pattern, regex.RE2)
+		newStrObj, err := object.EscString(p, pattern.RE2)
 		if err != nil {
 			return object.NewException(object.ERR_ARGUMENTS, "reEsc", err.Error())
 		}

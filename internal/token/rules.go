@@ -154,7 +154,7 @@ func MayStartFunctionArg(tt Type) bool {
 		SWITCH, IF,
 		FOR, WHILE,
 		TRUE, FALSE, NULL,
-		REGEX_RE2,
+		PATTERN_RE2,
 		LPAREN, LBRACKET, LBRACE:
 
 		return true

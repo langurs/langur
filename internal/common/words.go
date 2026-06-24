@@ -3,9 +3,9 @@
 
 package common
 
-const IdentifierRegexString = "[_a-zA-Z][a-zA-Z0-9_]*$"
+const IdentifierPatternString = "[_a-zA-Z][a-zA-Z0-9_]*$"
 
-// const IdentifierRegexString = "^[a-zA-Z][_a-zA-Z0-9]*|_+[a-zA-Z0-9][_a-zA-Z0-9]*$"
+// const IdentifierPatternString = "^[a-zA-Z][_a-zA-Z0-9]*|_+[a-zA-Z0-9][_a-zA-Z0-9]*$"
 
 const (
 	NumberType   = "number"
@@ -13,7 +13,7 @@ const (
 	RangeType    = "range"
 	BooleanType  = "bool"
 	StringType   = "string"
-	RegexType    = "regex"
+	PatternType  = "pattern"
 	DateTimeType = "datetime"
 	DurationType = "duration"
 	ListType     = "list"
@@ -24,7 +24,7 @@ const (
 	RangeTypeName    = "Range"
 	BooleanTypeName  = "Boolean"
 	StringTypeName   = "String"
-	RegexTypeName    = "Regex"
+	PatternTypeName  = "Pattern"
 	DateTimeTypeName = "DateTime"
 	DurationTypeName = "Duration"
 	ListTypeName     = "List"
@@ -44,8 +44,8 @@ const (
 	DateTimeTokenLiteral = "dt"
 	DurationTokenLiteral = "dr"
 
-	RegexRe2TokenLiteral = "re"
-	RegexRE2TokenLiteral = "RE"
+	PatternRe2TokenLiteral = "re"
+	PatternRE2TokenLiteral = "RE"
 
 	NullTokenLiteral  = "null"
 	TrueTokenLiteral  = "true"

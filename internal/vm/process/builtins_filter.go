@@ -8,11 +8,11 @@ import (
 
 // filter, count
 
-// return all values (as list or hash) returning true from passed regex or function
+// return all values (as list or hash) returning true from passed pattern or function
 var bi_filter = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "filter",
-		Description: "returns list (or hash) of values verified by given function or regex, or an empty list or hash if there are no matches",
+		Description: "returns list (or hash) of values verified by given function or pattern, or an empty list or hash if there are no matches",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
@@ -24,18 +24,18 @@ var bi_filter = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "filter"
 
-		var isRegex bool
-		var re *object.Regex
+		var isPattern bool
+		var re *object.Pattern
 
 		over, by := args[0], args[1]
 
 		if by != nil && !object.IsCallable(by) {
 			var ok bool
-			re, ok = by.(*object.Regex)
+			re, ok = by.(*object.Pattern)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to filter by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected pattern or callable to filter by")
 			}
-			isRegex = true
+			isPattern = true
 		}
 
 		var result object.Object
@@ -44,9 +44,9 @@ var bi_filter = &object.BuiltIn{
 		switch arg := over.(type) {
 		case *object.List:
 			newArr := &object.List{}
-			if isRegex {
+			if isPattern {
 				for _, v := range arg.Elements {
-					result, err = object.RegexMatchingOrError(re, v)
+					result, err = object.PatternMatchingOrError(re, v)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -77,9 +77,9 @@ var bi_filter = &object.BuiltIn{
 
 		case *object.Hash:
 			elements := make([]object.Object, 0, len(arg.Pairs)*2)
-			if isRegex {
+			if isPattern {
 				for _, kv := range arg.Pairs {
-					result, err = object.RegexMatchingOrError(re, kv.Value)
+					result, err = object.PatternMatchingOrError(re, kv.Value)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -122,7 +122,7 @@ var bi_filter = &object.BuiltIn{
 var bi_count = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "count",
-		Description: "returns count of values verified by given function or regex",
+		Description: "returns count of values verified by given function or pattern",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
@@ -134,19 +134,19 @@ var bi_count = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "count"
 
-		var isRegex bool
-		var re *object.Regex
+		var isPattern bool
+		var re *object.Pattern
 		var count int64
 
 		over, by := args[0], args[1]
 
 		if by != nil && !object.IsCallable(by) {
 			var ok bool
-			re, ok = by.(*object.Regex)
+			re, ok = by.(*object.Pattern)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable to count by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected pattern or callable to count by")
 			}
-			isRegex = true
+			isPattern = true
 		}
 
 		var result object.Object
@@ -154,9 +154,9 @@ var bi_count = &object.BuiltIn{
 
 		switch arg := over.(type) {
 		case *object.List:
-			if isRegex {
+			if isPattern {
 				for _, v := range arg.Elements {
-					result, err = object.RegexMatchingOrError(re, v)
+					result, err = object.PatternMatchingOrError(re, v)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -185,9 +185,9 @@ var bi_count = &object.BuiltIn{
 			}
 
 		case *object.Hash:
-			if isRegex {
+			if isPattern {
 				for _, kv := range arg.Pairs {
-					result, err = object.RegexMatchingOrError(re, kv.Value)
+					result, err = object.PatternMatchingOrError(re, kv.Value)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}

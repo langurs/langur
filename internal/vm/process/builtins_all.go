@@ -11,7 +11,7 @@ import (
 var bi_all = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "all",
-		Description: "returns bool indicating whether the validation function or regex returns true for all elements of a list or hash, or null when given an empty list or hash",
+		Description: "returns bool indicating whether the validation function or pattern returns true for all elements of a list or hash, or null when given an empty list or hash",
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
@@ -22,19 +22,19 @@ var bi_all = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "all"
 
-		var isRegex bool
-		var re *object.Regex
+		var isPattern bool
+		var re *object.Pattern
 
 		over, by := args[0], args[1]
 
 		if by != nil {
 			if !object.IsCallable(by) {
 				var ok bool
-				re, ok = by.(*object.Regex)
+				re, ok = by.(*object.Pattern)
 				if !ok {
-					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected pattern or callable for validation argument")
 				}
-				isRegex = true
+				isPattern = true
 			}
 		}
 
@@ -47,9 +47,9 @@ var bi_all = &object.BuiltIn{
 				return object.NONE
 			}
 
-			if isRegex {
+			if isPattern {
 				for _, v := range arg.Elements {
-					result, err = object.RegexMatchingOrError(re, v)
+					result, err = object.PatternMatchingOrError(re, v)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -82,9 +82,9 @@ var bi_all = &object.BuiltIn{
 				return object.NONE
 			}
 
-			if isRegex {
+			if isPattern {
 				for _, kv := range arg.Pairs {
-					result, err = object.RegexMatchingOrError(re, kv.Value)
+					result, err = object.PatternMatchingOrError(re, kv.Value)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -123,7 +123,7 @@ var bi_all = &object.BuiltIn{
 var bi_any = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "any",
-		Description: "returns bool indicating whether the validation function or regex returns true for any elements of a list or hash, or null when given an empty list or hash",
+		Description: "returns bool indicating whether the validation function or pattern returns true for any elements of a list or hash, or null when given an empty list or hash",
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "over"},
 		},
@@ -134,19 +134,19 @@ var bi_any = &object.BuiltIn{
 	Fn: func(pr *Process, args ...object.Object) object.Object {
 		const fnName = "any"
 
-		var isRegex bool
-		var re *object.Regex
+		var isPattern bool
+		var re *object.Pattern
 
 		over, by := args[0], args[1]
 
 		if by != nil {
 			if !object.IsCallable(by) {
 				var ok bool
-				re, ok = by.(*object.Regex)
+				re, ok = by.(*object.Pattern)
 				if !ok {
-					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected regex or callable for validation argument")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected pattern or callable for validation argument")
 				}
-				isRegex = true
+				isPattern = true
 			}
 		}
 
@@ -159,9 +159,9 @@ var bi_any = &object.BuiltIn{
 				return object.NONE
 			}
 
-			if isRegex {
+			if isPattern {
 				for _, v := range arg.Elements {
-					result, err = object.RegexMatchingOrError(re, v)
+					result, err = object.PatternMatchingOrError(re, v)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}
@@ -194,9 +194,9 @@ var bi_any = &object.BuiltIn{
 				return object.NONE
 			}
 
-			if isRegex {
+			if isPattern {
 				for _, kv := range arg.Pairs {
-					result, err = object.RegexMatchingOrError(re, kv.Value)
+					result, err = object.PatternMatchingOrError(re, kv.Value)
 					if err != nil {
 						return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 					}

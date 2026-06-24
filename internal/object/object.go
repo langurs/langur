@@ -28,7 +28,7 @@ const (
 	NULL_OBJ
 
 	STRING_OBJ
-	REGEX_OBJ
+	PATTERN_OBJ
 	RANGE_OBJ
 
 	DATETIME_OBJ
@@ -52,7 +52,7 @@ func AutoString(o Object) (Object, error) {
 	case *String:
 		return o, nil
 
-	case *Number, *DateTime, *Duration, *Regex:
+	case *Number, *DateTime, *Duration, *Pattern:
 		return NewString(o.String()), nil
 
 	default:
@@ -66,7 +66,7 @@ var TypeNameToType = map[string]ObjectType{
 	common.RangeType:    RANGE_OBJ,
 	common.BooleanType:  BOOLEAN_OBJ,
 	common.StringType:   STRING_OBJ,
-	common.RegexType:    REGEX_OBJ,
+	common.PatternType:    PATTERN_OBJ,
 	common.DateTimeType: DATETIME_OBJ,
 	common.DurationType: DURATION_OBJ,
 	common.ListType:     LIST_OBJ,

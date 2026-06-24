@@ -80,10 +80,10 @@ func (lex *Lexer) readFreeWordList(tok *token.Token) (err error) {
 	return
 }
 
-// re2 regex literal, such as re(some re2 regex using parentheses as quote marks)
+// re2 pattern literal, such as re(some re2 pattern using parentheses as quote marks)
 // re: allowing langur escape codes
 // RE: without langur escape codes
-func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
+func (lex *Lexer) readRe2Pattern(tok *token.Token) (err error) {
 	allowEsc := token.InterpretEscapeSequences(tok.Literal)
 	allowNewLines := true
 
@@ -161,12 +161,12 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 			maybeInterpolated = false
 
 		default:
-			err = fmt.Errorf("Invalid regex literal/re2 modifier: %s", str.ReformatInput(mod))
+			err = fmt.Errorf("Invalid pattern literal/re2 modifier: %s", str.ReformatInput(mod))
 			return
 		}
 	}
 
-	// auto-negate all regex modifiers to make safe for interpolation into a regex literal
+	// auto-negate all pattern modifiers to make safe for interpolation into a pattern literal
 	for _, m := range "smiUx" {
 		if !strings.ContainsRune(list, rune(m)) && !strings.ContainsRune(neg, rune(m)) {
 			neg += string(m)
@@ -180,7 +180,7 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 	if blockQuoteMarker == "" &&
 		 !cpoint.ValidQuotedLiteralOpeningMark(lex.cp) {
 
-		err = fmt.Errorf("Invalid quote marker for regex literal (%s)", string(lex.cp))
+		err = fmt.Errorf("Invalid quote marker for pattern literal (%s)", string(lex.cp))
 		return
 	}
 
@@ -201,7 +201,7 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 	if err != nil {
 		return
 	}
-	tok.Type = token.REGEX_RE2
+	tok.Type = token.PATTERN_RE2
 
 	if tok.Literal != "" {
 		if escInterpolations {
@@ -216,7 +216,7 @@ func (lex *Lexer) readRe2Regex(tok *token.Token) (err error) {
 				plus = "\n"
 			}
 
-			// surround regex pattern with modifiers
+			// surround pattern pattern with modifiers
 			tok.Literal = "(?" + list + ":" + tok.Literal + plus + ")"
 
 			// ... do same with attachments

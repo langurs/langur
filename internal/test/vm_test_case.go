@@ -131,10 +131,10 @@ func testExpectedObject(
 			t.Errorf("Test %d: (%q) testStringObject failed: %s", testno, input, err)
 		}
 
-	case object.REGEX_OBJ:
-		err := testRegexObject(expected.(string), actual)
+	case object.PATTERN_OBJ:
+		err := testPatternObject(expected.(string), actual)
 		if err != nil {
-			t.Errorf("Test %d: (%q) testRegexObject failed: %s", testno, input, err)
+			t.Errorf("Test %d: (%q) testPatternObject failed: %s", testno, input, err)
 		}
 
 	case object.DATETIME_OBJ:
@@ -287,13 +287,13 @@ func testStringObject(expected string, actual object.Object) error {
 	return nil
 }
 
-func testRegexObject(expected string, actual object.Object) error {
-	// accounting for the extra text put into regex text...
+func testPatternObject(expected string, actual object.Object) error {
+	// accounting for the extra text put into pattern text...
 	expected = "(?-smiUx:" + expected + ")"
 	
-	result, ok := actual.(*object.Regex)
+	result, ok := actual.(*object.Pattern)
 	if !ok {
-		return fmt.Errorf("object not a regex, received=%T (%+v)", actual, actual)
+		return fmt.Errorf("object not a pattern, received=%T (%+v)", actual, actual)
 	}
 
 	if result.String() != expected {

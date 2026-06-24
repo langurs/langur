@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.10
+- changed type name of *regex* to *pattern*
+
+
 2026-06-23 - 0.21.9
 - restricted catch statement to last part of a block of statements
 - fix: bug in REPL/interactive with uninitialized variables causing Go panic (nil pointer dereference) after langur exception

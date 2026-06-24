@@ -28,8 +28,8 @@ const (
 )
 
 const (
-	OC_Regex_None = iota
-	OC_Regex_Re2
+	OC_Pattern_None = iota
+	OC_Pattern_Re2
 )
 
 const (
@@ -93,7 +93,7 @@ const (
 
 	OpAppend
 	OpString
-	OpRegex
+	OpPattern
 	OpDateTime
 	OpDuration
 	OpFormat
@@ -217,7 +217,7 @@ var definitions = map[OpCode]*Definition{
 
 	OpAppend:   {Name: "Append", OperandWidths: []int{1}},
 	OpString:   {Name: "String", OperandWidths: []int{2}},
-	OpRegex:    {Name: "Regex", OperandWidths: []int{1}},
+	OpPattern:    {Name: "Pattern", OperandWidths: []int{1}},
 	OpDateTime: {Name: "DateTime", OperandWidths: []int{OperandWidth_Code}},
 	OpDuration: {Name: "Duration"},
 	OpFormat:   {Name: "Format", OperandWidths: []int{1}},

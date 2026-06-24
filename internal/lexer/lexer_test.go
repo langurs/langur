@@ -80,21 +80,21 @@ func TestGeneralTokens(t *testing.T) {
 		{"'\n'", &token.Token{Type: token.INT, Literal: "10"}, true},
 		{"''", &token.Token{Type: token.INVALID, Literal: ""}, true},
 
-		// good re2 regex literals
-		{"re'abc'", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{`re"abc"`, &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{"re/abc/", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"re(abc)", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"re[abc]", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"re<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{"RE'abc'", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{`RE"abc"`, &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		{"RE/abc/", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"RE(abc)", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"RE[abc]", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
-		// {"RE<abc>", &token.Token{Type: token.REGEX_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// good re2 pattern literals
+		{"re'abc'", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		{`re"abc"`, &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		{"re/abc/", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"re(abc)", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"re[abc]", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"re<abc>", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		{"RE'abc'", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		{`RE"abc"`, &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		{"RE/abc/", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"RE(abc)", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"RE[abc]", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
+		// {"RE<abc>", &token.Token{Type: token.PATTERN_RE2, Literal: "(?-smiUx:abc)"}, false},
 
-		// bad re2 regex literals
+		// bad re2 pattern literals
 		{"re'abc", nil, true},
 		{`re"abc`, nil, true},
 		{"re/abc", nil, true},

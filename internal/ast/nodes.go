@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"langur/common"
 	"langur/object"
-	"langur/regex"
+	"langur/pattern"
 	"langur/str"
 	"langur/token"
 	"langur/modes"
@@ -1729,7 +1729,7 @@ func (s *StringNode) Evaluate() object.Object {
 }
 
 func (s *StringNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return c.compileString(s, regex.NONE)
+	return c.compileString(s, pattern.NONE)
 }
 
 func (s *StringNode) TokenRepresentation() string {
@@ -1853,14 +1853,14 @@ func (i *InterpolatedNode) TokenInfo() token.Token {
 	return i.Token
 }
 
-// REGEX LITERAL
-type RegexNode struct {
+// PATTERN LITERAL, SUCH AS REGEX
+type PatternNode struct {
 	Token     token.Token
 	Pattern   Node
-	RegexType regex.RegexType
+	PatternType pattern.PatternType
 }
 
-func (r *RegexNode) Search(parent Node, sc *searchCriteria) (found bool) {
+func (r *PatternNode) Search(parent Node, sc *searchCriteria) (found bool) {
 	if nodeMatching(r, parent, sc.OfTypes) {
 		return true
 	}
@@ -1870,23 +1870,23 @@ func (r *RegexNode) Search(parent Node, sc *searchCriteria) (found bool) {
 	return sc.searchNodes(r, r.Pattern)
 }
 
-func (r *RegexNode) expressionNode() {}
+func (r *PatternNode) expressionNode() {}
 
-func (r *RegexNode) Copy() Node {
-	return &RegexNode{
+func (r *PatternNode) Copy() Node {
+	return &PatternNode{
 		Token:     r.Token.Copy(),
 		Pattern:   copyOrNil(r.Pattern),
-		RegexType: r.RegexType,
+		PatternType: r.PatternType,
 	}
 }
 
-func (r *RegexNode) Evaluate() object.Object {
+func (r *PatternNode) Evaluate() object.Object {
 	patternNode, ok := r.Pattern.(*StringNode)
 	if ok {
 		if len(patternNode.Interpolations) == 0 {
-			reggie, err := object.NewRegex(patternNode.Values[0], r.RegexType)
+			reggie, err := object.NewPattern(patternNode.Values[0], r.PatternType)
 			if err != nil {
-				return reggie.(*object.Regex)
+				return reggie.(*object.Pattern)
 			}
 		}
 	}
@@ -1894,52 +1894,52 @@ func (r *RegexNode) Evaluate() object.Object {
 	return nil
 }
 
-func (node *RegexNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
+func (node *PatternNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	patternNode, ok := node.Pattern.(*StringNode)
 	if !ok {
-		err = c.makeErr(node, fmt.Sprintf("Expected String Node within Regex Node"))
+		err = c.makeErr(node, fmt.Sprintf("Expected String Node within Pattern Node"))
 		return
 	}
 
 	var code int
-	if node.RegexType == regex.RE2 {
-		code = opcode.OC_Regex_Re2
+	if node.PatternType == pattern.RE2 {
+		code = opcode.OC_Pattern_Re2
 
 	} else {
-		err = c.makeErr(node, "Unknown regex type")
-		bug("RegexNode.Compile", err.Error())
+		err = c.makeErr(node, "Unknown pattern type")
+		bug("PatternNode.Compile", err.Error())
 		return
 	}
 
 	if len(patternNode.Interpolations) == 0 {
-		// optimize by compiling a regex pattern now, rather than having the VM compile it
+		// optimize by compiling a pattern pattern now, rather than having the VM compile it
 		var re object.Object
 
-		re, err = object.NewRegex(patternNode.Values[0], node.RegexType)
+		re, err = object.NewPattern(patternNode.Values[0], node.PatternType)
 		if err != nil {
 			return
 		}
 		pkg = c.constantIns(re)
 
 	} else {
-		pkg, err = c.compileString(patternNode, node.RegexType)
+		pkg, err = c.compileString(patternNode, node.PatternType)
 		if err != nil {
 			return
 		}
-		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpRegex, code))
+		pkg = pkg.Append(opcode.MakePkg(node.Token, opcode.OpPattern, code))
 	}
 
 	return
 }
 
-func (r *RegexNode) TokenRepresentation() string {
+func (r *PatternNode) TokenRepresentation() string {
 	var out bytes.Buffer
 
 	if len(r.Pattern.(*StringNode).Interpolations) > 0 {
 		out.WriteRune('$')
 	}
 
-	out.WriteString(r.RegexType.LiteralString())
+	out.WriteString(r.PatternType.LiteralString())
 	out.WriteByte('/')
 
 	out.WriteString(r.Pattern.(*StringNode).TokenRepWithoutDollarToken())
@@ -1949,16 +1949,16 @@ func (r *RegexNode) TokenRepresentation() string {
 	return out.String()
 }
 
-func (r *RegexNode) String() string {
+func (r *PatternNode) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("Regex(" + r.RegexType.String() + ") ")
+	out.WriteString("Pattern(" + r.PatternType.String() + ") ")
 	out.WriteString(stringOrNil(r.Pattern))
 
 	return out.String()
 }
 
-func (r *RegexNode) TokenInfo() token.Token {
+func (r *PatternNode) TokenInfo() token.Token {
 	return r.Token
 }
 
@@ -2029,7 +2029,7 @@ func (node *DateTimeNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error
 	// built at run-time (either contains interpolations or is a "now" date-time)
 	code, _, _ := opcode.TokenCodeToOcCode(node.Token.Code)
 
-	pkg, err = c.compileString(patternNode, regex.NONE)
+	pkg, err = c.compileString(patternNode, pattern.NONE)
 	if err != nil {
 		return
 	}
@@ -2103,7 +2103,7 @@ func (node *DurationNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error
 	}
 
 	// built at run-time (contains interpolations)
-	pkg, err = c.compileString(patternNode, regex.NONE)
+	pkg, err = c.compileString(patternNode, pattern.NONE)
 	if err != nil {
 		return
 	}

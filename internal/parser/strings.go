@@ -6,21 +6,21 @@ import (
 	"fmt"
 	"langur/ast"
 	"langur/format"
-	"langur/regex"
+	"langur/pattern"
 	"langur/token"
 )
 
-func (p *Parser) parseRegex() ast.Node {
-	expr := &ast.RegexNode{
+func (p *Parser) parsePattern() ast.Node {
+	expr := &ast.PatternNode{
 		Token: p.tok,
 	}
 
-	if p.tok.Type == token.REGEX_RE2 {
-		expr.RegexType = regex.RE2
+	if p.tok.Type == token.PATTERN_RE2 {
+		expr.PatternType = pattern.RE2
 
 	} else {
-		bug("parseRegex", "Unknown regex type")
-		p.addError("Unknown regex type")
+		bug("parsePattern", "Unknown pattern type")
+		p.addError("Unknown pattern type")
 		p.advanceToken()
 		return nil
 	}

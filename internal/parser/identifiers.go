@@ -25,11 +25,11 @@ func (p *Parser) parseIdentifier() ast.Node {
 	return identifier
 }
 
-var identifierRegex = regexp.MustCompile(common.IdentifierRegexString)
+var identifierPattern = regexp.MustCompile(common.IdentifierPatternString)
 
 // a word token that may be an identifier or may be something else
 func (p *Parser) parseWord() (*ast.IdentNode, bool) {
-	if !identifierRegex.MatchString(p.tok.Literal) {
+	if !identifierPattern.MatchString(p.tok.Literal) {
 		return nil, false
 	}
 

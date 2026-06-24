@@ -3,8 +3,8 @@
 package process
 
 import (
-	"langur/cpoint"
 	"fmt"
+	"langur/cpoint"
 	"langur/object"
 	"langur/str"
 	"strings"
@@ -12,13 +12,13 @@ import (
 
 // replace, tran
 
-// for both regex and plain string replacements
+// for both pattern and plain string replacements
 // replacement as string or function taking one parameter
 // for progressive and single replacements
 var bi_replace = &object.BuiltIn{
 	FnSignature: &object.Signature{
 		Name:        "replace",
-		Description: "accepts string or regex for find, and replaces portion of string with given replacement string",
+		Description: "accepts string or pattern for find, and replaces portion of string with given replacement string",
 
 		ParamPositional: []object.Parameter{
 			object.Parameter{ExternalName: "anything"},
@@ -39,11 +39,11 @@ var bi_replace = &object.BuiltIn{
 
 		src := object.ToString(args[0])
 
-		re, isRegex := args[1].(*object.Regex)
-		if !isRegex {
+		re, isPattern := args[1].(*object.Pattern)
+		if !isPattern {
 			find, ok = args[1].(*object.String)
 			if !ok {
-				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or regex for argument by")
+				return object.NewException(object.ERR_ARGUMENTS, fnName, "Expected string or pattern for argument by")
 			}
 		}
 
@@ -85,15 +85,15 @@ var bi_replace = &object.BuiltIn{
 
 		doSubmatchInterpolation := args[4].IsTruthy()
 
-		if isRegex {
+		if isPattern {
 			if fn == nil && fns == nil {
-				result, err := object.RegexReplace(src.String(), re, replacementString, max, doSubmatchInterpolation)
+				result, err := object.PatternReplace(src.String(), re, replacementString, max, doSubmatchInterpolation)
 				if err != nil {
 					return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 				}
 				return result
 			}
-			return regexReplaceWithFunctionsAndStrings(pr, src.String(), re, fn, fns, max, doSubmatchInterpolation)
+			return patternReplaceWithFunctionsAndStrings(pr, src.String(), re, fn, fns, max, doSubmatchInterpolation)
 		}
 
 		if fn == nil && fns == nil {
@@ -103,13 +103,13 @@ var bi_replace = &object.BuiltIn{
 	},
 }
 
-func regexReplaceWithFunctionsAndStrings(
-	pr *Process, src string, re *object.Regex,
+func patternReplaceWithFunctionsAndStrings(
+	pr *Process, src string, re *object.Pattern,
 	fn object.Object, fns []object.Object, max int, doSubmatchInterpolation bool) object.Object {
 
 	const fnName = "replace"
 
-	arr, err := object.RegexSplitAndKeep(re, src, max)
+	arr, err := object.PatternSplitAndKeep(re, src, max)
 	if err != nil {
 		return object.NewException(object.ERR_GENERAL, fnName, err.Error())
 	}
@@ -131,7 +131,7 @@ func stringReplaceWithFunctionsAndStrings(
 }
 
 func replaceWithFunctionsAndStrings(
-	pr *Process, elements []object.Object, re *object.Regex,
+	pr *Process, elements []object.Object, re *object.Pattern,
 	fn object.Object, fns []object.Object, doSubmatchInterpolation bool) object.Object {
 
 	const fnName = "replace"
@@ -146,7 +146,7 @@ func replaceWithFunctionsAndStrings(
 			if re != nil {
 				if doSubmatchInterpolation {
 					// TODO: To account for submatch interpolation ($1, etc.)
-					return object.NewException(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with regex")
+					return object.NewException(object.ERR_ARGUMENTS, fnName, "Current implementation unable to use strings for multiple replacements with pattern")
 				}
 			}
 			elements[i] = fn

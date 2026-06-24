@@ -19,7 +19,7 @@ type Object interface {
 
 // NOTE: not following Go convention for naming the following interfaces
 
-// IComposableString: for including things like quote marks around strings, re// around regex, etc.
+// IComposableString: for including things like quote marks around strings, re// around pattern, etc.
 type IComposableString interface {
 	Object
 	ComposedString() string

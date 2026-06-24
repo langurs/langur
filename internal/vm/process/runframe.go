@@ -435,20 +435,20 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			ip += 2
 			err = pr.push(object.ToStringFromSlice(pr.popMultiple(elementCount)))
 
-		case opcode.OpRegex:
+		case opcode.OpPattern:
 			code := int(ins[ip+1])
 			ip += 1
 
 			obj := pr.pop()
 			strObj, ok := obj.(*object.String)
 			if ok {
-				result, err = object.NewRegexByOpCode(strObj.String(), code)
+				result, err = object.NewPatternByOpCode(strObj.String(), code)
 				if err == nil {
 					err = pr.push(result)
 				}
 
 			} else {
-				err = fmt.Errorf("Expected string for regex pattern, received %s", obj.TypeString())
+				err = fmt.Errorf("Expected string for patternrn, received %s", obj.TypeString())
 				bug("runFrame", err.Error())
 			}
 

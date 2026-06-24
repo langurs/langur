@@ -14,7 +14,7 @@ import (
 // lcase, tcase, ucase
 // trim, ltrim, rtrim
 // nfc, nfd, nfkc, nfkd
-// also see builtins/regex
+// also see builtins/pattern
 
 var bi_lcase = &object.BuiltIn{
 	FnSignature: &object.Signature{

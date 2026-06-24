@@ -543,7 +543,7 @@ func (p *Parser) parseExpressionList(
 		}
 
 		if forFunctionCall &&
-			identifierRegex.MatchString(p.tok.Literal) &&
+			identifierPattern.MatchString(p.tok.Literal) &&
 			p.peekTok.Type == token.ASSIGN {
 			// for optional argument
 			// externalname = value

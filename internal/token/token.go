@@ -35,7 +35,7 @@ const (
 	THROW = "THROW"
 
 	STRING    = "STRING"
-	REGEX_RE2 = "REGEX_RE2"
+	PATTERN_RE2 = "PATTERN_RE2"
 
 	VAR    = "VAR"
 	VAL    = "VAL"
@@ -198,8 +198,8 @@ var Keywords = map[string]Type{
 	"fw": FREE_WORD_LIST,
 	"FW": FREE_WORD_LIST,
 
-	common.RegexRe2TokenLiteral: REGEX_RE2,
-	common.RegexRE2TokenLiteral: REGEX_RE2,
+	common.PatternRe2TokenLiteral: PATTERN_RE2,
+	common.PatternRE2TokenLiteral: PATTERN_RE2,
 	common.DateTimeTokenLiteral: DATETIME,
 	common.DurationTokenLiteral: DURATION,
 
@@ -207,7 +207,7 @@ var Keywords = map[string]Type{
 	common.RangeType:    IDENT,
 	common.BooleanType:  IDENT,
 	common.StringType:   IDENT,
-	common.RegexType:    IDENT,
+	common.PatternType:    IDENT,
 	common.DateTimeType: IDENT,
 	common.DurationType: IDENT,
 	common.ListType:     IDENT,
