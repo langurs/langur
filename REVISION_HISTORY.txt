@@ -1,9 +1,8 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.10
+2026-06-26 - 0.21.10
 - changed type name of *regex* to *pattern*
-
 
 2026-06-23 - 0.21.9
 - restricted catch statement to last part of a block of statements
