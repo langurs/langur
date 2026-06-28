@@ -363,7 +363,6 @@ func (p *Parser) parseCatch() ast.Node {
 
 	p.exceptionVariableStack = append(p.exceptionVariableStack, catch.ExceptionVar)
 
-	simpleCatch := false
 	switch p.tok.Type {
 	case token.LBRACE:
 		if p.tok.CpDiff == 0 {
@@ -373,12 +372,11 @@ func (p *Parser) parseCatch() ast.Node {
 		catch.Catch = p.parseBlock()
 
 	case token.COLON:
-		catch.Catch = p.finishSimpleCatch()
-		simpleCatch = true
+		p.addError("Simple catch has been removed")
 
 	default:
 		if p.tok.Type == token.LPAREN && p.tok.CpDiff == 0 {
-			// might allow later, but easier to disallow than to do so later
+			// might allow later, but easier to disallow now than to do so later
 			p.addError("Cannot use short-form switch for catch switch")
 		}
 
@@ -389,42 +387,23 @@ func (p *Parser) parseCatch() ast.Node {
 
 	p.exceptionVariableStack = ast.Pop(p.exceptionVariableStack)
 
-	if !simpleCatch {
-		// parse else on catch (action for no exception)
-		if p.tok.Type == token.ELSE && !p.tok.NewLinePrecedes {
-			p.advanceToken()
-			if p.tok.Type == token.LBRACE ||
-				p.tok.Type == token.IF { // making it possible to use else if on catch
+	// parse else on catch (action for no exception)
+	if p.tok.Type == token.ELSE && !p.tok.NewLinePrecedes {
+		p.advanceToken()
+		if p.tok.Type == token.LBRACE ||
+			p.tok.Type == token.IF { // making it possible to use else if on catch
 
-				if p.tok.Type == token.IF && p.peekTok.Type == token.LPAREN && p.peekTok.CpDiff == 0 {
-					p.addError("Invalid use of parentheses on else if of catch block")
-				}
-
-				catch.Else, _ = p.parseBlockOrIntoBlock()
-			} else {
-				p.addError("Expected left brace for else on catch, or an else if")
+			if p.tok.Type == token.IF && p.peekTok.Type == token.LPAREN && p.peekTok.CpDiff == 0 {
+				p.addError("Invalid use of parentheses on else if of catch block")
 			}
+
+			catch.Else, _ = p.parseBlockOrIntoBlock()
+		} else {
+			p.addError("Expected left brace for else on catch, or an else if")
 		}
 	}
 
 	return catch
-}
-
-func (p *Parser) finishSimpleCatch() ast.Node {
-	// parse *simple catch* expression
-	if p.tok.NewLinePrecedes {
-		p.addError("Colon to indicate simple catch must be on same line as the catch keyword")
-		return nil
-	}
-	p.advanceToken() // past the colon
-
-	if p.tok.NewLinePrecedes {
-		// at least for now; might be relaxed later...
-		p.addError("Expression after colon must be on same line as the keyword for a simple catch")
-		return nil
-	}
-
-	return p.parseExpressionStatementForSimpleForm()
 }
 
 func (p *Parser) parseStatements(

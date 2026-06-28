@@ -5941,7 +5941,7 @@ func TestImpureFunctionDeclarations(t *testing.T) {
 		// cannot pass impure value to pure function
 		{`val x = fn(a) { 42 }
 		  x(cd)
-		  catch: 30`,
+		  catch { 30 }`,
 			30, object.NUMBER_OBJ,
 		},
 
@@ -5949,21 +5949,21 @@ func TestImpureFunctionDeclarations(t *testing.T) {
 		{`val x = fn*(a) { a * 2 }
 		  map x, [1, 2]
 		  21
-		  catch: 30`,
+		  catch { 30 }`,
 			30, object.NUMBER_OBJ,
 		},
 		{`val x = fn*(a) { a * 2 }
 		  val y = fn(a) { a * 40 }
 		  map [x, y], [1, 2]
 		  21
-		  catch: 30`,
+		  catch { 30 }`,
 			30, object.NUMBER_OBJ,
 		},
 
 		// Impurity is transitive.
 		{`val x = fn*(a) { val z = fn*(y) { y * 2 }; z(a) }
 		  x(12)
-		  catch: 30`,
+		  catch { 30 }`,
 			24, object.NUMBER_OBJ,
 		},
 	}
@@ -9106,7 +9106,7 @@ func TestTryCatch(t *testing.T) {
 						case "234": 3
 					}
 				}
-				catch: _err'msg		# catching the rethrown exception
+				catch { _err'msg }		# catching the rethrown exception
 					`,
 			expected:     "456",
 			expectedType: object.STRING_OBJ,
@@ -9125,7 +9125,7 @@ func TestTryCatch(t *testing.T) {
 						# catch switch with default section will not rethrow if no switch case tests match
 					}
 				}
-				catch: _err'msg		# to catch a rethrown error
+				catch { _err'msg }		# to catch a rethrown error
 					`,
 			expected:     "4",
 			expectedType: object.NUMBER_OBJ,
@@ -9151,7 +9151,7 @@ func TestTryCatch(t *testing.T) {
 						case "math", -> re/asdf/: 45
 					}
 				}
-				catch: _err'cat
+				catch { _err'cat }
 					`,
 			expected:     "math",
 			expectedType: object.STRING_OBJ,
@@ -9164,7 +9164,7 @@ func TestTryCatch(t *testing.T) {
 						case "math", -> re/asdf/: 45
 					}
 				}
-				catch: _err'cat
+				catch { _err'cat }
 					`,
 			expected:     "45",
 			expectedType: object.NUMBER_OBJ,
@@ -9212,55 +9212,6 @@ func TestTryCatch(t *testing.T) {
 				catch { 789 }
 				`,
 			expected:     "890",
-			expectedType: object.NUMBER_OBJ,
-		},
-
-		// simple catch
-		{
-			input: `
-				val x = 123 / 0
-				catch: 789
-				`,
-			expected:     "789",
-			expectedType: object.NUMBER_OBJ,
-		},
-		{
-			input: `
-				{
-					val x = 123 / 0
-					catch: if _err["cat"] == "math" { 890 } else { 456 }
-				}
-				catch: 789
-				`,
-			expected:     "890",
-			expectedType: object.NUMBER_OBJ,
-		},
-		{
-			input: `
-						100
-
-						catch: switch _err["msg"] {
-							case "100": 1
-							case "123": 2
-							case "234": 3
-							default: throw
-						}
-					`,
-			expected:     "100",
-			expectedType: object.NUMBER_OBJ,
-		},
-		{
-			input: `
-						100
-
-						catch[e]: switch e["msg"] {
-							case "100": 1
-							case "123": 2
-							case "234": 3
-							default: throw
-						}
-					`,
-			expected:     "100",
 			expectedType: object.NUMBER_OBJ,
 		},
 
@@ -9445,7 +9396,7 @@ func TestTryCatchElse(t *testing.T) {
 						42
 					}
 				}
-				catch: _err'msg		# to catch a rethrown error
+				catch { _err'msg }		# to catch a rethrown error
 				`,
 			expected:     "1",
 			expectedType: object.NUMBER_OBJ,
@@ -9465,7 +9416,7 @@ func TestTryCatchElse(t *testing.T) {
 						42
 					}
 				}
-				catch: _err'msg		# to catch a rethrown error
+				catch { _err'msg }		# to catch a rethrown error
 					`,
 			expected:     "111",
 			expectedType: object.STRING_OBJ,
@@ -9485,7 +9436,7 @@ func TestTryCatchElse(t *testing.T) {
 						42
 					}
 				}
-				catch: _err'msg		# to catch a rethrown error
+				catch { _err'msg }		# to catch a rethrown error
 					`,
 			expected:     "42",
 			expectedType: object.NUMBER_OBJ,
@@ -9506,7 +9457,7 @@ func TestTryCatchElse(t *testing.T) {
 						42
 					}
 				}
-				catch: _err'msg		# to catch a rethrown error
+				catch { _err'msg }		# to catch a rethrown error
 					`,
 			expected:     "4",
 			expectedType: object.NUMBER_OBJ,
