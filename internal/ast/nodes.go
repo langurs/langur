@@ -208,6 +208,22 @@ func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
 	var b, pkg opcode.InsPackage
 	var err error
 
+	switch mod := i.Import.(type) {
+	case *StringNode:
+		if len(mod.Interpolations) != 0 {
+			err = c.makeErr(i.Import, "Expected string without interpolation for import")
+
+		} else if len(mod.Values[0]) == 0 {
+			err = c.makeErr(i.Import, "Expected non-zero string for import")
+		}
+
+	case nil:
+		err = c.makeErr(i.Import, "Expected string for import; received nothing")
+	}
+	if err != nil {
+		return pkg, err
+	}
+
 	pkg, err = i.Import.Compile(c)
 	if err != nil {
 		return pkg, err

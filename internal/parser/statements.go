@@ -180,17 +180,10 @@ func (p *Parser) parseImportStatement() *ast.BlockNode {
 		tok := p.tok
 		as := ""
 
-		mod := p.parseExpression(precedence_LOWEST)
-		switch m := mod.(type) {
-		case *ast.StringNode:
-			if len(m.Interpolations) != 0 {
-				p.addError("Expected string without interpolation for import")
-				break
-			}
-			if len(m.Values[0]) == 0 {
-				p.addError("Expected non-zero string for import")
-				break
-			}
+		var mod ast.Node
+		switch p.tok.Type {
+		case token.STRING:
+			mod = p.parseString()
 
 		default:
 			p.addError("Expected string for import")
