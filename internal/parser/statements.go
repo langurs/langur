@@ -53,6 +53,9 @@ func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 	case token.VAL, token.VAR:
 		stmt = p.parseDeclarationStatement()
 
+	case token.IF:
+		stmt = p.parseIfStatement()
+
 	default:
 		stmt = p.parseExpressionStatement(nil)
 	}
@@ -372,7 +375,7 @@ func (p *Parser) parseCatch() ast.Node {
 		catch.Catch = p.parseBlock()
 
 	case token.COLON:
-		p.addError("Simple catch has been removed")
+		p.addError("Simple catch (with a colon) has been removed from the language")
 
 	default:
 		if p.tok.Type == token.LPAREN && p.tok.CpDiff == 0 {

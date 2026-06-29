@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.22.0
 - dropped *simple catch*
+- limited *simple if* to statement context
 
 
 2026-06-26 - 0.21.10

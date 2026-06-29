@@ -42,7 +42,7 @@ func (p *Parser) parseWhileLoop() ast.Node {
 	}
 
 	p.forLoopVariableStack = append(p.forLoopVariableStack, loopValueVar)
-	f.Body = &ast.ExpressionStatementNode{Expression: p.parseBlock()}
+	f.Body = &ast.ExpressionStatementNode{Token: tok, Expression: p.parseBlock()}
 	p.forLoopVariableStack = ast.Pop(p.forLoopVariableStack)
 
 	return f
@@ -125,7 +125,7 @@ func (p *Parser) finishThreePartForLoop(tok token.Token, loopValueVar, loopValue
 	}
 
 	p.forLoopVariableStack = append(p.forLoopVariableStack, loopValueVar)
-	f.Body = &ast.ExpressionStatementNode{Expression: p.parseBlock()}
+	f.Body = &ast.ExpressionStatementNode{Token: tok, Expression: p.parseBlock()}
 	p.forLoopVariableStack = ast.Pop(p.forLoopVariableStack)
 
 	return f
@@ -138,7 +138,7 @@ func (p *Parser) finishUnlimitedLoop(tok token.Token, loopValueVar, loopValueIni
 	}
 
 	p.forLoopVariableStack = append(p.forLoopVariableStack, loopValueVar)
-	f.Body = &ast.ExpressionStatementNode{Expression: p.parseBlock()}
+	f.Body = &ast.ExpressionStatementNode{Token: tok, Expression: p.parseBlock()}
 	p.forLoopVariableStack = ast.Pop(p.forLoopVariableStack)
 
 	return f
@@ -175,7 +175,7 @@ func (p *Parser) finishForInOrForOf(tok token.Token, loopValueVar, loopValueInit
 	fio.Over = p.parseExpression(precedence_LOWEST)
 
 	p.forLoopVariableStack = append(p.forLoopVariableStack, loopValueVar)
-	fio.Body = &ast.ExpressionStatementNode{Expression: p.parseBlock()}
+	fio.Body = &ast.ExpressionStatementNode{Token: tok, Expression: p.parseBlock()}
 	p.forLoopVariableStack = ast.Pop(p.forLoopVariableStack)
 
 	// compiler does not see for in/of node

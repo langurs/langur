@@ -8,7 +8,16 @@ import (
 	"langur/token"
 )
 
+func (p *Parser) parseIfStatement() ast.Node {
+	ifelse := p.parseIfElse(true)
+	return &ast.ExpressionStatementNode{Token: ifelse.TokenInfo(), Expression: ifelse}
+}
+
 func (p *Parser) parseIfExpression() ast.Node {
+	return p.parseIfElse(false)
+}
+
+func (p *Parser) parseIfElse(stmt bool) ast.Node {
 	var ta ast.TestDo
 
 	expr := &ast.IfNode{Token: p.tok}
@@ -32,9 +41,9 @@ func (p *Parser) parseIfExpression() ast.Node {
 		ta.Do = p.parseBlock()
 
 	case token.COLON:
-		if p.checkContext() == context_expression_switch_case {
-			// both simple if and case using a colon; no confusion...
-			p.addError("Cannot use simple if within switch case test")
+		if !stmt {
+			// prevent confusion...
+			p.addError("Cannot use simple if in expression context")
 		}
 		return p.finishSimpleIf(expr, ta)
 
