@@ -608,6 +608,11 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 			setting := pr.pop()
 			err = pr.setMode(code, setting)
 
+		case opcode.OpLoadModule:
+			as := pr.pop().String()
+			mod := pr.pop().String()
+			err = pr.loadModule(mod, as)
+
 		default:
 			desc, err2 := opcode.Lookup(op)
 			if err2 == nil {

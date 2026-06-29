@@ -156,11 +156,13 @@ func (p *Parser) parseModuleStatement() *ast.ModuleNode {
 	return stmt
 }
 
-func (p *Parser) parseImportStatement() *ast.ImportNode {
-	stmt := &ast.ImportNode{Token: p.tok}
+func (p *Parser) parseImportStatement() *ast.BlockNode {
+	tok := p.tok
 	p.advanceToken()
+	stmt := &ast.BlockNode{Token: tok}
 
 	for {
+		tok := p.tok
 		module := ""
 		as := ""
 
@@ -192,16 +194,18 @@ func (p *Parser) parseImportStatement() *ast.ImportNode {
 			break
 		}
 
-		stmt.Modules = append(stmt.Modules, ast.ImportAs{Import: module, As: as})
+		stmt.Statements = append(stmt.Statements,
+			&ast.ImportNode{Token: tok, Import: module, As: as})
 
-		if p.tok.Type == token.EOF || p.tok.Type == token.SEMICOLON {
+		switch p.tok.Type {
+		case token.EOF, token.SEMICOLON:
 			break
 
-		} else if p.tok.Type == token.COMMA {
+		case token.COMMA:
 			p.advanceToken()
 			continue
 
-		} else {
+		default:
 			p.addError("Invalid import list")
 			break
 		}

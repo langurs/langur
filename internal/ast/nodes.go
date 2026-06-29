@@ -180,18 +180,10 @@ func (m *ModuleNode) TokenInfo() token.Token {
 }
 
 // IMPORT STATEMENT
-type ImportAs struct {
-	Import string
-	As     string // zero-length string if not applicable
-}
-
-func (ia *ImportAs) Copy() *ImportAs {
-	return &ImportAs{Import: ia.Import, As: ia.As}
-}
-
 type ImportNode struct {
 	Token   token.Token
-	Modules []ImportAs
+	Import string
+	As     string // zero-length string if not applicable
 }
 
 func (i *ImportNode) Search(parent Node, sc *searchCriteria) (found bool) {
@@ -201,16 +193,10 @@ func (i *ImportNode) Search(parent Node, sc *searchCriteria) (found bool) {
 func (i *ImportNode) statementNode() {}
 
 func (i *ImportNode) Copy() Node {
-	var modules []ImportAs
-	if i.Modules != nil {
-		modules = make([]ImportAs, len(i.Modules))
-		for x := range i.Modules {
-			modules = append(modules, *(i.Modules[x].Copy()))
-		}
-	}
 	return &ImportNode{
-		Token:   i.Token.Copy(),
-		Modules: modules,
+		Token:  i.Token.Copy(),
+		Import: i.Import,
+		As:     i.As,
 	}
 }
 
@@ -219,29 +205,34 @@ func (i *ImportNode) Evaluate() object.Object {
 }
 
 func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
-	return cannotDirectlyCompile("ImportNode")
+	var b, pkg opcode.InsPackage
+	var err error
+
+	pkg, err = c.compileString(&StringNode{Token: i.Token, Values: []string{i.Import}}, pattern.NONE)
+	if err != nil {
+		return pkg, err
+	}
+
+	// alias ; may be empty string
+	b, err = c.compileString(&StringNode{Token: i.Token, Values: []string{i.As}}, pattern.NONE)
+	if err != nil {
+		return pkg, err
+	}
+	pkg = pkg.Append(b)
+
+	pkg = pkg.Append(opcode.MakePkg(i.Token, opcode.OpLoadModule))
+
+	return pkg, nil
 }
 
 func (i *ImportNode) TokenRepresentation() string {
 	var out bytes.Buffer
 	out.WriteString("import ")
+	out.WriteString(i.Import)
 
-	if i.Modules == nil {
-		out.WriteString("INVALID")
-
-	} else {
-		for x := range i.Modules {
-			if x != 0 {
-				out.WriteString(", ")
-			}
-
-			out.WriteString(i.Modules[x].Import)
-
-			if i.Modules[x].As != "" {
-				out.WriteString(" as ")
-				out.WriteString(i.Modules[x].As)
-			}
-		}
+	if i.As != "" {
+		out.WriteString(" as ")
+		out.WriteString(i.As)
 	}
 
 	return out.String()
@@ -250,23 +241,11 @@ func (i *ImportNode) TokenRepresentation() string {
 func (i *ImportNode) String() string {
 	var out bytes.Buffer
 	out.WriteString("Import ")
+	out.WriteString(i.Import)
 
-	if i.Modules == nil {
-		out.WriteString("INVALID")
-
-	} else {
-		for x := range i.Modules {
-			if x != 0 {
-				out.WriteString(", ")
-			}
-
-			out.WriteString(i.Modules[x].Import)
-
-			if i.Modules[x].As != "" {
-				out.WriteString(" As ")
-				out.WriteString(i.Modules[x].As)
-			}
-		}
+	if i.As != "" {
+		out.WriteString(" As ")
+		out.WriteString(i.As)
 	}
 
 	return out.String()
@@ -1912,7 +1891,7 @@ func (node *PatternNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error)
 	}
 
 	if len(patternNode.Interpolations) == 0 {
-		// optimize by compiling a pattern pattern now, rather than having the VM compile it
+		// optimize by compiling a pattern now, rather than having the VM compile it
 		var re object.Object
 
 		re, err = object.NewPattern(patternNode.Values[0], node.PatternType)

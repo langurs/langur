@@ -49,6 +49,8 @@ const (
 	OpIn
 	OpOf
 
+	OpLoadModule
+
 	OpConstant
 	OpFunction
 	OpExecute
@@ -154,8 +156,12 @@ func DisplayName(op OpCode, dbComp bool) string {
 var definitions = map[OpCode]*Definition{
 	OpPop: {Name: "Pop"},
 
-	// operands: object type number or 0
+	OpLoadModule: {Name: "LoadModule"},
+
+	// operands: code, object type number or 0
 	OpIs: {Name: "Is", OperandWidths: []int{1, 1}},
+
+	// operands: code to indicate things such as negation (not in/not of)
 	OpIn: {Name: "In", OperandWidths: []int{1}},
 	OpOf: {Name: "Of", OperandWidths: []int{1}},
 
@@ -240,6 +246,7 @@ var definitions = map[OpCode]*Definition{
 	OpLessThan:           {Name: "LessThan", OperandWidths: []int{OperandWidth_Code, OperandWidth_ShortCircuitJump}},
 	OpLessThanOrEqual:    {Name: "LessThanOrEqual", OperandWidths: []int{OperandWidth_Code, OperandWidth_ShortCircuitJump}},
 	// have both less than and greater than opcodes b/c of null-propagating short-circuiting comparisons
+	// Without short-circuiting, we could simply reverse operands.
 
 	OpForward: {Name: "Forward"},
 

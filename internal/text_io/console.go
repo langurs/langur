@@ -74,9 +74,6 @@ func ReadCodePoints(cpCount int, replaceNewLines bool) (s string, err error) {
 		return
 	}
 
-	// Last we knew, the Unicode standard wouldn't have more than 4 bytes in a UTF-8 sequence.
-	byteMax := 4
-
 	r := bufio.NewReader(os.Stdin)
 
 	var out []byte
@@ -100,7 +97,7 @@ func ReadCodePoints(cpCount int, replaceNewLines bool) (s string, err error) {
 			count++
 		}
 
-		if len(cp) > byteMax {
+		if len(cp) > utf8.UTFMax {
 			// b/c of potential errors in input, error out here
 			err = fmt.Errorf("Too many bytes in UTF-8 sequence that do not create a single code point")
 			break
