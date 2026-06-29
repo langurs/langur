@@ -610,7 +610,7 @@ func (pr *Process) RunFrame(fr *frame, late []object.Object) (
 
 		case opcode.OpLoadModule:
 			as := pr.pop().String()
-			mod := pr.pop().String()
+			mod := pr.pop()
 			err = pr.loadModule(mod, as)
 
 		default:

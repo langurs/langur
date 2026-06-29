@@ -3,17 +3,17 @@
 package process
 
 import (
+	"langur/object"
 	"io/ioutil"
-	"langur/regexp"
 )
 
-var fileNameExtRegex = regexp.MustCompile("\\.langur$")
-var lastPartRegex = regexp.MustCompile("[~/]+$")
-
-func (pr *Process) loadModule(mod, as string) error {
+func (pr *Process) loadModule(module object.Object, as string) error {
 	// 1. locate the module
 	// TODO: decide where/how imports will be found
 	// for initial development, doing crude load; file has to be easily found
+
+	// TODO:
+	mod := module.String()
 
 	// 2. read the file
 	// for now, assuming UTF-8
@@ -30,13 +30,7 @@ func (pr *Process) loadModule(mod, as string) error {
 	// 4. add base name to symbol table
 	// if as alias not specified, must decipher from file
 	if as == "" {
-		as = mod
-		if idx := fileNameExtRegex.FindStringIndex(as); idx != nil {
-			as = as[:idx[0]]
-		}
-		if idx := lastPartRegex.FindStringIndex(as); idx != nil {
-			as = as[idx[0]:]
-		}
+		
 	}
 
 

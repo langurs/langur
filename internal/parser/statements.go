@@ -7,8 +7,23 @@ import (
 	"langur/ast"
 	"langur/lexer"
 	"langur/modes"
+	"langur/regexp"
 	"langur/token"
 )
+
+var fileNameExtRegex = regexp.MustCompile("\\.langur$")
+var lastPartRegex = regexp.MustCompile("[~/]+$")
+
+func getAliasFromImport(module string) string {
+	as := module
+	if idx := fileNameExtRegex.FindStringIndex(as); idx != nil {
+		as = as[:idx[0]]
+	}
+	if idx := lastPartRegex.FindStringIndex(as); idx != nil {
+		as = as[idx[0]:]
+	}
+	return as
+}
 
 func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 	var stmt ast.Node
@@ -163,39 +178,45 @@ func (p *Parser) parseImportStatement() *ast.BlockNode {
 
 	for {
 		tok := p.tok
-		module := ""
 		as := ""
 
-		mod, ok := p.parseWord()
-		if ok {
-			module = mod.Name
-
-			if p.tok.Type == token.AS {
-				p.advanceToken()
-
-				mas, ok := p.parseWord()
-				if ok {
-					as = mas.Name
-					p.checkIdentifierName(as)
-					p.addToIdentifiersUsed(as)
-
-				} else {
-					p.addError("Expected identifier after as keyword")
-					break
-				}
-
-			} else {
-				p.checkIdentifierName(module)
-				p.addToIdentifiersUsed(module)
+		mod := p.parseExpression(precedence_LOWEST)
+		switch m := mod.(type) {
+		case *ast.StringNode:
+			if len(m.Interpolations) != 0 {
+				p.addError("Expected string without interpolation for import")
+				break
+			}
+			if len(m.Values[0]) == 0 {
+				p.addError("Expected non-zero string for import")
+				break
 			}
 
-		} else {
-			p.addError("Expected identifier")
+		default:
+			p.addError("Expected string for import")
 			break
 		}
 
+		if p.tok.Type == token.AS {
+			p.advanceToken()
+
+			mas, ok := p.parseWord()
+			if ok {
+				as = mas.Name
+
+			} else {
+				p.addError("Expected identifier after as keyword")
+				break
+			}
+
+		} else {
+			as = getAliasFromImport(mod.String())
+		}
+		p.checkIdentifierName(as)
+		p.addToIdentifiersUsed(as)
+
 		stmt.Statements = append(stmt.Statements,
-			&ast.ImportNode{Token: tok, Import: module, As: as})
+			&ast.ImportNode{Token: tok, Import: mod, As: as})
 
 		switch p.tok.Type {
 		case token.EOF, token.SEMICOLON:

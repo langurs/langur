@@ -181,8 +181,8 @@ func (m *ModuleNode) TokenInfo() token.Token {
 
 // IMPORT STATEMENT
 type ImportNode struct {
-	Token   token.Token
-	Import string
+	Token  token.Token
+	Import Node
 	As     string // zero-length string if not applicable
 }
 
@@ -195,7 +195,7 @@ func (i *ImportNode) statementNode() {}
 func (i *ImportNode) Copy() Node {
 	return &ImportNode{
 		Token:  i.Token.Copy(),
-		Import: i.Import,
+		Import: copyOrNil(i.Import),
 		As:     i.As,
 	}
 }
@@ -208,13 +208,13 @@ func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
 	var b, pkg opcode.InsPackage
 	var err error
 
-	pkg, err = c.compileString(&StringNode{Token: i.Token, Values: []string{i.Import}}, pattern.NONE)
+	pkg, err = i.Import.Compile(c)
 	if err != nil {
 		return pkg, err
 	}
 
 	// alias ; may be empty string
-	b, err = c.compileString(&StringNode{Token: i.Token, Values: []string{i.As}}, pattern.NONE)
+	b, err = c.compileString(&StringNode{Token: i.Import.TokenInfo(), Values: []string{i.As}}, pattern.NONE)
 	if err != nil {
 		return pkg, err
 	}
@@ -228,7 +228,7 @@ func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
 func (i *ImportNode) TokenRepresentation() string {
 	var out bytes.Buffer
 	out.WriteString("import ")
-	out.WriteString(i.Import)
+	out.WriteString(tokenRepOrNil(i.Import))
 
 	if i.As != "" {
 		out.WriteString(" as ")
@@ -241,7 +241,7 @@ func (i *ImportNode) TokenRepresentation() string {
 func (i *ImportNode) String() string {
 	var out bytes.Buffer
 	out.WriteString("Import ")
-	out.WriteString(i.Import)
+	out.WriteString(stringOrNil(i.Import))
 
 	if i.As != "" {
 		out.WriteString(" As ")
