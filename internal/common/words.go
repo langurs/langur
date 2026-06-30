@@ -12,6 +12,7 @@ const IdentifierLenMax = 128
 
 // not including ^ or $ as may be part of a larger string
 var IdentifierPatternString = fmt.Sprintf("[_a-zA-Z][a-zA-Z0-9_]{0,%d}", IdentifierLenMax-1)
+var WordPatternString = "[a-zA-Z][a-zA-Z0-9_]*"
 
 const (
 	NumberType   = "number"

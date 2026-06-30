@@ -193,7 +193,7 @@ func (p *Parser) parseImportStatement() *ast.BlockNode {
 		if p.tok.Type == token.AS {
 			p.advanceToken()
 
-			mas, ok := p.parseWord()
+			mas, ok := p.parseIdentifier().(*ast.IdentNode)
 			if ok {
 				as = mas.Name
 
@@ -204,9 +204,9 @@ func (p *Parser) parseImportStatement() *ast.BlockNode {
 
 		} else {
 			as = getAliasFromImport(mod.String())
+			p.checkIdentifierName(as)
+			p.addToIdentifiersUsed(as)
 		}
-		p.checkIdentifierName(as)
-		p.addToIdentifiersUsed(as)
 
 		if len(as) != 0 && as[0] == '_' {
 			p.addError("Cannot start alias name with underscore")

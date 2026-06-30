@@ -10,6 +10,8 @@ import (
 	"langur/token"
 )
 
+var identifierPattern = regexp.MustCompile("^"+common.IdentifierPatternString+"$")
+
 func (p *Parser) parseIdentifier() ast.Node {
 	tt := p.tok.Type
 	identifier, ok := p.parseWord()
@@ -24,8 +26,6 @@ func (p *Parser) parseIdentifier() ast.Node {
 
 	return identifier
 }
-
-var identifierPattern = regexp.MustCompile("^"+common.IdentifierPatternString+"$")
 
 // a word token that may be an identifier or may be something else
 func (p *Parser) parseWord() (*ast.IdentNode, bool) {

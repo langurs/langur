@@ -5,6 +5,7 @@ package parser
 // NOTE: Each terminal parse function is responsible for advancing the token position.
 
 import (
+	"langur/str"
 	"bytes"
 	"fmt"
 	"langur/ast"
@@ -235,7 +236,11 @@ func (p *Parser) checkIdentifierName(name string) bool {
 	}
 	if name[0] == '_' && name[len(name)-1] == '_' {
 		// disallow user reading of internal system variable name (beginning and ending with underscore)
-		p.addError(fmt.Sprintf("Cannot access identifier name %s", name))
+		p.addError(fmt.Sprintf("Cannot access identifier name %s", str.ReformatInput(name)))
+		return false
+	}
+	if !identifierPattern.MatchString(name) {
+		p.addError(fmt.Sprintf("Invalid identifier name %s", str.ReformatInput(name)))
 		return false
 	}
 	return true

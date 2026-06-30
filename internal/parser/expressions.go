@@ -550,7 +550,8 @@ func (p *Parser) parseExpressionList(
 
 			externalName, _ := p.parseWord() // not parsing as normal identifier
 			p.advanceToken()                 // past assignment operator
-			value := p.parseExpression(precedence_LOWEST)
+
+			value  := p.parseExpression(precedence_LOWEST)
 			assign := ast.MakeAssignmentExpression(externalName, value, false)
 
 			nodes = append(nodes, assign)
