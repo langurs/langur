@@ -146,11 +146,19 @@ func (p *Parser) finishParsingHash(firstKey ast.Node) ast.Node {
 	return hash
 }
 
-func (p *Parser) parseIndices(ident ast.Node) ast.Node {
+func (p *Parser) parseDefinables(ident ast.Node) ast.Node {
 	index := ident
-	for p.tok.Type == token.LBRACKET {
-		// might be multiple indices; thus the for loop
-		index = p.parseIndexExpression(index)
+	loop:
+	for {
+		// might be multiple indices or dots; thus the for loop
+		switch p.tok.Type {
+		case token.LBRACKET:
+			index = p.parseIndexExpression(index)
+		case token.DOT:
+			index = p.parseDotExpression(index)
+		default:
+			break loop
+		}
 	}
 	return index
 }

@@ -244,6 +244,18 @@ func MayPrecedeShorthandStringIndexing(tt Type) bool {
 	return false
 }
 
+func MayStartDefinable(tt Type, cpDiff int) bool {
+	if cpDiff != 0 {
+		return false
+	}
+
+	switch tt {
+	case LBRACKET, DOT:
+		return true
+	}
+	return false
+}
+
 func AllowNilRightExpression(tt Type) bool {
 	// such as used for incomplete expressions in switch tests or case conditions
 	switch tt {

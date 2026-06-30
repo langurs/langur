@@ -26,7 +26,7 @@ func (p *Parser) parseDeclaration() ast.Node {
 
 // assignmentRequired: identifier alone allowed?
 func (p *Parser) parseIdentifiersWithPotentialAssignments(
-	mayIncludeIndexedAssignment, mayIncludeIndexedNonAssignment,
+	mayIncludeDefinableAssignment, mayIncludeDefinableNonAssignment,
 	assignmentRequired, mayBeComboOp,
 	mayBeMultiAssign, convertIdentsListToAssignment,
 	convertAssignmentToDeclaration, defaultDeclarationsMutable bool) ast.Node {
@@ -35,17 +35,17 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 	tok := p.tok
 
 	if mayBeMultiAssign {
-		idents = p.parseIdentifierList(mayIncludeIndexedAssignment || mayIncludeIndexedNonAssignment)
+		idents = p.parseIdentifierList(mayIncludeDefinableAssignment || mayIncludeDefinableNonAssignment)
 
 	} else {
 		ident := p.parseIdentifier()
 
 		// indexed?
-		if p.tok.Type == token.LBRACKET {
-			if mayIncludeIndexedAssignment || mayIncludeIndexedNonAssignment {
-				ident = p.parseIndices(ident)
+		if token.MayStartDefinable(p.tok.Type, p.tok.CpDiff) {
+			if mayIncludeDefinableAssignment || mayIncludeDefinableNonAssignment {
+				ident = p.parseDefinables(ident)
 			} else if p.tok.CpDiff == 0 {
-				p.addError("Unexpected indexing on identifier")
+				p.addError("Unexpected expression after identifier")
 			}
 		}
 
@@ -53,7 +53,7 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 	}
 
 	if p.tok.Type == token.ASSIGN || token.IsComboOp(p.tok) {
-		assign := p.parseAssignment(idents, mayIncludeIndexedAssignment, mayBeComboOp, mayBeMultiAssign)
+		assign := p.parseAssignment(idents, mayIncludeDefinableAssignment, mayBeComboOp, mayBeMultiAssign)
 
 		if convertAssignmentToDeclaration {
 			decl, err := ast.AssignmentToDeclaration(assign, defaultDeclarationsMutable)
@@ -93,9 +93,9 @@ func (p *Parser) parseIdentifiersWithPotentialAssignments(
 	return idents[0]
 }
 
-func (p *Parser) parseAssignment(idents []ast.Node, mayIncludeIndices, mayBeComboOp, mayBeMultiAssign bool) ast.Node {
+func (p *Parser) parseAssignment(idents []ast.Node, mayIncludeDefinables, mayBeComboOp, mayBeMultiAssign bool) ast.Node {
 	if idents == nil {
-		idents = p.parseIdentifierList(mayIncludeIndices)
+		idents = p.parseIdentifierList(mayIncludeDefinables)
 	}
 
 	combo := false
@@ -190,18 +190,18 @@ func (p *Parser) parseCombinationAssignment(left ast.Node) ast.Node {
 	return ast.MakeAssignmentExpression(left, expr, false)
 }
 
-func (p *Parser) parseIdentifierList(mayIncludeIndices bool) (idents []ast.Node) {
+func (p *Parser) parseIdentifierList(mayIncludeDefinables bool) (idents []ast.Node) {
 	cnt := 0
 	line := p.tok.Where.Line
 	includesExpansion := false
 
 	parseIdent := func() ast.Node {
 		ident := p.parseIdentifier()
-		if p.tok.Type == token.LBRACKET && p.tok.CpDiff == 0 {
-			if mayIncludeIndices {
-				ident = p.parseIndices(ident)
+		if token.MayStartDefinable(p.tok.Type, p.tok.CpDiff) {
+			if mayIncludeDefinables {
+				ident = p.parseDefinables(ident)
 			} else {
-				p.addError("Unexpected indexing in identifier list")
+				p.addError("Unexpected expression in identifier list")
 			}
 		}
 		cnt++
