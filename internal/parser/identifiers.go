@@ -25,7 +25,7 @@ func (p *Parser) parseIdentifier() ast.Node {
 	return identifier
 }
 
-var identifierPattern = regexp.MustCompile(common.IdentifierPatternString)
+var identifierPattern = regexp.MustCompile("^"+common.IdentifierPatternString+"$")
 
 // a word token that may be an identifier or may be something else
 func (p *Parser) parseWord() (*ast.IdentNode, bool) {

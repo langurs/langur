@@ -3,9 +3,15 @@
 
 package common
 
-const IdentifierPatternString = "[_a-zA-Z][a-zA-Z0-9_]*$"
+import (
+	"fmt"
+)
 
-// const IdentifierPatternString = "^[a-zA-Z][_a-zA-Z0-9]*|_+[a-zA-Z0-9][_a-zA-Z0-9]*$"
+// maybe arbitrary, probably needs to be limited
+const IdentifierLenMax = 128
+
+// not including ^ or $ as may be part of a larger string
+var IdentifierPatternString = fmt.Sprintf("[_a-zA-Z][a-zA-Z0-9_]{0,%d}", IdentifierLenMax-1)
 
 const (
 	NumberType   = "number"

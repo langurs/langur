@@ -208,6 +208,11 @@ func (p *Parser) parseImportStatement() *ast.BlockNode {
 		p.checkIdentifierName(as)
 		p.addToIdentifiersUsed(as)
 
+		if len(as) != 0 && as[0] == '_' {
+			p.addError("Cannot start alias name with underscore")
+			break
+		}
+
 		stmt.Statements = append(stmt.Statements,
 			&ast.ImportNode{Token: tok, Import: mod, As: as})
 

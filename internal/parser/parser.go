@@ -229,7 +229,11 @@ func (p *Parser) addToIdentifiersUsed(name string) {
 }
 
 func (p *Parser) checkIdentifierName(name string) bool {
-	if len(name) > 1 && name[0] == '_' && name[len(name)-1] == '_' {
+	if len(name) == 0 {
+		p.addError("Expected identifier, not blank string")
+		return false
+	}
+	if name[0] == '_' && name[len(name)-1] == '_' {
 		// disallow user reading of internal system variable name (beginning and ending with underscore)
 		p.addError(fmt.Sprintf("Cannot access identifier name %s", name))
 		return false
