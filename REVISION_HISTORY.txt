@@ -1,9 +1,11 @@
 langur revision history
 https://langurlang.org
 
-... - 0.22.0
+... - 0.21.11
 - dropped *simple catch*
 - limited *simple if* to statement context
+- (internal) changed parsing of module and import statements to include keyword arguments (future use)
+- (internal) changed references to "indexed assignment" to "definable assignment" to include dot expressions (future use)
 
 
 2026-06-26 - 0.21.10
