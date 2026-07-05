@@ -3,6 +3,7 @@
 package process
 
 import (
+	"fmt"
 	"langur/object"
 	"io/ioutil"
 )
@@ -19,7 +20,7 @@ func (pr *Process) loadModule(module object.Object, as string) error {
 	// for now, assuming UTF-8
 	bSlc, err := ioutil.ReadFile(mod)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error reading import file %q: %s", mod, err.Error())
 	}
 	code := string(bSlc)
 
@@ -27,12 +28,11 @@ func (pr *Process) loadModule(module object.Object, as string) error {
 
 	// 3. attempt to parse and compile
 
-	// 4. add base name to symbol table
-	// if as alias not specified, must decipher from file
-	if as == "" {
-		
-	}
 
+	// 4. add base name to symbol table
+	if as == "" {
+		return fmt.Errorf("Missing alias name for import %q", mod)
+	}
 
 
 	// 5. find "exported" things (public)

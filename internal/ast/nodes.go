@@ -117,12 +117,18 @@ func (p *Program) TokenInfo() token.Token {
 // MODULE STATEMENT
 type ModuleNode struct {
 	Token         token.Token
-	Name          string
 	ImpureEffects bool
+	KeywordArgs   []Node
 }
 
 func (m *ModuleNode) Search(parent Node, sc *searchCriteria) (found bool) {
-	return nodeMatching(m, parent, sc.OfTypes)
+	if nodeMatching(m, parent, sc.OfTypes) {
+		return true
+	}
+	if nodeMatching(m, parent, sc.DontSearch) {
+		return false
+	}
+	return sc.searchNodeSlice(m, m.KeywordArgs)
 }
 
 func (m *ModuleNode) statementNode() {}
@@ -130,8 +136,8 @@ func (m *ModuleNode) statementNode() {}
 func (m *ModuleNode) Copy() Node {
 	return &ModuleNode{
 		Token:         m.Token.Copy(),
-		Name:          m.Name,
 		ImpureEffects: m.ImpureEffects,
+		KeywordArgs:   CopyNodeSlice(m.KeywordArgs),
 	}
 }
 
@@ -151,9 +157,13 @@ func (m *ModuleNode) TokenRepresentation() string {
 		sb.WriteRune('*')
 	}
 
-	if m.Name != "" {
-		sb.WriteRune(' ')
-		sb.WriteString(m.Name)
+	args := []string{}
+	for _, a := range m.KeywordArgs {
+		args = append(args, tokenRepOrNil(a))
+	}
+	if args != nil {
+		sb.WriteByte(' ')
+		sb.WriteString(strings.Join(args, ", ") + ") ")
 	}
 
 	return sb.String()
@@ -167,9 +177,13 @@ func (m *ModuleNode) String() string {
 	}
 	sb.WriteString("Module")
 
-	if m.Name != "" {
-		sb.WriteRune(' ')
-		sb.WriteString(m.Name)
+	args := []string{}
+	for _, a := range m.KeywordArgs {
+		args = append(args, stringOrNil(a))
+	}
+	if args != nil {
+		sb.WriteByte(' ')
+		sb.WriteString(strings.Join(args, ", ") + ") ")
 	}
 
 	return sb.String()
@@ -181,22 +195,30 @@ func (m *ModuleNode) TokenInfo() token.Token {
 
 // IMPORT STATEMENT
 type ImportNode struct {
-	Token  token.Token
-	Import Node
-	As     string // zero-length string if not applicable
+	Token       token.Token
+	Import      Node
+	As          string // zero-length string if not applicable
+	KeywordArgs []Node
 }
 
 func (i *ImportNode) Search(parent Node, sc *searchCriteria) (found bool) {
-	return nodeMatching(i, parent, sc.OfTypes)
+	if nodeMatching(i, parent, sc.OfTypes) {
+		return true
+	}
+	if nodeMatching(i, parent, sc.DontSearch) {
+		return false
+	}
+	return sc.searchNodeSlice(i, i.KeywordArgs)
 }
 
 func (i *ImportNode) statementNode() {}
 
 func (i *ImportNode) Copy() Node {
 	return &ImportNode{
-		Token:  i.Token.Copy(),
-		Import: copyOrNil(i.Import),
-		As:     i.As,
+		Token:       i.Token.Copy(),
+		Import:      copyOrNil(i.Import),
+		As:          i.As,
+		KeywordArgs: CopyNodeSlice(i.KeywordArgs),
 	}
 }
 
@@ -236,6 +258,11 @@ func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
 	}
 	pkg = pkg.Append(b)
 
+	if i.KeywordArgs != nil {
+		err = c.makeErr(i.KeywordArgs[0], "Unexpected arguments on import (future use)")
+		return pkg, err
+	}
+
 	pkg = pkg.Append(opcode.MakePkg(i.Token, opcode.OpLoadModule))
 
 	return pkg, nil
@@ -251,6 +278,15 @@ func (i *ImportNode) TokenRepresentation() string {
 		out.WriteString(i.As)
 	}
 
+	args := []string{}
+	for _, a := range i.KeywordArgs {
+		args = append(args, tokenRepOrNil(a))
+	}
+	if args != nil {
+		out.WriteString(", ")
+		out.WriteString(strings.Join(args, ", ") + ") ")
+	}
+
 	return out.String()
 }
 
@@ -262,6 +298,15 @@ func (i *ImportNode) String() string {
 	if i.As != "" {
 		out.WriteString(" As ")
 		out.WriteString(i.As)
+	}
+
+	args := []string{}
+	for _, a := range i.KeywordArgs {
+		args = append(args, stringOrNil(a))
+	}
+	if args != nil {
+		out.WriteString(", ")
+		out.WriteString(strings.Join(args, ", ") + ") ")
 	}
 
 	return out.String()

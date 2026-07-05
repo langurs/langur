@@ -55,14 +55,14 @@ func (p *Parser) parseFunction() ast.Node {
 			return p.finishSelfReferenceCall()
 		}
 
-		lit.PositionalParameters, lit.KeywordParameters = p.parseFunctionParameters([]token.Type{token.RPAREN})
+		lit.PositionalParameters, lit.KeywordParameters = p.parseParameterList([]token.Type{token.RPAREN})
 
 	} else {
 		// fn token by itself
 		if impureEffects {
 			p.addError(fmt.Sprintf("Unexpected impure effects flag on %s token", common.FunctionTokenLiteral))
 		}
-		
+
 		return asType
 	}
 
@@ -89,7 +89,7 @@ func (p *Parser) parseFunction() ast.Node {
 	return lit
 }
 
-func (p *Parser) parseFunctionParameters(until []token.Type) (
+func (p *Parser) parseParameterList(until []token.Type) (
 	positional, keyword []ast.Node) {
 
 	for !token.InTypeSlice(p.tok.Type, until) {
@@ -346,20 +346,10 @@ func (p *Parser) parseNilLeftPartiallyImpliedFunction(op token.Token) *ast.Funct
 
 // possibly a call without parentheses
 func (p *Parser) parsePossibleUnboundedCall(ident ast.Node) (ast.Node, bool) {
-	if p.tok.CpDiff != 0 && token.MayStartFunctionArg(p.tok.Type) {
-		if !p.likelyInfixPosition() {
-			expr := &ast.CallNode{Token: p.tok, Function: ident}
-			args, _ := p.parseExpressionList(
-				token.EndUnboundedArgumentList, token.COMMA, true, false, true)
-
-			var err error
-			expr.PositionalArgs, expr.KeywordArgs, err = ast.SplitArgumentSliceToPositionalAndKeyword(args)
-			if err != nil {
-				p.addError("Error determining positional arguments and keyword arguments: " + err.Error())
-			}
-
-			return expr, true
-		}
+	if p.mayBeUnboundedArgList() {
+		expr := &ast.CallNode{Token: p.tok, Function: ident}
+		expr.PositionalArgs, expr.KeywordArgs = p.parseArgumentList(true)
+		return expr, true
 	}
 	return ident, false
 }
@@ -377,17 +367,31 @@ func (p *Parser) parseParenthesizedCallExpression(fn ast.Node) ast.Node {
 
 	expr := &ast.CallNode{Token: p.tok, Function: fn}
 	p.advanceToken() // past the opening parenthesis
+	expr.PositionalArgs, expr.KeywordArgs = p.parseArgumentList(false)
+	
+	return expr
+}
+
+func (p *Parser) mayBeUnboundedArgList() bool {
+	return p.tok.CpDiff != 0 && token.MayStartFunctionArg(p.tok.Type) && !p.likelyInfixPosition()	
+}
+
+func (p *Parser) parseArgumentList(unbounded bool) (positional, keyword []ast.Node) {
+	closer := []token.Type{token.RPAREN}
+	if unbounded {
+		closer = token.EndUnboundedArgumentList
+	}
+
 	args, _ := p.parseExpressionList(
-		[]token.Type{token.RPAREN}, token.COMMA, true, true, false)
-	// passes closing parenthesis
+		closer, token.COMMA, true, !unbounded, unbounded)
 
 	var err error
-	expr.PositionalArgs, expr.KeywordArgs, err = ast.SplitArgumentSliceToPositionalAndKeyword(args)
+	positional, keyword, err = ast.SplitArgumentSliceToPositionalAndKeyword(args)
 	if err != nil {
 		p.addError("Error determining positional arguments and keyword arguments: " + err.Error())
 	}
 
-	return expr
+	return
 }
 
 func (p *Parser) finishSelfReferenceCall() ast.Node {

@@ -34,8 +34,8 @@ func (c *Compiler) compileProgram(node *Program, executeModule bool) (
 		switch n := s.(type) {
 		case *ModuleNode:
 			if i == 0 {
-				if n.Name != "" {
-					err = c.makeErr(node, "No name expected on module")
+				if n.KeywordArgs != nil {
+					err = c.makeErr(node, "No arguments expected on module (future use)")
 					return
 				}
 

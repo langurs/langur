@@ -11,20 +11,6 @@ import (
 	"langur/token"
 )
 
-var fileNameExtRegex = regexp.MustCompile("\\.langur$")
-var lastPartRegex = regexp.MustCompile("[~/]+$")
-
-func getAliasFromImport(module string) string {
-	as := module
-	if idx := fileNameExtRegex.FindStringIndex(as); idx != nil {
-		as = as[:idx[0]]
-	}
-	if idx := lastPartRegex.FindStringIndex(as); idx != nil {
-		as = as[idx[0]:]
-	}
-	return as
-}
-
 func (p *Parser) parseStatement(eatSemicolon bool) ast.Node {
 	var stmt ast.Node
 
@@ -155,11 +141,6 @@ func (p *Parser) parseModuleStatement() *ast.ModuleNode {
 	stmt := &ast.ModuleNode{Token: p.tok}
 	p.advanceToken()
 
-	mod, ok := p.parseWord()
-	if ok {
-		stmt.Name = mod.Name
-	}
-
 	if p.tok.Type == token.ASTERISK {
 		if p.tok.CpDiff != 0 {
 			p.addError("Asterisk * must immediately follow module keyword")
@@ -168,66 +149,95 @@ func (p *Parser) parseModuleStatement() *ast.ModuleNode {
 		p.advanceToken()
 	}
 
+	if p.mayBeUnboundedArgList() {
+		var positional []ast.Node
+		positional, stmt.KeywordArgs = p.parseArgumentList(true)
+		if positional != nil {
+			p.addError("Unexpected positional arguments on module statement")
+		}
+	}
+
 	return stmt
 }
 
-func (p *Parser) parseImportStatement() *ast.BlockNode {
-	tok := p.tok
+var importLastPartRegex = regexp.MustCompile("[^/]+$")
+var importFileNameNoExtRegex = regexp.MustCompile("^[^.]+")
+
+func getAliasFromImport(module string) string {
+	as := module
+	if idx := importLastPartRegex.FindStringIndex(as); idx != nil {
+		as = as[idx[0]:]
+	}
+	if idx := importFileNameNoExtRegex.FindStringIndex(as); idx != nil {
+		as = as[:idx[1]]
+	}
+	return as
+}
+
+// alias (as) determined at parse, not at compile (presently)
+func (p *Parser) parseImportStatement() *ast.ImportNode {
+	if p.tok.Type != token.IMPORT {
+		p.addError("Expected import token")
+		return nil
+	}
+
+	stmt := &ast.ImportNode{Token: p.tok}
 	p.advanceToken()
-	stmt := &ast.BlockNode{Token: tok}
 
-	for {
-		tok := p.tok
-		as := ""
+	var mod ast.Node
+	switch p.tok.Type {
+	case token.STRING:
+		mod = p.parseString()
+	}
 
-		var mod ast.Node
-		switch p.tok.Type {
-		case token.STRING:
-			mod = p.parseString()
+	path := ""
+	if ps, ok := mod.(*ast.StringNode); ok {
+		path = ps.Values[0]
+	} else {
+		p.addError("Error parsing string for import")
+		return stmt
+	}
 
-		default:
-			p.addError("Expected string for import")
-			break
-		}
+	as := ""
+	if p.tok.Type == token.AS {
+		p.advanceToken()
 
-		if p.tok.Type == token.AS {
-			p.advanceToken()
-
-			mas, ok := p.parseIdentifier().(*ast.IdentNode)
-			if ok {
-				as = mas.Name
-
-			} else {
-				p.addError("Expected identifier after as keyword")
-				break
-			}
+		mas, ok := p.parseIdentifier().(*ast.IdentNode)
+		if ok {
+			as = mas.Name
 
 		} else {
-			as = getAliasFromImport(mod.String())
-			p.checkIdentifierName(as)
-			p.addToIdentifiersUsed(as)
+			p.addError("Expected identifier after as keyword")
+			return stmt
 		}
 
-		if len(as) != 0 && as[0] == '_' {
-			p.addError("Cannot start alias name with underscore")
-			break
+	} else {
+		as = getAliasFromImport(path)
+		p.checkIdentifierName(as)
+		p.addToIdentifiersUsed(as)
+	}
+
+	if len(as) != 0 && as[0] == '_' {
+		p.addError("Cannot start alias name with underscore")
+		return stmt
+	}
+
+	stmt.Import, stmt.As = mod, as
+
+	if p.tok.Type == token.COMMA {
+		p.advanceToken()
+
+		var positional []ast.Node
+		positional, stmt.KeywordArgs = p.parseArgumentList(true)
+		if positional != nil {
+			p.addError("Unexpected positional arguments on import statement")
 		}
+	}
 
-		stmt.Statements = append(stmt.Statements,
-			&ast.ImportNode{Token: tok, Import: mod, As: as})
-
-		switch p.tok.Type {
-		case token.EOF, token.SEMICOLON:
-			break
-
-		case token.COMMA:
-			p.advanceToken()
-			continue
-
-		default:
-			p.addError("Invalid import list")
-			break
-		}
+	switch p.tok.Type {
+	case token.EOF, token.SEMICOLON:
+	default:
+		p.addError("Invalid import")
 	}
 
 	return stmt
