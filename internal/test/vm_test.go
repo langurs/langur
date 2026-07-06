@@ -2278,6 +2278,37 @@ func TestIndexHashAssignment(t *testing.T) {
 // 	runVmTests(t, tests, false, false)
 // }
 
+func TestDeclarationBlocks(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			`var { a; b }
+			a
+			`,
+			nil, object.NULL_OBJ,
+		},
+		{
+			`var {
+				a = 3
+				b = 18
+			 }
+			a + b
+			`,
+			21, object.NUMBER_OBJ,
+		},
+		{
+			`val {
+				a = 3
+				b = 18
+			 }
+			a + b
+			`,
+			21, object.NUMBER_OBJ,
+		},
+	}
+
+	runVmTests(t, tests, false, false)
+}
+
 func TestMultiVariableDeclarationAssignment(t *testing.T) {
 	tests := []vmTestCase{
 		{

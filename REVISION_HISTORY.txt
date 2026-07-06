@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.21.11
+- added val/var declaration blocks
 - dropped *simple catch*
 - limited *simple if* to statement context
 - (internal) changed parsing of module and import statements to include keyword arguments (future use)

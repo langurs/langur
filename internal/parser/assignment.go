@@ -3,6 +3,7 @@
 package parser
 
 import (
+	"fmt"
 	"langur/ast"
 	"langur/token"
 )
@@ -20,16 +21,72 @@ func (p *Parser) parseDeclaration() ast.Node {
 		p.addError("Expected val or var token")
 	}
 
+	if p.tok.Type == token.LBRACE {
+		// declaration block, val { ... } or var { ... }
+		block := p.parseBlock()
+		if decls, ok := block.(*ast.BlockNode); ok {
+			var err error
+			for i, stmt := range decls.Statements {
+				if stmt, ok := stmt.(*ast.ExpressionStatementNode); ok {
+					switch stmt := stmt.Expression.(type) {
+					case *ast.AssignmentNode:
+						for j := range stmt.Identifiers {
+							if _, ok := stmt.Identifiers[j].(*ast.IdentNode); !ok {
+								p.addError("Identifier expected, received something else")
+								return decls
+							}
+						}
+
+						decls.Statements[i], err = ast.AssignmentToDeclaration(stmt, mutable)
+						if err != nil {
+							p.addError(err.Error())
+							return decls
+						}
+
+					case *ast.IdentNode:
+						decls.Statements[i] = ast.MakeDeclarationAssignmentStatement(
+							stmt, ast.NoValue, false, mutable)
+
+						if !mutable {
+							p.addError("Assignment required for immutable declaration")
+							return decls
+						}
+
+					default:
+						p.addError("Declaration block may include variable declarations only")
+						return decls
+					}
+
+				} else {
+					err = fmt.Errorf("Error parsing declaration block")
+					p.addError(err.Error())
+					bug("parseDeclaration", err.Error())
+					return decls
+				}
+			}
+
+			return decls
+
+		} else {
+			p.addError("Malformed declaration block")
+			return block
+		}
+	}
+
 	return p.parseIdentifiersWithPotentialAssignments(
 		false, false, !mutable, false, true, mutable, true, mutable)
 }
 
 // assignmentRequired: identifier alone allowed?
 func (p *Parser) parseIdentifiersWithPotentialAssignments(
-	mayIncludeDefinableAssignment, mayIncludeDefinableNonAssignment,
-	assignmentRequired, mayBeComboOp,
-	mayBeMultiAssign, convertIdentsListToAssignment,
-	convertAssignmentToDeclaration, defaultDeclarationsMutable bool) ast.Node {
+	mayIncludeDefinableAssignment,
+	mayIncludeDefinableNonAssignment,
+	assignmentRequired,
+	mayBeComboOp,
+	mayBeMultiAssign,
+	convertIdentsListToAssignment,
+	convertAssignmentToDeclaration,
+	defaultDeclarationsMutable bool) ast.Node {
 
 	var idents []ast.Node
 	tok := p.tok
