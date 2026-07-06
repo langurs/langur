@@ -2304,6 +2304,25 @@ func TestDeclarationBlocks(t *testing.T) {
 			`,
 			21, object.NUMBER_OBJ,
 		},
+
+		{
+			`var {
+				a = 1 + 2
+				catch : a = 10
+			 }
+			a
+			`,
+			3, object.NUMBER_OBJ,
+		},
+		{
+			`var {
+				a = 3 / 0
+				catch : a = 10
+			 }
+			a
+			`,
+			10, object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)

@@ -24,50 +24,14 @@ func (p *Parser) parseDeclaration() ast.Node {
 	if p.tok.Type == token.LBRACE {
 		// declaration block, val { ... } or var { ... }
 		block := p.parseBlock()
-		if decls, ok := block.(*ast.BlockNode); ok {
-			var err error
-			for i, stmt := range decls.Statements {
-				if stmt, ok := stmt.(*ast.ExpressionStatementNode); ok {
-					switch stmt := stmt.Expression.(type) {
-					case *ast.AssignmentNode:
-						for j := range stmt.Identifiers {
-							if _, ok := stmt.Identifiers[j].(*ast.IdentNode); !ok {
-								p.addError("Identifier expected, received something else")
-								return decls
-							}
-						}
 
-						decls.Statements[i], err = ast.AssignmentToDeclaration(stmt, mutable)
-						if err != nil {
-							p.addError(err.Error())
-							return decls
-						}
-
-					case *ast.IdentNode:
-						decls.Statements[i] = ast.MakeDeclarationAssignmentStatement(
-							stmt, ast.NoValue, false, mutable)
-
-						if !mutable {
-							p.addError("Assignment required for immutable declaration")
-							return decls
-						}
-
-					default:
-						p.addError("Declaration block may include variable declarations only")
-						return decls
-					}
-
-				} else {
-					err = fmt.Errorf("Error parsing declaration block")
-					p.addError(err.Error())
-					bug("parseDeclaration", err.Error())
-					return decls
-				}
-			}
-
+		switch decls := block.(type) {
+		case *ast.BlockNode:
+			// p.blockToDeclarations(decls, mutable, true)
+			p.blockToDeclarations(decls, mutable, mutable)
 			return decls
 
-		} else {
+		default:
 			p.addError("Malformed declaration block")
 			return block
 		}
@@ -75,6 +39,58 @@ func (p *Parser) parseDeclaration() ast.Node {
 
 	return p.parseIdentifiersWithPotentialAssignments(
 		false, false, !mutable, false, true, mutable, true, mutable)
+}
+
+func (p *Parser) blockToDeclarations(decls *ast.BlockNode, mutable, allowTryCatch bool) {
+	var err error
+	for i, stmt := range decls.Statements {
+		if stmt, ok := stmt.(*ast.ExpressionStatementNode); ok {
+			switch stmt := stmt.Expression.(type) {
+			case *ast.AssignmentNode:
+				for j := range stmt.Identifiers {
+					if _, ok := stmt.Identifiers[j].(*ast.IdentNode); !ok {
+						p.addError("Identifier expected, received something else")
+						return
+					}
+				}
+
+				decls.Statements[i], err = ast.AssignmentToDeclaration(stmt, mutable)
+				if err != nil {
+					p.addError(err.Error())
+					return
+				}
+
+			case *ast.IdentNode:
+				decls.Statements[i] = ast.MakeDeclarationAssignmentStatement(
+					stmt, ast.NoValue, false, mutable)
+
+				if !mutable {
+					p.addError("Assignment required for immutable declaration")
+					return
+				}
+
+			case *ast.TryCatchNode:
+				// TODO: allow catch and redefine on immutable declaration
+				if allowTryCatch {
+					p.blockToDeclarations(stmt.Try.(*ast.BlockNode), mutable, false)
+					return
+				}
+				p.addError("Illegal try/catch in declaration block")
+
+			default:
+				p.addError("Declaration block may include variable declarations only")
+				return
+			}
+
+		} else {
+			err = fmt.Errorf("Error parsing declaration block")
+			p.addError(err.Error())
+			bug("blockToDeclarations", err.Error())
+			return
+		}
+	}
+
+	return
 }
 
 // assignmentRequired: identifier alone allowed?
