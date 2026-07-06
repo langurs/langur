@@ -9319,6 +9319,16 @@ func TestTryCatch(t *testing.T) {
 			 sum`,
 			36, object.NUMBER_OBJ,
 		},
+
+		// simple catch with a colon
+		{
+			input: `
+				123 / 0
+				catch : 12
+				`,
+			expected:     12,
+			expectedType: object.NUMBER_OBJ,
+		},
 	}
 
 	runVmTests(t, tests, false, false)
