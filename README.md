@@ -1,4 +1,4 @@
-# langur 0.22
+# langur 0.21
 
 [Langur](https://langurlang.org) is an open-source programming language written in Go, running on a bytecode VM. It is presently an imperative language, with plans for custom types and OOP. The language's features are described on the website.
 

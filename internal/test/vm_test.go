@@ -2287,6 +2287,15 @@ func TestDeclarationBlocks(t *testing.T) {
 			nil, object.NULL_OBJ,
 		},
 		{
+			`var { a; b }
+			a = 42
+			b = 5
+			a + b
+			`,
+			47, object.NUMBER_OBJ,
+		},
+
+		{
 			`var {
 				a = 3
 				b = 18
@@ -2305,6 +2314,7 @@ func TestDeclarationBlocks(t *testing.T) {
 			21, object.NUMBER_OBJ,
 		},
 
+		// var declaration block with catch
 		{
 			`var {
 				a = 1 + 2
@@ -2319,10 +2329,30 @@ func TestDeclarationBlocks(t *testing.T) {
 				a = 3 / 0
 				catch : a = 10
 			 }
-			a
+			a + 2
 			`,
-			10, object.NUMBER_OBJ,
+			12, object.NUMBER_OBJ,
 		},
+
+		// // val declaration block with catch
+		// {
+		// 	`val {
+		// 		a = 1 + 2
+		// 		catch : a = 10
+		// 	 }
+		// 	a
+		// 	`,
+		// 	3, object.NUMBER_OBJ,
+		// },
+		// {
+		// 	`val {
+		// 		a = 3 / 0
+		// 		catch : a = 10
+		// 	 }
+		// 	a + 2
+		// 	`,
+		// 	12, object.NUMBER_OBJ,
+		// },	
 	}
 
 	runVmTests(t, tests, false, false)

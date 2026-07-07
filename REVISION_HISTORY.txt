@@ -1,12 +1,12 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.11
+2026-07-07 - 0.21.11
 - added val/var declaration blocks
 - limited *simple if* to statement context
 - (internal) changed parsing of module and import statements to include keyword arguments (future use)
 - (internal) changed references to "indexed assignment" to "definable assignment" to include dot expressions (future use)
-
+- (internal) added opcode.OpLoadModule (future use)
 
 2026-06-26 - 0.21.10
 - changed type name of *regex* to *pattern*

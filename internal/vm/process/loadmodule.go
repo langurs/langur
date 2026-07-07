@@ -9,6 +9,9 @@ import (
 )
 
 func (pr *Process) loadModule(module object.Object, as string) error {
+
+	return fmt.Errorf("Load module feature not developed yet")
+
 	// 1. locate the module
 	// TODO: decide where/how imports will be found
 	// for initial development, doing crude load; file has to be easily found

@@ -27,8 +27,7 @@ func (p *Parser) parseDeclaration() ast.Node {
 
 		switch decls := block.(type) {
 		case *ast.BlockNode:
-			// p.blockToDeclarations(decls, mutable, true)
-			p.blockToDeclarations(decls, mutable, mutable)
+			p.blockToDeclarations(decls, mutable, true)
 			return decls
 
 		default:

@@ -24,7 +24,7 @@ const (
 	SelfScope   symbolScope = "SELF"
 )
 
-// Note: Built-ins don't have scope and don't need a symbol table.
+// NOTE: Built-ins don't have scope and don't need a symbol table.
 
 type Symbol struct {
 	Name         string
@@ -98,7 +98,7 @@ func (st *SymbolTable) defineSystemVariable(name string, mutable bool) (sym Symb
 }
 
 // to check if identifier name allowed for declaration
-func isNonShadowedWord(name string) bool {
+func (st *SymbolTable) isNonShadowedWord(name string) bool {
 	_, isKeyword := token.Keywords[name]
 	if isKeyword {
 		return true
@@ -124,7 +124,7 @@ func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.Obje
 	}
 
 	// check if a non-shadowed word already defined
-	if isNonShadowedWord(name) {
+	if st.isNonShadowedWord(name) {
 		return sym, fmt.Errorf("Cannot declare variable as shadow to referent or keyword (%s)", name)
 	}
 
