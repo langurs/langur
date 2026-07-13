@@ -11,8 +11,8 @@ import (
 	"io/ioutil"
 	"langur/args"
 	"langur/bytecode"
+	"langur/compile"
 	"langur/interactive"
-	"langur/load"
 	"langur/modes"
 	"langur/object"
 	"langur/str"
@@ -111,7 +111,7 @@ func main() {
 
 	var byteCode *bytecode.ByteCode
 	var exitStatus system.ExitStatus
-	byteCode, exitStatus, err = load.ParseAndCompile(
+	byteCode, exitStatus, err = compile.ParseAndCompile(
 		source, file, true,	printCodeLocationTrace,	compile_modes)
 
 	if err != nil {

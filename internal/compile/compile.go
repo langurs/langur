@@ -1,6 +1,8 @@
-// langur/load/load.go
+// langur/compile/compile.go
 
-package load
+// lex, parse, and compile
+
+package compile
 
 import (
 	"fmt"
