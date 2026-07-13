@@ -7,30 +7,7 @@ import (
 	"time"
 )
 
-// exit, keys
-// len, sleep, ticks, nn
-
-var bi_exit = &object.BuiltIn{
-	FnSignature: &object.Signature{
-		Name:          "exit",
-		ImpureEffects: true,
-		Description:   "exits with the integer code given; msg as string to write to standard error, appending a newline, if code not 0",
-
-		ParamPositional: []object.Parameter{
-			object.Parameter{ExternalName: "code"},
-		},
-
-		ParamKeyword: []object.Parameter{
-			object.Parameter{ExternalName: "msg", DefaultValue: object.ZeroLengthString()},
-		},
-	},
-	Fn: func(pr *Process, args ...object.Object) object.Object {
-		object.Exit(args[0], args[1], pr.Modes.ConsoleTextMode)
-
-		// no need to return, but the Go compiler requires it...
-		return object.NONE
-	},
-}
+// keys, len, sleep, ticks, nn
 
 var bi_keys = &object.BuiltIn{
 	FnSignature: &object.Signature{

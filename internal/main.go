@@ -126,9 +126,7 @@ func main() {
 		exitMain(system.ExitStatusTest, "langur: no errors (parse and compile success)")
 	}
 
-	// byteCode = comp.ByteCode()
 	machine := vm.New(byteCode, vm_modes)
-
 	err, where = machine.Run()
 	if err != nil {
 		if printErrors {

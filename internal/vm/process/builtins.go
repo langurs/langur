@@ -69,8 +69,6 @@ var BuiltIns = []*object.BuiltIn{
 	bi_execT,
 	bi_execTH,
 
-	bi_exit,
-
 	bi_count,
 	bi_filter,
 

@@ -1,6 +1,11 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.12
+- removed exit() command; use return from script or main function
+- added load package as (potential) central location to load langur file (lex, parse, and compile)
+
+
 2026-07-07 - 0.21.11
 - added val/var declaration blocks
 - limited *simple if* to statement context
