@@ -10,13 +10,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"langur/args"
-	"langur/ast"
 	"langur/bytecode"
 	"langur/interactive"
-	"langur/lexer"
+	"langur/load"
 	"langur/modes"
 	"langur/object"
-	"langur/parser"
 	"langur/str"
 	"langur/system"
 	"langur/text_io"
@@ -111,66 +109,24 @@ func main() {
 		source = string(b)
 	}
 
-	// Note: must check the parser and compiler for errors
-	// Most lexer errors are passed to the parser, so they don't have to be checked here.
-	lex, err := lexer.New(source, file, compile_modes)
-	if err != nil {
-		exitMain(system.ExitStatusFailedParse, "langur: lexer error: " + err.Error())
-	}
-	p := parser.New(lex, compile_modes)
+	var byteCode *bytecode.ByteCode
+	var exitStatus system.ExitStatus
+	byteCode, exitStatus, err = load.ParseAndCompile(
+		source, file, true,	printCodeLocationTrace,	compile_modes)
 
-	var program *ast.Program
-	program, err = p.ParseProgram()
 	if err != nil {
-		msg = "langur: parsing error: " + err.Error()
-
-		if len(p.Errs) != 0 {
-			if printErrors {
-				msg += "\n\nparsing errors..."
-				for _, msg2 := range p.Errs {
-					msg += "\n\t" + msg2.Error()
-				}
-			}
-		}
-		exitMain(system.ExitStatusFailedParse, msg)
-	}
-
-	comp, err := ast.NewCompiler(compile_modes, true)
-	comp.RunRemotely = true // not interactive mode/REPL or a test
-	if err != nil {
+		msg := ""
 		if printErrors {
-			msg = "langur: new compiler error: " + err.Error()
-
-			if printCodeLocationTrace {
-				tr := trace.LocationTrace(where, source, file)
-				if tr != "" {
-					msg += "\n" + tr
-				}
-			}
+			msg = "langur: " + err.Error()
 		}
-		exitMain(system.ExitStatusFailedCompile, msg)
-	}
-
-	_, err = program.Compile(comp)
-	if err != nil {
-		if printErrors {
-			msg = "langur: compilation errors\n" + err.Error()
-
-			if printCodeLocationTrace {
-				tr := trace.LocationTrace(where, source, file)
-				if tr != "" {
-					msg += "\n" + tr
-				}
-			}
-		}
-		exitMain(system.ExitStatusFailedCompile, msg)
+		exitMain(exitStatus, msg)
 	}
 
 	if compile_modes.TestCompile {
 		exitMain(system.ExitStatusTest, "langur: no errors (parse and compile success)")
 	}
 
-	byteCode := comp.ByteCode()
+	// byteCode = comp.ByteCode()
 	machine := vm.New(byteCode, vm_modes)
 
 	err, where = machine.Run()

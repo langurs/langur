@@ -9,7 +9,8 @@ import (
 type ExitStatus = int
 
 const (
-	ExitStatusGeneral ExitStatus = iota
+	_ ExitStatus = iota	// 0 for no error here
+	ExitStatusGeneral
 	ExitStatusNoScript
 	ExitStatusHelp
 	ExitStatusTest
