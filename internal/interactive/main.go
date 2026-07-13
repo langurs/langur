@@ -154,8 +154,8 @@ func Interactive(opts *InteractiveOptions) {
 
 func loop(opts *InteractiveOptions) {
 	replPrintLn(fmt.Sprintf("langur %s (langurlang.org)\n", bytecode.LangurRev))
-	replPrintLn("Type “exit()” or press ctrl-D to quit.")
-	replPrintLn("Type “reset()” for a new environment.")
+	replPrintLn("Type “return” or press ctrl-D to quit.")
+	replPrintLn("Type “_reset” for a new environment.")
 
 	for {
 		replPrint(opts.Prompt)
@@ -171,20 +171,11 @@ func loop(opts *InteractiveOptions) {
 		case "":
 			continue
 
-		case "exit":
-			replPrintLn("Type exit() to quit.")
-			continue
-
-		case "exit()":
-			// exit(): normally requires a parameter, but okay without for REPL
+		case "return":
+			// return normally requires a parameter, but okay without for REPL
 			return
 
-		// FIXME: "reset" not a reserved keyword; therefore could potentially conflict with variable name
-		case "reset":
-			replPrintLn("Type reset() to reset the environment.")
-			continue
-
-		case "reset()":
+		case "_reset":
 			resetEnvironment()
 			replPrintLn("Environment Reset")
 			continue

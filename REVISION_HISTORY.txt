@@ -3,6 +3,7 @@ https://langurlang.org
 
 ... - 0.21.12
 - removed exit() command; use return from script or main function
+- changed keywords to use in interactive mode to quit or reset the environment
 - added load package as (potential) central location to load langur file (lex, parse, and compile)
 
 
