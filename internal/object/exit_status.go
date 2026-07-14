@@ -29,6 +29,9 @@ func objectToExitCode(o Object) int {
 			code = system.GetExitStatus(system.ExitStatusGeneral)
 		}
 
+	case *Null:
+		// go with it; success code 0
+
 	default:
 		// invalid code argument for exit status
 		code = system.GetExitStatus(system.ExitStatusArgToExitBad)
