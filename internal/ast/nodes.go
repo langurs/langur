@@ -3066,6 +3066,7 @@ func (td *TestDo) Copy() *TestDo {
 
 type IfNode struct {
 	Token           token.Token
+	Init            Node	// potentially repeatable initialization
 	TestsAndActions []TestDo
 	IsSwitchExpr    bool
     DefaultElse     Node
@@ -3085,7 +3086,7 @@ func (i *IfNode) Search(parent Node, sc *searchCriteria) (found bool) {
 		}
 	}
 
-	return sc.searchNodes(i, i.DefaultElse)
+	return sc.searchNodes(i, i.DefaultElse, i.Init)
 }
 
 func (i *IfNode) expressionNode() {}
@@ -3098,6 +3099,7 @@ func (i *IfNode) Copy() Node {
 
 	return &IfNode{
 		Token:           i.Token.Copy(),
+		Init:            copyOrNil(i.Init),
 		TestsAndActions: taSlc,
 		IsSwitchExpr:    i.IsSwitchExpr,
 		DefaultElse:     copyOrNil(i.DefaultElse),
@@ -3114,6 +3116,11 @@ func (node *IfNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 
 func (i *IfNode) TokenRepresentation() string {
 	var out bytes.Buffer
+	
+	if i.Init != nil {
+		out.WriteString(i.TokenRepresentation())
+		out.WriteString(" ")
+	}
 
 	for ta := range i.TestsAndActions {
 		if ta > 0 {
@@ -3136,6 +3143,11 @@ func (i *IfNode) TokenRepresentation() string {
 
 func (i *IfNode) String() string {
 	var out bytes.Buffer
+
+	if i.Init != nil {
+		out.WriteString(i.String())
+		out.WriteString(" ")
+	}
 
 	for ta := range i.TestsAndActions {
 		if ta > 0 {

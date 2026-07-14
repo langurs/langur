@@ -274,28 +274,11 @@ func (p *Parser) finishParsingSwitchExpression(tok token.Token, defaultDefault a
 		}
 	}
 
-	// passing switch by ref. so it can be changed and receiving any extracted nodes
-	declarationsAndAssignments, err := ast.ExtractDeclarationsAndAssignmentsForSwitchTests(sw)
-	if err != nil {
-		p.addError(err.Error())
-		return sw
-	}
-
 	// convert to if node (compiler never sees switch node)
 	ifnode, err := ast.ConvertSwitchNodeToIfNode(sw, token.DefaultCompOp)
 	if err != nil {
 		p.addError(err.Error())
 		return ifnode
-	}
-
-	if declarationsAndAssignments != nil {
-		// move test expression declarations and assignments to front of a new scope block containing the switch expression
-		block := &ast.BlockNode{HasScope: true}
-		for _, decl := range declarationsAndAssignments {
-			block.Statements = append(block.Statements, decl)
-		}
-		block.Statements = append(block.Statements, ifnode)
-		return block
 	}
 
 	return ifnode

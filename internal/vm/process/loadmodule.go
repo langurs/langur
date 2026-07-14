@@ -4,6 +4,7 @@ package process
 
 import (
 	"fmt"
+	// "langur/compile"
 	"langur/object"
 	"io/ioutil"
 )
@@ -25,12 +26,13 @@ func (pr *Process) loadModule(module object.Object, as string) error {
 	if err != nil {
 		return fmt.Errorf("Error reading import file %q: %s", mod, err.Error())
 	}
-	code := string(bSlc)
+	source := string(bSlc)
 
-	_ = code
+	_ = source
 
 	// 3. attempt to parse and compile
-
+	// byteCode, _, err := compile.ParseAndCompile(
+	// 	source, mod, true, true, compile_modes)
 
 	// 4. add base name to symbol table
 	if as == "" {

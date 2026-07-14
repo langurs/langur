@@ -10,7 +10,12 @@ import (
 // Since a switch expression is a glorified if/else, ...
 // ... there's no need for the compiler to deal with it ...
 // ... (except for fallthrough and for catch switch exceptions (when no default given)).
-func ConvertSwitchNodeToIfNode(sw *SwitchNode, defaultCompOp token.Token) (*IfNode, error) {
+func ConvertSwitchNodeToIfNode(sw *SwitchNode, defaultCompOp token.Token) (Node, error) {
+	declarationsAndAssignments, err := ExtractDeclarationsAndAssignmentsForSwitchTests(sw)
+	if err != nil {
+		return nil, err
+	}
+
 	var testDo TestDo
 
 	ifnode := &IfNode{Token: sw.TokenInfo(), IsSwitchExpr: true, DefaultElse: sw.DefaultDefault}
@@ -159,6 +164,13 @@ func ConvertSwitchNodeToIfNode(sw *SwitchNode, defaultCompOp token.Token) (*IfNo
 		}
 
 		ifnode.TestsAndActions = append(ifnode.TestsAndActions, testDo)
+	}
+
+	if declarationsAndAssignments != nil {
+		// move initialization (test expression declarations and assignments) to front of a new scope block containing the expression
+		ifnode.Init = &BlockNode{Statements: declarationsAndAssignments, HasScope: false}
+		block := &BlockNode{Statements: []Node{ifnode}, HasScope: true}
+		return block, nil
 	}
 
 	return ifnode, nil

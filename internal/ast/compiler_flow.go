@@ -106,6 +106,13 @@ func (c *Compiler) fixJumps(
 }
 
 func (c *Compiler) compileIfNode(node *IfNode) (pkg opcode.InsPackage, err error) {
+	if node.Init != nil {
+		pkg, err = node.Init.Compile(c)
+		if err != nil {
+			return
+		}
+	}
+
 	if node.TestsAndActions[len(node.TestsAndActions)-1].Test != nil {
 		// no else/default section; add implicit else/default section of null or throw
 		var def Node = NoValue
