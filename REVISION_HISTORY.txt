@@ -1,12 +1,11 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.12
+2026-07-14 - 0.21.12
 - removed exit() command; use return from script or main function
 - changed keywords to use in interactive mode to quit or reset the environment
 - (internal) added compile package as (potential) central location to compile langur file (lex, parse, and compile)
 - (internal) changed compiling initialization for complex switch expression to make potentially repeatable
-
 
 2026-07-07 - 0.21.11
 - added val/var declaration blocks
