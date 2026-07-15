@@ -121,8 +121,8 @@ func (pr *Process) callBuiltIn(bi *object.BuiltIn, positional, keyword []object.
 
 	// if received an Exception Object (from a built-in function), ... 
 	// ... swap so that error is second value returned from this function
-	if r, isException := result.(*object.Exception); isException {
-		return nil, r // result.(*object.Exception)
+	if ex, isException := result.(*object.Exception); isException {
+		return nil, ex
 	} else {
 		return result, nil
 	}

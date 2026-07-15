@@ -10,6 +10,7 @@ import (
 	"langur/bytecode"
 	"langur/lexer"
 	"langur/modes"
+	"langur/object"
 	"langur/parser"
 	"langur/system"
 	"langur/trace"
@@ -19,7 +20,8 @@ func ParseAndCompile(
 	source, file string,
 	runRemotely bool,
 	printCodeLocationTrace bool,
-	compile_modes *modes.CompileModes) (
+	compile_modes *modes.CompileModes,
+	builtins []*object.BuiltIn) (
 
 	byteCode *bytecode.ByteCode,
 	exitStatus system.ExitStatus, err error) {
@@ -51,7 +53,7 @@ func ParseAndCompile(
 		return
 	}
 
-	comp, err := ast.NewCompiler(compile_modes, true)
+	comp, err := ast.NewCompiler(compile_modes, builtins, true)
 	comp.RunRemotely = runRemotely // not interactive mode/REPL or a test
 	if err != nil {
 		msg = "new compiler error: " + err.Error()

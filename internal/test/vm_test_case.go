@@ -3,6 +3,7 @@
 package test
 
 import (
+	"langur/vm/process"
 	"langur/trace"
 	"fmt"
 	"langur/ast"
@@ -37,7 +38,7 @@ func oneResult(t *testing.T, testno int, input string, printTestFirst, testPrint
 
 	program := parse(t, input)
 
-	comp, err := ast.NewCompiler(nil, false)
+	comp, err := ast.NewCompiler(nil, process.BuiltIns, false)
 	if err != nil {
 		t.Fatalf("Test %d: (%q) compiler error on New: %s", testno, input, err)
 	}

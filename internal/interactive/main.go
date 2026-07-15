@@ -31,6 +31,7 @@ import (
 	"langur/token"
 	"langur/trace"
 	"langur/vm"
+	"langur/vm/process"
 	"strings"
 )
 
@@ -269,7 +270,7 @@ func repl(source string, opts *InteractiveOptions) {
 	if opts.printCompiledInstructions || opts.printCompiledConstants ||
 		opts.PrintVmResultRaw || opts.PrintVmResultEscaped || opts.PrintVmResultGoEscaped {
 
-		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, firstRun)
+		comp, err = ast.NewCompilerWithState(symbolTable, constants, compileModes, process.BuiltIns, firstRun)
 		if err != nil {
 			replPrintLn("New Compiler Error: " + err.Error())
 

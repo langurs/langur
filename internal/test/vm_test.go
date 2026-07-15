@@ -3,6 +3,7 @@
 package test
 
 import (
+	"langur/vm/process"
 	"fmt"
 	"langur/ast"
 	"langur/common"
@@ -4427,7 +4428,7 @@ func TestIndexingWithLists(t *testing.T) {
 
 func TestLoops(t *testing.T) {
 	tests := []vmTestCase{
-		// test only
+		// 1 part; test only
 		{`for ; 0 > 1; {}`, nil, object.NULL_OBJ},
 
 		{`var sum = 0
@@ -4436,8 +4437,7 @@ func TestLoops(t *testing.T) {
 			"105", object.NUMBER_OBJ,
 		},
 
-		// 1 part
-		// 0.8 uses a while keyword for a test only loop without semicolons instead of the for keyword.
+		// 1 part; while loop
 		{`while 0 > 1 {}`, nil, object.NULL_OBJ},
 
 		{`var sum = 0
@@ -5260,7 +5260,7 @@ func TestIntRangeExpressions(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := ast.NewCompiler(nil, false)
+		comp, err := ast.NewCompiler(nil, process.BuiltIns, false)
 		if err != nil {
 			t.Fatalf("(%q) compiler error on New: %s", tt.input, err)
 		}
@@ -5932,7 +5932,7 @@ func TestCallingFunctionsWithWrongArgumentCountOrType(t *testing.T) {
 	for _, tt := range tests {
 		program := parse(t, tt.input)
 
-		comp, err := ast.NewCompiler(nil, false)
+		comp, err := ast.NewCompiler(nil, process.BuiltIns, false)
 		if err != nil {
 			t.Fatalf("(%s)\ncompiler error: %s", tt.input, err)
 		}

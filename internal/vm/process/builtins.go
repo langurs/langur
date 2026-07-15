@@ -6,24 +6,6 @@ import (
 	"langur/object"
 )
 
-func GetBuiltInByName(name string) *object.BuiltIn {
-	for _, bi := range BuiltIns {
-		if bi.FnSignature.Name == name {
-			return bi
-		}
-	}
-	return nil
-}
-
-func GetBuiltInImpurityStatus(name string) bool {
-	for _, bi := range BuiltIns {
-		if bi.FnSignature.Name == name {
-			return bi.HasImpureEffects()
-		}
-	}
-	return false
-}
-
 type BuiltInFunction = func(pr *Process, args ...object.Object) object.Object
 
 // the index of built-ins

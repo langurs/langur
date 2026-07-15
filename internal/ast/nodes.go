@@ -12,7 +12,6 @@ import (
 	"langur/token"
 	"langur/modes"
 	"langur/opcode"
-	"langur/vm/process"
 	"strings"
 )
 
@@ -70,7 +69,7 @@ func (node *Program) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 	return
 }
 
-// helps with the REPL not to try to set early/late bindings every time
+// helps with the REPL/interactive mode not to try to set early/late bindings every time
 // also for running compiler tests, so we don't get extra opcodes
 // and removes main function between calls
 func (node *Program) CompileAnother(c *Compiler) (pkg opcode.InsPackage, err error) {
@@ -1073,13 +1072,13 @@ func (i *IdentNode) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 		return
 	}
 
-	bi := process.GetBuiltInByName(i.Name)
+	bi := c.GetBuiltInByName(i.Name)
 	if bi == nil {
 		// not a built-in; must be a variable
 		return c.resolveAndGetInstructions(i, i.Name)
 	}
 
-	if process.GetBuiltInImpurityStatus(i.Name) {
+	if bi.HasImpureEffects() {
 		c.addToImpureEffectsList(i.Name)
 	}
 

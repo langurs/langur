@@ -53,7 +53,7 @@ type Compiler struct {
 	impureEffects               bool
 }
 
-func NewCompiler(m *modes.CompileModes, doAllBindings bool) (compiler *Compiler, err error) {
+func NewCompiler(m *modes.CompileModes, builtins []*object.BuiltIn, doAllBindings bool) (compiler *Compiler, err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			err = object.PanicToError(p)
@@ -73,15 +73,21 @@ func NewCompiler(m *modes.CompileModes, doAllBindings bool) (compiler *Compiler,
 	}
 	compiler.symbolTable = symbol.NewSymbolTable(nil, compiler.Modes)
 
+	// retrieve the built-ins list now so we can access it later without an import cycle
+	compiler.symbolTable.ExistingBuiltIns = builtins
+
 	compiler.noValueIns, err = NoValue.Compile(compiler)
 	return
 }
 
 func NewCompilerWithState(
-	s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes, doAllBindings bool) (
+	s *symbol.SymbolTable, constants []object.Object, m *modes.CompileModes, builtins []*object.BuiltIn, doAllBindings bool) (
 	compiler *Compiler, err error) {
 
-	compiler, err = NewCompiler(m, doAllBindings)
+	compiler, err = NewCompiler(m, builtins, doAllBindings)
+	if s.ExistingBuiltIns == nil {
+		s.ExistingBuiltIns = builtins
+	}
 	compiler.symbolTable = s
 	compiler.constants = constants
 	return
@@ -170,4 +176,8 @@ func (c *Compiler) wrapInstructionsWithExecute(pkg opcode.InsPackage, tok token.
 	// NOTE: Call this before c.popVariableScope().
 	index := c.wrapInstructions(pkg)
 	return opcode.MakePkg(tok, opcode.OpExecute, index)
+}
+
+func (c *Compiler) GetBuiltInByName(name string) *object.BuiltIn {
+	return c.symbolTable.GetBuiltInByName(name)
 }

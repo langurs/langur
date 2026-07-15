@@ -7,6 +7,7 @@
 package main
 
 import (
+	"langur/vm/process"
 	"fmt"
 	"io/ioutil"
 	"langur/args"
@@ -112,7 +113,7 @@ func main() {
 	var byteCode *bytecode.ByteCode
 	var exitStatus system.ExitStatus
 	byteCode, exitStatus, err = compile.ParseAndCompile(
-		source, file, true,	printCodeLocationTrace,	compile_modes)
+		source, file, true,	printCodeLocationTrace,	compile_modes, process.BuiltIns)
 
 	if err != nil {
 		msg := ""

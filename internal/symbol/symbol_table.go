@@ -8,7 +8,6 @@ import (
 	"langur/object"
 	"langur/str"
 	"langur/token"
-	"langur/vm/process"
 )
 
 func bug(fnName, s string) {
@@ -46,6 +45,8 @@ type SymbolTable struct {
 
 	Modes         *modes.CompileModes
 	ImpureEffects []string
+
+	ExistingBuiltIns []*object.BuiltIn
 }
 
 func NewSymbolTable(
@@ -99,15 +100,28 @@ func (st *SymbolTable) defineSystemVariable(name string, mutable bool) (sym Symb
 
 // to check if identifier name allowed for declaration
 func (st *SymbolTable) isNonShadowedWord(name string) bool {
+	// check keywords map
 	_, isKeyword := token.Keywords[name]
 	if isKeyword {
 		return true
 	}
-	bi := process.GetBuiltInByName(name)
-	if bi != nil {
-		return true
+
+	// check built-in names list
+	return st.GetBuiltInByName(name) != nil
+}
+
+func (st *SymbolTable) GetBuiltInByName(name string) *object.BuiltIn {
+	// go to root symbol table
+	checkSt := st
+	for checkSt.Outer != nil {
+		checkSt = checkSt.Outer
 	}
-	return false
+	for _, bi := range checkSt.ExistingBuiltIns {
+		if bi.FnSignature.Name == name {
+			return bi
+		}
+	}
+	return nil  // not found
 }
 
 func (st *SymbolTable) defineSymbol(name string, mutable bool, stype object.ObjectType) (Symbol, error) {
