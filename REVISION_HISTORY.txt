@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.13
+- (internal) retrieve builtins list early so it can be accessed later without a circular reference
+
+
 2026-07-14 - 0.21.12
 - removed exit() command; use return from script or main function
 - changed keywords to use in interactive mode to quit or reset the environment
