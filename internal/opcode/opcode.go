@@ -49,8 +49,6 @@ const (
 	OpIn
 	OpOf
 
-	OpLoadModule
-
 	OpConstant
 	OpFunction
 	OpExecute
@@ -155,8 +153,6 @@ func DisplayName(op OpCode, dbComp bool) string {
 
 var definitions = map[OpCode]*Definition{
 	OpPop: {Name: "Pop"},
-
-	OpLoadModule: {Name: "LoadModule"},
 
 	// operands: code, object type number or 0
 	OpIs: {Name: "Is", OperandWidths: []int{1, 1}},

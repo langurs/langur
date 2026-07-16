@@ -7,7 +7,6 @@
 package main
 
 import (
-	"langur/vm/process"
 	"fmt"
 	"io/ioutil"
 	"langur/args"
@@ -21,6 +20,7 @@ import (
 	"langur/text_io"
 	"langur/trace"
 	"langur/vm"
+	"langur/vm/process"
 	"os"
 )
 

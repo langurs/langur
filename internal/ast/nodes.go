@@ -57,11 +57,10 @@ func (node *Program) Compile(c *Compiler) (pkg opcode.InsPackage, err error) {
 
 	var temp opcode.InsPackage
 
-	temp, err = c.generateBindings(early, c.lateIDs, node.VarNamesUsed, c.doAllBindings)
+	c.InsPackage, err = c.generateBindings(early, c.lateIDs, node.VarNamesUsed, c.doAllBindings)
 	if err != nil {
 		return
 	}
-	c.InsPackage = c.InsPackage.Append(temp)
 
 	temp, err = c.compileProgram(node, true)
 	c.InsPackage = c.InsPackage.Append(temp)
@@ -226,6 +225,8 @@ func (i *ImportNode) Evaluate() object.Object {
 }
 
 func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
+	return cannotDirectlyCompile("ImportNode")
+	
 	var b, pkg opcode.InsPackage
 	var err error
 
@@ -262,7 +263,7 @@ func (i *ImportNode) Compile(c *Compiler) (opcode.InsPackage, error) {
 		return pkg, err
 	}
 
-	pkg = pkg.Append(opcode.MakePkg(i.Token, opcode.OpLoadModule))
+	// pkg = pkg.Append(opcode.MakePkg(i.Token, opcode.OpLoadModule))
 
 	return pkg, nil
 }
