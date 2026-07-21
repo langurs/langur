@@ -215,6 +215,7 @@ var Keywords = map[string]Type{
 
 	common.ZlsLiteral: ZLS,
 
-	"type": RESERVED,
-	"ref":  RESERVED,
+	"type":  RESERVED,
+	"trait": RESERVED,
+	"ref":   RESERVED,
 }

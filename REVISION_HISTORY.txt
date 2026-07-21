@@ -1,10 +1,10 @@
 langur revision history
 https://langurlang.org
 
-... - 0.21.13
+2026-07-20 - 0.21.13
+- added reserved keyword *trait*
 - (internal) retrieve builtins list early so it can be accessed later without a circular reference
 - (internal) removed OpLoadModule; removed vm/process/loadmodule.go
-
 
 2026-07-14 - 0.21.12
 - removed exit() command; use return from script or main function
