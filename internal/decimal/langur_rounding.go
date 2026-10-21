@@ -57,7 +57,7 @@ func (d Decimal) RoundByMode(
 	}
 
 	if trimTrailingZeroes {
-		return d.Simplify()
+		return d.Normalize()
 	}
 	return d
 }
@@ -69,7 +69,7 @@ func (d Decimal) RoundByMode(
 func (d Decimal) TruncateWithZeroes(
 	places int32, addTrailingZeroes, trimTrailingZeroes bool) Decimal {
 
-	d.ensureInitialized()
+	// d.ensureInitialized()
 	if places >= 0 && -places > d.exp {
 		d = d.rescale(-places)
 	}

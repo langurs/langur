@@ -10,13 +10,7 @@ import (
 )
 
 func (d Decimal) StringWithTrailingZeros() string {
-	return d.string(false)
-}
-
-func (d Decimal) Simplify() Decimal {
-	// remove trailing zeroes
-	d, _ = NewFromString(d.string(true))
-	return d
+	return d.string(false, false)
 }
 
 func (d Decimal) Same(d2 Decimal) bool {
@@ -35,7 +29,7 @@ func (d Decimal) DivFloor(d2 Decimal) Decimal {
 }
 
 func (d Decimal) StringParts() [2]string {
-	parts := strings.Split(d.string(false), ".")
+	parts := strings.Split(d.string(false, false), ".")
 	if len(parts) == 1 {
 		parts = append(parts, "")
 	}
@@ -58,7 +52,7 @@ func (d Decimal) DivWithMinMaxScale(d2 Decimal) Decimal {
 }
 
 func decimalScale(d Decimal) int {
-	ns := d.string(false)
+	ns := d.string(false, false)
 	idx := strings.IndexByte(ns, '.')
 	if idx == -1 {
 		return 0
@@ -69,7 +63,7 @@ func decimalScale(d Decimal) int {
 func (d Decimal) RescaleMin(minScale int, withDivMax bool) Decimal {
 	// max scale handled by DivisionPrecision
 	// check min scale and remove extra zeroes at same time
-	ds := d.string(true)
+	ds := d.string(true, false)
 
 	// langur 0.13 bug fix
 	if withDivMax && minScale > DivisionPrecision {

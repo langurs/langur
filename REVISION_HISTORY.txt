@@ -1,6 +1,10 @@
 langur revision history
 https://langurlang.org
 
+... - 0.21.14
+- (internal) updated decimal library from v1.4.0 to v1.6.0 from shopspring/decimal
+
+
 2026-07-20 - 0.21.13
 - added reserved keyword *trait*
 - (internal) retrieve builtins list early so it can be accessed later without a circular reference

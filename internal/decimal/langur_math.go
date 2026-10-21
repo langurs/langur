@@ -15,7 +15,7 @@ import (
 // This takes a divide and conquer approach. There might be a name for that, but I don't know.
 // The simplest case is the square root of 4. Divide 4 by 2 and you already have the result.
 // With 34 digits of precision, it typically takes about 111 iterations to find the result.
-func (x Decimal) Root(y Decimal) Decimal {
+func (x Decimal) Root2(y Decimal) Decimal {
 	var low, high, lastHigh, lastLow, useX, useY, expTest Decimal
 
 	if y.IsZero() {
@@ -192,7 +192,7 @@ func Lcm(d1, d2 Decimal) Decimal {
 // Also, after calculating on negative exponents, we use Simplify to remove extra trailing zeroes.
 func (d Decimal) Power(exp Decimal) Decimal {
 	if exp.IsNegative() {
-		return One.Div(d.Pow(exp.Abs())).Simplify()
+		return One.Div(d.Pow(exp.Abs())).Normalize()
 	}
 	return d.Pow(exp)
 }

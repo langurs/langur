@@ -66,7 +66,7 @@ func TestRoots(t *testing.T) {
 	for _, tt := range tests {
 		d1 := RequireFromString(tt.d1)
 		d2 := RequireFromString(tt.d2)
-		d3 := d1.Root(d2)
+		d3 := d1.Root2(d2)
 
 		result := RequireFromString(tt.result)
 		if !d3.Same(result) {

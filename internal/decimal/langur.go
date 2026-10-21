@@ -19,11 +19,39 @@ func decThrow(s string) {
 	panic("decimal exception: " + s)
 }
 
+func (d Decimal) IsEvenInteger() bool {
+	// NOTE(davis): might be made more efficient
+	s := d.string(true, false)
+	if strings.ContainsRune(s, '.') {
+		return false
+	}
+	last := s[len(s)-1]
+	switch last {
+	case '0', '2', '4', '6', '8':
+		return true
+	}
+	return false
+}
+
+func (d Decimal) IsOddInteger() bool {
+	// NOTE(davis): might be made more efficient
+	s := d.string(true, false)
+	if strings.ContainsRune(s, '.') {
+		return false
+	}
+	last := s[len(s)-1]
+	switch last {
+	case '1', '3', '5', '7', '9':
+		return true
+	}
+	return false
+}
+
 func (d Decimal) ToInt64(trimTrailingZeros bool) (int64, bool) {
 	if !d.IsInteger() {
 		return 0, false
 	}
-	s := d.string(trimTrailingZeros)
+	s := d.string(trimTrailingZeros, false)
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
 		return i, true
@@ -35,7 +63,7 @@ func (d Decimal) ToInt32(trimTrailingZeros bool) (int32, bool) {
 	if !d.IsInteger() {
 		return 0, false
 	}
-	s := d.string(trimTrailingZeros)
+	s := d.string(trimTrailingZeros, false)
 	i, err := strconv.ParseInt(s, 10, 32)
 	if err == nil {
 		return int32(i), true
@@ -47,7 +75,7 @@ func (d Decimal) ToInt(trimTrailingZeros bool) (int, bool) {
 	if !d.IsInteger() {
 		return 0, false
 	}
-	s := d.string(trimTrailingZeros)
+	s := d.string(trimTrailingZeros, false)
 	i, err := strconv.ParseInt(s, 10, 0)
 	if err == nil {
 		return int(i), true
@@ -59,7 +87,7 @@ func (d Decimal) ToRune(trimtrailingzeros bool) (rune, bool) {
 	if !d.IsInteger() {
 		return 0, false
 	}
-	s := d.string(trimtrailingzeros)
+	s := d.string(trimtrailingzeros, false)
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
 		if i >= 0 && i <= unicode.MaxRune {
@@ -132,7 +160,7 @@ func (d Decimal) ScientificNotation(
 			RoundByMode(int32(scale),
 				scaleAddTrailingZeroes, scaleTrimTrailingZeroes,
 				rounding).
-			string(false)
+			string(false, false)
 
 	} else {
 		if scaleAddTrailingZeroes && len(p2) < scale {

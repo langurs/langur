@@ -85,9 +85,9 @@ func TestSimplify(t *testing.T) {
 
 	for _, tt := range tests {
 		d1 := RequireFromString(tt.d1)
-		result := d1.Simplify()
+		result := d1.Normalize()
 
-		if result.string(false) != tt.result {
+		if result.string(false, false) != tt.result {
 			t.Errorf("Simplify Value Failed: expected=%s, received=%s", tt.result, result.String())
 		}
 	}

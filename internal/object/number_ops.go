@@ -43,7 +43,7 @@ func (left *Number) Simplify() Object {
 	if left.usingIntOptimization {
 		return left
 	}
-	return numberFromDecimal(left.decimal.Simplify())
+	return numberFromDecimal(left.decimal.Normalize())
 }
 
 func (left *Number) Append(o2 Object) Object {
@@ -283,7 +283,7 @@ func (left *Number) Power(o2 Object) Object {
 func (left *Number) Root(o2 Object) Object {
 	switch right := o2.(type) {
 	case *Number:
-		return numberFromDecimal(left.ToDecimal().Root(right.ToDecimal()))
+		return numberFromDecimal(left.ToDecimal().Root2(right.ToDecimal()))
 	}
 
 	return nil
