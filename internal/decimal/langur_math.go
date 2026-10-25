@@ -16,6 +16,24 @@ import (
 // The simplest case is the square root of 4. Divide 4 by 2 and you already have the result.
 // With 34 digits of precision, it typically takes about 111 iterations to find the result.
 func (x Decimal) Root2(y Decimal) Decimal {
+
+	// // FIXME: test calling Root()
+	// yint, ok := y.ToInt64(false)
+	// if ok {
+	// 	if yint >= 1 {
+	// 		// use optimized root method
+	// 		result, err := x.Root(yint)
+	// 		if err != nil {
+	// 			decThrow(err.Error())
+	// 		}
+	// 		return result.Normalize()
+	// 	}
+
+	// } else {
+	// 	decThrow("Can only calculate integer root within range of int64 in the current implementation")
+	// 	return Zero
+	// }
+
 	var low, high, lastHigh, lastLow, useX, useY, expTest Decimal
 
 	if y.IsZero() {

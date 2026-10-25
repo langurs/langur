@@ -56,9 +56,14 @@ func TestRoots(t *testing.T) {
 		{"0.25", "2", "0.5"},
 		{"0.0625", "-4", "2"},
 
+		{"0.25", "2", "0.5"},
+
 		// broad range with 34 digit precision...
-		// is SLOOOOWWW...
+		// is slow...
 		{"12341253466456", "2345", "1.012937546028772479694875775932214"},
+
+		{"1475781302562113238057324097191936", "14", "234"},
+		{"27746164807960699131344404576.750523918184747086639413580497206561", "12", "234.567"},
 	}
 
 	DivisionPrecision = 33
@@ -70,7 +75,7 @@ func TestRoots(t *testing.T) {
 
 		result := RequireFromString(tt.result)
 		if !d3.Same(result) {
-			t.Errorf("Roots Failed: expected=%s, received=%s", tt.result, d3.String())
+			t.Errorf("Roots Failed: expected=%s, received=%s", tt.result, d3.string(false, false))
 		}
 	}
 }
