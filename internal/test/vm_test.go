@@ -110,6 +110,7 @@ func TestMath(t *testing.T) {
 
 		// NOTE: -3 ^ 2 is effectively -(3 ^ 2) b/c of orders of operation
 		{`(-2) ^ -12`, "0.000244140625", object.NUMBER_OBJ},
+		{`-2 ^ -12`, "-0.000244140625", object.NUMBER_OBJ},
 		{`(-3) ^ -3`, "-0.037037037037037037037037037037037", object.NUMBER_OBJ},
 		{`(-3) ^ -2`, "0.111111111111111111111111111111111", object.NUMBER_OBJ},
 
@@ -121,9 +122,11 @@ func TestMath(t *testing.T) {
 		// {`-2 ^ -3.5`, "-0.088388347648318440550105545263106", object.NUMBER_OBJ},
 
 		// root
-		{`16 ^/ 2`, "4", object.NUMBER_OBJ},
-		{`144 ^/ 2`, "12", object.NUMBER_OBJ},
-		{`8 ^/ 3`, "2", object.NUMBER_OBJ},
+		{`16 ^/ 2`, 4, object.NUMBER_OBJ},
+		{`144 ^/ 2`, 12, object.NUMBER_OBJ},
+		{`8 ^/ 3`, 2, object.NUMBER_OBJ},
+		{`35831808 ^/ 7`, 12, object.NUMBER_OBJ},
+		{`15.285004892909808714149052965833433121604641 ^/ 7`, "1.476321", object.NUMBER_OBJ},
 
 		// divide
 		{"5 / 2", "2.5", object.NUMBER_OBJ},

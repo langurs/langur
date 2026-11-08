@@ -43,7 +43,6 @@ func checkParseErrors(t *testing.T, p *parser.Parser, input string) {
 	t.FailNow()
 }
 
-
 func testNumberObject(expected *object.Number, actual object.Object) error {
 	result, ok := actual.(*object.Number)
 	if !ok {
