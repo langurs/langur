@@ -4308,6 +4308,12 @@ func TestIndexExpressions(t *testing.T) {
 		{`val x = {"yo": 2, "joe": 4}; x'joe`, 4, object.NUMBER_OBJ},
 		{`val x = {"yo": 2, "joe": 4, "123": 7}; x'123`, 7, object.NUMBER_OBJ},
 
+		// short-hand integer indexing
+		{`val x = [9, 8, 7, 6]; x.1`, 9, object.NUMBER_OBJ},
+		{`val x = [9, 8, 7, 6]; x.2`, 8, object.NUMBER_OBJ},
+		{`val x = [9, 8, 7, 6]; x.-2`, 7, object.NUMBER_OBJ},
+		{`val x = [9, 8, 7, 6]; x.-1`, 6, object.NUMBER_OBJ},
+
 		// positive indices on strings
 		{`"abc"[1]`, "97", object.NUMBER_OBJ},
 		{`"abc"[3; null]`, "99", object.NUMBER_OBJ},

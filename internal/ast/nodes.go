@@ -2806,6 +2806,7 @@ func (node *InfixExpressionNode) Compile(c *Compiler) (pkg opcode.InsPackage, er
 	rightIsType := rightTypeCode != 0
 
 	if !rightIsType || node.Operator.Type != token.IS {
+		// ... not an expression such as ... is string
 		right, err = node.Right.Compile(c)
 		if err != nil {
 			return
