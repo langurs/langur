@@ -461,30 +461,14 @@ func (p *Parser) parseDotExpression(left ast.Node) ast.Node {
 		p.addError("Expected no spacing after dot in dot expression")
 	}
 
-	if p.tok.Type == token.INT {
-		// shorthand dot notation for integer indexing
-		return &ast.IndexNode{Token: left.TokenInfo(), Left: left, Index: p.parseNumber()}
-
-	} else if p.tok.Type == token.MINUS && p.peekTok.Type == token.INT {
-		// shorthand dot notation for negative integer indexing
-		p.advanceToken() // past the minus
-		if p.tok.CpDiff != 0 {
-			p.addError("Expected no spacing between minus and integer in dot expression")
-		}
-		num := p.parseNumber()
-		num.(*ast.NumberNode).Value = "-" + num.(*ast.NumberNode).Value
-		return &ast.IndexNode{Token: left.TokenInfo(), Left: left, Index: num}
-
-	} else {
-		var ok bool
-		expr.Right, ok = p.parseWord()
-		if !ok {
-			p.addError("Expected word token to continue dot expression")
-			return nil
-		}
-
-		return expr
+	var ok bool
+	expr.Right, ok = p.parseWord()
+	if !ok {
+		p.addError("Expected word token to continue dot expression")
+		return nil
 	}
+
+	return expr
 }
 
 func (p *Parser) parseNone() ast.Node {
