@@ -443,11 +443,17 @@ func ToBaseString(
 			fracDiff = fracRound
 		}
 
-		if intErr != nil {
-			return nil, intErr
+		if base != 10 {
+			// special dispensation for non-base-10 number conversion
+			if intErr != nil {
+				return nil, intErr
+			}
+			s = str.Int64ToStr(integer, base)
+
+		} else {
+			s = parts[0]
 		}
 
-		s = str.Int64ToStr(integer, base)
 		if s[0] == '-' {
 			s = s[1:]
 			isNeg = true
