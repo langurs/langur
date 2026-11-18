@@ -2,6 +2,7 @@ langur revision history
 https://langurlang.org
 
 ... - 0.21.15
+- with 10x interpolation modifier, when specified with a 0 integer, allow 0 to drop out so there's no number ahead of the decimal point
 - removed short-hand integer indexing (as unnecessary and potentially confusing)
 
 

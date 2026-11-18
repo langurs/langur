@@ -347,9 +347,6 @@ func (c *Compiler) compileModifierInsForFixedNotation(node Node, m []string) (
 	mm = subMatchByName("int", m, names)
 	if mm == "" {
 		mm = "1"
-	} else if mm == "0" {
-		err = c.makeErr(node, fmt.Sprintf("Error processing integer for fixed point interpolation modifier: integer cannot be 0 (maybe you meant 1?)"))
-		return
 	}
 	integer, err = object.NumberFromString(mm)
 	if err != nil {

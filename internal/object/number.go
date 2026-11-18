@@ -409,6 +409,7 @@ func ToBaseString(
 		}
 		parts = strings.Split(n.String(), ".")
 		integer, intErr = n.ToInt64()
+		// intErr may be checked later if there is no fractional part...
 
 	default:
 		return nil, fmt.Errorf("Expected number")
@@ -425,6 +426,12 @@ func ToBaseString(
 			parts[0] = parts[0][1:]
 			isNeg = true
 		}
+
+		if integerMin == 0 && parts[0] == "0" {
+			// allowing 0 integer to drop out when minimum specified as 0
+			parts[0] = ""
+		}
+
 		if len(parts[0]) < integerMin {
 			intPadding = strings.Repeat(string(padIntWith), integerMin-len(parts[0])+fracDiff)
 		}
