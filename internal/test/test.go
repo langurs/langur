@@ -22,7 +22,7 @@ func parse(t *testing.T, input string) *ast.Program {
 	var program *ast.Program
 	program, err = p.ParseProgram()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 	checkParseErrors(t, p, input)
 	return program
