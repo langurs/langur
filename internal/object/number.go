@@ -422,6 +422,7 @@ func ToBaseString(
 			fracDiff = fracRound - len(parts[1])
 		}
 
+		// remove sign
 		if parts[0][0] == '-' {
 			parts[0] = parts[0][1:]
 			isNeg = true
@@ -451,6 +452,7 @@ func ToBaseString(
 			s = str.Int64ToStr(integer, base)
 
 		} else {
+			// base 10 integer may be outside range of int64
 			s = parts[0]
 		}
 
